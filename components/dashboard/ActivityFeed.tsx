@@ -15,10 +15,10 @@ const TYPE_LABEL: Record<ActivityItem["type"], string> = {
 
 const TYPE_COLOR: Record<ActivityItem["type"], string> = {
   purchase: "#2F6B3D",
-  transfer: "#1F4E79",
+  transfer: "#865BA6", // brand purple — transfers stand out
   refund: "#8C4A1B",
-  scan: "#0A1F3D",
-  moderation: "#C9A64C",
+  scan: "#0F0F0F",
+  moderation: "#D8A83B",
 };
 
 // Simulates the live WebSocket-driven feed.

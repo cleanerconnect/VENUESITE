@@ -62,11 +62,11 @@ export function RevenueChart({
         </g>
       ))}
 
-      <path d={areaPath} fill="rgba(201, 166, 76, 0.15)" />
-      <path d={linePath} fill="none" stroke="#0A1F3D" strokeWidth={1.5} />
+      <path d={areaPath} fill="rgba(216, 168, 59, 0.18)" />
+      <path d={linePath} fill="none" stroke="#253E86" strokeWidth={1.5} />
 
       {points.map(([x, y], i) =>
-        i % 5 === 0 ? <circle key={i} cx={x} cy={y} r={2} fill="#0A1F3D" /> : null,
+        i % 5 === 0 ? <circle key={i} cx={x} cy={y} r={2} fill="#253E86" /> : null,
       )}
     </svg>
   );

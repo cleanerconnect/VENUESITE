@@ -52,14 +52,24 @@ App boots at http://localhost:3000 — root path redirects to `/dashboard`.
 
 ## Design tokens
 
-Configured in `tailwind.config.ts` and `app/globals.css`:
+Configured in `tailwind.config.ts` and `app/globals.css`. Palette taken
+directly from the LYFE wordmark:
 
-- `ink` `#0A1F3D`, `gold` `#C9A64C`, `bg` `#FAF7F0`, `surface` `#FFFFFF`
-- `success` / `warning` / `error` / `info` semantic colors
+- `ink` `#0F0F0F` (near-black wordmark)
+- `gold` `#D8A83B` (ochre — left stroke of the `y`)
+- `purple` `#865BA6` (right stroke of the `y` — used for transfer events)
+- `royal` / `info` `#253E86` (royal-blue dot — pending status, chart line)
+- `bg` `#FAF7F0` (warm off-white surface)
+- `success` / `warning` / `error` semantic colors
 - Fraunces (serif) for headings, Inter for body, `font-feature-settings: tnum`
   on every numeric class
 - Borders 1px `#E0DAC7`, subtle `0 1px 2px rgba(0,0,0,0.04)` shadow on cards
 - No `rounded-2xl`, no gradients, no emoji
+
+The "lyfe." wordmark is rendered live in `components/layout/icons.tsx`
+(`Wordmark`) using HTML text + a CSS gradient mask on the `y`. To use the
+production artwork instead, drop `lyfe-logo.svg` into `/public` and replace
+`<Wordmark />` in `Sidebar.tsx` with `<Image src="/lyfe-logo.svg" .../>`.
 
 ## Responsive
 

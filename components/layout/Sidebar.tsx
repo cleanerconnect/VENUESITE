@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import {
   IconCalendar,
   IconHome,
-  IconLogo,
   IconScan,
   IconSettings,
   IconUsers,
   IconWallet,
+  Wordmark,
 } from "./icons";
 
 interface NavItem {
@@ -31,13 +31,10 @@ export function Sidebar() {
   const pathname = usePathname();
   return (
     <aside className="hidden md:flex flex-col w-60 shrink-0 border-r border-line bg-surface">
-      <div className="px-6 py-6 flex items-center gap-2 border-b border-line">
-        <IconLogo />
-        <div className="leading-tight">
-          <div className="h-serif text-lg text-ink">LYFE</div>
-          <div className="text-[10px] uppercase tracking-badge text-muted">
-            Organisateur
-          </div>
+      <div className="px-6 py-6 border-b border-line">
+        <Wordmark size={26} />
+        <div className="text-[10px] uppercase tracking-badge text-muted mt-2">
+          Organisateur
         </div>
       </div>
 

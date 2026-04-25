@@ -8,7 +8,12 @@ export function ProgressBar({
   tone?: "ink" | "gold" | "success";
 }) {
   const pct = Math.max(0, Math.min(100, (value / Math.max(1, max)) * 100));
-  const fill = tone === "gold" ? "#C9A64C" : tone === "success" ? "#2F6B3D" : "#0A1F3D";
+  const fill =
+    tone === "gold"
+      ? "#D8A83B"
+      : tone === "success"
+        ? "#2F6B3D"
+        : "#0F0F0F";
   return (
     <div
       className="w-full h-1.5 bg-line/60 overflow-hidden"

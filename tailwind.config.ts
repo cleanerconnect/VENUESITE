@@ -9,8 +9,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0A1F3D",
-        gold: "#C9A64C",
+        // Brand (from logo): black wordmark, ochre + purple in the "y",
+        // royal-blue dot. Ink stays as the near-black text colour.
+        ink: "#0F0F0F",
+        gold: "#D8A83B",
+        royal: "#253E86",
+        purple: "#865BA6",
         bg: "#FAF7F0",
         surface: "#FFFFFF",
         muted: "#6A6A6A",
@@ -18,7 +22,7 @@ const config: Config = {
         success: "#2F6B3D",
         warning: "#8C4A1B",
         error: "#A12C2C",
-        info: "#1F4E79",
+        info: "#253E86", // alias of royal so existing tone="info" maps to brand blue
       },
       fontFamily: {
         serif: ["Fraunces", "ui-serif", "Georgia", "serif"],

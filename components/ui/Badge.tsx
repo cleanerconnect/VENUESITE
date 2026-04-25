@@ -12,15 +12,15 @@ type Tone =
   | "neutral";
 
 const STYLES: Record<Tone, { bg: string; text: string; label: string }> = {
-  live: { bg: "rgba(201, 166, 76, 0.12)", text: "#8a6f1c", label: "EN VENTE" },
-  pending: { bg: "rgba(31, 78, 121, 0.10)", text: "#1F4E79", label: "EN MODÉRATION" },
-  draft: { bg: "rgba(106, 106, 106, 0.10)", text: "#4d4d4d", label: "BROUILLON" },
-  past: { bg: "rgba(106, 106, 106, 0.07)", text: "#6A6A6A", label: "PASSÉ" },
+  live: { bg: "rgba(216, 168, 59, 0.14)", text: "#7a5e16", label: "EN VENTE" },
+  pending: { bg: "rgba(37, 62, 134, 0.10)", text: "#253E86", label: "EN MODÉRATION" },
+  draft: { bg: "rgba(15, 15, 15, 0.06)", text: "#4d4d4d", label: "BROUILLON" },
+  past: { bg: "rgba(15, 15, 15, 0.04)", text: "#6A6A6A", label: "PASSÉ" },
   rejected: { bg: "rgba(161, 44, 44, 0.10)", text: "#A12C2C", label: "REFUSÉ" },
   success: { bg: "rgba(47, 107, 61, 0.10)", text: "#2F6B3D", label: "OK" },
   warning: { bg: "rgba(140, 74, 27, 0.10)", text: "#8C4A1B", label: "ATTENTION" },
-  info: { bg: "rgba(31, 78, 121, 0.10)", text: "#1F4E79", label: "INFO" },
-  neutral: { bg: "rgba(10, 31, 61, 0.06)", text: "#0A1F3D", label: "" },
+  info: { bg: "rgba(37, 62, 134, 0.10)", text: "#253E86", label: "INFO" },
+  neutral: { bg: "rgba(15, 15, 15, 0.05)", text: "#0F0F0F", label: "" },
 };
 
 export function Badge({

@@ -118,9 +118,69 @@ export const IconBell = (p: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+// Square brand mark — the royal-blue square that sits at the end of the
+// wordmark, used as a compact icon when the full "lyfe." text isn't shown.
 export const IconLogo = (p: React.SVGProps<SVGSVGElement>) => (
-  <svg {...baseProps} {...p} width={28} height={28} viewBox="0 0 28 28">
-    <path d="M6 5v14M6 19h11" stroke="currentColor" strokeWidth={2} />
-    <circle cx="22" cy="7" r="2" fill="#C9A64C" stroke="none" />
+  <svg
+    {...p}
+    width={p.width ?? 14}
+    height={p.height ?? 14}
+    viewBox="0 0 14 14"
+    fill="none"
+    aria-hidden="true"
+  >
+    <rect x="0" y="0" width="14" height="14" fill="#253E86" />
   </svg>
 );
+
+// Full "lyfe." wordmark rendered with HTML text + CSS so the brand fonts
+// and the ochre→purple split on the `y` stay crisp at any size.
+// Drop /public/lyfe-logo.svg later and swap this for <Image /> if you want
+// the exact production artwork instead.
+export function Wordmark({
+  size = 28,
+  className = "",
+}: {
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-baseline ${className}`}
+      style={{
+        fontFamily:
+          'Inter, ui-sans-serif, system-ui, sans-serif',
+        fontWeight: 800,
+        fontSize: size,
+        lineHeight: 1,
+        letterSpacing: "-0.04em",
+      }}
+      aria-label="LYFE"
+    >
+      <span style={{ color: "#0F0F0F" }}>l</span>
+      <span
+        style={{
+          background: "linear-gradient(90deg, #D8A83B 0 50%, #865BA6 50% 100%)",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          color: "transparent",
+        }}
+      >
+        y
+      </span>
+      <span style={{ color: "#0F0F0F" }}>fe</span>
+      <span
+        aria-hidden="true"
+        style={{
+          display: "inline-block",
+          width: size * 0.22,
+          height: size * 0.22,
+          backgroundColor: "#253E86",
+          marginLeft: size * 0.06,
+          marginBottom: size * 0.02,
+          alignSelf: "flex-end",
+        }}
+      />
+    </span>
+  );
+}

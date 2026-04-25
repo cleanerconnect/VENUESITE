@@ -58,7 +58,7 @@ export function WizardLayout({
                   <div
                     key={label}
                     className="h-1 transition-colors"
-                    style={{ backgroundColor: reached ? "#0A1F3D" : "#E0DAC7" }}
+                    style={{ backgroundColor: reached ? "#0F0F0F" : "#E0DAC7" }}
                   />
                 );
               })}

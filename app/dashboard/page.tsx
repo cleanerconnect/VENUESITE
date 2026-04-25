@@ -52,7 +52,7 @@ export default function DashboardPage() {
             label="Billets vendus aujourd'hui"
             value={ticketsToday}
           >
-            <Sparkline data={ticketsTodaySpark} stroke="#C9A64C" />
+            <Sparkline data={ticketsTodaySpark} stroke="#D8A83B" />
           </StatCard>
           <StatCard
             label="Revenu cette semaine"
