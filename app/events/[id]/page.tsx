@@ -27,50 +27,70 @@ export default function EventDetailPage() {
 
   return (
     <>
-      <TopBar title={event.name} showBack />
+      <TopBar
+        title={event.name}
+        eyebrow="Événement"
+        showBack
+        liveDot={event.status === "live"}
+      />
 
-      {/* Header banner */}
-      <div className="border-b border-line bg-surface">
-        <div className="px-4 md:px-8 py-6 md:py-8 max-w-content mx-auto">
+      {/* Header banner — full-bleed with gradient warmth */}
+      <div className="relative bg-surface bg-hero-warm border-b border-line">
+        <div className="px-4 md:px-8 py-7 md:py-9 max-w-content mx-auto fade-up">
           {event.status === "rejected" && event.rejectionReason ? (
-            <div className="mb-4 bg-error/5 border border-error/30 px-4 py-3 text-sm text-error">
-              <strong className="font-semibold">Refusé : </strong>
-              {event.rejectionReason}
+            <div className="mb-5 bg-error/[0.04] border border-error/20 rounded-md px-4 py-3 text-[13px] text-error/90 flex items-start gap-3">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 mt-0.5">
+                <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M8 5v4M8 11v.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <div>
+                <strong className="font-semibold">Événement refusé. </strong>
+                {event.rejectionReason}
+              </div>
             </div>
           ) : null}
           {event.status === "pending" ? (
-            <div className="mb-4 bg-info/5 border border-info/30 px-4 py-3 text-sm text-info">
-              Cet événement est en file de modération. SLA 24 h.
+            <div className="mb-5 bg-info/[0.04] border border-info/20 rounded-md px-4 py-3 text-[13px] text-info flex items-center gap-2.5">
+              <span className="live-dot" style={{ background: "#253E86" }} />
+              Cet événement est en file de modération. SLA 24 heures.
             </div>
           ) : null}
 
-          <div className="grid md:grid-cols-[200px_1fr] gap-6">
+          <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-8">
             <div
-              className="aspect-[4/5] bg-line/40 border border-line"
+              className="aspect-[4/5] bg-gradient-to-br from-line/40 to-line/80 border border-line rounded-lg overflow-hidden relative"
               aria-hidden="true"
-            />
+            >
+              <div className="absolute inset-0 bg-hero-royal opacity-60" />
+            </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <StatusBadge status={event.status} />
-                <span className="text-xs text-muted uppercase tracking-badge">
+                <span className="chip uppercase tracking-badge text-muted text-[10px]">
                   {event.category.replace("_", " ")}
                 </span>
+                <span className="chip uppercase tracking-badge text-muted text-[10px]">
+                  {event.agePolicy}
+                </span>
               </div>
-              <h2 className="h-display text-2xl md:text-3xl text-ink mt-2">
+              <h2 className="h-hero text-[28px] md:text-[40px] text-ink mt-3 max-w-3xl">
                 {event.name}
               </h2>
-              <div className="text-sm text-muted mt-1">
-                {formatDateTime(event.startsAt)} · {event.venue.name},{" "}
-                {event.venue.city}
+              <div className="text-[13px] text-muted mt-2 num flex items-center gap-2 flex-wrap">
+                <span>{formatDateTime(event.startsAt)}</span>
+                <span className="text-line-strong">·</span>
+                <span>
+                  {event.venue.name}, {event.venue.city}
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 num">
-                <KeyStat label="Vendus" value={`${sold}`} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 md:gap-x-10 gap-y-4 mt-7 num pt-5 border-t border-line">
+                <KeyStat label="Vendus" value={`${sold}`} accent />
                 <KeyStat label="Restants" value={`${cap - sold}`} />
                 <KeyStat label="Revenu" value={formatMad(revenue)} />
                 <KeyStat
                   label="Conversion"
-                  value={`${conversion.toFixed(1)} %`}
+                  value={`${conversion.toFixed(1)}%`}
                 />
               </div>
             </div>
@@ -79,7 +99,7 @@ export default function EventDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="px-4 md:px-8 py-6 max-w-content mx-auto">
+      <div className="px-4 md:px-8 py-7 max-w-content mx-auto">
         <Tabs
           tabs={[
             { id: "sales", label: "Ventes", content: <SalesTab event={event} /> },
@@ -107,13 +127,26 @@ export default function EventDetailPage() {
   );
 }
 
-function KeyStat({ label, value }: { label: string; value: string }) {
+function KeyStat({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-badge text-muted">
-        {label}
+      <div className="eyebrow text-muted-2">{label}</div>
+      <div
+        className={[
+          "h-display text-[22px] md:text-[26px] mt-1.5",
+          accent ? "text-ink" : "text-ink",
+        ].join(" ")}
+      >
+        {value}
       </div>
-      <div className="h-display text-xl text-ink mt-1">{value}</div>
     </div>
   );
 }

@@ -42,10 +42,11 @@ export function StepTiers({
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-7">
       <div>
-        <h2 className="h-display text-2xl text-ink">Tarifs</h2>
-        <p className="text-sm text-muted mt-1">
+        <div className="eyebrow text-muted-2 mb-2">Étape 2</div>
+        <h2 className="h-hero text-[28px] text-ink">Tarifs</h2>
+        <p className="text-[14px] text-muted mt-2 max-w-xl leading-relaxed">
           Définissez vos catégories de billets. Vous recevez la valeur faciale
           intégrale — les frais de service sont visibles et payés par le client.
         </p>
@@ -56,7 +57,7 @@ export function StepTiers({
         return (
           <div
             key={tier.id}
-            className="bg-surface border border-line shadow-card p-5 relative"
+            className="bg-surface border border-line rounded-lg shadow-card p-5 relative"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="text-[10px] uppercase tracking-badge text-muted">
@@ -93,24 +94,28 @@ export function StepTiers({
             </div>
 
             {tier.faceValueMad > 0 ? (
-              <div className="mt-4 bg-bg border border-line p-3 num">
-                <div className="text-[10px] uppercase tracking-badge text-muted mb-1">
+              <div className="mt-4 bg-bg-soft border border-line rounded-md p-4 num">
+                <div className="eyebrow text-muted-2 mb-2">
                   Aperçu côté client
                 </div>
-                <div className="text-sm text-ink">
-                  Le client voit :{" "}
-                  <span className="font-semibold">
-                    {formatMad(fee.customerPaysMad)}
-                  </span>{" "}
-                  <span className="text-muted">
-                    (dont {formatMad(fee.serviceFeeMad)} de frais sur cartes
-                    marocaines)
-                  </span>
+                <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                  <div className="text-[15px] text-ink">
+                    Le client voit{" "}
+                    <span className="font-bold">
+                      {formatMad(fee.customerPaysMad)}
+                    </span>
+                  </div>
+                  <div className="text-[12px] text-muted">
+                    dont {formatMad(fee.serviceFeeMad)} de frais (cartes MA)
+                  </div>
                 </div>
-                <div className="text-xs text-muted mt-1">
-                  Carte internationale : {formatMad(
-                    computeFee(tier.faceValueMad, "international").customerPaysMad,
-                  )}{" "}
+                <div className="mt-2 pt-2 border-t border-line text-[12px] text-muted-2">
+                  Carte internationale ·{" "}
+                  <span className="text-ink font-medium">
+                    {formatMad(
+                      computeFee(tier.faceValueMad, "international").customerPaysMad,
+                    )}
+                  </span>{" "}
                   (frais 7,0 %)
                 </div>
               </div>
@@ -164,7 +169,7 @@ export function StepTiers({
 
       <button
         onClick={() => setTiers([...tiers, emptyTier()])}
-        className="border border-dashed border-line py-4 text-sm text-muted hover:text-ink hover:border-ink flex items-center justify-center gap-2"
+        className="border border-dashed border-line-strong/60 rounded-lg py-5 text-[13px] font-medium text-muted hover:text-ink hover:border-ink hover:bg-bg-soft transition-all duration-150 flex items-center justify-center gap-2"
       >
         <IconPlus />
         Ajouter un tarif

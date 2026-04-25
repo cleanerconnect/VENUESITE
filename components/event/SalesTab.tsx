@@ -8,68 +8,101 @@ import type { LyfeEvent } from "@/lib/types";
 import { IconDownload } from "@/components/layout/icons";
 
 export function SalesTab({ event }: { event: LyfeEvent }) {
+  const totalRevenue = revenue30d.reduce((s, d) => s + d.amount, 0);
+
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader
-          title="Chiffre d'affaires"
-          subtitle="30 derniers jours · valeur faciale"
-          action={
+    <div className="flex flex-col gap-5">
+      <Card padded={false}>
+        <div className="px-6 pt-6 pb-2 flex items-start justify-between flex-wrap gap-3">
+          <div>
+            <div className="eyebrow text-muted-2">Chiffre d'affaires</div>
+            <div className="h-hero text-[28px] text-ink mt-2 num">
+              {formatMad(totalRevenue)}
+            </div>
+            <div className="text-[12px] text-muted mt-1">
+              30 derniers jours · valeur faciale
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="chip">Pic 21h–22h</span>
             <Button variant="secondary" size="sm" iconLeft={<IconDownload />}>
               Exporter CSV
             </Button>
-          }
-        />
-        <RevenueChart data={revenue30d} />
-        <div className="mt-3 text-xs text-muted">
-          Pic de ventes : <span className="text-ink num">21h–22h</span>
+          </div>
+        </div>
+        <div className="px-2 pb-2">
+          <RevenueChart data={revenue30d} />
         </div>
       </Card>
 
-      <Card>
-        <CardHeader
-          title="Détail par tarif"
-          subtitle="Conversion à partir des vues de page publique"
-        />
-        <div className="overflow-x-auto -mx-6">
+      <Card padded={false}>
+        <div className="px-6 pt-6">
+          <CardHeader
+            title="Détail par tarif"
+            subtitle="Performance et conversion par catégorie de billet"
+          />
+        </div>
+        <div className="overflow-x-auto scroll-thin">
           <table className="w-full text-sm num">
-            <thead className="text-xs uppercase tracking-badge text-muted text-left border-b border-line">
-              <tr>
-                <th className="px-6 py-2">Tarif</th>
-                <th className="px-6 py-2 text-right">Prix</th>
-                <th className="px-6 py-2 text-right">Vendu</th>
-                <th className="px-6 py-2 text-right">Restant</th>
-                <th className="px-6 py-2 text-right">Revenu</th>
-                <th className="px-6 py-2 text-right">Conv.</th>
+            <thead>
+              <tr className="text-[10px] uppercase tracking-badge text-muted-2 text-left border-y border-line">
+                <th className="px-6 py-3 font-semibold">Tarif</th>
+                <th className="px-6 py-3 font-semibold text-right">Prix</th>
+                <th className="px-6 py-3 font-semibold text-right">Vendu</th>
+                <th className="px-6 py-3 font-semibold text-right">Restant</th>
+                <th className="px-6 py-3 font-semibold text-right">Revenu</th>
+                <th className="px-6 py-3 font-semibold text-right">Conv.</th>
               </tr>
             </thead>
             <tbody>
               {event.tiers.map((t) => {
                 const conv =
                   event.pageViews > 0 ? (t.sold / event.pageViews) * 100 : 0;
+                const sellThrough = t.quantity > 0 ? (t.sold / t.quantity) * 100 : 0;
                 return (
-                  <tr key={t.id} className="border-b border-line/60">
-                    <td className="px-6 py-3 text-ink">
-                      <div>{t.name}</div>
-                      <div className="mt-1.5 max-w-[180px]">
-                        <ProgressBar
-                          value={t.sold}
-                          max={t.quantity}
-                          tone="gold"
+                  <tr
+                    key={t.id}
+                    className="border-b border-line/60 hover:bg-bg-soft/40 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-ink">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="h-8 w-1 rounded-full shrink-0"
+                          style={{
+                            background:
+                              sellThrough >= 95
+                                ? "linear-gradient(180deg,#D8A83B,#cc9a2e)"
+                                : sellThrough >= 60
+                                  ? "linear-gradient(180deg,#2f4ea3,#253E86)"
+                                  : "rgba(15,15,15,0.15)",
+                          }}
                         />
+                        <div>
+                          <div className="font-semibold">{t.name}</div>
+                          <div className="mt-1.5 w-[180px]">
+                            <ProgressBar
+                              value={t.sold}
+                              max={t.quantity}
+                              tone={sellThrough >= 95 ? "gold" : "royal"}
+                              size="sm"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-3 text-right">
+                    <td className="px-6 py-4 text-right">
                       {formatMad(t.faceValueMad)}
                     </td>
-                    <td className="px-6 py-3 text-right">{t.sold}</td>
-                    <td className="px-6 py-3 text-right">
+                    <td className="px-6 py-4 text-right font-semibold text-ink">
+                      {t.sold}
+                    </td>
+                    <td className="px-6 py-4 text-right text-muted">
                       {t.quantity - t.sold}
                     </td>
-                    <td className="px-6 py-3 text-right">
+                    <td className="px-6 py-4 text-right font-semibold text-ink">
                       {formatMad(t.sold * t.faceValueMad)}
                     </td>
-                    <td className="px-6 py-3 text-right text-muted">
+                    <td className="px-6 py-4 text-right text-muted">
                       {conv.toFixed(1)} %
                     </td>
                   </tr>

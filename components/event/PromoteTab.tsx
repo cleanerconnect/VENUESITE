@@ -21,18 +21,21 @@ export function PromoteTab({ event }: { event: LyfeEvent }) {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid md:grid-cols-2 gap-5">
       <Card>
-        <CardHeader title="Lien public" subtitle="À partager sur tous vos canaux" />
-        <div className="flex">
+        <CardHeader
+          title="Lien public"
+          subtitle="À partager sur tous vos canaux"
+        />
+        <div className="flex bg-bg-soft border border-line rounded-md overflow-hidden">
           <input
             readOnly
             value={url}
-            className="flex-1 h-11 px-3 bg-bg border border-line text-sm text-ink num focus:outline-none"
+            className="flex-1 h-11 px-3 bg-transparent text-sm text-ink num focus:outline-none"
           />
           <button
             onClick={copy}
-            className="h-11 px-4 bg-ink text-white text-sm flex items-center gap-2"
+            className="h-11 px-4 bg-ink text-white text-[13px] font-medium flex items-center gap-2 hover:bg-[#1a1a1a] transition-colors"
             aria-label="Copier le lien"
           >
             <IconCopy />
@@ -40,38 +43,56 @@ export function PromoteTab({ event }: { event: LyfeEvent }) {
           </button>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {["WhatsApp", "Instagram", "Facebook", "X"].map((p) => (
-            <Button key={p} variant="secondary" size="sm">
-              {p}
-            </Button>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {[
+            { name: "WhatsApp", color: "#25D366" },
+            { name: "Instagram", color: "#E1306C" },
+            { name: "Facebook", color: "#1877F2" },
+            { name: "X", color: "#0F0F0F" },
+          ].map((p) => (
+            <button
+              key={p.name}
+              className="inline-flex items-center gap-2 h-9 px-3 text-[13px] border border-line bg-surface rounded-md hover:bg-bg-soft transition-colors"
+            >
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ background: p.color }}
+              />
+              {p.name}
+            </button>
           ))}
+        </div>
+      </Card>
+
+      <Card tone="hero">
+        <CardHeader
+          title="Aperçu carte sociale"
+          subtitle="OpenGraph / WhatsApp / Instagram"
+        />
+        <div className="border border-line bg-surface aspect-[1.91/1] rounded-md flex flex-col justify-end p-5 relative overflow-hidden">
+          <div className="absolute inset-0 bg-hero-warm opacity-90" />
+          <div className="relative">
+            <div className="eyebrow text-gold">
+              LYFE · {event.venue.city}
+            </div>
+            <div className="h-display text-xl text-ink mt-1.5 leading-tight">
+              {event.name}
+            </div>
+          </div>
         </div>
       </Card>
 
       <Card>
         <CardHeader
-          title="Aperçu carte sociale"
-          subtitle="OpenGraph / WhatsApp / Instagram"
+          title="Affiche QR"
+          subtitle="PDF imprimable, prêt pour vos vitrines"
         />
-        <div className="border border-line bg-bg aspect-[1.91/1] flex flex-col justify-end p-4">
-          <div className="text-[10px] uppercase tracking-badge text-gold">
-            LYFE · {event.venue.city}
-          </div>
-          <div className="h-display text-xl text-ink mt-1 leading-tight">
-            {event.name}
-          </div>
-        </div>
-      </Card>
-
-      <Card>
-        <CardHeader title="QR poster" subtitle="PDF imprimable A4 et A3" />
         <div className="flex gap-2">
           <Button variant="secondary" iconLeft={<IconDownload />}>
-            Poster A4
+            Format A4
           </Button>
           <Button variant="secondary" iconLeft={<IconDownload />}>
-            Poster A3
+            Format A3
           </Button>
         </div>
       </Card>
@@ -79,12 +100,15 @@ export function PromoteTab({ event }: { event: LyfeEvent }) {
       <Card>
         <CardHeader
           title="Code à intégrer"
-          subtitle="Affichez la billetterie sur votre site"
+          subtitle="Affichez la billetterie sur votre propre site"
         />
-        <pre className="text-xs bg-bg border border-line p-3 overflow-x-auto scroll-thin num text-ink">
-          {`<iframe src="${url}/embed"
-        width="100%" height="540"
-        style="border:0"></iframe>`}
+        <pre className="text-[11px] bg-ink text-white/90 p-4 rounded-md overflow-x-auto scroll-thin num leading-relaxed">
+          {`<iframe
+  src="${url}/embed"
+  width="100%"
+  height="540"
+  style="border:0">
+</iframe>`}
         </pre>
       </Card>
     </div>

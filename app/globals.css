@@ -6,31 +6,62 @@
 
 :root {
   color-scheme: light;
+  --ink: #0f0f0f;
+  --gold: #d8a83b;
+  --royal: #253e86;
+  --purple: #865ba6;
+  --bg: #f6f2e8;
+  --bg-soft: #faf7f0;
+  --surface: #ffffff;
+  --line: #e8e1ce;
+  --muted: #6f6a60;
+}
+
+*,
+*::before,
+*::after {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 html,
 body {
-  background-color: #faf7f0;
-  color: #0f0f0f;
+  background-color: var(--bg);
+  color: var(--ink);
   font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
+  font-feature-settings:
+    "ss01" on,
+    "cv11" on;
+  letter-spacing: -0.005em;
 }
 
 /* Tabular figures everywhere a number lives. */
 .num,
 .num * {
-  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-feature-settings:
+    "tnum" 1,
+    "lnum" 1,
+    "ss01" on;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* Display heading — same Jakarta, heavier weight + tighter tracking
-   for the editorial feel that the serif used to carry. */
+/* Display heading — Jakarta heavy with tighter tracking. */
 .h-display {
   font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   font-weight: 700;
+  line-height: 1.1;
 }
 
-/* Status pill base — see Badge component for color variants. */
+.h-hero {
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  line-height: 1.02;
+}
+
+/* Status pill — refined: borderless, ring-tinted, capital-cased label. */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -38,15 +69,22 @@ body {
   padding: 0 10px;
   border-radius: 999px;
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-/* Custom focus ring — accessible without being loud. */
+/* Refined focus ring — soft brand-blue glow, no jagged outline. */
+*:focus {
+  outline: none;
+}
 *:focus-visible {
-  outline: 2px solid #0f0f0f;
-  outline-offset: 2px;
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px rgba(37, 62, 134, 0.4);
+  border-radius: 6px;
 }
 
 /* Subtle scrollbar in tables. */
@@ -55,12 +93,113 @@ body {
   width: 8px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: #e0dac7;
+  background: rgba(15, 15, 15, 0.15);
   border-radius: 4px;
+}
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 15, 15, 0.25);
 }
 
 /* Sparkline path animation hook. */
 .spark path {
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+/* Card hover lift — used by clickable cards. */
+.card-link {
+  transition:
+    border-color 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-link:hover {
+  border-color: rgba(15, 15, 15, 0.4);
+  box-shadow:
+    0 1px 0 rgba(15, 15, 15, 0.04),
+    0 14px 38px -18px rgba(15, 15, 15, 0.18);
+  transform: translateY(-1px);
+}
+
+/* Soft chip — used for inline keyword tags */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  background: rgba(15, 15, 15, 0.04);
+  border: 1px solid rgba(15, 15, 15, 0.06);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* Section label — small uppercase metadata text */
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Live-dot indicator (used in TopBar / activity feed) */
+.live-dot {
+  position: relative;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #2f6b3d;
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 999px;
+  background: rgba(47, 107, 61, 0.3);
+  animation: pulse2 2s ease-in-out infinite;
+}
+@keyframes pulse2 {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Subtle entrance for primary content */
+.fade-up {
+  animation: fade-up 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Polished native form fields */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+select {
+  color-scheme: light;
+}
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%236F6A60' stroke-width='1.4' stroke-linecap='round'%3E%3Cpath d='m3 5 3 3 3-3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  appearance: none;
+  padding-right: 32px !important;
 }

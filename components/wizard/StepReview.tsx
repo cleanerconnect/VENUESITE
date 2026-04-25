@@ -23,8 +23,9 @@ export function StepReview({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="h-display text-2xl text-ink">Vérification finale</h2>
-        <p className="text-sm text-muted mt-1">
+        <div className="eyebrow text-muted-2 mb-2">Étape 5</div>
+        <h2 className="h-hero text-[28px] text-ink">Vérification finale</h2>
+        <p className="text-[14px] text-muted mt-2 max-w-xl leading-relaxed">
           Relisez attentivement. Une fois soumis, l'événement passe en
           modération sous 24 h.
         </p>
@@ -120,12 +121,12 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-surface border border-line shadow-card">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-line">
-        <h3 className="h-display text-base text-ink">{title}</h3>
+    <div className="bg-surface border border-line rounded-lg shadow-card overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+        <h3 className="h-display text-[15px] text-ink">{title}</h3>
         <button
           onClick={onEdit}
-          className="text-xs uppercase tracking-badge text-muted hover:text-ink"
+          className="text-[11px] uppercase tracking-badge font-semibold text-muted hover:text-ink transition-colors"
         >
           Modifier
         </button>

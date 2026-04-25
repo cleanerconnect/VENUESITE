@@ -28,29 +28,34 @@ export default function DashboardPage() {
     <>
       <TopBar
         title="Vue d'ensemble"
+        eyebrow="Tableau de bord"
+        liveDot
         action={
           <Link
             href="/events/new"
-            className="hidden md:inline-flex h-9 px-4 items-center text-sm bg-ink text-white"
+            className="hidden md:inline-flex h-9 px-4 items-center text-[13px] font-medium bg-gradient-to-b from-[#1a1a1a] to-ink text-white rounded-md shadow-xs hover:from-[#2a2a2a] transition-all"
           >
             Créer un événement
           </Link>
         }
       />
 
-      <div className="px-4 md:px-8 py-6 md:py-8 max-w-content mx-auto">
-        <div className="mb-2">
-          <p className="text-sm text-muted">Bonsoir Yassine,</p>
-          <h2 className="h-display text-2xl text-ink mt-1">
+      <div className="px-4 md:px-8 py-6 md:py-8 max-w-content mx-auto fade-up">
+        {/* Hero greeting */}
+        <div className="mb-7">
+          <p className="text-[13px] text-muted">Bonsoir Yassine,</p>
+          <h2 className="h-hero text-[28px] md:text-[34px] text-ink mt-2 max-w-2xl">
             Voici ce qu'il se passe sur Blend Rooftop ce soir.
           </h2>
         </div>
 
         {/* Quick stats — 4 cards, 2x2 on mobile */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatCard
             label="Billets vendus aujourd'hui"
             value={ticketsToday}
+            tone="hero"
+            accent="linear-gradient(90deg, #D8A83B, #E2B54A 50%, #D8A83B)"
           >
             <Sparkline data={ticketsTodaySpark} stroke="#D8A83B" />
           </StatCard>
@@ -62,7 +67,7 @@ export default function DashboardPage() {
           <StatCard
             label="Événements à venir"
             value={upcomingCount}
-            hint="Cliquer pour filtrer"
+            hint="Voir la liste filtrée →"
             href="/events?filter=live"
           />
           <StatCard
@@ -70,22 +75,32 @@ export default function DashboardPage() {
             value={nextPayout ? formatMad(nextPayout.amountMad) : "—"}
             hint={
               nextPayout
-                ? `le ${formatDate(nextPayout.scheduledFor)} (J+3)`
+                ? `le ${formatDate(nextPayout.scheduledFor)} · J+3`
                 : "Aucun versement programmé"
             }
+            tone="royal"
+            accent="linear-gradient(90deg, #253E86, #2f4ea3, #253E86)"
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6 mt-8">
           {/* Upcoming events list */}
           <section className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="h-display text-lg text-ink">Événements à venir</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="h-display text-lg text-ink">Événements à venir</h3>
+                <p className="text-[12px] text-muted mt-0.5">
+                  Triés par date la plus proche
+                </p>
+              </div>
               <Link
                 href="/events"
-                className="text-xs uppercase tracking-badge text-muted hover:text-ink"
+                className="text-[12px] font-medium text-muted hover:text-ink flex items-center gap-1 transition-colors"
               >
-                Tout voir →
+                Tout voir
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M5 3l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </Link>
             </div>
             <div className="flex flex-col gap-3">
@@ -108,7 +123,13 @@ export default function DashboardPage() {
           {/* Activity feed */}
           <section>
             <Card>
-              <CardHeader title="Activité récente" subtitle="Mises à jour en direct" />
+              <CardHeader
+                title="Activité récente"
+                subtitle="Mises à jour en direct"
+                action={
+                  <span className="live-dot" aria-label="En direct" />
+                }
+              />
               <ActivityFeed />
             </Card>
           </section>

@@ -18,12 +18,15 @@ export function StepMedia({
   setState: (next: MediaState) => void;
 }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-7">
       <div>
-        <h2 className="h-display text-2xl text-ink">Médias et identité visuelle</h2>
-        <p className="text-sm text-muted mt-1">
-          Ajoutez la photo de couverture et le contenu visuel qui apparaîtra sur
-          la page publique de l'événement.
+        <div className="eyebrow text-muted-2 mb-2">Étape 4</div>
+        <h2 className="h-hero text-[28px] text-ink">
+          Médias et identité visuelle
+        </h2>
+        <p className="text-[14px] text-muted mt-2 max-w-xl leading-relaxed">
+          Ajoutez la photo de couverture et le contenu visuel qui apparaîtra
+          sur la page publique de l'événement.
         </p>
       </div>
 
@@ -32,7 +35,7 @@ export function StepMedia({
         <div className="text-xs uppercase tracking-badge text-muted mb-2">
           Photo de couverture * (1080×1350 recommandé)
         </div>
-        <label className="block border border-dashed border-line bg-surface aspect-[4/5] max-w-sm hover:border-ink cursor-pointer">
+        <label className="block border border-dashed border-line-strong/60 rounded-lg bg-surface aspect-[4/5] max-w-sm hover:border-ink hover:bg-bg-soft transition-all duration-150 cursor-pointer">
           <input
             type="file"
             accept="image/*"
@@ -71,7 +74,7 @@ export function StepMedia({
             return (
               <label
                 key={i}
-                className="aspect-square border border-dashed border-line hover:border-ink cursor-pointer flex items-center justify-center text-muted text-xs text-center px-1"
+                className="aspect-square border border-dashed border-line-strong/60 rounded-md hover:border-ink hover:bg-bg-soft transition-all duration-150 cursor-pointer flex items-center justify-center text-muted text-xs text-center px-1"
               >
                 <input
                   type="file"
@@ -177,7 +180,7 @@ export function StepMedia({
             return (
               <label
                 key={i}
-                className="aspect-square border border-dashed border-line hover:border-ink cursor-pointer flex items-center justify-center text-muted text-xs text-center"
+                className="aspect-square border border-dashed border-line-strong/60 rounded-md hover:border-ink hover:bg-bg-soft transition-all duration-150 cursor-pointer flex items-center justify-center text-muted text-xs text-center"
               >
                 <input
                   type="file"

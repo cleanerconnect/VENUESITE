@@ -23,9 +23,9 @@ export default function SettingsPage() {
 
   return (
     <>
-      <TopBar title="Réglages" />
+      <TopBar title="Réglages" eyebrow="Compte" />
       <div className="px-4 md:px-8 py-6 max-w-content mx-auto">
-        <div className="grid lg:grid-cols-[220px_1fr] gap-6">
+        <div className="grid lg:grid-cols-[240px_1fr] gap-8">
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <nav className="flex lg:flex-col gap-1 overflow-x-auto scroll-thin">
               {SECTIONS.map((s) => (
@@ -33,10 +33,10 @@ export default function SettingsPage() {
                   key={s.id}
                   onClick={() => setActive(s.id)}
                   className={[
-                    "text-left text-sm whitespace-nowrap px-3 py-2 transition-colors",
+                    "text-left text-[13px] whitespace-nowrap px-3 h-9 rounded-md transition-colors",
                     active === s.id
-                      ? "bg-ink text-white"
-                      : "text-muted hover:text-ink hover:bg-bg",
+                      ? "bg-ink text-white font-semibold"
+                      : "text-muted hover:text-ink hover:bg-ink/[0.03]",
                   ].join(" ")}
                 >
                   {s.label}
@@ -45,7 +45,7 @@ export default function SettingsPage() {
             </nav>
           </aside>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-5 fade-up">
             {active === "profile" ? <ProfileSection /> : null}
             {active === "venue" ? <VenueSection /> : null}
             {active === "payout" ? <PayoutSection /> : null}
@@ -69,18 +69,26 @@ function ProfileSection() {
       />
       <div className="grid sm:grid-cols-2 gap-4">
         <Input label="Nom" defaultValue="Blend Rooftop" />
-        <Input label="Email de contact" type="email" defaultValue="hello@blend.ma" />
+        <Input
+          label="Email de contact"
+          type="email"
+          defaultValue="hello@blend.ma"
+        />
         <Input label="Téléphone" defaultValue="+212 522 00 00 00" />
         <Input label="Site web" defaultValue="https://blend.ma" />
       </div>
       <div className="mt-4">
-        <Textarea label="Bio" rows={3} defaultValue="Rooftop & club, Casablanca" />
+        <Textarea
+          label="Bio"
+          rows={3}
+          defaultValue="Rooftop & club, Casablanca"
+        />
       </div>
       <div className="mt-4 grid sm:grid-cols-2 gap-4">
         <Input label="Instagram" defaultValue="@blend.casablanca" />
         <Input label="Facebook" defaultValue="blendrooftop" />
       </div>
-      <div className="mt-6">
+      <div className="mt-6 flex justify-end">
         <Button>Enregistrer</Button>
       </div>
     </Card>
@@ -97,11 +105,16 @@ function VenueSection() {
       <div className="grid sm:grid-cols-2 gap-4">
         <Input label="Adresse" defaultValue="Bd de la Corniche" />
         <Input label="Ville" defaultValue="Casablanca" />
-        <Input label="Capacité totale" type="number" defaultValue="420" suffix="pers." />
+        <Input
+          label="Capacité totale"
+          type="number"
+          defaultValue="420"
+          suffix="pers."
+        />
         <Input label="ICE" defaultValue="002384719000045" />
         <Input label="RC" defaultValue="284711" />
       </div>
-      <div className="mt-6">
+      <div className="mt-6 flex justify-end">
         <Button>Enregistrer</Button>
       </div>
     </Card>
@@ -112,7 +125,6 @@ function PayoutSection() {
   const [reauthOpen, setReauthOpen] = useState(false);
   const [rib, setRib] = useState("181 810 0123456789012345 67");
   const [error, setError] = useState<string | undefined>();
-  // RIB Maroc = 24 chiffres (sans espaces).
   const validate = (v: string) => {
     const digits = v.replace(/\D/g, "");
     if (digits.length === 0) setError(undefined);
@@ -209,7 +221,7 @@ function NotificationsSection() {
   return (
     <Card>
       <CardHeader title="Préférences de notifications" />
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <Toggle
           label="Alertes de vente — email"
           description="Un email à chaque achat"
@@ -268,16 +280,31 @@ function LanguageSection() {
             key={l}
             onClick={() => setLang(l)}
             className={[
-              "text-left p-5 border bg-surface transition-colors",
+              "text-left p-5 border bg-surface rounded-md transition-all duration-150",
               lang === l
-                ? "border-ink shadow-card"
+                ? "border-ink shadow-card ring-1 ring-ink/5"
                 : "border-line hover:border-ink/40",
             ].join(" ")}
           >
-            <div className="h-display text-xl text-ink">
-              {l === "fr" ? "Français" : "English"}
+            <div className="flex items-center justify-between">
+              <div className="h-display text-xl text-ink">
+                {l === "fr" ? "Français" : "English"}
+              </div>
+              {lang === l ? (
+                <span className="h-5 w-5 rounded-full bg-ink text-white flex items-center justify-center">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path
+                      d="m2 5 2 2 4-5"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              ) : null}
             </div>
-            <div className="text-xs text-muted mt-1">
+            <div className="text-[12px] text-muted mt-1">
               {l === "fr"
                 ? "Langue par défaut du tableau de bord."
                 : "Toggle the dashboard to English."}
@@ -291,13 +318,13 @@ function LanguageSection() {
 
 function ApiSection() {
   return (
-    <Card>
+    <Card tone="hero">
       <CardHeader
         title="Clés API"
         subtitle="Intégrations en libre-service"
         action={<Badge tone="info">BIENTÔT</Badge>}
       />
-      <p className="text-sm text-muted">
+      <p className="text-[13px] text-muted leading-relaxed">
         L'accès programmatique sera disponible après le MVP. Vous pourrez gérer
         vos clés ici, créer des webhooks et synchroniser vos systèmes.
       </p>
@@ -321,8 +348,10 @@ function DangerSection() {
           subtitle="Actions irréversibles. Procédez avec prudence."
         />
         <div className="border-t border-line pt-4">
-          <h4 className="text-sm font-medium text-ink">Supprimer le compte</h4>
-          <p className="text-sm text-muted mt-1">
+          <h4 className="text-sm font-semibold text-ink">
+            Supprimer le compte
+          </h4>
+          <p className="text-[13px] text-muted mt-1.5 leading-relaxed">
             Toutes les données de l'organisateur seront supprimées. Les
             événements passés et factures restent archivés pour des raisons
             légales (10 ans). Les versements en cours sont menés à terme.

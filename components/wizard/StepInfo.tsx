@@ -37,10 +37,11 @@ export function StepInfo({
     setState({ ...state, [key]: value });
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-7">
       <div>
-        <h2 className="h-display text-2xl text-ink">Informations</h2>
-        <p className="text-sm text-muted mt-1">
+        <div className="eyebrow text-muted-2 mb-2">Étape 1</div>
+        <h2 className="h-hero text-[28px] text-ink">Informations</h2>
+        <p className="text-[14px] text-muted mt-2 max-w-xl leading-relaxed">
           Décrivez votre événement. Tous les champs marqués d'une étoile sont
           obligatoires.
         </p>

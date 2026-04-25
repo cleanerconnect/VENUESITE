@@ -23,6 +23,12 @@ const ROLE_DESCRIPTION: Record<TeamRole, string> = {
   scanner: "Scanner uniquement le jour J",
 };
 
+const ROLE_TONE: Record<TeamRole, "info" | "purple" | "neutral"> = {
+  owner: "info",
+  admin: "purple",
+  scanner: "neutral",
+};
+
 export default function TeamPage() {
   const [members, setMembers] = useState<TeamMember[]>(initialTeam);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -32,7 +38,6 @@ export default function TeamPage() {
   const active = members.filter((m) => !m.pending);
   const pending = members.filter((m) => m.pending);
 
-  // Optimistic invite — appears in pending instantly, real impl awaits 201.
   const sendInvite = () => {
     if (!email.trim()) return;
     setMembers((prev) => [
@@ -55,28 +60,29 @@ export default function TeamPage() {
     <>
       <TopBar
         title="Équipe"
+        eyebrow="Compte"
         action={
           <Button size="sm" onClick={() => setInviteOpen(true)}>
             Inviter
           </Button>
         }
       />
-      <div className="px-4 md:px-8 py-6 max-w-content mx-auto flex flex-col gap-6">
+      <div className="px-4 md:px-8 py-6 max-w-content mx-auto flex flex-col gap-5 fade-up">
         <Card padded={false}>
-          <div className="p-6 border-b border-line">
+          <div className="px-6 pt-6 pb-5 border-b border-line">
             <CardHeader
               title="Membres actifs"
-              subtitle={`${active.length} personne(s) avec accès`}
+              subtitle={`${active.length} personne(s) avec accès à cet espace organisateur`}
             />
           </div>
           <ul className="divide-y divide-line">
             {active.map((m) => (
               <li
                 key={m.id}
-                className="px-6 py-4 flex flex-wrap items-center justify-between gap-3"
+                className="px-6 py-4 flex flex-wrap items-center justify-between gap-3 hover:bg-bg-soft/40 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 bg-ink/5 text-ink text-sm flex items-center justify-center font-medium">
+                  <div className="h-10 w-10 rounded-md bg-gradient-to-br from-ink to-[#2a2a2a] text-white text-xs flex items-center justify-center font-semibold shadow-xs">
                     {m.name
                       .split(" ")
                       .map((n) => n[0])
@@ -85,21 +91,27 @@ export default function TeamPage() {
                       .toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-ink truncate">{m.name}</div>
-                    <div className="text-xs text-muted truncate">{m.email}</div>
+                    <div className="text-ink font-medium truncate">
+                      {m.name}
+                    </div>
+                    <div className="text-[12px] text-muted truncate">
+                      {m.email}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="text-xs text-muted hidden sm:block">
+                  <div className="text-[11px] text-muted-2 hidden sm:block">
                     Vu {formatRelative(m.lastActive)}
                   </div>
-                  <Badge tone="neutral">{ROLE_LABEL[m.role]}</Badge>
+                  <Badge tone={ROLE_TONE[m.role]} withDot>
+                    {ROLE_LABEL[m.role].toUpperCase()}
+                  </Badge>
                   {m.role !== "owner" ? (
                     <button
                       onClick={() =>
                         setMembers((prev) => prev.filter((x) => x.id !== m.id))
                       }
-                      className="text-xs uppercase tracking-badge text-muted hover:text-error"
+                      className="text-[11px] uppercase tracking-badge text-muted hover:text-error transition-colors"
                     >
                       Retirer
                     </button>
@@ -112,8 +124,11 @@ export default function TeamPage() {
 
         {pending.length > 0 ? (
           <Card padded={false}>
-            <div className="p-6 border-b border-line">
-              <CardHeader title="Invitations en attente" />
+            <div className="px-6 pt-6 pb-5 border-b border-line">
+              <CardHeader
+                title="Invitations en attente"
+                subtitle={`${pending.length} en attente d'acceptation`}
+              />
             </div>
             <ul className="divide-y divide-line">
               {pending.map((m) => (
@@ -122,20 +137,20 @@ export default function TeamPage() {
                   className="px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-sm"
                 >
                   <div>
-                    <div className="text-ink">{m.email}</div>
-                    <div className="text-xs text-muted">
+                    <div className="text-ink font-medium">{m.email}</div>
+                    <div className="text-[12px] text-muted mt-0.5">
                       Invité comme {ROLE_LABEL[m.role]}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <button className="text-xs uppercase tracking-badge text-muted hover:text-ink">
+                    <button className="text-[11px] uppercase tracking-badge text-muted hover:text-ink transition-colors">
                       Renvoyer
                     </button>
                     <button
                       onClick={() =>
                         setMembers((prev) => prev.filter((x) => x.id !== m.id))
                       }
-                      className="text-xs uppercase tracking-badge text-muted hover:text-error"
+                      className="text-[11px] uppercase tracking-badge text-muted hover:text-error transition-colors"
                     >
                       Annuler
                     </button>
@@ -147,10 +162,10 @@ export default function TeamPage() {
         ) : null}
 
         <Card padded={false}>
-          <div className="p-6 border-b border-line">
+          <div className="px-6 pt-6 pb-5 border-b border-line">
             <CardHeader
               title="Journal d'audit"
-              subtitle="Historique des actions sensibles (conformité)"
+              subtitle="Historique des actions sensibles · conservé 24 mois"
             />
           </div>
           <ul className="divide-y divide-line">
@@ -161,9 +176,9 @@ export default function TeamPage() {
               >
                 <div>
                   <div className="text-ink">{a.action}</div>
-                  <div className="text-xs text-muted">par {a.actor}</div>
+                  <div className="text-[12px] text-muted">par {a.actor}</div>
                 </div>
-                <div className="text-xs text-muted shrink-0 num">
+                <div className="text-[11px] text-muted-2 shrink-0 num">
                   {formatDateTime(a.at)}
                 </div>
               </li>
@@ -201,12 +216,15 @@ export default function TeamPage() {
             onChange={(e) => setRole(e.target.value as TeamRole)}
             options={[
               { value: "scanner", label: "Scanner — accès porte uniquement" },
-              { value: "admin", label: "Administrateur — accès complet sauf facturation/équipe" },
+              {
+                value: "admin",
+                label: "Administrateur — accès complet sauf facturation/équipe",
+              },
             ]}
           />
-          <p className="text-xs text-muted">
-            {ROLE_DESCRIPTION[role]}. La personne reçoit un email avec un lien
-            d'activation valable 7 jours.
+          <p className="text-[12px] text-muted bg-bg-soft border border-line rounded-md p-3">
+            <strong className="text-ink">{ROLE_DESCRIPTION[role]}.</strong>{" "}
+            La personne reçoit un email avec un lien d'activation valable 7 jours.
           </p>
         </div>
       </Modal>

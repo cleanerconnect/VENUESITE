@@ -22,7 +22,7 @@ export function BottomNav() {
   const pathname = usePathname();
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 bg-surface border-t border-line z-30"
+      className="md:hidden fixed bottom-0 inset-x-0 bg-surface/95 backdrop-blur-md border-t border-line z-30 pb-[env(safe-area-inset-bottom)]"
       aria-label="Navigation principale"
     >
       <ul className="grid grid-cols-5">
@@ -36,12 +36,19 @@ export function BottomNav() {
               <Link
                 href={t.href}
                 className={[
-                  "flex flex-col items-center gap-1 py-2.5 text-[10px] uppercase tracking-badge",
-                  active ? "text-ink" : "text-muted",
+                  "flex flex-col items-center gap-1 py-2.5 text-[10px] transition-colors",
+                  active ? "text-ink" : "text-muted-2",
                 ].join(" ")}
               >
-                <Icon />
-                {t.label}
+                <span
+                  className={[
+                    "h-7 w-12 flex items-center justify-center rounded-full transition-colors",
+                    active ? "bg-ink/5" : "",
+                  ].join(" ")}
+                >
+                  <Icon className={active ? "text-ink" : ""} />
+                </span>
+                <span className={active ? "font-semibold" : ""}>{t.label}</span>
               </Link>
             </li>
           );

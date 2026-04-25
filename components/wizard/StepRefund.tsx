@@ -8,12 +8,16 @@ export function StepRefund({
   onChange: (v: "auto" | "manual") => void;
 }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-7">
       <div>
-        <h2 className="h-display text-2xl text-ink">Politique de remboursement</h2>
-        <p className="text-sm text-muted mt-1">
+        <div className="eyebrow text-muted-2 mb-2">Étape 3</div>
+        <h2 className="h-hero text-[28px] text-ink">
+          Politique de remboursement
+        </h2>
+        <p className="text-[14px] text-muted mt-2 max-w-xl leading-relaxed">
           Choisissez comment les demandes de remboursement sont traitées. Vous
-          pourrez modifier cette politique tant que l'événement n'est pas en vente.
+          pourrez modifier cette politique tant que l'événement n'est pas en
+          vente.
         </p>
       </div>
 
@@ -74,10 +78,10 @@ function PolicyCard({
       onClick={onSelect}
       aria-pressed={active}
       className={[
-        "text-left p-6 border bg-surface transition-colors",
+        "text-left p-6 border rounded-lg bg-surface transition-all duration-200 ease-out-expo",
         active
-          ? "border-ink shadow-card"
-          : "border-line hover:border-ink/40",
+          ? "border-ink shadow-elevated ring-1 ring-ink/5 -translate-y-0.5"
+          : "border-line hover:border-ink/40 hover:-translate-y-0.5 shadow-card",
       ].join(" ")}
     >
       <div className="flex items-center justify-between mb-2">

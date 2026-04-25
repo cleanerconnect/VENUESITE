@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { attendees as allAttendees } from "@/lib/mockData";
 import { formatDate, formatRelative } from "@/lib/format";
-import { IconDownload } from "@/components/layout/icons";
+import { IconDownload, IconSearch } from "@/components/layout/icons";
 
 export function AttendeesTab() {
   const [query, setQuery] = useState("");
@@ -29,10 +29,10 @@ export function AttendeesTab() {
 
   return (
     <Card padded={false}>
-      <div className="p-6 border-b border-line">
+      <div className="px-6 pt-6 pb-5 border-b border-line">
         <CardHeader
           title="Liste des participants"
-          subtitle={`${allAttendees.length} acheteurs au total`}
+          subtitle={`${allAttendees.length} acheteurs au total · ${filtered.length} affichés`}
           action={
             <div className="flex gap-2">
               <Button variant="secondary" size="sm">
@@ -46,14 +46,15 @@ export function AttendeesTab() {
         />
         <div className="grid sm:grid-cols-3 gap-3">
           <Input
-            placeholder="Rechercher (nom, email, téléphone)…"
+            placeholder="Nom, email ou téléphone…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            prefix={<IconSearch />}
           />
           <select
             value={tierFilter}
             onChange={(e) => setTierFilter(e.target.value)}
-            className="h-11 px-3 bg-surface border border-line text-sm focus:outline-none focus:border-ink"
+            className="h-11 px-3 bg-surface border border-line rounded-md text-sm focus:outline-none focus:border-ink focus:shadow-focus transition-all"
           >
             <option value="all">Tous les tarifs</option>
             <option value="t_eb">Early Bird</option>
@@ -63,7 +64,7 @@ export function AttendeesTab() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-11 px-3 bg-surface border border-line text-sm focus:outline-none focus:border-ink"
+            className="h-11 px-3 bg-surface border border-line rounded-md text-sm focus:outline-none focus:border-ink focus:shadow-focus transition-all"
           >
             <option value="all">Tous les statuts QR</option>
             <option value="unused">Non scanné</option>
@@ -75,45 +76,64 @@ export function AttendeesTab() {
 
       <div className="overflow-x-auto scroll-thin">
         <table className="w-full text-sm">
-          <thead className="text-xs uppercase tracking-badge text-muted text-left border-b border-line">
-            <tr>
-              <th className="px-6 py-3">Nom</th>
-              <th className="px-6 py-3">Téléphone</th>
-              <th className="px-6 py-3">Email</th>
-              <th className="px-6 py-3">Tarif</th>
-              <th className="px-6 py-3">Achat</th>
-              <th className="px-6 py-3">Statut QR</th>
+          <thead>
+            <tr className="text-[10px] uppercase tracking-badge text-muted-2 text-left border-b border-line">
+              <th className="px-6 py-3 font-semibold">Nom</th>
+              <th className="px-6 py-3 font-semibold">Téléphone</th>
+              <th className="px-6 py-3 font-semibold">Email</th>
+              <th className="px-6 py-3 font-semibold">Tarif</th>
+              <th className="px-6 py-3 font-semibold">Achat</th>
+              <th className="px-6 py-3 font-semibold">Statut QR</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((a) => (
               <tr
                 key={a.id}
-                className="border-b border-line/60 hover:bg-bg/40 cursor-pointer"
+                className="border-b border-line/60 hover:bg-bg-soft/50 cursor-pointer transition-colors"
               >
-                <td className="px-6 py-3 text-ink">
-                  {a.name}
-                  {a.transferredTo ? (
-                    <div className="text-xs text-muted mt-0.5">
-                      Acheté par {a.originalBuyer} → transféré
+                <td className="px-6 py-3.5 text-ink">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-ink/[0.06] to-ink/[0.12] text-ink text-[10px] flex items-center justify-center font-semibold">
+                      {a.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
                     </div>
-                  ) : null}
+                    <div>
+                      <div className="font-medium">{a.name}</div>
+                      {a.transferredTo ? (
+                        <div className="text-[11px] text-muted mt-0.5">
+                          {a.originalBuyer} → transféré
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
                 </td>
-                <td className="px-6 py-3 text-muted num">{a.phone}</td>
-                <td className="px-6 py-3 text-muted">{a.email}</td>
-                <td className="px-6 py-3 text-ink">{a.tierName}</td>
-                <td className="px-6 py-3 text-muted num">
+                <td className="px-6 py-3.5 text-muted num">{a.phone}</td>
+                <td className="px-6 py-3.5 text-muted">{a.email}</td>
+                <td className="px-6 py-3.5">
+                  <span className="chip">{a.tierName}</span>
+                </td>
+                <td className="px-6 py-3.5 text-muted num">
                   {formatDate(a.purchaseDate)}
                 </td>
-                <td className="px-6 py-3">
+                <td className="px-6 py-3.5">
                   {a.qrStatus === "unused" ? (
-                    <Badge tone="info">À SCANNER</Badge>
+                    <Badge tone="info" withDot>
+                      À SCANNER
+                    </Badge>
                   ) : a.qrStatus === "scanned" ? (
-                    <span className="text-xs text-success">
+                    <span className="inline-flex items-center gap-1.5 text-[12px] text-success font-medium">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="m3 6.5 2 2 4-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
                       Scanné · {formatRelative(a.scannedAt!)}
                     </span>
                   ) : (
-                    <Badge tone="warning">TRANSFÉRÉ</Badge>
+                    <Badge tone="purple" withDot />
                   )}
                 </td>
               </tr>
@@ -122,7 +142,7 @@ export function AttendeesTab() {
               <tr>
                 <td
                   colSpan={6}
-                  className="px-6 py-10 text-center text-sm text-muted"
+                  className="px-6 py-12 text-center text-sm text-muted"
                 >
                   Aucun participant ne correspond à ces filtres.
                 </td>

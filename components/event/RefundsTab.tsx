@@ -22,7 +22,6 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
   const pending = items.filter((r) => r.status === "pending");
   const resolved = items.filter((r) => r.status !== "pending");
 
-  // Optimistic — flip status immediately, real impl rolls back on 4xx/5xx.
   const approve = (id: string) => {
     setItems((prev) =>
       prev.map((r) =>
@@ -47,57 +46,83 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
 
   if (event.refundPolicy === "auto") {
     return (
-      <Card>
+      <Card tone="hero">
         <CardHeader
           title="Remboursements automatiques"
-          subtitle="Les demandes éligibles sont approuvées sans votre intervention. Voici l'historique."
+          subtitle="Les demandes éligibles sont approuvées sans votre intervention."
+          action={<Badge tone="success">ACTIF</Badge>}
         />
-        <p className="text-sm text-muted">
-          Aucune action requise. Politique LYFE : remboursement intégral
-          (valeur faciale + frais de service) si demandé sous 48 h après
-          l'achat ET 7 jours minimum avant l'événement. Les points de fidélité
-          gagnés sur le billet sont automatiquement annulés.
-        </p>
+        <div className="grid sm:grid-cols-3 gap-4 mt-2">
+          <Rule
+            label="Fenêtre de demande"
+            value="48 h après l'achat"
+          />
+          <Rule
+            label="Délai minimum avant événement"
+            value="7 jours"
+          />
+          <Rule
+            label="Points de fidélité"
+            value="Reversés automatiquement"
+          />
+        </div>
       </Card>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <Card padded={false}>
-        <div className="p-6 border-b border-line">
+        <div className="px-6 pt-6 pb-5 border-b border-line">
           <CardHeader
             title="Demandes en attente"
-            subtitle={`${pending.length} à traiter · SLA 48 h`}
+            subtitle={`${pending.length} demande(s) à traiter · SLA 48 h`}
+            action={
+              pending.length > 0 ? (
+                <Badge tone="warning" withDot>
+                  {pending.length} EN ATTENTE
+                </Badge>
+              ) : null
+            }
           />
         </div>
         {pending.length === 0 ? (
-          <p className="px-6 py-10 text-center text-sm text-muted">
+          <p className="px-6 py-12 text-center text-sm text-muted">
             Aucune demande en attente.
           </p>
         ) : (
           <ul className="divide-y divide-line">
             {pending.map((r) => (
-              <li key={r.id} className="p-6 flex flex-col gap-3">
+              <li key={r.id} className="px-6 py-5 flex flex-col gap-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="text-ink font-medium">{r.buyerName}</div>
-                    <div className="text-xs text-muted mt-0.5 num">
-                      {r.tierName} · {formatMad(r.amountMad)} · demandé{" "}
-                      {formatRelative(r.requestedAt)}
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-ink/[0.06] to-ink/[0.12] text-ink text-xs flex items-center justify-center font-semibold">
+                      {r.buyerName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="text-ink font-semibold">{r.buyerName}</div>
+                      <div className="text-[12px] text-muted mt-0.5 num">
+                        {r.tierName} · {formatMad(r.amountMad)} ·{" "}
+                        {formatRelative(r.requestedAt)}
+                      </div>
                     </div>
                   </div>
-                  <Badge tone="warning">
-                    SLA {formatCountdown(r.slaExpiresAt)}
+                  <Badge tone="warning" withDot>
+                    SLA {formatCountdown(r.slaExpiresAt).toUpperCase()}
                   </Badge>
                 </div>
 
-                <p className="text-sm text-ink bg-bg border border-line p-3">
-                  « {r.reason} »
-                </p>
+                <blockquote className="text-[13px] text-ink bg-bg-soft border-l-2 border-ink/20 pl-3 pr-3 py-2 italic">
+                  {r.reason}
+                </blockquote>
 
                 {denyingId === r.id ? (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3 bg-bg-soft p-4 rounded-md">
                     <Textarea
                       label="Motif de refus (visible par le client)"
                       value={denyReason}
@@ -146,12 +171,12 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
       </Card>
 
       <Card padded={false}>
-        <div className="p-6 border-b border-line">
-          <CardHeader title="Historique" />
+        <div className="px-6 pt-6 pb-5 border-b border-line">
+          <CardHeader title="Historique" subtitle="Demandes résolues" />
         </div>
         <ul className="divide-y divide-line">
           {resolved.length === 0 ? (
-            <li className="p-6 text-sm text-muted text-center">
+            <li className="px-6 py-10 text-sm text-muted text-center">
               Aucun remboursement traité pour le moment.
             </li>
           ) : (
@@ -161,13 +186,16 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
                 className="px-6 py-4 flex items-center justify-between gap-3 text-sm"
               >
                 <div>
-                  <div className="text-ink">{r.buyerName}</div>
-                  <div className="text-xs text-muted num">
+                  <div className="text-ink font-medium">{r.buyerName}</div>
+                  <div className="text-[12px] text-muted num mt-0.5">
                     {r.tierName} · {formatMad(r.amountMad)} ·{" "}
                     {formatDateTime(r.resolvedAt!)}
                   </div>
                 </div>
-                <Badge tone={r.status === "approved" ? "success" : "neutral"}>
+                <Badge
+                  tone={r.status === "approved" ? "success" : "neutral"}
+                  withDot
+                >
                   {r.status === "approved" ? "REMBOURSÉ" : "REFUSÉ"}
                 </Badge>
               </li>
@@ -175,6 +203,15 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
           )}
         </ul>
       </Card>
+    </div>
+  );
+}
+
+function Rule({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-surface/70 border border-line rounded-md p-4">
+      <div className="eyebrow text-muted-2">{label}</div>
+      <div className="text-[15px] font-semibold text-ink mt-2">{value}</div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "primary" | "secondary" | "destructive" | "ghost";
+type Variant = "primary" | "secondary" | "destructive" | "ghost" | "gold";
 type Size = "sm" | "md" | "lg";
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,19 +13,23 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT: Record<Variant, string> = {
-  primary: "bg-ink text-white hover:bg-ink/90 disabled:bg-ink/50",
+  // Primary — subtle vertical gradient + soft shadow + bright hover.
+  primary:
+    "bg-gradient-to-b from-[#1a1a1a] to-ink text-white shadow-[0_1px_0_rgba(255,255,255,0.1)_inset,0_1px_2px_rgba(15,15,15,0.25)] hover:from-[#2a2a2a] hover:to-[#1a1a1a] active:translate-y-px disabled:opacity-50",
   secondary:
-    "bg-white text-ink border border-ink hover:bg-ink hover:text-white disabled:opacity-50",
+    "bg-surface text-ink border border-line-strong/60 hover:border-ink hover:bg-bg-soft disabled:opacity-50",
   destructive:
     "bg-error text-white hover:bg-error/90 disabled:opacity-50",
   ghost:
     "bg-transparent text-ink hover:bg-ink/5 disabled:opacity-50",
+  gold:
+    "bg-gradient-to-b from-[#e2b54a] to-[#cc9a2e] text-ink shadow-[0_1px_0_rgba(255,255,255,0.3)_inset,0_2px_6px_rgba(216,168,59,0.3)] hover:brightness-105 active:translate-y-px",
 };
 
 const SIZE: Record<Size, string> = {
-  sm: "h-9 px-3 text-sm",
+  sm: "h-9 px-3.5 text-[13px]",
   md: "h-11 px-5 text-sm",
-  lg: "h-14 px-7 text-base",
+  lg: "h-[52px] px-7 text-[15px]",
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
@@ -45,8 +49,8 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
     <button
       ref={ref}
       className={[
-        "inline-flex items-center justify-center gap-2 rounded font-medium transition",
-        "focus-visible:outline-2 focus-visible:outline-offset-2",
+        "inline-flex items-center justify-center gap-2 rounded-md font-medium",
+        "transition-all duration-150 ease-out-expo",
         VARIANT[variant],
         SIZE[size],
         fullWidth ? "w-full" : "",
@@ -54,9 +58,9 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       ].join(" ")}
       {...rest}
     >
-      {iconLeft}
+      {iconLeft ? <span className="shrink-0 -ml-0.5">{iconLeft}</span> : null}
       {children}
-      {iconRight}
+      {iconRight ? <span className="shrink-0 -mr-0.5">{iconRight}</span> : null}
     </button>
   );
 });
