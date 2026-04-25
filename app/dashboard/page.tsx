@@ -41,7 +41,7 @@ export default function DashboardPage() {
       <div className="px-4 md:px-8 py-6 md:py-8 max-w-content mx-auto">
         <div className="mb-2">
           <p className="text-sm text-muted">Bonsoir Yassine,</p>
-          <h2 className="h-serif text-2xl text-ink mt-1">
+          <h2 className="h-display text-2xl text-ink mt-1">
             Voici ce qu'il se passe sur Blend Rooftop ce soir.
           </h2>
         </div>
@@ -80,7 +80,7 @@ export default function DashboardPage() {
           {/* Upcoming events list */}
           <section className="lg:col-span-2">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="h-serif text-lg text-ink">Événements à venir</h3>
+              <h3 className="h-display text-lg text-ink">Événements à venir</h3>
               <Link
                 href="/events"
                 className="text-xs uppercase tracking-badge text-muted hover:text-ink"

@@ -10,7 +10,7 @@ export function StepRefund({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="h-serif text-2xl text-ink">Politique de remboursement</h2>
+        <h2 className="h-display text-2xl text-ink">Politique de remboursement</h2>
         <p className="text-sm text-muted mt-1">
           Choisissez comment les demandes de remboursement sont traitées. Vous
           pourrez modifier cette politique tant que l'événement n'est pas en vente.
@@ -92,7 +92,7 @@ function PolicyCard({
           aria-hidden="true"
         />
       </div>
-      <h3 className="h-serif text-xl text-ink">{title}</h3>
+      <h3 className="h-display text-xl text-ink">{title}</h3>
       <p className="text-sm text-muted mt-2">{description}</p>
       <ul className="mt-4 space-y-1.5 text-sm text-ink">
         {bullets.map((b) => (

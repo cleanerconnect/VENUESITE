@@ -149,7 +149,7 @@ export function Wordmark({
       className={`inline-flex items-baseline ${className}`}
       style={{
         fontFamily:
-          'Inter, ui-sans-serif, system-ui, sans-serif',
+          '"Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif',
         fontWeight: 800,
         fontSize: size,
         lineHeight: 1,

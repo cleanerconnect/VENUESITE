@@ -44,7 +44,7 @@ export function StepTiers({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="h-serif text-2xl text-ink">Tarifs</h2>
+        <h2 className="h-display text-2xl text-ink">Tarifs</h2>
         <p className="text-sm text-muted mt-1">
           Définissez vos catégories de billets. Vous recevez la valeur faciale
           intégrale — les frais de service sont visibles et payés par le client.

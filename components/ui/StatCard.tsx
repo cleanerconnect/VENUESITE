@@ -34,7 +34,7 @@ export function StatCard({
     >
       <div className="text-xs uppercase tracking-badge text-muted">{label}</div>
       <div className="mt-3 flex items-end justify-between gap-3">
-        <div className="text-3xl h-serif text-ink">{value}</div>
+        <div className="text-3xl h-display text-ink">{value}</div>
         {children}
       </div>
       {trend ? (

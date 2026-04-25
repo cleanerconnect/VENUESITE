@@ -14,7 +14,7 @@ export function EventListItem({ event }: { event: LyfeEvent }) {
     >
       <div className="flex flex-wrap items-start gap-3 justify-between">
         <div className="min-w-0">
-          <div className="h-serif text-lg text-ink truncate">{event.name}</div>
+          <div className="h-display text-lg text-ink truncate">{event.name}</div>
           <div className="text-xs text-muted mt-0.5">
             {formatDateTime(event.startsAt)} · {event.venue.name}, {event.venue.city}
           </div>

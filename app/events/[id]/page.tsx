@@ -56,7 +56,7 @@ export default function EventDetailPage() {
                   {event.category.replace("_", " ")}
                 </span>
               </div>
-              <h2 className="h-serif text-2xl md:text-3xl text-ink mt-2">
+              <h2 className="h-display text-2xl md:text-3xl text-ink mt-2">
                 {event.name}
               </h2>
               <div className="text-sm text-muted mt-1">
@@ -113,7 +113,7 @@ function KeyStat({ label, value }: { label: string; value: string }) {
       <div className="text-[10px] uppercase tracking-badge text-muted">
         {label}
       </div>
-      <div className="h-serif text-xl text-ink mt-1">{value}</div>
+      <div className="h-display text-xl text-ink mt-1">{value}</div>
     </div>
   );
 }

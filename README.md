@@ -61,7 +61,8 @@ directly from the LYFE wordmark:
 - `royal` / `info` `#253E86` (royal-blue dot — pending status, chart line)
 - `bg` `#FAF7F0` (warm off-white surface)
 - `success` / `warning` / `error` semantic colors
-- Fraunces (serif) for headings, Inter for body, `font-feature-settings: tnum`
+- Plus Jakarta Sans for everything (body 400/500/600, display headings 700
+  with -0.02em tracking via `.h-display`), `font-feature-settings: tnum`
   on every numeric class
 - Borders 1px `#E0DAC7`, subtle `0 1px 2px rgba(0,0,0,0.04)` shadow on cards
 - No `rounded-2xl`, no gradients, no emoji

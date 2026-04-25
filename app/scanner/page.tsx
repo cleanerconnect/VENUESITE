@@ -32,7 +32,7 @@ export default function ScannerHubPage() {
                 href={`/events/${e.id}`}
                 className="block bg-surface border border-line shadow-card p-5 hover:border-ink transition-colors"
               >
-                <div className="h-serif text-lg text-ink">{e.name}</div>
+                <div className="h-display text-lg text-ink">{e.name}</div>
                 <div className="text-xs text-muted mt-0.5">
                   {formatDateTime(e.startsAt)} · {e.venue.name}
                 </div>

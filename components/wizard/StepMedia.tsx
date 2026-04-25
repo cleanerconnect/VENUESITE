@@ -20,7 +20,7 @@ export function StepMedia({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="h-serif text-2xl text-ink">Médias et identité visuelle</h2>
+        <h2 className="h-display text-2xl text-ink">Médias et identité visuelle</h2>
         <p className="text-sm text-muted mt-1">
           Ajoutez la photo de couverture et le contenu visuel qui apparaîtra sur
           la page publique de l'événement.
@@ -52,7 +52,7 @@ export function StepMedia({
               </>
             ) : (
               <>
-                <span className="h-serif text-lg text-ink">Glisser-déposer</span>
+                <span className="h-display text-lg text-ink">Glisser-déposer</span>
                 <span className="mt-1">ou cliquer pour choisir un fichier</span>
               </>
             )}

@@ -40,7 +40,7 @@ export function Modal({
       />
       <div className="relative bg-surface border border-line shadow-card max-w-lg w-full">
         <div className="flex items-center justify-between p-5 border-b border-line">
-          <h3 className="h-serif text-lg text-ink">{title}</h3>
+          <h3 className="h-display text-lg text-ink">{title}</h3>
           <button
             onClick={onClose}
             className="text-muted hover:text-ink text-xl leading-none"

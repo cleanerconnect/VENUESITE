@@ -274,7 +274,7 @@ function LanguageSection() {
                 : "border-line hover:border-ink/40",
             ].join(" ")}
           >
-            <div className="h-serif text-xl text-ink">
+            <div className="h-display text-xl text-ink">
               {l === "fr" ? "Français" : "English"}
             </div>
             <div className="text-xs text-muted mt-1">

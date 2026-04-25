@@ -37,7 +37,7 @@ export function WizardLayout({
               <div className="text-[10px] uppercase tracking-badge text-muted">
                 Création d'événement
               </div>
-              <div className="h-serif text-base text-ink leading-none mt-0.5">
+              <div className="h-display text-base text-ink leading-none mt-0.5">
                 Étape {step} sur 5 — {STEPS[step - 1]}
               </div>
             </div>

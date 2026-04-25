@@ -169,7 +169,7 @@ function NextPayoutCard({ payout }: { payout: Payout }) {
           <div className="text-[10px] uppercase tracking-badge text-muted">
             Prochain versement
           </div>
-          <div className="h-serif text-4xl text-ink mt-2 num">
+          <div className="h-display text-4xl text-ink mt-2 num">
             {formatMad(payout.amountMad)}
           </div>
           <div className="text-sm text-muted mt-1 num">

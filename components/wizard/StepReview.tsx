@@ -23,7 +23,7 @@ export function StepReview({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="h-serif text-2xl text-ink">Vérification finale</h2>
+        <h2 className="h-display text-2xl text-ink">Vérification finale</h2>
         <p className="text-sm text-muted mt-1">
           Relisez attentivement. Une fois soumis, l'événement passe en
           modération sous 24 h.
@@ -122,7 +122,7 @@ function Section({
   return (
     <div className="bg-surface border border-line shadow-card">
       <div className="flex items-center justify-between px-5 py-3 border-b border-line">
-        <h3 className="h-serif text-base text-ink">{title}</h3>
+        <h3 className="h-display text-base text-ink">{title}</h3>
         <button
           onClick={onEdit}
           className="text-xs uppercase tracking-badge text-muted hover:text-ink"

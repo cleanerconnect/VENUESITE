@@ -58,7 +58,7 @@ export function PromoteTab({ event }: { event: LyfeEvent }) {
           <div className="text-[10px] uppercase tracking-badge text-gold">
             LYFE · {event.venue.city}
           </div>
-          <div className="h-serif text-xl text-ink mt-1 leading-tight">
+          <div className="h-display text-xl text-ink mt-1 leading-tight">
             {event.name}
           </div>
         </div>

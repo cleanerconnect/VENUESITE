@@ -29,7 +29,7 @@ export function ScannerTab() {
             <div className="text-[10px] uppercase tracking-badge text-muted">
               Avancement des scans
             </div>
-            <div className="h-serif text-3xl text-ink mt-1">
+            <div className="h-display text-3xl text-ink mt-1">
               {scanned} / {total}
             </div>
             <div className="mt-2 max-w-xs">

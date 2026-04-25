@@ -28,7 +28,7 @@ export function TopBar({
             </button>
           ) : null}
           {title ? (
-            <h1 className="h-serif text-base md:text-lg text-ink truncate">
+            <h1 className="h-display text-base md:text-lg text-ink truncate">
               {title}
             </h1>
           ) : null}

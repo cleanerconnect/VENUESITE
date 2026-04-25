@@ -166,7 +166,7 @@ export default function MyEventsPage() {
 
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="h-serif text-lg text-ink truncate">
+                        <h3 className="h-display text-lg text-ink truncate">
                           {event.name}
                         </h3>
                         <StatusBadge status={event.status} />

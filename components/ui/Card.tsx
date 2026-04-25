@@ -37,7 +37,7 @@ export function CardHeader({
   return (
     <div className="flex items-start justify-between mb-4">
       <div>
-        <h3 className="h-serif text-lg text-ink">{title}</h3>
+        <h3 className="h-display text-lg text-ink">{title}</h3>
         {subtitle ? (
           <p className="text-sm text-muted mt-1">{subtitle}</p>
         ) : null}
