@@ -19,9 +19,21 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://lyfe.ma",
+  ),
   title: "LYFE — Espace Organisateur",
   description:
     "Tableau de bord LYFE : pilotez vos événements, vos billets et vos versements en temps réel.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
+  openGraph: {
+    title: "LYFE — Espace Organisateur",
+    description:
+      "Pilotez vos événements, vos billets et vos versements en temps réel.",
+    images: ["/lyfe-logo.svg"],
+  },
 };
 
 export default function RootLayout({

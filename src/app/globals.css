@@ -16,9 +16,16 @@
   --color-gold-deep: #a8852e;
   --color-gold-soft: #f2e9cd;
 
-  /* Surfaces */
-  --color-canvas: #faf7f0;
-  --color-canvas-2: #f4efe3;
+  /* Violet — third brand colour, used for AI surfaces and the
+     "transferred ticket" status. Sparingly. Never decoration. */
+  --color-violet: #6b4ea8;
+  --color-violet-deep: #553a8a;
+  --color-violet-soft: #e8e0f2;
+
+  /* Surfaces — cooled a quarter-turn so the warm yellow-cream doesn't
+     fight cool navy + violet on the same screen. */
+  --color-canvas: #f6f4ee;
+  --color-canvas-2: #efebe0;
   --color-surface: #ffffff;
   --color-surface-ink: #0a1f3d;
 

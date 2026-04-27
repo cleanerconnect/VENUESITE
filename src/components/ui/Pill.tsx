@@ -11,6 +11,7 @@ type Tone =
   | "past"
   | "rejected"
   | "info"
+  | "violet"
   | "success"
   | "warning"
   | "danger"
@@ -28,6 +29,7 @@ const STYLES: Record<Tone, Style> = {
   past: { bg: "rgba(107,118,137,0.08)", text: "var(--color-ink-mute)" },
   rejected: { bg: "rgba(161,44,44,0.10)", text: "var(--color-danger)" },
   info: { bg: "rgba(31,78,121,0.10)", text: "var(--color-info)" },
+  violet: { bg: "rgba(107,78,168,0.12)", text: "var(--color-violet-deep)" },
   success: { bg: "rgba(47,107,61,0.10)", text: "var(--color-success)" },
   warning: { bg: "rgba(140,90,27,0.12)", text: "var(--color-warning)" },
   danger: { bg: "rgba(161,44,44,0.10)", text: "var(--color-danger)" },

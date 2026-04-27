@@ -3,13 +3,18 @@
 import { useEffect, useRef } from "react";
 import { animate, useInView } from "motion/react";
 
-// Animates a numeric value in/out — used by the hero stats and KPI tiles.
-// Plays a single time when the element scrolls into view, then jumps when
-// the prop changes (e.g. real-time sale updates).
+const defaultFormat = (n: number) =>
+  Math.round(n).toLocaleString("fr-FR").replace(/,/g, " ");
+
+// Animated count-up. Critical detail: the DOM node renders format(value)
+// as initial text — so SSR, no-JS, and pre-hydration all show the real
+// number. The animation overwrites it via textContent only once the ref
+// is mounted AND the element is in view. Animating motion.span's transform
+// would not help because textContent is what's read here.
 export function AnimatedNumber({
   value,
-  format = (n) => Math.round(n).toLocaleString("fr-FR").replace(/,/g, " "),
-  duration = 1.0,
+  format = defaultFormat,
+  duration = 1.2,
   className,
 }: {
   value: number;
@@ -18,26 +23,24 @@ export function AnimatedNumber({
   className?: string;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "0px" });
-  const previous = useRef(0);
+  const inView = useInView(ref, { once: true });
 
   useEffect(() => {
-    if (!inView || !ref.current) return;
+    if (!ref.current || !inView) return;
     const node = ref.current;
-    const controls = animate(previous.current, value, {
+    const controls = animate(0, value, {
       duration,
       ease: [0.22, 1, 0.36, 1],
-      onUpdate: (latest) => {
+      onUpdate(latest) {
         node.textContent = format(latest);
       },
     });
-    previous.current = value;
     return () => controls.stop();
-  }, [inView, value, duration, format]);
+  }, [value, inView, duration, format]);
 
   return (
     <span ref={ref} className={className}>
-      {format(0)}
+      {format(value)}
     </span>
   );
 }

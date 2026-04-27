@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 56" fill="none" aria-label="LYFE">
+  <!-- l -->
+  <path d="M6 4 H14 V44 H6 Z" fill="#FFFFFF"/>
+
+  <!-- y - gold descender + slant -->
+  <path d="M22 16 L34 44 L34 52 L26 52 L14 16 Z" fill="#D8A83B"/>
+
+  <!-- y - purple right slant -->
+  <path d="M44 16 L34 36 L30 36 L40 16 Z" fill="#B388D6"/>
+
+  <!-- f -->
+  <path d="M70 16 H82 V22 H74 V44 H66 V22 H60 V16 H66 V13 C66 7 70 4 76 4 H82 V10 H78 C75.5 10 74 11.5 74 14 V16 Z" fill="#FFFFFF"/>
+
+  <!-- e -->
+  <path d="M104 30 C104 22 98 16 90 16 C82 16 76 22 76 30 C76 38 82 44 90 44 C95 44 99 41.5 102 38 L97 33.5 C95.5 35.5 93 37 90 37 C86 37 83.5 35 82.5 32 H104 V30 Z M82.5 27 C83.5 24 86 22 90 22 C94 22 96.5 24 97.5 27 H82.5 Z" fill="#FFFFFF"/>
+
+  <!-- royal blue dot - kept brand even on white surface -->
+  <rect x="148" y="38" width="10" height="10" fill="#5C7BC8"/>
+</svg>

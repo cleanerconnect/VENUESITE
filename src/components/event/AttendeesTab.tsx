@@ -151,7 +151,9 @@ export function AttendeesTab() {
                       Scanné · {formatRelativeFR(a.scannedAt!)}
                     </span>
                   ) : (
-                    <Pill tone="info">Transféré</Pill>
+                    <Pill tone="violet" dot>
+                      Transféré
+                    </Pill>
                   )}
                 </td>
               </tr>

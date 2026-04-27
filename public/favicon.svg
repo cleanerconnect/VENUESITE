@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect x="2" y="2" width="28" height="28" rx="6" fill="#0F0F0F"/>
+  <!-- compact y mark -->
+  <path d="M9 9 L15 21 V25 H12 L6 9 Z" fill="#D8A83B"/>
+  <path d="M19 9 L15 17 H13 L18 9 Z" fill="#865BA6"/>
+  <rect x="22" y="22" width="6" height="6" fill="#253E86"/>
+</svg>
