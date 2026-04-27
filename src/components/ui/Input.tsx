@@ -5,7 +5,7 @@ import type { InputHTMLAttributes } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils/cn";
 
-// Floating-label input — label animates up on focus / when the field has
+// Floating-label input, label animates up on focus / when the field has
 // content. 48px tall, white surface, gold focus ring.
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, "prefix"> {
   label: string;

@@ -19,7 +19,7 @@ const ITEMS = [
   },
 ];
 
-// Mobile-only "Plus" sheet — Team / Settings / Logout.
+// Mobile-only "Plus" sheet, Team / Settings / Logout.
 export default function MorePage() {
   return (
     <div className="space-y-5">

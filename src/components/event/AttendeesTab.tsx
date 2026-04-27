@@ -147,7 +147,7 @@ export function AttendeesTab() {
                   {a.qrStatus === "unused" ? (
                     <Pill tone="neutral">Non utilisé</Pill>
                   ) : a.qrStatus === "scanned" ? (
-                    <span className="text-[12px] font-semibold text-gold-deep num">
+                    <span className="text-[12px] font-semibold text-violet-deep num">
                       Scanné · {formatRelativeFR(a.scannedAt!)}
                     </span>
                   ) : (

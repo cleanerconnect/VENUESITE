@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { childFade, pageStagger } from "@/lib/utils/motion";
 
 // Wraps a region in the cinematic page-mount stagger. Direct children get
-// the childFade variant. Use sparingly — only on first-paint layouts.
+// the childFade variant. Use sparingly, only on first-paint layouts.
 export function Stagger({
   children,
   className,

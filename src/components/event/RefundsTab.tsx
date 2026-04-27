@@ -42,7 +42,7 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
   const pending = items.filter((r) => r.status === "pending");
   const resolved = items.filter((r) => r.status !== "pending");
 
-  // Optimistic — flip immediately, toast confirms with undo.
+  // Optimistic, flip immediately, toast confirms with undo.
   const approve = (req: RefundRequest) => {
     const before = items;
     setItems((prev) =>
@@ -164,13 +164,13 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
                             tone === "danger"
                               ? "rgba(161,44,44,0.12)"
                               : tone === "warning"
-                                ? "rgba(201,166,76,0.16)"
+                                ? "rgba(134,91,166,0.16)"
                                 : "rgba(10,31,61,0.06)",
                           color:
                             tone === "danger"
                               ? "var(--color-danger)"
                               : tone === "warning"
-                                ? "var(--color-gold-deep)"
+                                ? "var(--color-violet-deep)"
                                 : "var(--color-ink)",
                         }}
                       >

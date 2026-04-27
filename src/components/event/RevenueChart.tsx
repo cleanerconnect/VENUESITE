@@ -15,7 +15,7 @@ import { formatMAD } from "@/lib/utils/format";
 import type { RevenuePoint } from "@/lib/types/domain";
 
 // Recharts area chart with the gold area gradient + ink stroke. Custom
-// tooltip — white card with gold accent left border.
+// tooltip, white card with gold accent left border.
 export function RevenueChart({ data }: { data: RevenuePoint[] }) {
   return (
     <div className="w-full h-[260px]">
@@ -26,12 +26,12 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
         >
           <defs>
             <linearGradient id="revenueArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#C9A64C" stopOpacity={0.32} />
-              <stop offset="100%" stopColor="#C9A64C" stopOpacity={0} />
+              <stop offset="0%" stopColor="#865BA6" stopOpacity={0.32} />
+              <stop offset="100%" stopColor="#865BA6" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid
-            stroke="#E8DFC9"
+            stroke="#E8E2EE"
             strokeDasharray="2 4"
             vertical={false}
           />
@@ -55,12 +55,12 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
             tickLine={false}
           />
           <Tooltip
-            cursor={{ stroke: "#C9A64C", strokeWidth: 1, strokeDasharray: "4 4" }}
+            cursor={{ stroke: "#865BA6", strokeWidth: 1, strokeDasharray: "4 4" }}
             content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;
               const v = Number(payload[0]?.value ?? 0);
               return (
-                <div className="bg-surface border-l-2 border-gold border border-line rounded-[var(--radius-sm)] shadow-soft px-3 py-2 num">
+                <div className="bg-surface border-l-2 border-violet border border-line rounded-[var(--radius-sm)] shadow-soft px-3 py-2 num">
                   <div className="text-eyebrow text-ink-mute">
                     {format(new Date(String(label)), "d MMM yyyy", { locale: fr })}
                   </div>
@@ -74,10 +74,10 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
           <Area
             type="monotone"
             dataKey="amount"
-            stroke="#0A1F3D"
+            stroke="#865BA6"
             strokeWidth={1.8}
             fill="url(#revenueArea)"
-            activeDot={{ r: 5, fill: "#0A1F3D", stroke: "#C9A64C", strokeWidth: 2 }}
+            activeDot={{ r: 5, fill: "#865BA6", stroke: "#FFFFFF", strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>

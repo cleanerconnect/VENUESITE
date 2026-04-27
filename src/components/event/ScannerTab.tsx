@@ -101,9 +101,9 @@ export function ScannerTab() {
           </Button>
           <div
             className="mt-4 flex items-start gap-2.5 p-3 rounded-[var(--radius-sm)]"
-            style={{ background: "rgba(201,166,76,0.10)" }}
+            style={{ background: "rgba(134,91,166,0.10)" }}
           >
-            <Sparkles size={14} className="text-gold-deep mt-0.5 shrink-0" />
+            <Sparkles size={14} className="text-violet-deep mt-0.5 shrink-0" />
             <div className="text-meta text-ink-soft leading-relaxed">
               Les doublons sont gérés côté serveur. Tout staff scannant le
               même code reçoit une alerte sonore.
@@ -165,7 +165,7 @@ export function ScannerTab() {
       <Dialog
         open={open}
         onOpenChange={setOpen}
-        title="Scanner — caméra"
+        title="Scanner, caméra"
         size="lg"
       >
         <div className="aspect-square bg-ink rounded-[var(--radius-md)] relative overflow-hidden flex items-center justify-center">
@@ -177,7 +177,7 @@ export function ScannerTab() {
             <Bracket position="bottom-right" />
             {/* Sweeping line */}
             <motion.div
-              className="absolute left-2 right-2 h-px bg-gold"
+              className="absolute left-2 right-2 h-px bg-violet"
               initial={{ top: "0%", opacity: 0.8 }}
               animate={{ top: "100%", opacity: [0.8, 1, 0.8] }}
               transition={{
@@ -216,7 +216,7 @@ function Bracket({
   return (
     <span
       aria-hidden
-      className={`absolute h-7 w-7 border-gold ${map[position]}`}
+      className={`absolute h-7 w-7 border-violet ${map[position]}`}
       style={{
         borderTopLeftRadius: position === "top-left" ? "8px" : 0,
         borderTopRightRadius: position === "top-right" ? "8px" : 0,

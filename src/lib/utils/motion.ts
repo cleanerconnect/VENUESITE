@@ -6,7 +6,7 @@ export const fast: Transition = { duration: 0.18, ease };
 export const med: Transition = { duration: 0.32, ease };
 export const slow: Transition = { duration: 0.48, ease };
 
-// Page-mount stagger — used by the Overview cinematic first paint.
+// Page-mount stagger, used by the Overview cinematic first paint.
 // Children fade up 8px with 40ms stagger.
 export const pageStagger: Variants = {
   hidden: {},

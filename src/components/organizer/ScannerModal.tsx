@@ -20,7 +20,7 @@ import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { useToast } from "@/components/ui/Toast";
 import { formatDateTimeFR, formatRelativeFR } from "@/lib/utils/format";
 
-// Global scanner — opens from the topbar pill, the bottom-tab raised FAB,
+// Global scanner, opens from the topbar pill, the bottom-tab raised FAB,
 // and ⌘+Shift+S. Two screens inside: event picker (if multi-live), then
 // scanner view. State persists across opens so reopening goes straight
 // back into scan mode.
@@ -69,7 +69,7 @@ export function ScannerModal() {
     registerScan();
     toast({
       tone: "success",
-      title: `Billet vérifié — ${manualCode.toUpperCase()}`,
+      title: `Billet vérifié, ${manualCode.toUpperCase()}`,
       description: "Entrée enregistrée.",
     });
     setManualCode("");
@@ -196,7 +196,7 @@ function EventPicker({
           >
             <div
               aria-hidden
-              className="h-12 w-12 rounded-[12px] bg-gradient-to-br from-tint-sand to-gold-soft flex items-center justify-center shrink-0"
+              className="h-12 w-12 rounded-[12px] bg-gradient-to-br from-tint-sand to-violet-soft flex items-center justify-center shrink-0"
             >
               <ScanLine size={18} strokeWidth={1.8} className="text-ink-soft" />
             </div>
@@ -361,7 +361,7 @@ function CameraViewport() {
         <Bracket position="bottom-left" />
         <Bracket position="bottom-right" />
         <motion.div
-          className="absolute left-2 right-2 h-px bg-gold"
+          className="absolute left-2 right-2 h-px bg-violet"
           initial={{ top: "0%" }}
           animate={{ top: "100%" }}
           transition={{
@@ -417,7 +417,7 @@ function Bracket({
   return (
     <span
       aria-hidden
-      className={`absolute h-6 w-6 border-gold ${map[position]}`}
+      className={`absolute h-6 w-6 border-violet ${map[position]}`}
     />
   );
 }

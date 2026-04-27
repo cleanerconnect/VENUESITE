@@ -1,4 +1,4 @@
-// Reusable "live" indicator — gold dot with pulse halo. CSS-driven so it
+// Reusable "live" indicator, gold dot with pulse halo. CSS-driven so it
 // keeps animating even after route transitions.
 export function LivePulse({ label }: { label?: string }) {
   return (

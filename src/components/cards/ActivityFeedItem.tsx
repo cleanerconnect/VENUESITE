@@ -18,7 +18,7 @@ const COLOR: Record<ActivityItem["type"], string> = {
   transfer: "var(--color-violet)",
   refund: "var(--color-warning)",
   scan: "var(--color-ink)",
-  moderation: "var(--color-gold-deep)",
+  moderation: "var(--color-violet-deep)",
 };
 
 const NOW = new Date("2026-04-25T19:30:00+01:00").getTime();

@@ -7,7 +7,7 @@ import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { formatDateTimeFR } from "@/lib/utils/format";
 import type { OverviewData } from "@/lib/types/domain";
 
-// Headline event card — single per screen. Two modes:
+// Headline event card, single per screen. Two modes:
 // - "live": tonight's event with live capacity ring + revenue counter
 // - "preparing": festival-scale event, J-N countdown, phase progression
 //   ring, consolidated revenue + phase sales counter
@@ -33,10 +33,10 @@ function PreparingHero({
           <div className="inline-flex items-center gap-2">
             <span
               aria-hidden
-              className="h-1.5 w-1.5 rounded-full bg-gold"
+              className="h-1.5 w-1.5 rounded-full bg-violet"
             />
             <span className="text-eyebrow text-canvas/65">
-              EN PRÉPARATION · J−{data.daysUntil}
+              EN PRÉPARATION · J-{data.daysUntil}
             </span>
           </div>
           <h2 className="text-h2 text-canvas mt-3 max-w-xs">
@@ -72,7 +72,7 @@ function PreparingHero({
           <div className="text-eyebrow text-canvas/55">
             {data.consolidatedRevenueLabel}
           </div>
-          <div className="text-h1 text-gold mt-2 num">
+          <div className="text-h1 text-violet mt-2 num">
             <AnimatedNumber value={data.consolidatedRevenueMad} />
             <span className="text-canvas/70 text-h3 font-semibold ml-1.5">
               MAD
@@ -127,7 +127,7 @@ function LiveHero({
       <div className="grid grid-cols-2 gap-x-8 gap-y-3 mt-7 pt-6 border-t border-canvas/10">
         <div>
           <div className="text-eyebrow text-canvas/55">Encaissé ce soir</div>
-          <div className="text-h1 text-gold mt-2 num">
+          <div className="text-h1 text-violet mt-2 num">
             <AnimatedNumber value={data.revenueMad} />
             <span className="text-canvas/70 text-h3 font-semibold ml-1.5">
               MAD

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils/cn";
 import type { HTMLAttributes, ReactNode } from "react";
 
-// Bento card system — variants paint distinct surface treatments so a screen
+// Bento card system, variants paint distinct surface treatments so a screen
 // can compose tinted, white, and dark cards side-by-side without looking
 // like a uniform shadcn stack.
 export type CardVariant =
@@ -13,7 +13,7 @@ export type CardVariant =
   | "rose"
   | "peach"
   | "gold-soft"
-  | "violet-soft" // AI surfaces only — never decoration
+  | "violet-soft" // AI surfaces only, never decoration
   | "canvas-2"; // sidebar/footer surface
 
 export type CardSize = "sm" | "md" | "lg" | "hero";
@@ -26,7 +26,7 @@ const VARIANT: Record<CardVariant, string> = {
   sage: "bg-tint-sage",
   rose: "bg-tint-rose",
   peach: "bg-tint-peach",
-  "gold-soft": "bg-gold-soft",
+  "gold-soft": "bg-violet-soft",
   "violet-soft": "bg-violet-soft",
   "canvas-2": "bg-canvas-2 border border-line-soft",
 };
@@ -65,22 +65,22 @@ export function Card({
     >
       {glow ? (
         <>
-          {/* Gold radial glow — top right */}
+          {/* Violet radial glow, top right */}
           <div
             aria-hidden
             className="pointer-events-none absolute -top-32 -right-24 w-96 h-96 rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(201,166,76,0.32), transparent 70%)",
+                "radial-gradient(circle, rgba(134,91,166,0.34), transparent 70%)",
             }}
           />
-          {/* Cool secondary glow — bottom right */}
+          {/* Lighter secondary glow, bottom right */}
           <div
             aria-hidden
             className="pointer-events-none absolute -bottom-16 right-20 w-56 h-56 rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(220,232,242,0.18), transparent 70%)",
+                "radial-gradient(circle, rgba(134,91,166,0.14), transparent 70%)",
             }}
           />
         </>

@@ -69,7 +69,7 @@ export default function EventsPage() {
         <div>
           <h1 className="text-h1 text-ink">Mes événements</h1>
           <p className="text-body text-ink-soft mt-1.5">
-            Ce que vous organisez — passés, en cours, à venir.
+            Ce que vous organisez, passés, en cours, à venir.
           </p>
         </div>
         <Link href="/events/new" className="hidden md:block">
@@ -115,7 +115,7 @@ export default function EventsPage() {
         </select>
       </div>
 
-      {/* === Filter tabs (segmented control with sliding gold underline) === */}
+      {/* === Filter tabs (segmented control with sliding violet underline) === */}
       <div className="border-b border-line-soft overflow-x-auto scroll-thin">
         <div className="flex gap-1 min-w-max">
           {FILTERS.map((f) => {
@@ -141,7 +141,7 @@ export default function EventsPage() {
                 {active ? (
                   <motion.span
                     layoutId="events-filter-underline"
-                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-gold rounded-full"
+                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-violet rounded-full"
                     transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                   />
                 ) : null}
@@ -200,7 +200,7 @@ function RejectedRow({ event }: { event: LyfeEvent }) {
         </p>
         <Link
           href={`/events/${event.id}`}
-          className="inline-flex items-center gap-1 text-meta font-bold uppercase tracking-[0.08em] text-gold-deep hover:text-ink mt-2 transition-colors"
+          className="inline-flex items-center gap-1 text-meta font-bold uppercase tracking-[0.08em] text-violet-deep hover:text-ink mt-2 transition-colors"
         >
           Corriger & resoumettre
           <ChevronRight size={12} strokeWidth={2} />

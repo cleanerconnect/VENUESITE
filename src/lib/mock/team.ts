@@ -1,4 +1,4 @@
-// Team members + audit log for /team — Jazzablanca demo.
+// Team members + audit log for /team, Jazzablanca demo.
 
 import type { AuditEntry, TeamMember } from "@/lib/types/domain";
 
@@ -62,7 +62,7 @@ export function getAuditLog(): AuditEntry[] {
     {
       id: "au_4",
       actor: "Imane Cherkaoui",
-      action: "A publié Pass Week-End 2 — Jorja Smith",
+      action: "A publié Pass Week-End 2, Jorja Smith",
       at: offsetMin(60 * 8),
     },
   ];

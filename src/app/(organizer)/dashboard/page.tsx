@@ -44,7 +44,7 @@ export default function DashboardPage() {
                   >
                     Bonsoir, {data.organizer.firstName}.{" "}
                     <span
-                      className="font-serif-italic text-gold-deep"
+                      className="font-serif-italic text-violet-deep"
                       style={{ fontFamily: "var(--font-serif)" }}
                     >
                       {data.organizer.greetingClause}
@@ -64,7 +64,7 @@ export default function DashboardPage() {
                   </Link>
                   <Link
                     href="/events"
-                    className="inline-flex items-center gap-2 h-10 px-4 text-[13px] font-semibold text-ink hover:text-gold-deep transition-colors"
+                    className="inline-flex items-center gap-2 h-10 px-4 text-[13px] font-semibold text-ink hover:text-violet-deep transition-colors"
                   >
                     Voir tous les événements →
                   </Link>
@@ -72,11 +72,11 @@ export default function DashboardPage() {
               </div>
             </Card>
 
-            {/* AI nudge — moved out of Tonight, lives here on desktop. */}
+            {/* AI nudge, moved out of Tonight, lives here on desktop. */}
             <AINudgeCard />
           </div>
 
-          {/* Dark headline hero — switches between live + preparing modes */}
+          {/* Dark headline hero, switches between live + preparing modes */}
           <HeroTonight data={data.headline} />
         </div>
       </StaggerItem>
@@ -122,7 +122,7 @@ export default function DashboardPage() {
             }}
           />
 
-          {/* Upcoming events count — pulled to white per direction review:
+          {/* Upcoming events count, pulled to white per direction review:
               the bento should bookend money/emotion (sand + sage) with calm
               functional whites in the middle. */}
           <StatTile

@@ -107,11 +107,11 @@ export function PromoteTab({ event }: { event: LyfeEvent }) {
             className="absolute -top-12 -right-8 w-72 h-72 rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(201,166,76,0.45), transparent 70%)",
+                "radial-gradient(circle, rgba(134,91,166,0.42), transparent 70%)",
             }}
           />
           <div className="absolute inset-0 flex flex-col justify-end p-5">
-            <div className="text-eyebrow text-gold">
+            <div className="text-eyebrow text-violet">
               LYFE · {event.venue.city}
             </div>
             <div
@@ -178,7 +178,7 @@ export function PromoteTab({ event }: { event: LyfeEvent }) {
   );
 }
 
-// Mock QR — geometric placeholder. Real impl uses qrcode.react.
+// Mock QR, geometric placeholder. Real impl uses qrcode.react.
 function QrSvg() {
   return (
     <svg width="80" height="80" viewBox="0 0 80 80" aria-hidden>

@@ -7,7 +7,7 @@ const defaultFormat = (n: number) =>
   Math.round(n).toLocaleString("fr-FR").replace(/,/g, " ");
 
 // Animated count-up. Critical detail: the DOM node renders format(value)
-// as initial text — so SSR, no-JS, and pre-hydration all show the real
+// as initial text, so SSR, no-JS, and pre-hydration all show the real
 // number. The animation overwrites it via textContent only once the ref
 // is mounted AND the element is in view. Animating motion.span's transform
 // would not help because textContent is what's read here.

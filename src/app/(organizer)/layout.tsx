@@ -4,7 +4,7 @@ import { BottomTabs } from "@/components/organizer/BottomTabs";
 import { ScannerModal } from "@/components/organizer/ScannerModal";
 import { AssistantFAB } from "@/components/organizer/Assistant";
 
-// Shell — sticky sidebar (desktop), top app bar, mobile bottom tabs.
+// Shell, sticky sidebar (desktop), top app bar, mobile bottom tabs.
 // ScannerModal and AssistantFAB live here so they're persistent across
 // every route. Keyboard shortcuts (⌘+Shift+S, ⌘+J) are wired in Topbar.
 export default function OrganizerLayout({

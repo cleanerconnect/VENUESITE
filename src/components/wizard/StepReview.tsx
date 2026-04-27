@@ -33,7 +33,7 @@ export function StepReview({
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-8 lg:gap-10 items-start">
-        {/* Left — accordion summary */}
+        {/* Left, accordion summary */}
         <Accordion.Root
           type="multiple"
           defaultValue={["info", "tiers", "refund", "media"]}
@@ -44,20 +44,20 @@ export function StepReview({
             title="Informations"
             onEdit={() => onJumpTo(1)}
           >
-            <KV label="Nom" value={draft.name || "—"} />
+            <KV label="Nom" value={draft.name || "·"} />
             <KV label="Catégorie" value={draft.category} />
             <KV
               label="Lieu"
-              value={VENUE_NAMES[draft.venueId] ?? "—"}
+              value={VENUE_NAMES[draft.venueId] ?? "·"}
             />
             <KV
               label="Date"
               value={
                 draft.startDate
-                  ? `${draft.startDate} · ${draft.startTime || "—"} → ${
-                      draft.endTime || "—"
+                  ? `${draft.startDate} · ${draft.startTime || "·"} → ${
+                      draft.endTime || "·"
                     }`
-                  : "—"
+                  : "·"
               }
             />
             <KV label="Politique d'âge" value={draft.agePolicy} />
@@ -96,7 +96,7 @@ export function StepReview({
                         className="border-b border-line-soft last:border-0"
                       >
                         <td className="px-5 py-2.5 text-ink font-semibold">
-                          {t.name || "—"}
+                          {t.name || "·"}
                         </td>
                         <td className="px-5 py-2.5 text-right">
                           {formatMAD(t.faceValueMad)}
@@ -145,7 +145,7 @@ export function StepReview({
           </SummarySection>
         </Accordion.Root>
 
-        {/* Right — phone preview, sticky on desktop */}
+        {/* Right, phone preview, sticky on desktop */}
         <div className="hidden lg:block">
           <PhonePreview draft={draft} />
         </div>

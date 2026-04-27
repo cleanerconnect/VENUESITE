@@ -15,7 +15,7 @@ export function CapacityRing({
   size = 160,
   strokeWidth = 10,
 }: {
-  /** 0–1 share to fill */
+  /** 0·1 share to fill */
   progress: number;
   topLabel: string;
   centerLabel: string;
@@ -52,7 +52,7 @@ export function CapacityRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#C9A64C"
+          stroke="#865BA6"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           fill="none"

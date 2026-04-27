@@ -82,7 +82,7 @@ export function WizardLayout({
               const reached = idx <= visited;
               const current = idx === step;
               const fillColor = current
-                ? "var(--color-gold)"
+                ? "var(--color-violet)"
                 : reached
                   ? "var(--color-ink)"
                   : "var(--color-line)";
@@ -106,7 +106,7 @@ export function WizardLayout({
                       className={cn(
                         "inline-flex items-center justify-center h-4 w-4 rounded-full text-[9px] font-bold transition-colors",
                         current
-                          ? "bg-gold text-ink"
+                          ? "bg-violet text-canvas"
                           : reached
                             ? "bg-ink text-canvas"
                             : "bg-line text-ink-mute",
@@ -170,7 +170,7 @@ export function WizardLayout({
             <button
               onClick={onNext}
               disabled={nextDisabled}
-              className="inline-flex items-center gap-2 h-12 px-6 bg-gold text-ink rounded-[var(--radius-sm)] text-[14px] font-bold hover:bg-gold-deep hover:text-canvas disabled:bg-gold/40 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 h-12 px-6 bg-violet text-canvas rounded-[var(--radius-sm)] text-[14px] font-bold hover:bg-violet-deep disabled:bg-violet/40 disabled:cursor-not-allowed transition-colors"
             >
               {nextLabel ?? "Continuer"}
               <ArrowRight size={14} strokeWidth={2} />

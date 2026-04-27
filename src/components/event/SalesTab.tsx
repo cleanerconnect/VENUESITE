@@ -97,10 +97,10 @@ export function SalesTab({ event }: { event: LyfeEvent }) {
             <LivePulse />
             <span className="text-eyebrow text-canvas/60">Pic de ventes</span>
           </div>
-          <div className="text-h1 text-canvas num">21h–22h</div>
+          <div className="text-h1 text-canvas num">21h à 22h</div>
           <div
             className="mt-4 inline-flex items-center gap-1.5 text-meta font-bold rounded-full px-2.5 h-6"
-            style={{ background: "rgba(201,166,76,0.20)", color: "#C9A64C" }}
+            style={{ background: "rgba(134,91,166,0.20)", color: "#B388D6" }}
           >
             <TrendingUp size={12} strokeWidth={2} />
             +34 % vs autres heures

@@ -11,9 +11,9 @@ import { Dialog } from "@/components/ui/Dialog";
 import type { DraftEvent } from "@/lib/types/domain";
 
 const SUGGESTED_DESCRIPTIONS = [
-  "Une nuit afrobeats sur le rooftop. Line-up local et international, vue sur la Corniche, énergie qui dure jusqu'au lever du soleil. Tenue smart casual, ambiance festive et bienveillante. Capacity limited — nos éditions affichent complet à chaque fois. Réservez tôt pour l'Early Bird, profitez du Lounge VIP pour une expérience plus intime avec service à table et entrée prioritaire au cœur du dancefloor.",
-  "Soirée signature au Rooftop Mansour. Trois sets enchaînés, des artistes triés sur le volet, et une mise en scène pensée pour le coucher de soleil sur Casablanca. La piste est ouverte dès 22h, avec un cocktail bar travaillé et une cuisine légère disponible toute la nuit. Tarif Early Bird limité aux 80 premiers billets — au-delà, passage en tarif General. VIP Lounge inclut champagne et accès porte sans file.",
-  "Nuit afro-électronique dans un cadre intimiste. Trois heures de DJ set live mixé avec des invités surprises, dans l'ambiance feutrée du rooftop. Cocktail signature offert pour les détenteurs de billet VIP. Dress code soigné, line-up confidentiel jusqu'à la veille. Cette édition est la dernière avant la pause estivale — capacity limitée à 320 personnes pour préserver l'expérience que nos habitués connaissent et reviennent chercher chaque mois.",
+  "Une nuit afrobeats sur le rooftop. Line-up local et international, vue sur la Corniche, énergie qui dure jusqu'au lever du soleil. Tenue smart casual, ambiance festive et bienveillante. Capacity limited, nos éditions affichent complet à chaque fois. Réservez tôt pour l'Early Bird, profitez du Lounge VIP pour une expérience plus intime avec service à table et entrée prioritaire au cœur du dancefloor.",
+  "Soirée signature au Rooftop Mansour. Trois sets enchaînés, des artistes triés sur le volet, et une mise en scène pensée pour le coucher de soleil sur Casablanca. La piste est ouverte dès 22h, avec un cocktail bar travaillé et une cuisine légère disponible toute la nuit. Tarif Early Bird limité aux 80 premiers billets, au-delà, passage en tarif General. VIP Lounge inclut champagne et accès porte sans file.",
+  "Nuit afro-électronique dans un cadre intimiste. Trois heures de DJ set live mixé avec des invités surprises, dans l'ambiance feutrée du rooftop. Cocktail signature offert pour les détenteurs de billet VIP. Dress code soigné, line-up confidentiel jusqu'à la veille. Cette édition est la dernière avant la pause estivale, capacity limitée à 320 personnes pour préserver l'expérience que nos habitués connaissent et reviennent chercher chaque mois.",
 ];
 
 export function StepMedia({
@@ -35,7 +35,7 @@ export function StepMedia({
         <div className="text-eyebrow text-ink-mute mb-2">Étape 4 sur 5</div>
         <h2 className="text-h1 text-ink">Identité visuelle.</h2>
         <p className="text-body text-ink-soft mt-2 max-w-xl leading-relaxed">
-          Photo de couverture, galerie, line-up et partenaires — ce qui
+          Photo de couverture, galerie, line-up et partenaires, ce qui
           apparaîtra sur la page publique de l'événement.
         </p>
       </header>
@@ -63,7 +63,7 @@ export function StepMedia({
                   <Sparkles
                     size={20}
                     strokeWidth={1.8}
-                    className="text-gold-deep mb-2"
+                    className="text-violet-deep mb-2"
                   />
                   <span className="text-[14px] font-semibold text-ink truncate max-w-full">
                     {draft.coverName}
@@ -90,7 +90,7 @@ export function StepMedia({
         </div>
       </Card>
 
-      {/* Task generator — violet-soft surface + outlined-violet ghost button.
+      {/* Task generator, violet-soft surface + outlined-violet ghost button.
           Same intelligence as the inline nudges and the global assistant,
           three different surfaces; voice and visual treatment match. */}
       <Card variant="violet-soft" size="md">

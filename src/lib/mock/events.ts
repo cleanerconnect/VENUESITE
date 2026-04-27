@@ -1,6 +1,6 @@
 // Detail data for the Event Detail / Attendees / Refunds / Scanner / Promote
 // tabs. Mirrors what GET /events/{id}/* would return.
-// Demo organizer is Jazzablanca — all events here are festival passes.
+// Demo organizer is Jazzablanca, all events here are festival passes.
 
 import type {
   Attendee,
@@ -27,8 +27,8 @@ export function getAllEvents(): LyfeEvent[] {
   // Past edition (2024 demo data)
   const past: LyfeEvent = {
     id: "evt_jzb_2024_diana",
-    name: "Diana Krall — Jazzablanca 2024",
-    description: "Édition 2024 — soirée signature, complète.",
+    name: "Diana Krall, Jazzablanca 2024",
+    description: "Édition 2024, soirée signature, complète.",
     category: "concert",
     venue: base[0].venue,
     startsAt: offsetDays(280),
@@ -55,7 +55,7 @@ export function getAllEvents(): LyfeEvent[] {
   };
   const rejected: LyfeEvent = {
     id: "evt_jzb_after_rej",
-    name: "After-party VIP — Anfa Beach Club",
+    name: "After-party VIP, Anfa Beach Club",
     description: "Soirée privée post-Jazzablanca.",
     category: "club_night",
     venue: base[0].venue,
@@ -74,7 +74,7 @@ export function getAllEvents(): LyfeEvent[] {
   return [...base, past, rejected];
 }
 
-// 30-day revenue series — Jazzablanca scale (much higher daily ranges).
+// 30-day revenue series, Jazzablanca scale (much higher daily ranges).
 export function getRevenueSeries(): RevenuePoint[] {
   return Array.from({ length: 30 }, (_, i) => ({
     day: new Date(NOW - (29 - i) * 24 * 60 * 60_000).toISOString(),
@@ -84,7 +84,7 @@ export function getRevenueSeries(): RevenuePoint[] {
   }));
 }
 
-// Attendees — Jazzablanca pass holders. Bilingual mix (FR / MA names).
+// Attendees, Jazzablanca pass holders. Bilingual mix (FR / MA names).
 export function getAttendees(): Attendee[] {
   return [
     {
@@ -174,7 +174,7 @@ export function getAttendees(): Attendee[] {
   ];
 }
 
-// Refund queue — Jazzablanca-tier amounts (Carré Or, Pass Semaine).
+// Refund queue, Jazzablanca-tier amounts (Carré Or, Pass Semaine).
 export function getRefundRequests(): RefundRequest[] {
   return [
     {
@@ -194,7 +194,7 @@ export function getRefundRequests(): RefundRequest[] {
       tierName: "Carré Or",
       amountMad: 1200,
       requestedAt: offsetMin(60 * 18),
-      reason: "Conflit d'agenda — engagement familial.",
+      reason: "Conflit d'agenda, engagement familial.",
       status: "pending",
       slaExpiresAt: futureDays(1),
     },
@@ -233,7 +233,7 @@ export function getRefundRequests(): RefundRequest[] {
   ];
 }
 
-// Scan log — door-day data (drawn from the 2024 edition for the demo).
+// Scan log, door-day data (drawn from the 2024 edition for the demo).
 export function getScanLog(): ScanLog[] {
   const log = (i: number, name: string, code: string, staff: string) => ({
     id: `s_${i}`,

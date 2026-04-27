@@ -58,14 +58,14 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(160deg, #0A1F3D 0%, #2C3E5C 60%, #C9A64C 130%)",
+                  "linear-gradient(160deg, #0A1F3D 0%, #2C3E5C 60%, #865BA6 130%)",
               }}
             />
             <div
               className="absolute inset-0"
               style={{
                 background:
-                  "radial-gradient(circle at 70% 30%, rgba(201,166,76,0.5), transparent 60%)",
+                  "radial-gradient(circle at 70% 30%, rgba(134,91,166,0.50), transparent 60%)",
               }}
             />
             <div className="absolute top-12 left-4 inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-canvas/15 backdrop-blur-sm">
@@ -74,14 +74,14 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
               </span>
               <span className="text-[9px] text-canvas/80">·</span>
               <span className="text-[9px] font-bold text-canvas">
-                {city || "—"}
+                {city || "·"}
               </span>
             </div>
           </div>
 
           {/* Body */}
           <motion.div layout className="flex-1 overflow-y-auto scroll-thin px-5 py-4">
-            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-gold-deep">
+            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-violet-deep">
               {CATEGORY_LABEL[draft.category] ?? "Événement"}
             </div>
             <h1
@@ -97,7 +97,7 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
             </h1>
             <div className="text-meta text-ink-mute mt-1.5 num">
               {draft.startDate
-                ? `${formatPreviewDate(draft.startDate)} · ${draft.startTime || "—"}`
+                ? `${formatPreviewDate(draft.startDate)} · ${draft.startTime || "·"}`
                 : "Date à définir"}
             </div>
             <div className="text-meta text-ink-mute num">
@@ -123,7 +123,7 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
                 {draft.tiers.map((t) => {
                   const customer = t.faceValueMad
                     ? formatMAD(computeCustomerPrice(t.faceValueMad).customerPaysMad)
-                    : "—";
+                    : "·";
                   return (
                     <div
                       key={t.id}
@@ -137,7 +137,7 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
                           {t.name || "Tarif sans nom"}
                         </div>
                         <div className="text-[10px] text-ink-mute mt-0.5 num">
-                          {t.quantity > 0 ? `${t.quantity} dispo` : "—"}
+                          {t.quantity > 0 ? `${t.quantity} dispo` : "·"}
                         </div>
                       </div>
                       <div className="text-[12px] font-bold text-ink num shrink-0">
@@ -153,11 +153,11 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
           {/* Sticky bottom CTA */}
           <div className="border-t border-line-soft px-4 py-3 bg-canvas">
             <button
-              className="w-full h-11 rounded-full bg-gold text-ink text-[13px] font-bold flex items-center justify-center gap-2 num"
+              className="w-full h-11 rounded-full bg-violet text-canvas text-[13px] font-bold flex items-center justify-center gap-2 num"
               disabled
             >
               {lowestTier
-                ? `Réserver — à partir de ${formatMAD(
+                ? `Réserver, à partir de ${formatMAD(
                     computeCustomerPrice(lowestTier.faceValueMad).customerPaysMad,
                   )}`
                 : "Réserver"}
@@ -170,7 +170,7 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
 }
 
 function formatPreviewDate(iso: string) {
-  if (!iso) return "—";
+  if (!iso) return "·";
   const d = new Date(iso);
   return d.toLocaleDateString("fr-FR", {
     weekday: "short",

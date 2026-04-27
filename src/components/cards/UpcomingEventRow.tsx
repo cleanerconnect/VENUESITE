@@ -28,12 +28,12 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
         className="block bg-surface border border-line rounded-[var(--radius-lg)] p-4 hover:shadow-soft transition-shadow"
       >
         <div className="flex items-center gap-4">
-          {/* Thumbnail — 80x80, gradient placeholder */}
+          {/* Thumbnail, 80x80, gradient placeholder */}
           <div
             className="hidden sm:block w-20 h-20 rounded-[12px] shrink-0 relative overflow-hidden"
             style={{
               background:
-                "linear-gradient(135deg, var(--color-tint-sand), var(--color-gold-soft))",
+                "linear-gradient(135deg, var(--color-violet-soft), var(--color-tint-sky))",
             }}
             aria-hidden
           >

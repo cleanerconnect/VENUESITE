@@ -43,7 +43,7 @@ const venues: Venue[] = [
 const upcomingEvents: LyfeEvent[] = [
   {
     id: "evt_jzb_robbie",
-    name: "Robbie Williams — Soirée d'ouverture",
+    name: "Robbie Williams, Soirée d'ouverture",
     description:
       "L'ouverture officielle de la 19e édition. Set complet, première mondiale du nouveau show.",
     category: "concert",
@@ -94,7 +94,7 @@ const upcomingEvents: LyfeEvent[] = [
   },
   {
     id: "evt_jzb_riles",
-    name: "Rilès — Pass Semaine",
+    name: "Rilès, Pass Semaine",
     description:
       "Tête d'affiche de la mi-semaine. Flow rare, scénographie inédite pour Jazzablanca.",
     category: "concert",
@@ -123,7 +123,7 @@ const upcomingEvents: LyfeEvent[] = [
   },
   {
     id: "evt_jzb_jorja",
-    name: "Jorja Smith — Week-End 2",
+    name: "Jorja Smith, Week-End 2",
     description:
       "Week-end de clôture. Voix nouvelle génération, programmation pensée comme un seul mouvement.",
     category: "concert",
@@ -157,7 +157,7 @@ const activity: ActivityItem[] = [
     id: "a1",
     type: "purchase",
     actor: "Yasmine Bennani",
-    message: "a acheté 1 Pass Semaine 1 · Rilès — 1 400 MAD",
+    message: "a acheté 1 Pass Semaine 1 · Rilès, 1 400 MAD",
     eventId: "evt_jzb_riles",
     at: offsetMin(0.5),
   },
@@ -181,7 +181,7 @@ const activity: ActivityItem[] = [
     id: "a4",
     type: "purchase",
     actor: "Hicham El Idrissi",
-    message: "a acheté 1 Pass 10 jours · Carré Or — 4 500 MAD",
+    message: "a acheté 1 Pass 10 jours · Carré Or, 4 500 MAD",
     eventId: "evt_jzb_robbie",
     at: offsetMin(18),
   },
@@ -189,7 +189,7 @@ const activity: ActivityItem[] = [
     id: "a5",
     type: "refund",
     actor: "Layla Fassi",
-    message: "remboursement approuvé — 750 MAD",
+    message: "remboursement approuvé, 750 MAD",
     eventId: "evt_jzb_riles",
     at: offsetMin(34),
   },
@@ -251,7 +251,7 @@ export function getOrganizerOverview(): OverviewData {
     },
     headline: {
       mode: "preparing",
-      eventName: "Jazzablanca 2026 — Anfa Park",
+      eventName: "Jazzablanca 2026, Anfa Park",
       dateRangeLabel: "02 → 11 juillet 2026",
       daysUntil: 67,
       phaseCurrent: 2,

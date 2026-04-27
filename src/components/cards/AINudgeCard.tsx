@@ -1,7 +1,7 @@
 import { Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
-// Inline AI nudge — forward-looking suggestion. Lives directly under the
+// Inline AI nudge, forward-looking suggestion. Lives directly under the
 // Tonight card. Violet-soft surface signals "intelligence" rather than
 // "sales", and stops it competing visually with the gold money cards.
 export function AINudgeCard() {
@@ -19,7 +19,7 @@ export function AINudgeCard() {
           <div className="text-[14px] text-ink mt-2 leading-relaxed">
             <span className="font-semibold">Pic à 22h prévu.</span>{" "}
             <span className="text-ink-soft">
-              La conversion est 18 % au-dessus de votre moyenne — pensez à
+              La conversion est 18 % au-dessus de votre moyenne, pensez à
               publier une story Instagram d'ici 30 minutes.
             </span>
           </div>

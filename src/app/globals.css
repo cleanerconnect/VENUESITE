@@ -12,29 +12,34 @@
   --color-ink-soft: #2c3e5c;
   --color-ink-mute: #6b7689;
 
+  /* Gold lives only inside the wordmark SVG now — kept defined so the logo
+     paths still resolve, but the chrome no longer uses it. */
   --color-gold: #c9a64c;
   --color-gold-deep: #a8852e;
   --color-gold-soft: #f2e9cd;
 
-  /* Violet — third brand colour, used for AI surfaces and the
-     "transferred ticket" status. Sparingly. Never decoration. */
-  --color-violet: #6b4ea8;
-  --color-violet-deep: #553a8a;
-  --color-violet-soft: #e8e0f2;
+  /* Violet — single brand accent for the whole UI. Same texture as
+     before, but everything that was gold (CTAs, live pulses, hero glow,
+     phase ring, sparkline, "live" status) now uses violet at varying
+     opacities so the surfaces flow together. */
+  --color-violet: #865ba6;
+  --color-violet-deep: #6b3f8a;
+  --color-violet-soft: #f0e8f7;
 
-  /* Surfaces — cooled a quarter-turn so the warm yellow-cream doesn't
-     fight cool navy + violet on the same screen. */
-  --color-canvas: #f6f4ee;
-  --color-canvas-2: #efebe0;
+  /* Surfaces — white canvas so the LYFE wordmark sits flush. canvas-2 is
+     a faint violet wash for sidebar / footer / sticky bars. */
+  --color-canvas: #ffffff;
+  --color-canvas-2: #f8f5fb;
   --color-surface: #ffffff;
   --color-surface-ink: #0a1f3d;
 
-  /* Tints */
-  --color-tint-sand: #efe8d6;
-  --color-tint-sky: #dce8f2;
-  --color-tint-sage: #dceae0;
-  --color-tint-rose: #f2ddd6;
-  --color-tint-peach: #f4e0cf;
+  /* Tints — collapsed to a single violet hue at varying opacity.
+     "same texture just this color, lower the opacity to make it flow". */
+  --color-tint-sand: rgba(134, 91, 166, 0.05);
+  --color-tint-sky: rgba(134, 91, 166, 0.08);
+  --color-tint-sage: rgba(134, 91, 166, 0.06);
+  --color-tint-rose: rgba(161, 44, 44, 0.06); /* refund queue keeps red */
+  --color-tint-peach: rgba(134, 91, 166, 0.10);
 
   /* Status */
   --color-success: #2f6b3d;
@@ -42,10 +47,11 @@
   --color-danger: #a12c2c;
   --color-info: #1f4e79;
 
-  /* Lines */
-  --color-line: #e8dfc9;
+  /* Lines — neutral with a faint violet undertone so they harmonise
+     with the new accent. */
+  --color-line: #e8e2ee;
   --color-line-strong: #0a1f3d;
-  --color-line-soft: #f0e9d8;
+  --color-line-soft: #f0ecf3;
 
   /* Radii */
   --radius-xs: 6px;
@@ -149,12 +155,12 @@ body {
   font-weight: 500;
 }
 
-/* Focus ring — never jagged. Soft brand-blue glow. */
+/* Focus ring — never jagged. Soft violet glow. */
 *:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px var(--color-canvas),
-    0 0 0 4px rgba(201, 166, 76, 0.45);
+    0 0 0 4px rgba(134, 91, 166, 0.42);
   border-radius: 6px;
 }
 
@@ -168,14 +174,14 @@ body {
   border-radius: 4px;
 }
 
-/* Live pulse — gold glow loop, 1.6s. */
+/* Live pulse — violet glow loop, 1.6s. */
 @keyframes lyfe-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(201, 166, 76, 0.55);
+    box-shadow: 0 0 0 0 rgba(134, 91, 166, 0.55);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(201, 166, 76, 0);
+    box-shadow: 0 0 0 6px rgba(134, 91, 166, 0);
   }
 }
 .live-pulse {
@@ -184,23 +190,23 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--color-gold);
+  background: var(--color-violet);
   animation: lyfe-pulse 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
-/* Gold-flash on stat update — apply to a card via JS toggle. */
+/* Flash on stat update — apply to a card via JS toggle. */
 @keyframes lyfe-flash {
   0% {
-    box-shadow: 0 0 0 0 rgba(201, 166, 76, 0);
+    box-shadow: 0 0 0 0 rgba(134, 91, 166, 0);
   }
   20% {
-    box-shadow: 0 0 0 3px rgba(201, 166, 76, 0.45);
+    box-shadow: 0 0 0 3px rgba(134, 91, 166, 0.42);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(201, 166, 76, 0);
+    box-shadow: 0 0 0 0 rgba(134, 91, 166, 0);
   }
 }
-.flash-gold {
+.flash-violet {
   animation: lyfe-flash 1.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 

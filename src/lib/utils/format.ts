@@ -1,7 +1,7 @@
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { fr } from "date-fns/locale";
 
-// Single source of truth for MAD formatting — French convention,
+// Single source of truth for MAD formatting, French convention,
 // non-breaking space as thousands separator. e.g. "12 850 MAD".
 export function formatMAD(amount: number, withSuffix = true): string {
   const rounded = Math.round(amount);
@@ -29,7 +29,7 @@ export function formatPercent(value: number, digits = 1) {
   return `${sign}${value.toFixed(digits)} %`;
 }
 
-// Card fee math — face value is what the organizer receives.
+// Card fee math, face value is what the organizer receives.
 // Customer pays face + visible service fee (5.8% MA / 7.0% intl).
 const FEE_RATES = {
   moroccan: 0.058,

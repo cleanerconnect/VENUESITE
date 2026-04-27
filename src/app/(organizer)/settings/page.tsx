@@ -229,8 +229,8 @@ function PayoutSection() {
             defaultValue="no"
             options={[
               { value: "no", label: "Non assujetti" },
-              { value: "yes_20", label: "Assujetti — 20 %" },
-              { value: "yes_10", label: "Assujetti — 10 %" },
+              { value: "yes_20", label: "Assujetti, 20 %" },
+              { value: "yes_10", label: "Assujetti, 10 %" },
             ]}
           />
         </fieldset>
@@ -313,19 +313,19 @@ function NotificationsSection() {
       <h2 className="text-h2 text-ink">Préférences de notifications</h2>
       <div className="mt-7 flex flex-col gap-5">
         <Switch
-          label="Alertes de vente — email"
+          label="Alertes de vente, email"
           description="Un email à chaque achat"
           checked={prefs.saleEmail}
           onCheckedChange={(v) => set("saleEmail", v)}
         />
         <Switch
-          label="Alertes de vente — SMS"
+          label="Alertes de vente, SMS"
           description="Idéal pour les soirées en cours"
           checked={prefs.saleSms}
           onCheckedChange={(v) => set("saleSms", v)}
         />
         <Switch
-          label="Alertes de vente — push"
+          label="Alertes de vente, push"
           description="Notification dans l'app"
           checked={prefs.salePush}
           onCheckedChange={(v) => set("salePush", v)}
@@ -372,7 +372,7 @@ function LanguageSection() {
             className={cn(
               "text-left p-5 border rounded-[var(--radius-md)] bg-canvas transition-all",
               lang === l
-                ? "border-gold ring-1 ring-gold/30 bg-gold-soft"
+                ? "border-violet ring-1 ring-violet/30 bg-violet-soft"
                 : "border-line hover:border-ink",
             )}
           >
@@ -402,7 +402,7 @@ function ApiSection() {
           aria-hidden
           className="h-12 w-12 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
         >
-          <Lock size={20} strokeWidth={1.8} className="text-gold-deep" />
+          <Lock size={20} strokeWidth={1.8} className="text-violet-deep" />
         </span>
         <div>
           <Pill tone="warning">BIENTÔT</Pill>

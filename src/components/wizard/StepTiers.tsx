@@ -116,7 +116,7 @@ export function StepTiers({
                           computeCustomerPrice(tier.faceValueMad).customerPaysMad,
                         )}
                       </span>
-                      {" — "}
+                      {", "}
                       <span className="text-ink-soft">
                         dont{" "}
                         {formatMAD(

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
 
-// Modal dialog — Radix wired, custom motion. Use for confirmations, the
+// Modal dialog, Radix wired, custom motion. Use for confirmations, the
 // invite-member flow, the OTP gate, the wizard submit confirmation.
 export function Dialog({
   open,

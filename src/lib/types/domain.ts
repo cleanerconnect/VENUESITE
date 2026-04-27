@@ -1,4 +1,4 @@
-// LYFE domain types — shape mirrors the eventual REST/GraphQL responses
+// LYFE domain types, shape mirrors the eventual REST/GraphQL responses
 // so swapping mock for fetch() requires no component changes.
 
 export type EventStatus = "live" | "pending" | "draft" | "past" | "rejected";
@@ -68,13 +68,13 @@ export interface OverviewData {
   organizer: {
     firstName: string;
     venueName: string;
-    /** Greeting subtitle copy — varies by org type (festival vs venue). */
+    /** Greeting subtitle copy, varies by org type (festival vs venue). */
     greetingSubline: string;
-    /** Italic clause inside the H1 (Fraunces gold-deep). */
+    /** Italic clause inside the H1 (Fraunces violet-deep). */
     greetingClause: string;
   };
   /**
-   * Headline event card — either "live tonight" or "in preparation, J-N
+   * Headline event card, either "live tonight" or "in preparation, J-N
    * away". The discriminant is `mode`.
    */
   headline:
@@ -93,7 +93,7 @@ export interface OverviewData {
         daysUntil: number;
         phaseCurrent: number;
         phaseTotal: number;
-        /** 0–1 share of phase progression — drives the ring. */
+        /** 0·1 share of phase progression, drives the ring. */
         phaseProgress: number;
         /** Pass-style stats shown beneath the ring. */
         salesPhaseLabel: string;

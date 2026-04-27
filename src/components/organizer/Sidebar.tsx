@@ -24,7 +24,7 @@ interface Item {
   pulse?: boolean;
 }
 
-// Two groups, no spelled-out labels — separated by a hairline divider.
+// Two groups, no spelled-out labels, separated by a hairline divider.
 // The grouping reads visually; the items are obvious enough.
 const GROUP_A: Item[] = [
   { label: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboard },
@@ -43,7 +43,7 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
-      {/* Brand — real wordmark, no accompanying "LYFE" text label.
+      {/* Brand, real wordmark, no accompanying "LYFE" text label.
           44px height ensures the y descender + purple ascender both render
           without clipping. */}
       <div className="px-6 pt-7 pb-5">
@@ -53,7 +53,7 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Organizer switcher card — Jazzablanca demo */}
+      {/* Organizer switcher card, Jazzablanca demo */}
       <div className="px-4 mb-3">
         <button className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow">
           <div
@@ -74,7 +74,7 @@ export function Sidebar() {
         </button>
       </div>
 
-      {/* Nav — groups separated by a 1px line-soft divider, no labels */}
+      {/* Nav, groups separated by a 1px line-soft divider, no labels */}
       <nav className="flex-1 px-3 overflow-y-auto scroll-thin">
         <NavGroup items={GROUP_A} pathname={pathname} />
         <div
@@ -137,7 +137,7 @@ function NavGroup({
             {active ? (
               <motion.span
                 layoutId="sidebar-active-pill"
-                className="absolute inset-0 rounded-[10px] bg-gold-soft"
+                className="absolute inset-0 rounded-[10px] bg-violet-soft"
                 style={{ zIndex: 0 }}
                 transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
               />

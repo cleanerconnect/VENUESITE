@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { EventStatus } from "@/lib/types/domain";
 
 // Pill = status badges and filter chips. 10% bg / full text colour, uppercase
-// 10px tracking 0.12em — see brief spec.
+// 10px tracking 0.12em, see brief spec.
 type Tone =
   | "live"
   | "pending"
@@ -23,7 +23,7 @@ interface Style {
 }
 
 const STYLES: Record<Tone, Style> = {
-  live: { bg: "rgba(201,166,76,0.14)", text: "var(--color-gold-deep)" },
+  live: { bg: "rgba(134,91,166,0.12)", text: "var(--color-violet-deep)" },
   pending: { bg: "rgba(31,78,121,0.10)", text: "var(--color-info)" },
   draft: { bg: "rgba(107,118,137,0.12)", text: "var(--color-ink-mute)" },
   past: { bg: "rgba(107,118,137,0.08)", text: "var(--color-ink-mute)" },

@@ -89,7 +89,7 @@ function PolicyOption({
       className={cn(
         "relative text-left p-7 rounded-[var(--radius-lg)] bg-surface transition-all duration-200 min-h-[260px] flex flex-col",
         active
-          ? "ring-2 ring-gold border border-gold/0 shadow-lift"
+          ? "ring-2 ring-violet border border-violet/0 shadow-lift"
           : "border border-line hover:border-ink",
       )}
     >
@@ -99,7 +99,7 @@ function PolicyOption({
           aria-hidden
           className={cn(
             "h-5 w-5 rounded-full flex items-center justify-center transition-colors",
-            active ? "bg-gold text-ink" : "border border-line",
+            active ? "bg-violet text-canvas" : "border border-line",
           )}
         >
           {active ? <Check size={11} strokeWidth={2.6} /> : null}
@@ -112,7 +112,7 @@ function PolicyOption({
       <ul className="mt-5 space-y-2 text-[13px] text-ink">
         {bullets.map((b) => (
           <li key={b} className="flex items-start gap-2">
-            <span className="text-gold-deep mt-0.5 shrink-0">·</span>
+            <span className="text-violet-deep mt-0.5 shrink-0">·</span>
             <span>{b}</span>
           </li>
         ))}

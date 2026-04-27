@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Button } from "./Button";
 
-// Empty states are a moment — Fraunces serif headline, one-sentence subtitle,
+// Empty states are a moment, Fraunces serif headline, one-sentence subtitle,
 // optional CTA. Used on My Events, Refunds, Activity, etc.
 export function EmptyState({
   title,

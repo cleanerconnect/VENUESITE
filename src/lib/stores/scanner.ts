@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-// Global scanner state — open/closed, currently chosen event, scanned count.
+// Global scanner state, open/closed, currently chosen event, scanned count.
 // Persists through navigation so reopening the modal jumps straight back
 // into scanning the same event for the rest of the session.
 interface ScannerState {

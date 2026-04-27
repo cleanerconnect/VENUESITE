@@ -30,10 +30,10 @@ export function AssistantFAB() {
   const setOpen = useAssistantStore((s) => s.setOpen);
   return (
     <>
-      {/* Desktop FAB only — anchored to the main content area's bottom-left */}
+      {/* Desktop FAB only, anchored to the main content area's bottom-left */}
       <motion.button
         onClick={() => setOpen(true)}
-        title="Assistant LYFE — ⌘ + J"
+        title="Assistant LYFE, ⌘ + J"
         aria-label="Ouvrir l'assistant LYFE"
         style={{ left: FAB_LEFT }}
         className={cn(
@@ -222,7 +222,7 @@ function AssistantPanel() {
                     type="submit"
                     disabled={!input.trim()}
                     aria-label="Envoyer"
-                    className="h-11 w-11 rounded-full bg-gold text-ink flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gold-deep hover:text-canvas transition-colors"
+                    className="h-11 w-11 rounded-full bg-violet text-canvas flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-violet-deep transition-colors"
                   >
                     <Send size={16} strokeWidth={1.8} />
                   </button>

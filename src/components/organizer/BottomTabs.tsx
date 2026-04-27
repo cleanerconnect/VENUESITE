@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { useScannerStore } from "@/lib/stores/scanner";
 
-// Mobile tab bar — Scanner is the raised gold center button. Tapping it
+// Mobile tab bar, Scanner is the raised gold center button. Tapping it
 // opens the global scanner modal (same surface used by the desktop
 // topbar pill and ⌘+Shift+S). The other 4 are normal Link tabs.
 type Tab = {
@@ -52,7 +52,7 @@ export function BottomTabs() {
               <li key={t.label} className="relative">
                 <button
                   onClick={() => openScanner(true)}
-                  className="absolute left-1/2 -translate-x-1/2 -top-2 h-12 w-12 rounded-full bg-gold text-ink flex items-center justify-center shadow-[0_8px_20px_rgba(201,166,76,0.45)] active:scale-95 transition-transform"
+                  className="absolute left-1/2 -translate-x-1/2 -top-2 h-12 w-12 rounded-full bg-violet text-canvas flex items-center justify-center shadow-[0_8px_20px_rgba(134,91,166,0.42)] active:scale-95 transition-transform"
                   aria-label={t.label}
                 >
                   <Icon size={22} strokeWidth={1.8} />

@@ -38,7 +38,7 @@ export default function SettlementsPage() {
         </p>
       </div>
 
-      {/* === Next payout — dark hero with Fraunces money headline === */}
+      {/* === Next payout, dark hero with Fraunces money headline === */}
       <Card variant="ink" size="hero" glow>
         <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-start">
           <div>
@@ -49,7 +49,7 @@ export default function SettlementsPage() {
               </span>
             </div>
             <div
-              className="text-gold mt-3 num"
+              className="text-violet mt-3 num"
               style={{
                 fontFamily: "var(--font-serif)",
                 fontWeight: 600,

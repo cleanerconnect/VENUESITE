@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-// LYFE wordmark. The wordmark IS the brand — no accompanying "LYFE" text
+// LYFE wordmark. The wordmark IS the brand, no accompanying "LYFE" text
 // label. Production artwork lives at /public/lyfe-logo.svg (full colour)
 // and /public/lyfe-logo-white.svg (single-colour for dark surfaces).
 //
@@ -15,7 +15,7 @@ export function Brand({
   variant?: "color" | "white";
 }) {
   const src = variant === "white" ? "/lyfe-logo-white.svg" : "/lyfe-logo.svg";
-  // 240/80 aspect — width follows height naturally with objectFit: contain.
+  // 240/80 aspect, width follows height naturally with objectFit: contain.
   const width = Math.round((height * 240) / 80);
   return (
     <Image

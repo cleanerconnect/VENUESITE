@@ -15,7 +15,7 @@ import { useToast } from "@/components/ui/Toast";
 import type { DraftEvent } from "@/lib/types/domain";
 
 const INITIAL_DRAFT: DraftEvent = {
-  // Smart defaults — date pre-fills the next Friday at 23:00 because the
+  // Smart defaults, date pre-fills the next Friday at 23:00 because the
   // mock organizer's history skews to Friday club nights.
   name: "",
   description: "",
@@ -53,7 +53,7 @@ export default function CreateEventPage() {
   const [submitting, setSubmitting] = useState(false);
   const [smartDefaultActive, setSmartDefaultActive] = useState(true);
 
-  // Autosave every 5s — flips the saving badge for ~600ms on each diff.
+  // Autosave every 5s, flips the saving badge for ~600ms on each diff.
   const lastSnap = useRef("");
   useEffect(() => {
     const t = setInterval(() => {
@@ -148,19 +148,19 @@ export default function CreateEventPage() {
           </>
         }
       >
-        <div className="flex items-start gap-4 bg-gold-soft rounded-[var(--radius-md)] p-5">
+        <div className="flex items-start gap-4 bg-violet-soft rounded-[var(--radius-md)] p-5">
           <span
             aria-hidden
             className="h-10 w-10 rounded-full bg-canvas flex items-center justify-center shrink-0"
           >
-            <Sparkles size={18} strokeWidth={1.8} className="text-gold-deep" />
+            <Sparkles size={18} strokeWidth={1.8} className="text-violet-deep" />
           </span>
           <div className="flex-1 text-[14px] text-ink leading-relaxed">
             <p className="font-semibold mb-2">Ce qui va se passer :</p>
             <ol className="space-y-1.5 list-decimal pl-4 text-ink-soft">
               <li>Notre équipe vérifie l'événement (24 h max).</li>
               <li>
-                Email + notification dans l'app dès qu'il est approuvé — ou si
+                Email + notification dans l'app dès qu'il est approuvé, ou si
                 un détail demande un ajustement.
               </li>
               <li>Mise en vente immédiate après validation.</li>

@@ -16,10 +16,11 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
-// Gold is our only accent — primary CTA only. Ink variant for dark surfaces.
+// Violet is the only chrome accent. Primary CTA + ink variant for the
+// rare dark-surface action.
 const VARIANT: Record<Variant, string> = {
   primary:
-    "bg-gold text-ink hover:bg-gold-deep hover:text-canvas disabled:bg-gold/40",
+    "bg-violet text-canvas hover:bg-violet-deep disabled:bg-violet/40",
   secondary: "bg-surface text-ink border border-line hover:border-ink",
   destructive: "bg-danger text-canvas hover:bg-danger/90",
   ghost: "bg-transparent text-ink hover:bg-ink/[0.04]",

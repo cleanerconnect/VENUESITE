@@ -25,7 +25,7 @@ const ROLE_LABEL: Record<TeamRole, string> = {
 const ROLE_DESCRIPTION: Record<TeamRole, string> = {
   owner: "Accès complet, facturation et équipe",
   admin: "Tout sauf facturation et gestion d'équipe",
-  scanner: "Scanner uniquement le jour J — pas d'accès aux revenus",
+  scanner: "Scanner uniquement le jour J, pas d'accès aux revenus",
 };
 
 const ROLE_TONE: Record<TeamRole, "info" | "success" | "neutral"> = {
@@ -285,7 +285,7 @@ function RoleCard({
       onClick={onSelect}
       className={`text-left p-4 rounded-[var(--radius-sm)] border transition-all ${
         active
-          ? "border-gold bg-gold-soft"
+          ? "border-violet bg-violet-soft"
           : "border-line hover:border-ink"
       }`}
     >

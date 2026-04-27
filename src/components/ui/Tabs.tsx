@@ -81,7 +81,7 @@ export function Tabs({
         </RadixTabs.List>
         <motion.span
           aria-hidden
-          className="absolute bottom-0 h-[2px] bg-gold rounded-full"
+          className="absolute bottom-0 h-[2px] bg-violet rounded-full"
           animate={{ left: indicator.left, width: indicator.width }}
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         />

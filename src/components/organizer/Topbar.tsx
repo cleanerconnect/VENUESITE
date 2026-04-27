@@ -33,7 +33,7 @@ export function Topbar() {
   return (
     <header className="sticky top-0 z-20 h-[72px] bg-canvas/80 backdrop-blur-md border-b border-line-soft">
       <div className="h-full max-w-[1440px] mx-auto px-4 md:px-8 flex items-center gap-4">
-        {/* Search pill — desktop only */}
+        {/* Search pill, desktop only */}
         <div className="hidden md:flex flex-1 max-w-[460px]">
           <button className="group w-full h-11 px-4 bg-surface rounded-full border border-line flex items-center gap-3 text-left hover:border-ink/40 transition-colors">
             <Search size={16} className="text-ink-mute" strokeWidth={1.8} />
@@ -50,20 +50,20 @@ export function Topbar() {
 
         {/* Right cluster */}
         <div className="flex items-center gap-1.5 md:gap-2">
-          {/* Scanner — global action, persistent across all screens */}
+          {/* Scanner, global action, persistent across all screens */}
           <button
             onClick={() => openScanner(true)}
-            title="Scanner — ⌘ + Shift + S"
+            title="Scanner, ⌘ + Shift + S"
             className="hidden md:inline-flex items-center gap-2 h-11 px-4 bg-ink text-canvas rounded-full text-[13px] font-bold hover:bg-ink-soft transition-colors group"
           >
-            <ScanLine size={16} strokeWidth={1.8} className="text-gold" />
+            <ScanLine size={16} strokeWidth={1.8} className="text-violet" />
             Scanner
             <kbd className="hidden lg:inline text-[10px] font-semibold bg-canvas/10 px-1.5 py-0.5 rounded text-canvas/65 ml-0.5 group-hover:bg-canvas/15">
               ⌘⇧S
             </kbd>
           </button>
 
-          {/* AI assistant — mobile pill only (desktop has the FAB bottom-left) */}
+          {/* AI assistant, mobile pill only (desktop has the FAB bottom-left) */}
           <button
             onClick={() => openAssistant(true)}
             aria-label="Assistant LYFE"
@@ -86,7 +86,7 @@ export function Topbar() {
             <Bell size={18} strokeWidth={1.6} />
             <span
               aria-hidden
-              className="absolute top-2 right-2.5 h-1.5 w-1.5 rounded-full bg-gold"
+              className="absolute top-2 right-2.5 h-1.5 w-1.5 rounded-full bg-violet"
             />
           </button>
 

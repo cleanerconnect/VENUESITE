@@ -33,7 +33,7 @@ export function useToast() {
 
 let counter = 0;
 
-// Toast provider — wraps the root layout. Optimistic actions throw their
+// Toast provider, wraps the root layout. Optimistic actions throw their
 // confirmation (and optional undo) here.
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastEntry[]>([]);
@@ -75,7 +75,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                         ? "rgba(47,107,61,0.32)"
                         : t.tone === "danger"
                           ? "rgba(161,44,44,0.32)"
-                          : "rgba(201,166,76,0.28)",
+                          : "rgba(134,91,166,0.28)",
                   }}
                 >
                   {t.tone === "danger" ? (
@@ -98,7 +98,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   <RadixToast.Action
                     altText="Annuler"
                     onClick={t.undo}
-                    className="text-[12px] font-bold text-gold flex items-center gap-1 hover:underline shrink-0"
+                    className="text-[12px] font-bold text-violet flex items-center gap-1 hover:underline shrink-0"
                   >
                     <Undo2 size={12} strokeWidth={2} />
                     Annuler

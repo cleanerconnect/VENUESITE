@@ -43,11 +43,11 @@ export function StepInfo({
       </header>
 
       {smartDefaultActive ? (
-        <div className="bg-gold-soft rounded-[var(--radius-sm)] px-4 py-3 flex items-start gap-3">
+        <div className="bg-violet-soft rounded-[var(--radius-sm)] px-4 py-3 flex items-start gap-3">
           <Sparkles
             size={14}
             strokeWidth={1.8}
-            className="text-gold-deep mt-0.5 shrink-0"
+            className="text-violet-deep mt-0.5 shrink-0"
           />
           <div className="flex-1 text-[13px] text-ink leading-relaxed">
             <strong className="font-bold">Pré-rempli selon votre historique.</strong>{" "}
@@ -97,10 +97,10 @@ export function StepInfo({
               value={draft.venueId}
               onChange={(v) => set("venueId", v)}
               options={[
-                { value: "v_mansour", label: "Rooftop Mansour — Casablanca" },
+                { value: "v_mansour", label: "Rooftop Mansour, Casablanca" },
                 { value: "v_theatre_m6", label: "Théâtre Mohammed VI" },
                 { value: "v_scene_casa", label: "La Scène Casa" },
-                { value: "v_jardin", label: "Le Jardin Sonore — Marrakech" },
+                { value: "v_jardin", label: "Le Jardin Sonore, Marrakech" },
                 { value: "__new", label: "+ Ajouter un nouveau lieu" },
               ]}
             />
