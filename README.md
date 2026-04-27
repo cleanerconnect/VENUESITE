@@ -1,111 +1,112 @@
-# LYFE — Tableau de bord organisateur
+# LYFE — Espace Organisateur
 
-Self-serve organizer dashboard for LYFE, Morocco's lifestyle discovery
-platform. Used by venues, promoters and event creators (Model A) to publish
-events, track sales in real time, manage refunds, scan tickets at the door
-and receive payouts.
+A production-grade web dashboard for event organizers using **LYFE**, Morocco's
+lifestyle discovery platform. Currently shipping the **Overview** screen as a
+proof-of-concept for the visual direction; the remaining six screens are
+stubs pending direction validation.
 
-This repo is the **mockup/UI build**. All data is mocked, shaped exactly like
-the eventual API responses so the team at DigiNegoce can swap mock for real
-fetches without touching components.
+## Status
 
-## Run locally
+| Screen | State |
+| --- | --- |
+| `/dashboard` (Overview) | ✅ Built fully — hero greeting, dark Tonight card with capacity ring + AI nudge, bento KPI grid, events list, live activity feed |
+| `/events` | ⏳ Empty-state stub |
+| `/events/new` (5-step wizard) | ⏳ Empty-state stub |
+| `/events/[id]` | ⏳ Empty-state stub |
+| `/settlements` | ⏳ Empty-state stub |
+| `/team` | ⏳ Empty-state stub |
+| `/settings` | ⏳ Empty-state stub |
+
+## Run
 
 ```bash
 npm install
 npm run dev
 ```
 
-App boots at http://localhost:3000 — root path redirects to `/dashboard`.
+Boots at `http://localhost:3000`, redirects to `/dashboard`.
 
 ## Stack
 
-- Next.js 14 (App Router) + React 18 + TypeScript
-- Tailwind CSS, custom design tokens (no shadcn, no UI kit)
-- Zero runtime data dependencies — everything in `lib/mockData.ts`
-
-## Routes
-
-| Path | Screen |
-| --- | --- |
-| `/dashboard` | Overview — stats, upcoming events, live activity |
-| `/events` | My Events — searchable / filterable list |
-| `/events/new` | Create Event — 5-step wizard |
-| `/events/[id]` | Event Detail — Sales / Attendees / Refunds / Scanner / Promote |
-| `/scanner` | Mobile shortcut to today's scanner |
-| `/settlements` | Next payout, history, LYFE commission invoices |
-| `/team` | Members, invites, audit log |
-| `/settings` | Profile, venue, payout (RIB), notifications, language, danger zone |
-| `/more` | Mobile-only sheet for Team / Settings / Logout |
-
-## Where the business logic lives
-
-- **Fee structure** — `lib/format.ts` `computeFee()`. Single source of truth for
-  the visible service fee (5.8% on Moroccan cards, 7.0% international).
-  Organizer always keeps 100% of the face value.
-- **Refund policy choice** — `components/wizard/StepRefund.tsx`. The cancel-
-  the-event-yourself rule is hardcoded as policy text.
-- **Settlement D+3** — surfaced via `formatCountdown()` in
-  `app/settlements/page.tsx`.
-- **Ticket transfer** — represented in `Attendee.qrStatus` and shown on the
-  attendees table (original buyer + current holder).
+- **Next.js 14** App Router with TypeScript strict mode and `src/` layout
+- **Tailwind v4** — CSS-first config via `@theme` in `globals.css`
+- **Motion** (formerly Framer Motion) — page-mount stagger, `layoutId`
+  active-pill in sidebar, animated numbers, capacity-ring stroke fill
+- **Radix UI** primitives — Dialog, Tabs, etc. (visuals 100% custom)
+- **Recharts** — used in later screens for tier charts
+- **Lucide React** — only icon library, stroke 1.6
+- **Urbanist + Fraunces** via `next/font/google` — Urbanist for UI,
+  Fraunces italic for editorial moments only
 
 ## Design tokens
 
-Configured in `tailwind.config.ts` and `app/globals.css`. Palette taken
-directly from the LYFE wordmark:
+All in `src/app/globals.css` under `@theme`:
 
-- `ink` `#0F0F0F` (near-black wordmark)
-- `gold` `#D8A83B` (ochre — left stroke of the `y`)
-- `purple` `#865BA6` (right stroke of the `y` — used for transfer events)
-- `royal` / `info` `#253E86` (royal-blue dot — pending status, chart line)
-- `bg` `#FAF7F0` (warm off-white surface)
-- `success` / `warning` / `error` semantic colors
-- Plus Jakarta Sans for everything (body 400/500/600, display headings 700
-  with -0.02em tracking via `.h-display`), `font-feature-settings: tnum`
-  on every numeric class
-- Borders 1px `#E0DAC7`, subtle `0 1px 2px rgba(0,0,0,0.04)` shadow on cards
-- No `rounded-2xl`, no gradients, no emoji
+- Brand: `--color-ink` `#0A1F3D`, `--color-gold` `#C9A64C`,
+  `--color-canvas` `#FAF7F0`
+- Surfaces: white `surface`, dark `surface-ink`, tinted `tint-{sand,sky,sage,rose,peach}`,
+  `gold-soft` for the highlight tint, `canvas-2` for sidebar
+- Status: `success`, `warning`, `danger`, `info` — pill use only
+- Radii: `xs 6` / `sm 10` / `md 14` / `lg 20` / `xl 28` / `pill`
+- Shadows: `soft` / `lift` / `deep` — earned, never default
 
-The "lyfe." wordmark is rendered live in `components/layout/icons.tsx`
-(`Wordmark`) using HTML text + a CSS gradient mask on the `y`. To use the
-production artwork instead, drop `lyfe-logo.svg` into `/public` and replace
-`<Wordmark />` in `Sidebar.tsx` with `<Image src="/lyfe-logo.svg" .../>`.
+Every numeric class uses tabular figures via `.num` (font-feature-settings
+`tnum`, `lnum`, `ss01`).
 
-## Responsive
+## Folder structure
 
-- Desktop (≥1280px) — left sidebar (240px) + main content
-- Tablet — same sidebar (collapsible target — left as TODO)
-- Mobile (<768px) — bottom tab bar + top app bar; "Plus" sheet for
-  Team / Settings / Logout
+```
+src/
+  app/
+    layout.tsx                  # Root: fonts, metadata
+    page.tsx                    # Redirect to /dashboard
+    globals.css                 # Tailwind v4 + @theme tokens
+    (organizer)/
+      layout.tsx                # Sidebar + Topbar + BottomTabs shell
+      dashboard/page.tsx        # Overview — fully built
+      events/...                # Stubs
+      settlements/page.tsx
+      team/page.tsx
+      settings/page.tsx
+  components/
+    ui/                          # Card, Button, Pill, Input, ProgressBar, EmptyState
+    motion/                      # Stagger, AnimatedNumber, LivePulse
+    organizer/                   # Sidebar, Topbar, BottomTabs, Brand
+    cards/                       # HeroTonight, StatTile, CapacityRing,
+                                 # Sparkline, UpcomingEventRow, ActivityFeedItem
+  lib/
+    types/domain.ts              # Mirrors eventual API shape
+    mock/organizer.ts            # getOrganizerOverview() — typed factory
+    utils/{cn,format,motion}.ts
+```
 
-## What's wired vs. mock
+## What's wired
 
-- ✅ All routes render with realistic data
-- ✅ Wizard auto-saves snapshot every 5s (toasts "Brouillon enregistré")
-- ✅ Refund Approve / Deny is optimistic (state flips before any imagined
-  network round-trip)
-- ✅ Activity feed has the polling hook ready for a real WebSocket subscription
-- ⏳ Real auth, real backend, real WebSocket, real QR camera — out of scope
+- **Cinematic page mount** — hero block → bento grid → events + activity
+  feed, staggered with 40ms between children, 8px y-fade. Replays only on
+  first paint of `/dashboard`, not on subsequent navigations.
+- **Animated numbers** — KPI tiles count up from 0 on view.
+- **Live pulse** — gold dot loops on the Tonight hero, on activity items
+  newer than 60s, and on the activity feed header.
+- **Sidebar `layoutId` pill** — the gold-soft active-state slides between
+  nav items when you click around.
+- **Capacity ring** — animated SVG stroke fill (1.4s, 220ms delay).
+- **Sparkline** — animated path-length draw + last-point dot.
+- **Hero card glow** — exact recipe from brief: gold radial top-right +
+  cool blue radial bottom-right, both low-alpha on dark navy.
+- **AI nudge** — a quiet first-class panel inside the Tonight card with a
+  predicted peak-hour insight.
 
-## Backend wiring map
+## What's mocked but typed for handoff
 
-When a real API arrives, search-and-replace is roughly:
+`getOrganizerOverview()` in `src/lib/mock/organizer.ts` returns
+`OverviewData` (see `src/lib/types/domain.ts`). Every field on the page
+flows from this shape — when the real API arrives, swap mock for `fetch()`
+without touching components.
 
-| Mock import | Real call (REST) |
-| --- | --- |
-| `events`, `getEventById` | `GET /organizer/events`, `GET /events/{id}` |
-| `attendees` | `GET /events/{id}/attendees?cursor=...` |
-| `refundRequests` | `GET /events/{id}/refunds` + PATCH on approve/deny |
-| `payouts`, `invoices` | `GET /organizer/payouts`, `GET /organizer/invoices` |
-| `team`, `auditLog` | `GET /organizer/team`, `GET /organizer/audit` |
-| `activity` | WebSocket `wss://api.lyfe.ma/ws/organizer/{id}/activity` |
+## Next step
 
-Component props already match these shapes — see `lib/types.ts`.
-
-## Out of scope (per brief)
-
-- Model B distribution features, partner inventory sync
-- Rewards catalog management (LYFE admin side)
-- Marketing automation, A/B testing on event pages
-- Multi-language event pages (organizer dashboard is French-first)
+Direction validation. After review, the other six screens build out in the
+same visual language (My Events, Event Detail with tabs, Create Event
+wizard with autosave + drag-and-drop tiers + live phone preview,
+Settlements, Team, Settings).
