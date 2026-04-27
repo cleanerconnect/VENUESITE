@@ -15,8 +15,8 @@ export function Brand({
   variant?: "color" | "white";
 }) {
   const src = variant === "white" ? "/lyfe-logo-white.svg" : "/lyfe-logo.svg";
-  // 240/80 aspect, width follows height naturally with objectFit: contain.
-  const width = Math.round((height * 240) / 80);
+  // 200/96 aspect, width follows height naturally with objectFit: contain.
+  const width = Math.round((height * 200) / 96);
   return (
     <Image
       src={src}

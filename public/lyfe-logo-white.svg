@@ -1,22 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" fill="none" aria-label="LYFE">
-  <!-- Same anatomy, recoloured for dark surfaces. -->
-
-  <rect x="8" y="6" width="11" height="54" fill="#FFFFFF"/>
-
-  <path d="M28 22 L46 60 L46 74 L36 74 L18 22 Z" fill="#D8A83B"/>
-
-  <path d="M62 14 L46 44 L40 44 L56 14 Z" fill="#B388D6"/>
-
-  <path d="M82 30 H94 V36 H88 V60 H78 V36 H72 V30 H78 V25
-           C78 14 84 8 94 8 H102 V14 H97
-           C92 14 88 17 88 23 V30 Z" fill="#FFFFFF"/>
-
-  <path d="M132 44 C132 32 124 24 112 24 C100 24 92 32 92 44
-           C92 56 100 62 112 62 C120 62 126 58 130 52
-           L122 47 C120 50 117 52 112 52
-           C106 52 102 49 100 44 H132 Z
-           M101 38 C103 33 107 30 112 30
-           C118 30 121 33 122 38 H101 Z" fill="#FFFFFF"/>
-
-  <rect x="220" y="50" width="10" height="10" fill="#5C7BC8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 96" fill="none" aria-label="LYFE">
+  <rect x="6" y="8" width="11" height="64" fill="#FFFFFF"/>
+  <path d="M22 30 L40 72 L40 88 L30 88 L14 30 Z" fill="#D8A83B"/>
+  <path d="M55 14 L40 50 L34 50 L49 14 Z" fill="#B388D6"/>
+  <path d="M68 42 H80 V50 H74 V72 H64 V50 H58 V42 H64 V36
+           C64 22 70 14 80 14 H88 V22 H84
+           C78 22 74 25 74 32 V42 Z" fill="#FFFFFF"/>
+  <path d="M120 56 C120 42 110 32 96 32 C82 32 72 42 72 56
+           C72 70 82 74 96 74 C106 74 114 70 118 62
+           L108 56 C106 60 102 62 96 62
+           C90 62 86 58 84 54 H120 V52 Z
+           M84 48 C86 42 90 38 96 38
+           C104 38 108 42 108 48 H84 Z" fill="#FFFFFF"/>
+  <rect x="178" y="62" width="10" height="10" fill="#5C7BC8"/>
 </svg>
