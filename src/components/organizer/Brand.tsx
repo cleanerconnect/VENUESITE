@@ -1,12 +1,9 @@
 import Image from "next/image";
 
-// LYFE wordmark. The wordmark IS the brand, no accompanying "LYFE" text
-// label. Production artwork lives at /public/lyfe-logo.svg (full colour)
-// and /public/lyfe-logo-white.svg (single-colour for dark surfaces).
-//
-// Sizing: minimum 40px height. The y's vertical extent is roughly 1.7× cap
-// height; below 40px the descender + purple ascender start to clip
-// visually. Width auto-derives from the 240×80 viewBox aspect ratio.
+// LYFE wordmark — production artwork lives at /public/lyfe-logo.jpg
+// (954×522, 1.83:1). The JPG has a white background which blends into
+// the canvas (#FFFFFF) seamlessly. White-variant SVG kept for any future
+// dark-surface usage.
 export function Brand({
   height = 44,
   variant = "color",
@@ -14,9 +11,10 @@ export function Brand({
   height?: number;
   variant?: "color" | "white";
 }) {
-  const src = variant === "white" ? "/lyfe-logo-white.svg" : "/lyfe-logo.svg";
-  // 200/96 aspect, width follows height naturally with objectFit: contain.
-  const width = Math.round((height * 200) / 96);
+  const src =
+    variant === "white" ? "/lyfe-logo-white.svg" : "/lyfe-logo.jpg";
+  // Match the JPG's actual aspect ratio, 954/522.
+  const width = Math.round((height * 954) / 522);
   return (
     <Image
       src={src}
