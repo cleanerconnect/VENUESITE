@@ -52,6 +52,7 @@ export interface LyfeEvent {
   rejectionReason?: string;
   createdAt: string;
   pageViews: number;
+  peakHour?: string;
 }
 
 export interface ActivityItem {
@@ -67,7 +68,7 @@ export interface OverviewData {
   organizer: {
     firstName: string;
     venueName: string;
-    confirmedRate: number; // 0-1
+    confirmedRate: number;
     noShowsToday: number;
   };
   tonight: {
@@ -93,4 +94,120 @@ export interface OverviewData {
   };
   upcomingEvents: LyfeEvent[];
   activity: ActivityItem[];
+}
+
+// === Event detail ===
+
+export interface Attendee {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  tierId: string;
+  tierName: string;
+  purchaseDate: string;
+  qrStatus: "unused" | "scanned" | "transferred";
+  scannedAt?: string;
+  transferredTo?: string;
+  originalBuyer?: string;
+}
+
+export interface RefundRequest {
+  id: string;
+  buyerName: string;
+  tierName: string;
+  amountMad: number;
+  requestedAt: string;
+  reason: string;
+  status: "pending" | "approved" | "denied" | "auto_approved";
+  resolvedAt?: string;
+  slaExpiresAt: string;
+}
+
+export interface RevenuePoint {
+  day: string;
+  amount: number;
+}
+
+export interface ScanLog {
+  id: string;
+  code: string;
+  staff: string;
+  at: string;
+  attendeeName: string;
+}
+
+// === Settlements ===
+
+export interface Payout {
+  id: string;
+  amountMad: number;
+  scheduledFor: string;
+  paidAt?: string;
+  status: "scheduled" | "processing" | "paid";
+  reference: string;
+  eventNames: string[];
+  ticketCount: number;
+  statementUrl: string;
+}
+
+export interface Invoice {
+  id: string;
+  number: string;
+  issuedAt: string;
+  amountMad: number;
+  description: string;
+  pdfUrl: string;
+}
+
+// === Team ===
+
+export type TeamRole = "owner" | "admin" | "scanner";
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: TeamRole;
+  lastActive: string;
+  pending?: boolean;
+  eventScopeId?: string;
+}
+
+export interface AuditEntry {
+  id: string;
+  actor: string;
+  action: string;
+  at: string;
+}
+
+// === Wizard ===
+
+export interface DraftTier {
+  id: string;
+  name: string;
+  faceValueMad: number;
+  quantity: number;
+  saleStart: string;
+  saleEnd: string;
+  maxPerOrder: number;
+  transferable: boolean;
+}
+
+export interface DraftEvent {
+  name: string;
+  description: string;
+  category: Category;
+  venueId: string;
+  startDate: string;
+  startTime: string;
+  endTime: string;
+  agePolicy: AgePolicy;
+  dressCode: string;
+  tiers: DraftTier[];
+  refundPolicy: "auto" | "manual";
+  coverName: string | null;
+  galleryNames: string[];
+  artists: { id: string; name: string; role: string }[];
+  partnerLogos: string[];
 }

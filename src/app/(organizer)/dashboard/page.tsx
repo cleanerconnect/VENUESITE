@@ -10,6 +10,7 @@ import { formatMAD } from "@/lib/utils/format";
 import { Card } from "@/components/ui/Card";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { HeroTonight } from "@/components/cards/HeroTonight";
+import { AINudgeCard } from "@/components/cards/AINudgeCard";
 import { StatTile } from "@/components/cards/StatTile";
 import { Sparkline } from "@/components/cards/Sparkline";
 import { UpcomingEventRow } from "@/components/cards/UpcomingEventRow";
@@ -31,48 +32,51 @@ export default function DashboardPage() {
       {/* === Hero greeting + Tonight card === */}
       <StaggerItem>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(360px,420px)] gap-5">
-          {/* Greeting block */}
-          <Card variant="canvas-2" size="lg" className="min-h-[220px]">
-            <div className="flex flex-col h-full justify-between gap-6">
-              <div>
-                <div className="text-eyebrow text-ink-mute">
-                  Bonsoir
-                </div>
-                <h1
-                  className="text-h1 text-ink mt-2 leading-[1.05] max-w-md"
-                  style={{ fontFamily: "var(--font-sans)" }}
-                >
-                  Bonsoir, {data.organizer.firstName}.{" "}
-                  <span
-                    className="font-serif-italic text-ink-soft"
-                    style={{ fontFamily: "var(--font-serif)" }}
+          {/* Greeting + AI nudge column */}
+          <div className="flex flex-col gap-5">
+            <Card variant="canvas-2" size="lg" className="min-h-[220px]">
+              <div className="flex flex-col h-full justify-between gap-6">
+                <div>
+                  <div className="text-eyebrow text-ink-mute">Bonsoir</div>
+                  <h1
+                    className="text-h1 text-ink mt-2 leading-[1.05] max-w-md"
+                    style={{ fontFamily: "var(--font-sans)" }}
                   >
-                    Ce soir s'annonce bien.
-                  </span>
-                </h1>
-                <p className="text-body text-ink-soft mt-3 max-w-md">
-                  {Math.round(data.organizer.confirmedRate * 100)} % des
-                  couverts confirmés. {data.organizer.noShowsToday} no-shows
-                  signalés.
-                </p>
+                    Bonsoir, {data.organizer.firstName}.{" "}
+                    <span
+                      className="font-serif-italic text-gold-deep"
+                      style={{ fontFamily: "var(--font-serif)" }}
+                    >
+                      Ce soir s'annonce bien.
+                    </span>
+                  </h1>
+                  <p className="text-body text-ink-soft mt-3 max-w-md">
+                    {Math.round(data.organizer.confirmedRate * 100)} % des
+                    couverts confirmés. {data.organizer.noShowsToday}{" "}
+                    no-shows signalés.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Link
+                    href="/events/new"
+                    className="inline-flex items-center gap-2 h-10 px-4 bg-ink text-canvas rounded-[var(--radius-sm)] text-[13px] font-semibold hover:bg-ink-soft transition-colors"
+                  >
+                    <Plus size={16} strokeWidth={2} />
+                    Créer un événement
+                  </Link>
+                  <Link
+                    href="/events"
+                    className="inline-flex items-center gap-2 h-10 px-4 text-[13px] font-semibold text-ink hover:text-gold-deep transition-colors"
+                  >
+                    Voir tous les événements →
+                  </Link>
+                </div>
               </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <Link
-                  href="/events/new"
-                  className="inline-flex items-center gap-2 h-10 px-4 bg-ink text-canvas rounded-[var(--radius-sm)] text-[13px] font-semibold hover:bg-ink-soft transition-colors"
-                >
-                  <Plus size={16} strokeWidth={2} />
-                  Créer un événement
-                </Link>
-                <Link
-                  href="/events"
-                  className="inline-flex items-center gap-2 h-10 px-4 text-[13px] font-semibold text-ink hover:text-gold-deep transition-colors"
-                >
-                  Voir tous les événements →
-                </Link>
-              </div>
-            </div>
-          </Card>
+            </Card>
+
+            {/* AI nudge — moved out of Tonight, lives here on desktop. */}
+            <AINudgeCard />
+          </div>
 
           {/* Dark Tonight hero */}
           <HeroTonight data={data.tonight} />
@@ -120,9 +124,11 @@ export default function DashboardPage() {
             }}
           />
 
-          {/* Upcoming events count */}
+          {/* Upcoming events count — pulled to white per direction review:
+              the bento should bookend money/emotion (sand + sage) with calm
+              functional whites in the middle. */}
           <StatTile
-            variant="sky"
+            variant="surface"
             label="Événements à venir"
             value={data.upcomingEventsCount}
             hint="Cliquer pour les filtrer"

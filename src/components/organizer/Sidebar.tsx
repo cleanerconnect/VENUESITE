@@ -24,28 +24,18 @@ interface Item {
   pulse?: boolean;
 }
 
-interface Group {
-  label: string;
-  items: Item[];
-}
+// Two groups, no spelled-out labels — separated by a hairline divider.
+// The grouping reads visually; the items are obvious enough.
+const GROUP_A: Item[] = [
+  { label: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Mes événements", href: "/events", icon: Ticket },
+  { label: "Créer un événement", href: "/events/new", icon: PlusCircle, pulse: true },
+];
 
-const NAV: Group[] = [
-  {
-    label: "Manage",
-    items: [
-      { label: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboard },
-      { label: "Mes événements", href: "/events", icon: Ticket },
-      { label: "Créer un événement", href: "/events/new", icon: PlusCircle, pulse: true },
-    ],
-  },
-  {
-    label: "Money & Team",
-    items: [
-      { label: "Versements", href: "/settlements", icon: Wallet },
-      { label: "Équipe", href: "/team", icon: Users },
-      { label: "Réglages", href: "/settings", icon: Settings },
-    ],
-  },
+const GROUP_B: Item[] = [
+  { label: "Versements", href: "/settlements", icon: Wallet },
+  { label: "Équipe", href: "/team", icon: Users },
+  { label: "Réglages", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -79,58 +69,14 @@ export function Sidebar() {
         </button>
       </div>
 
-      {/* Nav */}
+      {/* Nav — groups separated by a 1px line-soft divider, no labels */}
       <nav className="flex-1 px-3 overflow-y-auto scroll-thin">
-        {NAV.map((group) => (
-          <div key={group.label} className="mb-5">
-            <div className="px-3 mb-1.5 text-eyebrow text-ink-mute">
-              {group.label}
-            </div>
-            {group.items.map((item) => {
-              const active =
-                pathname === item.href ||
-                (item.href !== "/dashboard" &&
-                  pathname?.startsWith(item.href));
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "relative flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium",
-                    "transition-colors duration-150",
-                    active
-                      ? "text-ink"
-                      : "text-ink-soft hover:text-ink hover:bg-ink/[0.04]",
-                  )}
-                >
-                  {active ? (
-                    <motion.span
-                      layoutId="sidebar-active-pill"
-                      className="absolute inset-0 rounded-[10px] bg-gold-soft"
-                      style={{ zIndex: 0 }}
-                      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                    />
-                  ) : null}
-                  <Icon
-                    size={18}
-                    strokeWidth={1.6}
-                    className={cn(
-                      "relative z-10 shrink-0",
-                      active ? "text-ink" : "text-ink-mute",
-                    )}
-                  />
-                  <span className="relative z-10 flex-1 truncate">
-                    {item.label}
-                  </span>
-                  {item.pulse && active ? (
-                    <span className="relative z-10 live-pulse" aria-hidden />
-                  ) : null}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+        <NavGroup items={GROUP_A} pathname={pathname} />
+        <div
+          aria-hidden
+          className="my-3 mx-3 h-px bg-line-soft"
+        />
+        <NavGroup items={GROUP_B} pathname={pathname} />
       </nav>
 
       {/* User card */}
@@ -154,5 +100,58 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+  );
+}
+
+function NavGroup({
+  items,
+  pathname,
+}: {
+  items: Item[];
+  pathname: string | null;
+}) {
+  return (
+    <div>
+      {items.map((item) => {
+        const active =
+          pathname === item.href ||
+          (item.href !== "/dashboard" && pathname?.startsWith(item.href));
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "relative flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium",
+              "transition-colors duration-150",
+              active
+                ? "text-ink"
+                : "text-ink-soft hover:text-ink hover:bg-ink/[0.04]",
+            )}
+          >
+            {active ? (
+              <motion.span
+                layoutId="sidebar-active-pill"
+                className="absolute inset-0 rounded-[10px] bg-gold-soft"
+                style={{ zIndex: 0 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              />
+            ) : null}
+            <Icon
+              size={18}
+              strokeWidth={1.6}
+              className={cn(
+                "relative z-10 shrink-0",
+                active ? "text-ink" : "text-ink-mute",
+              )}
+            />
+            <span className="relative z-10 flex-1 truncate">{item.label}</span>
+            {item.pulse && active ? (
+              <span className="relative z-10 live-pulse" aria-hidden />
+            ) : null}
+          </Link>
+        );
+      })}
+    </div>
   );
 }

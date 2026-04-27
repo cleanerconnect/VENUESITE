@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Urbanist, Fraunces } from "next/font/google";
 import "./globals.css";
+import { ToastProvider } from "@/components/ui/Toast";
 
 const urbanist = Urbanist({
   subsets: ["latin"],
@@ -33,7 +34,9 @@ export default function RootLayout({
       lang="fr"
       className={`${urbanist.variable} ${fraunces.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   );
 }
