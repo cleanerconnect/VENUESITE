@@ -13,6 +13,7 @@ export type CardVariant =
   | "rose"
   | "peach"
   | "gold-soft"
+  | "violet-soft" // AI surfaces only — never decoration
   | "canvas-2"; // sidebar/footer surface
 
 export type CardSize = "sm" | "md" | "lg" | "hero";
@@ -26,6 +27,7 @@ const VARIANT: Record<CardVariant, string> = {
   rose: "bg-tint-rose",
   peach: "bg-tint-peach",
   "gold-soft": "bg-gold-soft",
+  "violet-soft": "bg-violet-soft",
   "canvas-2": "bg-canvas-2 border border-line-soft",
 };
 

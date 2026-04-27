@@ -1,10 +1,12 @@
 import { Sidebar } from "@/components/organizer/Sidebar";
 import { Topbar } from "@/components/organizer/Topbar";
 import { BottomTabs } from "@/components/organizer/BottomTabs";
+import { ScannerModal } from "@/components/organizer/ScannerModal";
+import { AssistantFAB } from "@/components/organizer/Assistant";
 
 // Shell — sticky sidebar (desktop), top app bar, mobile bottom tabs.
-// Pages render inside <main>; the cinematic stagger lives on each page,
-// not here, so subsequent navigations don't re-stagger.
+// ScannerModal and AssistantFAB live here so they're persistent across
+// every route. Keyboard shortcuts (⌘+Shift+S, ⌘+J) are wired in Topbar.
 export default function OrganizerLayout({
   children,
 }: {
@@ -20,6 +22,10 @@ export default function OrganizerLayout({
         </main>
       </div>
       <BottomTabs />
+
+      {/* Persistent global surfaces */}
+      <ScannerModal />
+      <AssistantFAB />
     </div>
   );
 }

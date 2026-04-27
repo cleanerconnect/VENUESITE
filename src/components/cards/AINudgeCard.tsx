@@ -1,20 +1,21 @@
 import { Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
-// Forward-looking AI suggestion. Lives directly under the Tonight card.
-// gold-soft surface so it reads as a calm hint, not an alert.
+// Inline AI nudge — forward-looking suggestion. Lives directly under the
+// Tonight card. Violet-soft surface signals "intelligence" rather than
+// "sales", and stops it competing visually with the gold money cards.
 export function AINudgeCard() {
   return (
-    <Card variant="gold-soft" size="md">
+    <Card variant="violet-soft" size="md">
       <div className="flex items-start gap-3">
         <span
           aria-hidden
           className="h-9 w-9 rounded-[12px] bg-surface/70 flex items-center justify-center shrink-0"
         >
-          <Sparkles size={16} strokeWidth={1.8} className="text-gold-deep" />
+          <Sparkles size={16} strokeWidth={1.8} className="text-violet-deep" />
         </span>
         <div className="flex-1 min-w-0">
-          <div className="text-eyebrow text-ink-soft">Suggestion</div>
+          <div className="text-eyebrow text-violet-deep">Suggestion</div>
           <div className="text-[14px] text-ink mt-2 leading-relaxed">
             <span className="font-semibold">Pic à 22h prévu.</span>{" "}
             <span className="text-ink-soft">
@@ -23,7 +24,7 @@ export function AINudgeCard() {
             </span>
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <button className="text-meta font-bold uppercase tracking-[0.08em] text-ink hover:text-gold-deep transition-colors">
+            <button className="text-meta font-bold uppercase tracking-[0.08em] text-violet-deep hover:text-ink transition-colors">
               Préparer la story →
             </button>
             <button className="text-meta font-medium text-ink-mute hover:text-ink transition-colors">

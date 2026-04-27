@@ -15,7 +15,7 @@ const ICON: Record<ActivityItem["type"], React.ReactNode> = {
 
 const COLOR: Record<ActivityItem["type"], string> = {
   purchase: "var(--color-success)",
-  transfer: "var(--color-info)",
+  transfer: "var(--color-violet)",
   refund: "var(--color-warning)",
   scan: "var(--color-ink)",
   moderation: "var(--color-gold-deep)",

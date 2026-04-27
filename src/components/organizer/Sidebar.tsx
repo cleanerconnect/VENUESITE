@@ -43,9 +43,12 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
-      {/* Brand */}
+      {/* Brand — real wordmark, no accompanying "LYFE" text label */}
       <div className="px-6 pt-7 pb-5">
-        <Brand />
+        <Brand height={26} />
+        <div className="text-meta text-ink-mute mt-2 lowercase">
+          organisateur
+        </div>
       </div>
 
       {/* Venue switcher card */}

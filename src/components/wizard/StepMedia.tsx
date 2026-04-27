@@ -90,26 +90,31 @@ export function StepMedia({
         </div>
       </Card>
 
-      {/* Description AI helper — sits here for "media & assets" step but is
-          part of the description tooling. Sparingly framed. */}
-      <Card variant="gold-soft" size="md">
+      {/* Task generator — violet-soft surface + outlined-violet ghost button.
+          Same intelligence as the inline nudges and the global assistant,
+          three different surfaces; voice and visual treatment match. */}
+      <Card variant="violet-soft" size="md">
         <div className="flex items-start gap-3">
           <span
             aria-hidden
             className="h-9 w-9 rounded-[12px] bg-surface/70 flex items-center justify-center shrink-0"
           >
-            <Wand2 size={16} strokeWidth={1.8} className="text-gold-deep" />
+            <Wand2 size={16} strokeWidth={1.8} className="text-violet-deep" />
           </span>
           <div className="flex-1 min-w-0">
-            <div className="text-eyebrow text-ink-soft">Suggestion</div>
+            <div className="text-eyebrow text-violet-deep">Suggestion</div>
             <div className="text-[14px] text-ink mt-2 leading-relaxed">
               Vous bloquez sur la description ? On peut générer trois
               variantes adaptées à votre type d'événement.
             </div>
             <div className="mt-3">
-              <Button size="sm" onClick={() => setAiOpen(true)}>
+              <button
+                onClick={() => setAiOpen(true)}
+                className="inline-flex items-center gap-2 h-9 px-4 text-[13px] font-semibold border border-violet text-violet-deep rounded-[var(--radius-sm)] hover:bg-violet hover:text-canvas transition-colors"
+              >
+                <Wand2 size={14} strokeWidth={1.8} />
                 Générer des variantes
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -262,7 +267,7 @@ export function StepMedia({
                 transition={{ delay: i * 0.06, duration: 0.22 }}
                 className={`text-left p-4 rounded-[var(--radius-sm)] border transition-all ${
                   pickedAi === i
-                    ? "border-gold bg-gold-soft"
+                    ? "border-violet bg-violet-soft"
                     : "border-line hover:border-ink"
                 }`}
               >
@@ -271,7 +276,7 @@ export function StepMedia({
                     Variante {i + 1}
                   </span>
                   {pickedAi === i ? (
-                    <span className="text-eyebrow text-gold-deep">
+                    <span className="text-eyebrow text-violet-deep">
                       Sélectionnée
                     </span>
                   ) : null}

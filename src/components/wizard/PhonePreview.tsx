@@ -131,7 +131,7 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
                     >
                       <div className="min-w-0">
                         <div
-                          className="text-[12px] font-semibold text-ink truncate"
+                          className="text-[12px] font-semibold text-violet-deep truncate"
                           style={{ fontFamily: "var(--font-serif)" }}
                         >
                           {t.name || "Tarif sans nom"}
