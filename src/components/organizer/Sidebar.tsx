@@ -8,6 +8,7 @@ import {
   ChevronRight,
   LayoutDashboard,
   type LucideIcon,
+  Megaphone,
   PlusCircle,
   Settings,
   Ticket,
@@ -29,6 +30,7 @@ interface Item {
 const GROUP_A: Item[] = [
   { label: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboard },
   { label: "Mes événements", href: "/events", icon: Ticket },
+  { label: "Visibilité", href: "/visibilite", icon: Megaphone },
   { label: "Créer un événement", href: "/events/new", icon: PlusCircle, pulse: true },
 ];
 
