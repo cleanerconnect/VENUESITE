@@ -3,22 +3,29 @@
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
 
-// Animated capacity ring — used inside the Tonight hero card.
-// Stroke fills from 0 → percentage on first paint.
+// Generic progression ring. Used by HeroTonight in two modes:
+// - capacity (live): "Couvert ce soir / 247 / 500"
+// - phase (preparing): "Phase 2 of 4 / 30 %"
+// The ring stroke fills 0 → progress on first paint.
 export function CapacityRing({
-  value,
-  max,
+  progress,
+  topLabel,
+  centerLabel,
+  bottomLabel,
   size = 160,
   strokeWidth = 10,
 }: {
-  value: number;
-  max: number;
+  /** 0–1 share to fill */
+  progress: number;
+  topLabel: string;
+  centerLabel: string;
+  bottomLabel?: string;
   size?: number;
   strokeWidth?: number;
 }) {
   const ref = useRef<SVGSVGElement>(null);
   const inView = useInView(ref, { once: true });
-  const pct = Math.max(0, Math.min(1, value / Math.max(1, max)));
+  const pct = Math.max(0, Math.min(1, progress));
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - pct);
@@ -55,17 +62,19 @@ export function CapacityRing({
           transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-eyebrow text-canvas/60">Couvert ce soir</div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
+        <div className="text-eyebrow text-canvas/60">{topLabel}</div>
         <div
           className="text-canvas font-extrabold tabular-nums num"
           style={{ fontSize: size * 0.22, lineHeight: 1 }}
         >
-          {Math.round(pct * 100)}%
+          {centerLabel}
         </div>
-        <div className="text-meta text-canvas/55 mt-0.5 num">
-          {value} / {max}
-        </div>
+        {bottomLabel ? (
+          <div className="text-meta text-canvas/55 mt-0.5 num">
+            {bottomLabel}
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -47,13 +47,11 @@ export default function DashboardPage() {
                       className="font-serif-italic text-gold-deep"
                       style={{ fontFamily: "var(--font-serif)" }}
                     >
-                      Ce soir s'annonce bien.
+                      {data.organizer.greetingClause}
                     </span>
                   </h1>
                   <p className="text-body text-ink-soft mt-3 max-w-md">
-                    {Math.round(data.organizer.confirmedRate * 100)} % des
-                    couverts confirmés. {data.organizer.noShowsToday}{" "}
-                    no-shows signalés.
+                    {data.organizer.greetingSubline}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
@@ -78,8 +76,8 @@ export default function DashboardPage() {
             <AINudgeCard />
           </div>
 
-          {/* Dark Tonight hero */}
-          <HeroTonight data={data.tonight} />
+          {/* Dark headline hero — switches between live + preparing modes */}
+          <HeroTonight data={data.headline} />
         </div>
       </StaggerItem>
 

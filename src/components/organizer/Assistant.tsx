@@ -18,18 +18,26 @@ import { cn } from "@/lib/utils/cn";
 // All three respond via mockResponse() + makeStream() to simulate the
 // token-by-token typing feel. Real API later: swap the streamer.
 
+// Position the FAB in the MAIN CONTENT area's bottom-left, not the
+// viewport's bottom-left, so it sits clear of the sidebar's user card.
+// 260px sidebar + 24px breathing gap = the left offset.
+// Tailwind v4's arbitrary-class JIT does support calc(), but we set it via
+// `style` so the value stays explicit and easy to grep.
+const FAB_LEFT = "calc(260px + 24px)";
+
 export function AssistantFAB() {
   const open = useAssistantStore((s) => s.open);
   const setOpen = useAssistantStore((s) => s.setOpen);
   return (
     <>
-      {/* Desktop FAB only — hidden when panel is open or on mobile */}
+      {/* Desktop FAB only — anchored to the main content area's bottom-left */}
       <motion.button
         onClick={() => setOpen(true)}
         title="Assistant LYFE — ⌘ + J"
         aria-label="Ouvrir l'assistant LYFE"
+        style={{ left: FAB_LEFT }}
         className={cn(
-          "hidden md:inline-flex fixed bottom-6 left-6 z-30 h-14 w-14 rounded-full",
+          "hidden md:inline-flex fixed bottom-6 z-30 h-14 w-14 rounded-full",
           "bg-violet-soft text-violet-deep items-center justify-center",
           "shadow-lift hover:shadow-deep transition-shadow",
           "ring-1 ring-violet/30",
@@ -114,10 +122,13 @@ function AssistantPanel() {
                   "fixed z-[60] bg-surface flex flex-col overflow-hidden",
                   // Mobile: full-screen sheet from the bottom
                   "inset-x-0 bottom-0 top-[10%] rounded-t-[var(--radius-xl)]",
-                  // Desktop: anchored bottom-left, fixed-size panel
-                  "md:inset-auto md:left-6 md:bottom-6 md:top-auto md:right-auto",
+                  // Desktop: anchored to main-content bottom-left so the
+                  // panel opens up-and-right from the FAB origin and never
+                  // overlaps the sidebar. left offset matches the FAB.
+                  "md:inset-auto md:bottom-6 md:top-auto md:right-auto",
+                  "md:left-[calc(260px+24px)]",
                   "md:w-[420px] md:max-h-[640px] md:rounded-[var(--radius-xl)]",
-                  "md:shadow-deep ring-1 ring-violet/15",
+                  "md:shadow-deep md:ring-1 md:ring-violet/15",
                 )}
               >
                 <RadixDialog.Title className="sr-only">

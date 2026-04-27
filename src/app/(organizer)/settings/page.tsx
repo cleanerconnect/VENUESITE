@@ -85,25 +85,25 @@ function ProfileSection() {
         Ce que vos clients voient sur la page publique.
       </p>
       <div className="grid sm:grid-cols-2 gap-4 mt-7">
-        <Input label="Nom" defaultValue="Rooftop Mansour" />
+        <Input label="Nom" defaultValue="Jazzablanca" />
         <Input
           label="Email de contact"
           type="email"
-          defaultValue="hello@mansour.ma"
+          defaultValue="hello@jazzablanca.com"
         />
         <Input label="Téléphone" defaultValue="+212 522 00 00 00" />
-        <Input label="Site web" defaultValue="https://mansour.ma" />
+        <Input label="Site web" defaultValue="https://jazzablanca.com" />
       </div>
       <div className="mt-4">
         <Textarea
           label="Bio"
           rows={3}
-          defaultValue="Rooftop & club, Casablanca. Ouvert tous les vendredis et samedis."
+          defaultValue="Festival international de musique. 19e édition du 02 au 11 juillet 2026 à l'Anfa Park de Casablanca."
         />
       </div>
       <div className="mt-4 grid sm:grid-cols-2 gap-4">
-        <Input label="Instagram" defaultValue="@mansour.casa" />
-        <Input label="Facebook" defaultValue="rooftopmansour" />
+        <Input label="Instagram" defaultValue="@jazzablanca" />
+        <Input label="Facebook" defaultValue="jazzablanca" />
       </div>
       <div className="mt-7 flex justify-end">
         <Button
@@ -129,12 +129,12 @@ function VenueSection() {
         Pour la facturation et la conformité (ICE / RC).
       </p>
       <div className="grid sm:grid-cols-2 gap-4 mt-7">
-        <Input label="Adresse" defaultValue="27 av. de la Mer" />
+        <Input label="Adresse" defaultValue="Anfa Park" />
         <Input label="Ville" defaultValue="Casablanca" />
         <Input
           label="Capacité totale"
           type="number"
-          defaultValue="320"
+          defaultValue="12000"
           suffix="pers."
         />
         <Input label="ICE" defaultValue="002384719000045" />
@@ -211,7 +211,7 @@ function PayoutSection() {
             !unlocked && "opacity-50",
           )}
         >
-          <Input label="Bénéficiaire" defaultValue="Mansour Rooftop SARL" />
+          <Input label="Bénéficiaire" defaultValue="Jazzablanca SAS" />
           <Input
             label="RIB (24 chiffres)"
             value={rib}

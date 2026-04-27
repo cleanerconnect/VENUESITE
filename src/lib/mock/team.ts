@@ -1,4 +1,4 @@
-// Team members + audit log for /team.
+// Team members + audit log for /team — Jazzablanca demo.
 
 import type { AuditEntry, TeamMember } from "@/lib/types/domain";
 
@@ -10,21 +10,21 @@ export function getTeam(): TeamMember[] {
     {
       id: "tm_1",
       name: "Mido Reffas",
-      email: "mido@mansour.ma",
+      email: "mido@jazzablanca.com",
       role: "owner",
       lastActive: offsetMin(5),
     },
     {
       id: "tm_2",
       name: "Imane Cherkaoui",
-      email: "imane@mansour.ma",
+      email: "imane@jazzablanca.com",
       role: "admin",
       lastActive: offsetMin(60 * 3),
     },
     {
       id: "tm_3",
       name: "Hamza Door Staff",
-      email: "hamza.staff@mansour.ma",
+      email: "hamza.staff@jazzablanca.com",
       role: "scanner",
       lastActive: offsetMin(60 * 24 * 4),
     },
@@ -62,8 +62,8 @@ export function getAuditLog(): AuditEntry[] {
     {
       id: "au_4",
       actor: "Imane Cherkaoui",
-      action: "A publié l'événement Soirée Afrobeats vol. 12",
-      at: offsetMin(60 * 24 * 9),
+      action: "A publié Pass Week-End 2 — Jorja Smith",
+      at: offsetMin(60 * 8),
     },
   ];
 }

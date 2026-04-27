@@ -43,29 +43,31 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
-      {/* Brand — real wordmark, no accompanying "LYFE" text label */}
+      {/* Brand — real wordmark, no accompanying "LYFE" text label.
+          44px height ensures the y descender + purple ascender both render
+          without clipping. */}
       <div className="px-6 pt-7 pb-5">
-        <Brand height={26} />
+        <Brand height={44} />
         <div className="text-meta text-ink-mute mt-2 lowercase">
           organisateur
         </div>
       </div>
 
-      {/* Venue switcher card */}
+      {/* Organizer switcher card — Jazzablanca demo */}
       <div className="px-4 mb-3">
         <button className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow">
           <div
-            className="h-9 w-9 rounded-[10px] flex items-center justify-center text-ink font-bold text-[13px] shrink-0"
-            style={{ background: "var(--color-gold-soft)" }}
+            className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
+            style={{ background: "var(--color-violet-soft)" }}
           >
-            RM
+            JZ
           </div>
           <div className="min-w-0 flex-1 leading-tight">
             <div className="text-[13px] font-semibold text-ink truncate">
-              Rooftop Mansour
+              Jazzablanca
             </div>
             <div className="text-meta text-ink-mute truncate">
-              Owner · Casablanca
+              Festival · Casablanca
             </div>
           </div>
           <ChevronRight size={14} className="text-ink-mute shrink-0" />
@@ -96,7 +98,7 @@ export function Sidebar() {
               Mido Reffas
             </div>
             <div className="text-meta text-ink-mute truncate">
-              mido@mansour.ma
+              Directeur · Jazzablanca
             </div>
           </div>
           <CalendarDays size={14} className="text-ink-mute shrink-0" />

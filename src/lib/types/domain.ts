@@ -68,16 +68,39 @@ export interface OverviewData {
   organizer: {
     firstName: string;
     venueName: string;
-    confirmedRate: number;
-    noShowsToday: number;
+    /** Greeting subtitle copy — varies by org type (festival vs venue). */
+    greetingSubline: string;
+    /** Italic clause inside the H1 (Fraunces gold-deep). */
+    greetingClause: string;
   };
-  tonight: {
-    soldTickets: number;
-    capacity: number;
-    revenueMad: number;
-    eventName: string;
-    eventStartsAt: string;
-  };
+  /**
+   * Headline event card — either "live tonight" or "in preparation, J-N
+   * away". The discriminant is `mode`.
+   */
+  headline:
+    | {
+        mode: "live";
+        eventName: string;
+        eventStartsAt: string;
+        soldTickets: number;
+        capacity: number;
+        revenueMad: number;
+      }
+    | {
+        mode: "preparing";
+        eventName: string;
+        dateRangeLabel: string;
+        daysUntil: number;
+        phaseCurrent: number;
+        phaseTotal: number;
+        /** 0–1 share of phase progression — drives the ring. */
+        phaseProgress: number;
+        /** Pass-style stats shown beneath the ring. */
+        salesPhaseLabel: string;
+        salesPhaseValue: number;
+        consolidatedRevenueLabel: string;
+        consolidatedRevenueMad: number;
+      };
   ticketsToday: {
     count: number;
     deltaPctVsYesterday: number;
