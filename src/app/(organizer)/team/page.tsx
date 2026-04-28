@@ -13,7 +13,7 @@ import {
   formatDateTimeFR,
   formatRelativeFR,
 } from "@/lib/utils/format";
-import { getAuditLog, getTeam } from "@/lib/mock/team";
+import { describeAuditAction, getAuditLog, getTeam } from "@/lib/mock/team";
 import type { TeamMember, TeamRole } from "@/lib/types/domain";
 
 const ROLE_LABEL: Record<TeamRole, string> = {
@@ -196,25 +196,37 @@ export default function TeamPage() {
       {/* === Audit log === */}
       <Card variant="surface" size="md" className="!p-0">
         <div className="px-6 pt-6 pb-4">
-          <h2 className="text-h3 text-ink">Journal d'audit</h2>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <h2 className="text-h3 text-ink">Journal d&apos;audit</h2>
+            <span className="text-meta text-ink-mute">
+              Conservé 24 mois · conformité CNDP
+            </span>
+          </div>
           <p className="text-meta text-ink-soft mt-1">
-            Historique des actions sensibles · conservé 24 mois
+            Toute action sensible (invitations, remboursements, versements,
+            réglages) est tracée.
           </p>
         </div>
         <ul className="divide-y divide-line-soft">
           {getAuditLog().map((a) => (
             <li
               key={a.id}
-              className="px-6 py-3.5 flex items-start justify-between gap-3 text-[13px]"
+              className="px-6 py-3.5 flex items-start justify-between gap-4 text-[13px]"
             >
-              <div>
-                <div className="text-ink">{a.action}</div>
-                <div className="text-meta text-ink-mute mt-0.5">
-                  par {a.actor}
+              <div className="min-w-0">
+                <div className="text-ink">
+                  <span className="font-semibold">{a.actor.name}</span>{" "}
+                  <span className="text-ink-soft">
+                    {describeAuditAction(a).toLowerCase()}
+                  </span>{" "}
+                  <span className="text-ink">{a.targetSummary}</span>
+                </div>
+                <div className="text-meta text-ink-mute mt-0.5 num">
+                  {a.actor.email}
                 </div>
               </div>
-              <div className="text-mono text-ink-mute shrink-0">
-                {formatDateTimeFR(a.at)}
+              <div className="text-meta text-ink-mute shrink-0 num">
+                {formatDateTimeFR(a.timestamp)}
               </div>
             </li>
           ))}

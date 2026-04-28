@@ -82,25 +82,31 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
 
   if (event.refundPolicy === "auto") {
     return (
-      <Card variant="sage" size="md">
-        <h3 className="text-h3 text-ink">Remboursements automatiques</h3>
-        <p className="text-[14px] text-ink-soft mt-2 leading-relaxed max-w-xl">
-          Les demandes éligibles sont approuvées sans votre intervention.
-          Politique LYFE : remboursement intégral si demandé sous 48 h après
-          l'achat ET 7 jours minimum avant l'événement. Les points de
-          fidélité gagnés sur le billet sont automatiquement annulés.
-        </p>
-        <div className="grid sm:grid-cols-3 gap-3 mt-5">
-          <Rule label="Fenêtre de demande" value="48 h après l'achat" />
-          <Rule label="Délai minimum" value="7 j avant l'événement" />
-          <Rule label="Points de fidélité" value="Reversés auto." />
-        </div>
-      </Card>
+      <div className="space-y-5">
+        <PolicyCallout policy="auto" />
+        <Card variant="sage" size="md">
+          <h3 className="text-h3 text-ink">Remboursements automatiques</h3>
+          <p className="text-[14px] text-ink-soft mt-2 leading-relaxed max-w-xl">
+            Les demandes éligibles sont approuvées sans votre intervention.
+            Politique LYFE : remboursement intégral si demandé sous 48 h après
+            l&apos;achat ET 7 jours minimum avant l&apos;événement. Les points de
+            fidélité gagnés sur le billet sont automatiquement annulés.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-3 mt-5">
+            <Rule label="Fenêtre de demande" value="48 h après l'achat" />
+            <Rule label="Délai minimum" value="7 j avant l'événement" />
+            <Rule label="Points de fidélité" value="Reversés auto." />
+          </div>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-5">
+      {/* === Policy callout, top of tab === */}
+      <PolicyCallout policy="manual" />
+
       {/* === Pending queue (rose-tinted) === */}
       {pending.length > 0 ? (
         <Card variant="rose" size="md">
@@ -280,5 +286,42 @@ function Rule({ label, value }: { label: string; value: string }) {
       <div className="text-eyebrow text-ink-mute">{label}</div>
       <div className="text-[14px] font-bold text-ink mt-2">{value}</div>
     </div>
+  );
+}
+
+// Top-of-tab callout that surfaces the current refund policy + SLA. Click
+// "Modifier" to jump to wizard step 3 (read-only after on-sale).
+function PolicyCallout({ policy }: { policy: "auto" | "manual" }) {
+  return (
+    <Card variant="sand" size="sm">
+      <div className="flex items-start gap-3 flex-wrap">
+        <div className="flex-1 min-w-[260px]">
+          <div className="text-eyebrow text-ink-mute">
+            Politique de remboursement
+          </div>
+          <p className="text-[14px] text-ink mt-1.5 leading-relaxed">
+            {policy === "auto" ? (
+              <>
+                <strong>Approbation automatique</strong> · les utilisateurs sont
+                remboursés automatiquement dans les 48 h suivant l&apos;achat,
+                jusqu&apos;à 7 jours avant l&apos;événement.
+              </>
+            ) : (
+              <>
+                <strong>Approbation manuelle</strong> · délai SLA 48 h ·
+                jusqu&apos;à 7 jours avant l&apos;événement.
+              </>
+            )}
+          </p>
+        </div>
+        <button
+          type="button"
+          className="text-meta font-bold uppercase tracking-[0.08em] text-violet-deep hover:text-ink transition-colors shrink-0"
+          aria-label="Modifier la politique de remboursement"
+        >
+          Modifier →
+        </button>
+      </div>
+    </Card>
   );
 }

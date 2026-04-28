@@ -39,31 +39,115 @@ export function getTeam(): TeamMember[] {
   ];
 }
 
+const MIDO = { name: "Mido Reffas", email: "mido@jazzablanca.com" };
+const IMANE = {
+  name: "Imane Cherkaoui",
+  email: "imane@jazzablanca.com",
+};
+
 export function getAuditLog(): AuditEntry[] {
+  // 12 entries spanning the last 7 days, all 9 action types covered at
+  // least once. Sorted newest first.
   return [
     {
       id: "au_1",
-      actor: "Mido Reffas",
-      action: "A invité Reda Bennani comme Scanner",
-      at: offsetMin(60 * 24),
+      actor: IMANE,
+      action: "submitted_event",
+      targetSummary: "Pass Week-End 2, Jorja Smith",
+      timestamp: offsetMin(60 * 6),
     },
     {
       id: "au_2",
-      actor: "Imane Cherkaoui",
-      action: "A approuvé un remboursement pour Karim L.",
-      at: offsetMin(60 * 18),
+      actor: IMANE,
+      action: "approved_refund",
+      targetSummary: "Karim L. · Pass Jour General · 590 MAD",
+      timestamp: offsetMin(60 * 18),
     },
     {
       id: "au_3",
-      actor: "Mido Reffas",
-      action: "A modifié les coordonnées bancaires (RIB)",
-      at: offsetMin(60 * 24 * 6),
+      actor: MIDO,
+      action: "edited_settings",
+      targetSummary: "Préférences de boost · budget par défaut 8 000 MAD",
+      timestamp: offsetMin(60 * 22),
     },
     {
       id: "au_4",
-      actor: "Imane Cherkaoui",
-      action: "A publié Pass Week-End 2, Jorja Smith",
-      at: offsetMin(60 * 8),
+      actor: MIDO,
+      action: "invited_member",
+      targetSummary: "Reda Bennani · Scanner",
+      timestamp: offsetMin(60 * 24),
+    },
+    {
+      id: "au_5",
+      actor: IMANE,
+      action: "denied_refund",
+      targetSummary: "Sami E. · Pass Jour Early Bird · hors fenêtre 48h",
+      timestamp: offsetMin(60 * 24 * 2),
+    },
+    {
+      id: "au_6",
+      actor: MIDO,
+      action: "cancelled_event",
+      targetSummary: "Brunch Jazz Anfa · 412 remboursements déclenchés",
+      timestamp: offsetMin(60 * 24 * 2 + 60 * 4),
+    },
+    {
+      id: "au_7",
+      actor: MIDO,
+      action: "changed_payout_account",
+      targetSummary: "RIB Bank of Africa · vérification SMS validée",
+      timestamp: offsetMin(60 * 24 * 3),
+    },
+    {
+      id: "au_8",
+      actor: IMANE,
+      action: "submitted_event",
+      targetSummary: "Pass Semaine 1, Rilès",
+      timestamp: offsetMin(60 * 24 * 4),
+    },
+    {
+      id: "au_9",
+      actor: MIDO,
+      action: "changed_role",
+      targetSummary: "Imane Cherkaoui · Administrateur (depuis Scanner)",
+      timestamp: offsetMin(60 * 24 * 5),
+    },
+    {
+      id: "au_10",
+      actor: IMANE,
+      action: "approved_refund",
+      targetSummary: "Layla F. · Pass Jour Early Bird · 380 MAD",
+      timestamp: offsetMin(60 * 24 * 5 + 60 * 3),
+    },
+    {
+      id: "au_11",
+      actor: MIDO,
+      action: "removed_member",
+      targetSummary: "Hicham B. · Scanner (compte inactif)",
+      timestamp: offsetMin(60 * 24 * 6),
+    },
+    {
+      id: "au_12",
+      actor: MIDO,
+      action: "edited_settings",
+      targetSummary: "Notifications · digest hebdomadaire activé",
+      timestamp: offsetMin(60 * 24 * 7),
     },
   ];
+}
+
+const ACTION_LABEL: Record<AuditEntry["action"], string> = {
+  invited_member: "A invité",
+  removed_member: "A retiré",
+  changed_role: "A modifié le rôle de",
+  approved_refund: "A approuvé un remboursement",
+  denied_refund: "A refusé un remboursement",
+  cancelled_event: "A annulé l'événement",
+  changed_payout_account: "A modifié les coordonnées de versement",
+  submitted_event: "A soumis l'événement",
+  edited_settings: "A modifié les réglages",
+};
+
+export function describeAuditAction(entry: AuditEntry): string {
+  return ACTION_LABEL[entry.action];
 }

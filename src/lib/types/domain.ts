@@ -250,11 +250,24 @@ export interface TeamMember {
   eventScopeId?: string;
 }
 
+export type AuditAction =
+  | "invited_member"
+  | "removed_member"
+  | "changed_role"
+  | "approved_refund"
+  | "denied_refund"
+  | "cancelled_event"
+  | "changed_payout_account"
+  | "submitted_event"
+  | "edited_settings";
+
 export interface AuditEntry {
   id: string;
-  actor: string;
-  action: string;
-  at: string;
+  actor: { name: string; email: string };
+  action: AuditAction;
+  /** Human-readable summary, varies by action ("Reda Bennani", "Pass Jour Carré Or, 1 200 MAD"…). */
+  targetSummary: string;
+  timestamp: string;
 }
 
 // === Wizard ===

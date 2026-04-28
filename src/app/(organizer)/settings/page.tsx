@@ -81,12 +81,41 @@ export default function SettingsPage() {
 
 function ProfileSection() {
   const { toast } = useToast();
+  const [logoName, setLogoName] = useState<string | null>(null);
   return (
     <Card variant="surface" size="lg">
       <h2 className="text-h2 text-ink">Profil organisateur</h2>
       <p className="text-body text-ink-soft mt-1.5">
         Ce que vos clients voient sur la page publique.
       </p>
+
+      {/* Logo upload at the top — first visual touchpoint of the profile. */}
+      <div className="mt-7 flex items-center gap-5 flex-wrap">
+        <div
+          aria-hidden
+          className="h-20 w-20 rounded-[var(--radius-md)] flex items-center justify-center text-violet-deep font-bold text-h3 shrink-0"
+          style={{ background: "var(--color-violet-soft)" }}
+        >
+          JZ
+        </div>
+        <div className="flex-1 min-w-[240px]">
+          <label className="inline-flex items-center gap-2 h-10 px-4 rounded-[var(--radius-sm)] bg-surface border border-line text-[13px] font-semibold cursor-pointer hover:border-ink transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => setLogoName(e.target.files?.[0]?.name ?? null)}
+            />
+            {logoName ? "Remplacer le logo" : "Téléverser un logo"}
+          </label>
+          <p className="text-meta text-ink-mute mt-2">
+            {logoName
+              ? `Sélectionné : ${logoName}`
+              : "PNG ou SVG transparent · 512×512 minimum."}
+          </p>
+        </div>
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-4 mt-7">
         <Input label="Nom" defaultValue="Jazzablanca" />
         <Input
@@ -94,19 +123,23 @@ function ProfileSection() {
           type="email"
           defaultValue="hello@jazzablanca.com"
         />
-        <Input label="Téléphone" defaultValue="+212 522 00 00 00" />
+        <Input label="Téléphone" prefix="+212" defaultValue="522 00 00 00" />
         <Input label="Site web" defaultValue="https://jazzablanca.com" />
       </div>
       <div className="mt-4">
         <Textarea
-          label="Bio"
+          label="Bio (max 500 caractères)"
           rows={3}
+          maxLength={500}
           defaultValue="Festival international de musique. 19e édition du 02 au 11 juillet 2026 à l'Anfa Park de Casablanca."
         />
       </div>
       <div className="mt-4 grid sm:grid-cols-2 gap-4">
         <Input label="Instagram" defaultValue="@jazzablanca" />
         <Input label="Facebook" defaultValue="jazzablanca" />
+        <Input label="X (Twitter)" defaultValue="@jazzablanca" />
+        <Input label="LinkedIn" defaultValue="company/jazzablanca" />
+        <Input label="TikTok" defaultValue="@jazzablanca" />
       </div>
       <div className="mt-7 flex justify-end">
         <Button
