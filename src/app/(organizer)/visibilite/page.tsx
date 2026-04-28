@@ -9,6 +9,7 @@ import {
   BOOST_LABEL,
   BoostFormatIcon,
 } from "@/components/visibility/BoostFormatIcon";
+import { BoostWizardLauncher } from "@/components/visibility/BoostWizard";
 import { CampaignStatusPill } from "@/components/visibility/CampaignStatusPill";
 import {
   getAudienceSegments,
@@ -36,9 +37,10 @@ export default function VisibilitePage() {
               Le ROAS est la métrique qui compte.
             </p>
           </div>
-          <Button iconLeft={<Plus size={16} strokeWidth={2} />}>
+          <BoostWizardLauncher className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[14px] rounded-[var(--radius-sm)] font-semibold bg-violet text-canvas hover:bg-violet-deep transition-colors">
+            <Plus size={16} strokeWidth={2} />
             Lancer un boost
-          </Button>
+          </BoostWizardLauncher>
         </div>
       </StaggerItem>
 
@@ -223,10 +225,13 @@ export default function VisibilitePage() {
                 <p className="text-meta text-ink-soft mt-3 leading-relaxed">
                   {s.description}
                 </p>
-                <button className="mt-4 text-meta font-bold uppercase tracking-[0.08em] text-violet-deep hover:text-ink transition-colors flex items-center gap-1">
+                <BoostWizardLauncher
+                  initialSegmentId={s.id}
+                  className="mt-4 text-meta font-bold uppercase tracking-[0.08em] text-violet-deep hover:text-ink transition-colors flex items-center gap-1"
+                >
                   Lancer un boost
                   <ChevronRight size={12} strokeWidth={2} />
-                </button>
+                </BoostWizardLauncher>
               </Card>
             ))}
           </div>
