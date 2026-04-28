@@ -1,12 +1,15 @@
 "use client";
 
-import { Download } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Download, Megaphone } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
+import { BOOST_LABEL, BoostFormatIcon } from "@/components/visibility/BoostFormatIcon";
 import { getInvoices, getPayouts } from "@/lib/mock/finance";
+import { getCampaigns } from "@/lib/mock/visibility";
 import {
   formatDateFR,
   formatDateTimeFR,
@@ -118,6 +121,9 @@ export default function SettlementsPage() {
         </div>
       </Card>
 
+      {/* === Boost spend, deducted from upcoming settlements === */}
+      <BoostSpendCard />
+
       {/* === History === */}
       <Card variant="surface" size="md" className="!p-0">
         <div className="px-6 pt-6 pb-4 flex items-end justify-between flex-wrap gap-3">
@@ -227,6 +233,82 @@ export default function SettlementsPage() {
         </ul>
       </Card>
     </div>
+  );
+}
+
+function BoostSpendCard() {
+  // Spend = sum of all currently-active and recently-completed campaigns
+  // for the period. In production this is a window-bounded query; for the
+  // demo we surface every campaign in the mock factory.
+  const campaigns = getCampaigns();
+  if (campaigns.length === 0) return null;
+  const total = campaigns.reduce((s, c) => s + c.spentMad, 0);
+
+  return (
+    <Card variant="canvas-2" size="md" className="!p-0">
+      <div className="px-6 pt-6 pb-4 flex items-end justify-between flex-wrap gap-3">
+        <div className="flex items-start gap-3">
+          <span
+            aria-hidden
+            className="h-10 w-10 rounded-[12px] bg-violet-soft flex items-center justify-center shrink-0"
+          >
+            <Megaphone size={18} strokeWidth={1.7} className="text-violet-deep" />
+          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-h3 text-ink">Dépenses boost</h2>
+              <Pill tone="info">DÉDUIT</Pill>
+            </div>
+            <p className="text-meta text-ink-soft mt-1 max-w-md leading-relaxed">
+              Ces montants sont déduits du prochain versement, ligne par ligne
+              sur le relevé.
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-eyebrow text-ink-mute">Total</div>
+          <div className="text-h3 text-ink num font-bold mt-0.5">
+            − {formatMAD(total)}
+          </div>
+        </div>
+      </div>
+      <ul className="divide-y divide-line-soft">
+        {campaigns.map((c) => (
+          <li
+            key={c.id}
+            className="px-6 py-4 flex items-center gap-3 justify-between"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <BoostFormatIcon
+                type={c.boostType}
+                size={16}
+                className="text-violet-deep shrink-0"
+              />
+              <div className="min-w-0">
+                <div className="text-[14px] font-semibold text-ink truncate">
+                  {c.name}
+                </div>
+                <div className="text-meta text-ink-mute mt-0.5 truncate">
+                  {BOOST_LABEL[c.boostType]} · {c.eventName}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-5 shrink-0">
+              <div className="text-[14px] font-bold text-ink num">
+                − {formatMAD(c.spentMad)}
+              </div>
+              <Link
+                href={`/visibilite/${c.id}`}
+                className="inline-flex items-center gap-1 text-meta font-bold uppercase tracking-[0.08em] text-ink-soft hover:text-ink transition-colors"
+              >
+                Détails
+                <ArrowRight size={12} strokeWidth={2} />
+              </Link>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Card>
   );
 }
 

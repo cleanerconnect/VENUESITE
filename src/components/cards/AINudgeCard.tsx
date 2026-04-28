@@ -1,9 +1,13 @@
+"use client";
+
 import { Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { BoostWizardLauncher } from "@/components/visibility/BoostWizard";
 
-// Inline AI nudge, forward-looking suggestion. Lives directly under the
-// Tonight card. Violet-soft surface signals "intelligence" rather than
-// "sales", and stops it competing visually with the gold money cards.
+// AI suggestion card. The recommendation can shift between channels:
+// here it surfaces a paid-promotion play because the conversion data
+// indicates it's the higher-leverage move tonight. Clicking the primary
+// CTA opens the boost wizard pre-filled for that audience.
 export function AINudgeCard() {
   return (
     <Card variant="violet-soft" size="md">
@@ -19,14 +23,18 @@ export function AINudgeCard() {
           <div className="text-[14px] text-ink mt-2 leading-relaxed">
             <span className="font-semibold">Pic à 22h prévu.</span>{" "}
             <span className="text-ink-soft">
-              La conversion est 18 % au-dessus de votre moyenne, pensez à
-              publier une story Instagram d'ici 30 minutes.
+              Un Splash de bienvenue ce soir 19h-23h capterait ≈ 1 200 billets
+              supplémentaires sur l&apos;audience Festivaliers Casa 25-35.
+              Coût estimé : 4 500 MAD.
             </span>
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <button className="text-meta font-bold uppercase tracking-[0.08em] text-violet-deep hover:text-ink transition-colors">
-              Préparer la story →
-            </button>
+            <BoostWizardLauncher
+              initialSegmentId="seg_1"
+              className="text-meta font-bold uppercase tracking-[0.08em] text-violet-deep hover:text-ink transition-colors"
+            >
+              Lancer le boost →
+            </BoostWizardLauncher>
             <button className="text-meta font-medium text-ink-mute hover:text-ink transition-colors">
               Ignorer
             </button>

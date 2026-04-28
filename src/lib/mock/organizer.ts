@@ -178,6 +178,15 @@ const activity: ActivityItem[] = [
     at: offsetMin(7),
   },
   {
+    id: "a3b",
+    type: "boost",
+    actor: "Splash Robbie Williams",
+    message: "ROAS franchi le seuil 10× · 11,4× après 48h",
+    eventId: "evt_jzb_robbie",
+    campaignId: "cmp_robbie_splash",
+    at: offsetMin(12),
+  },
+  {
     id: "a4",
     type: "purchase",
     actor: "Hicham El Idrissi",
@@ -192,6 +201,15 @@ const activity: ActivityItem[] = [
     message: "remboursement approuvé, 750 MAD",
     eventId: "evt_jzb_riles",
     at: offsetMin(34),
+  },
+  {
+    id: "a5b",
+    type: "boost",
+    actor: "Carte Rilès",
+    message: "ROAS sous le seuil cible · 2,1× vs 3× attendu, suggestion disponible",
+    eventId: "evt_jzb_riles",
+    campaignId: "cmp_riles_card",
+    at: offsetMin(48),
   },
   {
     id: "a6",

@@ -57,10 +57,12 @@ export interface LyfeEvent {
 
 export interface ActivityItem {
   id: string;
-  type: "purchase" | "transfer" | "refund" | "scan" | "moderation";
+  type: "purchase" | "transfer" | "refund" | "scan" | "moderation" | "boost";
   message: string;
   actor: string;
   eventId?: string;
+  /** When type === "boost", links the row to /visibilite/{campaignId}. */
+  campaignId?: string;
   at: string;
 }
 

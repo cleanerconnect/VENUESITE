@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { MoreVertical } from "lucide-react";
+import { Megaphone, MoreVertical } from "lucide-react";
 import type { LyfeEvent } from "@/lib/types/domain";
-import { StatusPill } from "@/components/ui/Pill";
+import { Pill, StatusPill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { getCampaigns } from "@/lib/mock/visibility";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 
 // 96px-tall row card. Hover lifts. Click goes to event detail.
@@ -17,6 +18,10 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
     0,
   );
   const pct = cap > 0 ? Math.round((sold / cap) * 100) : 0;
+  // Whether at least one paid campaign is currently active for this event.
+  const activeBoosts = getCampaigns().filter(
+    (c) => c.eventId === event.id && c.status === "active",
+  ).length;
 
   return (
     <motion.div
@@ -50,6 +55,12 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
             <div className="flex items-center gap-2 flex-wrap">
               <h4 className="text-h3 text-ink truncate">{event.name}</h4>
               <StatusPill status={event.status} />
+              {activeBoosts > 0 ? (
+                <Pill tone="info">
+                  <Megaphone size={11} strokeWidth={2} className="-ml-0.5" />
+                  Boost actif
+                </Pill>
+              ) : null}
             </div>
             <div className="text-meta text-ink-mute mt-1 num">
               {formatDateTimeFR(event.startsAt)} · {event.venue.name},{" "}

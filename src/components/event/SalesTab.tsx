@@ -1,12 +1,15 @@
 "use client";
 
-import { Download, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Download, Megaphone, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Pill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { RevenueChart } from "./RevenueChart";
 import { getRevenueSeries } from "@/lib/mock/events";
+import { getCampaigns } from "@/lib/mock/visibility";
 import { formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 
@@ -14,8 +17,80 @@ export function SalesTab({ event }: { event: LyfeEvent }) {
   const series = getRevenueSeries();
   const total = series.reduce((s, p) => s + p.amount, 0);
 
+  // Boost attribution scoped to this event — what share of sales came
+  // from paid promotion. Shown only when at least one campaign exists.
+  const eventCampaigns = getCampaigns().filter((c) => c.eventId === event.id);
+  const boostTickets = eventCampaigns.reduce(
+    (s, c) => s + c.ticketsAttributed,
+    0,
+  );
+  const boostRevenue = eventCampaigns.reduce(
+    (s, c) => s + c.revenueAttributedMad,
+    0,
+  );
+  const boostSpend = eventCampaigns.reduce((s, c) => s + c.spentMad, 0);
+  const totalSold = event.tiers.reduce((s, t) => s + t.sold, 0);
+  const boostShare = totalSold > 0 ? (boostTickets / totalSold) * 100 : 0;
+  const boostRoas = boostSpend > 0 ? boostRevenue / boostSpend : 0;
+
   return (
     <div className="space-y-5">
+      {/* === Boost attribution strip === */}
+      {eventCampaigns.length > 0 ? (
+        <Card variant="violet-soft" size="md">
+          <div className="flex items-start gap-4 flex-wrap">
+            <span
+              aria-hidden
+              className="h-10 w-10 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+            >
+              <Megaphone size={18} strokeWidth={1.7} className="text-violet-deep" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <div className="text-eyebrow text-violet-deep">
+                  Attribution boost
+                </div>
+                <Pill tone="info">{eventCampaigns.length} active{eventCampaigns.length > 1 ? "s" : ""}</Pill>
+              </div>
+              <div className="text-[14px] text-ink mt-2 leading-relaxed">
+                <span className="font-semibold num">{boostTickets}</span>{" "}
+                billets ({boostShare.toFixed(0)} % du total) attribués aux
+                campagnes payantes ·{" "}
+                <span className="font-semibold num">
+                  {formatMAD(boostRevenue)}
+                </span>{" "}
+                de revenu pour{" "}
+                <span className="num">{formatMAD(boostSpend)}</span> dépensés.
+              </div>
+            </div>
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="text-right">
+                <div className="text-eyebrow text-ink-mute">ROAS</div>
+                <div
+                  className="num text-violet-deep mt-1"
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontWeight: 600,
+                    fontSize: "28px",
+                    lineHeight: 1,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {boostRoas.toFixed(1).replace(".", ",")}×
+                </div>
+              </div>
+              <Link
+                href="/visibilite"
+                className="text-meta font-semibold text-violet-deep hover:text-ink transition-colors flex items-center gap-1"
+              >
+                Détails
+                <ArrowRight size={12} strokeWidth={2} />
+              </Link>
+            </div>
+          </div>
+        </Card>
+      ) : null}
+
       {/* === Tier breakdown table === */}
       <Card variant="surface" size="md" className="!p-0">
         <div className="px-6 pt-6 pb-4 flex items-start justify-between flex-wrap gap-3">
