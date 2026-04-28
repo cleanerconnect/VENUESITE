@@ -18,6 +18,7 @@ import {
   PlusCircle,
   Settings,
   Sparkles,
+  Tag,
   Ticket,
   UserCog,
   Users,
@@ -52,6 +53,7 @@ const GROUP_A: Item[] = [
   { label: "Bilans", href: "/bilans", icon: FileText, allow: ["owner", "admin"] },
   { label: "Audiences", href: "/audiences", icon: Sparkles, allow: ["owner", "admin"] },
   { label: "Visibilité", href: "/visibilite", icon: Megaphone, allow: ["owner", "admin"] },
+  { label: "Codes promo", href: "/promo-codes", icon: Tag, allow: ["owner", "admin"] },
   {
     label: "Créer un événement",
     href: "/events/new",
