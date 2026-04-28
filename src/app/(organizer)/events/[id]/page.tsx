@@ -4,12 +4,16 @@ import { notFound, useParams } from "next/navigation";
 import { Tabs } from "@/components/ui/Tabs";
 import { StatusPill, Pill } from "@/components/ui/Pill";
 import { SalesTab } from "@/components/event/SalesTab";
+import { AnalysesTab } from "@/components/event/AnalysesTab";
 import { AttendeesTab } from "@/components/event/AttendeesTab";
 import { RefundsTab } from "@/components/event/RefundsTab";
 import { ScannerTab } from "@/components/event/ScannerTab";
 import { PromoteTab } from "@/components/event/PromoteTab";
 import { getEventById, getAllEvents } from "@/lib/mock/events";
+import { hasAnalyses } from "@/lib/mock/analyses";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
+import type { TabDef } from "@/components/ui/Tabs";
+import type { LyfeEvent } from "@/lib/types/domain";
 
 export default function EventDetailPage() {
   const params = useParams<{ id: string }>();
@@ -114,35 +118,51 @@ export default function EventDetailPage() {
 
       {/* === Tabs === */}
       <div className="px-4 md:px-8 py-7 md:py-9 max-w-[1440px] mx-auto">
-        <Tabs
-          tabs={[
-            {
-              id: "sales",
-              label: "Ventes",
-              content: <SalesTab event={event} />,
-            },
-            {
-              id: "attendees",
-              label: "Participants",
-              count: sold,
-              content: <AttendeesTab />,
-            },
-            {
-              id: "refunds",
-              label: "Remboursements",
-              content: <RefundsTab event={event} />,
-            },
-            { id: "scanner", label: "Scanner", content: <ScannerTab /> },
-            {
-              id: "promote",
-              label: "Promouvoir",
-              content: <PromoteTab event={event} />,
-            },
-          ]}
-        />
+        <Tabs tabs={buildTabs(event, sold)} />
       </div>
     </div>
   );
+}
+
+// Tab builder — Analyses sits right after Ventes when the event has
+// analytics seeded (on_sale + in_review). Ordered so the operational
+// tabs (Participants, Remboursements, Scanner) and the action tab
+// (Promouvoir) read naturally after the data narrative.
+function buildTabs(event: LyfeEvent, sold: number): TabDef[] {
+  const tabs: TabDef[] = [
+    {
+      id: "sales",
+      label: "Ventes",
+      content: <SalesTab event={event} />,
+    },
+  ];
+  if (hasAnalyses(event.id)) {
+    tabs.push({
+      id: "analyses",
+      label: "Analyses",
+      content: <AnalysesTab event={event} />,
+    });
+  }
+  tabs.push(
+    {
+      id: "attendees",
+      label: "Participants",
+      count: sold,
+      content: <AttendeesTab />,
+    },
+    {
+      id: "refunds",
+      label: "Remboursements",
+      content: <RefundsTab event={event} />,
+    },
+    { id: "scanner", label: "Scanner", content: <ScannerTab /> },
+    {
+      id: "promote",
+      label: "Promouvoir",
+      content: <PromoteTab event={event} />,
+    },
+  );
+  return tabs;
 }
 
 function KeyStat({

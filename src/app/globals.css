@@ -26,6 +26,13 @@
   --color-violet-deep: #6b3f8a;
   --color-violet-soft: #f0e8f7;
 
+  /* Chart accents — used exclusively on the Analyses + Bilan donuts and
+     legends for the partner / direct channels. Not part of the chrome
+     palette, intentionally muted so they sit next to violet without
+     competing. */
+  --color-sand: #c4a777;
+  --color-sky: #6395bd;
+
   /* Surfaces — white canvas so the LYFE wordmark sits flush. canvas-2 is
      a faint violet wash for sidebar / footer / sticky bars. */
   --color-canvas: #ffffff;
