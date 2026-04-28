@@ -91,11 +91,14 @@ export function BoostWizard({
   onOpenChange,
   initialSegmentId,
   initialFormat,
+  eventName,
 }: {
   open: boolean;
   onOpenChange: (next: boolean) => void;
   initialSegmentId?: string;
   initialFormat?: BoostType;
+  /** When opened from an event's Promote tab, surfaces this in the header. */
+  eventName?: string;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -169,6 +172,14 @@ export function BoostWizard({
                   <div className="flex-1 min-w-0">
                     <div className="text-eyebrow text-violet-deep">
                       Étape {state.step + 1} sur 3
+                      {eventName ? (
+                        <>
+                          <span className="text-ink-mute mx-1.5">·</span>
+                          <span className="text-ink-mute normal-case tracking-normal font-medium">
+                            {eventName}
+                          </span>
+                        </>
+                      ) : null}
                     </div>
                     <RadixDialog.Title className="text-h3 text-ink mt-1">
                       {STEP_TITLES[state.step]}
@@ -271,10 +282,12 @@ export function BoostWizard({
 // cards, pass initialSegmentId to pre-select that segment.
 export function BoostWizardLauncher({
   initialSegmentId,
+  eventName,
   className,
   children,
 }: {
   initialSegmentId?: string;
+  eventName?: string;
   className?: string;
   children: React.ReactNode;
 }) {
@@ -292,6 +305,7 @@ export function BoostWizardLauncher({
         open={open}
         onOpenChange={setOpen}
         initialSegmentId={initialSegmentId}
+        eventName={eventName}
       />
     </>
   );
