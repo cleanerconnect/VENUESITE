@@ -45,7 +45,7 @@ export function Tabs({
     >
       <div
         ref={listRef}
-        className="relative border-b border-line-soft overflow-x-auto scroll-thin"
+        className="relative border-b border-line-soft overflow-x-auto scroll-thin no-print"
       >
         <RadixTabs.List className="inline-flex gap-1 min-w-max">
           {tabs.map((t) => {

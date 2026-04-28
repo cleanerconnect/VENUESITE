@@ -377,6 +377,20 @@ export function getAudienceSegments(): AudienceSegment[] {
       description: "Détenteurs de Pass 10 jours sur les deux dernières éditions.",
       memberCount: 1_180,
     },
+    {
+      id: "seg_5",
+      name: "Acheteurs internationaux",
+      description:
+        "Carte bancaire étrangère ou téléphone +33 / +34 / +44, séjour Maroc programmé.",
+      memberCount: 720,
+    },
+    {
+      id: "seg_6",
+      name: "Étudiants Casa-Rabat",
+      description:
+        "Email .edu ou âge déclaré 18-22, achat majoritairement Early Bird ou Pass Jour.",
+      memberCount: 3_460,
+    },
   ];
 }
 

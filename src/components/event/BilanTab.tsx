@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Printer, ThumbsDown, ThumbsUp, Sparkles, ListChecks } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -14,6 +16,18 @@ import type { OperationalStat } from "@/lib/types/analytics";
 
 export function BilanTab({ event }: { event: LyfeEvent }) {
   const data = getBilanByEventId(event.id, getAllEvents());
+  const search = useSearchParams();
+  const autoPrint = search.get("print") === "1";
+
+  // When the user lands here with ?print=1 (e.g. from the "PDF"
+  // chip on the Récents bilans strip), trigger the browser print
+  // dialog after one paint so the print stylesheet has been applied.
+  useEffect(() => {
+    if (!autoPrint || !data) return;
+    const t = window.setTimeout(() => window.print(), 250);
+    return () => window.clearTimeout(t);
+  }, [autoPrint, data]);
+
   if (!data) {
     return (
       <Card variant="surface" size="md">

@@ -45,7 +45,7 @@ function EventDetailInner() {
   return (
     <div className="-mx-4 md:-mx-8 -mt-6 md:-mt-8">
       {/* === Header === */}
-      <div className="relative overflow-hidden border-b border-line-soft">
+      <div className="relative overflow-hidden border-b border-line-soft no-print">
         {/* Gradient cover backdrop */}
         <div
           aria-hidden

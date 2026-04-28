@@ -16,6 +16,7 @@ import {
   MoreVertical,
   PlusCircle,
   Settings,
+  Sparkles,
   Ticket,
   UserCog,
   Users,
@@ -47,6 +48,7 @@ interface Item {
 const GROUP_A: Item[] = [
   { label: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboard },
   { label: "Mes événements", href: "/events", icon: Ticket },
+  { label: "Audiences", href: "/audiences", icon: Sparkles, allow: ["owner", "admin"] },
   { label: "Visibilité", href: "/visibilite", icon: Megaphone, allow: ["owner", "admin"] },
   {
     label: "Créer un événement",

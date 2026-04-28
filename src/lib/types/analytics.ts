@@ -306,18 +306,108 @@ export interface BuyerProfile {
 }
 
 /**
+ * Hero numbers shown at the top of /audiences in Fraunces display
+ * size. All pre-formatted to keep render-side logic dumb.
+ */
+export interface AudiencesHeroStats {
+  totalBuyersLabel: string;
+  totalBuyers: number;
+  activeSegments: number;
+  /** LTV of the active customer base, pre-formatted (e.g. "1 245 MAD"). */
+  ltvLabel: string;
+  ltvMad: number;
+}
+
+/**
+ * One city dot on the Morocco choropleth. Coordinates are normalized
+ * 0-100 against a 100×140 viewbox so the SVG can scale freely.
+ */
+export interface GeoPoint {
+  city: string;
+  /** Share of total buyers from this city, %. */
+  share: number;
+  ticketCount: number;
+  /** SVG x in the 0-100 viewbox space. */
+  x: number;
+  /** SVG y in the 0-140 viewbox space. */
+  y: number;
+}
+
+export interface CohortPoint {
+  /** 0 = first event after acquisition. */
+  index: number;
+  label: string;
+  retentionPct: number;
+}
+
+export interface Cohort {
+  id: string;
+  /** e.g. "Acquis · Édition 2023". */
+  label: string;
+  startedAtIso: string;
+  initialBuyers: number;
+  points: CohortPoint[];
+}
+
+export interface TopClient {
+  /** Anonymized initials shown in the table, e.g. "Y. B." */
+  initials: string;
+  /** Full name — present in the data layer but the table renders
+   *  initials in CNDP-compliant mode. */
+  fullName: string;
+  city: string;
+  segment: string;
+  eventsAttended: number;
+  totalSpentMad: number;
+  ltvLabel: string;
+  lifetimeTier: "casual" | "regular" | "vip";
+}
+
+export interface BenchmarkRow {
+  metric: string;
+  yourValue: string;
+  platformMedian: string;
+  deltaLabel: string;
+  favorable: boolean;
+}
+
+/**
+ * Per-segment detail used by the side panel that opens when a segment
+ * card is clicked. Pairs with AudienceSegment by id.
+ */
+export interface AudienceSegmentDetail {
+  segmentId: string;
+  averageSpendLabel: string;
+  conversionLiftLabel: string;
+  topCity: string;
+  topInterest: string;
+  insights: string[];
+}
+
+/**
  * Audiences route data. Discriminated by `state`:
- *  - "ready"  → segments + sample buyers (mature account)
+ *  - "ready"  → segments + sample buyers + geo + cohorts + top clients
+ *               + benchmarks (mature account)
  *  - "locked" → empty-state copy + progress to unlock (new account)
  */
 export type AudiencesData =
   | {
       state: "ready";
-      /** Total unique buyers across all events. */
-      totalBuyers: number;
+      heroStats: AudiencesHeroStats;
+      /** 6 segments in the click-to-side-panel grid. */
       segments: AudienceSegment[];
+      /** Per-segment narrative detail keyed by segment id. */
+      segmentDetails: Record<string, AudienceSegmentDetail>;
       /** Buyers surfaced in the audiences route's "à découvrir" rail. */
       sampleBuyers: BuyerProfile[];
+      /** Morocco choropleth points. */
+      geo: GeoPoint[];
+      /** Last 3-4 acquisition cohorts. */
+      cohorts: Cohort[];
+      /** Top 10 clients by lifetime spend. */
+      topClients: TopClient[];
+      /** Performance vs platform median, 4-6 rows. */
+      benchmarks: BenchmarkRow[];
     }
   | {
       state: "locked";

@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { ChevronRight, Plus, Search } from "lucide-react";
+import { ChevronRight, Plus, Printer, Search } from "lucide-react";
 import { getAllEvents } from "@/lib/mock/events";
+import { getBilanByEventId, hasBilan } from "@/lib/mock/bilan";
 import type { EventStatus, LyfeEvent } from "@/lib/types/domain";
 import { UpcomingEventRow } from "@/components/cards/UpcomingEventRow";
+import { RecentBilansStrip } from "@/components/cards/RecentBilansStrip";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useRole } from "@/lib/auth/role";
 import { cn } from "@/lib/utils/cn";
 
-type Filter = "all" | EventStatus;
+type Filter = "all" | EventStatus | "bilans";
 type Sort = "date_desc" | "date_asc" | "revenue" | "tickets";
 
 const FILTERS: { id: Filter; label: string }[] = [
@@ -21,6 +23,7 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "live", label: "En cours" },
   { id: "in_review", label: "En modération" },
   { id: "draft", label: "Brouillons" },
+  { id: "bilans", label: "Bilans" },
   { id: "past", label: "Passés" },
   { id: "settled", label: "Versés" },
   { id: "cancelled", label: "Annulés" },
@@ -38,17 +41,38 @@ export default function EventsPage() {
 
   const counts = useMemo(() => {
     return FILTERS.reduce<Record<string, number>>((acc, f) => {
-      acc[f.id] =
-        f.id === "all"
-          ? all.length
-          : all.filter((e) => e.status.state === f.id).length;
+      if (f.id === "all") acc[f.id] = all.length;
+      else if (f.id === "bilans")
+        acc[f.id] = all.filter((e) => hasBilan(e)).length;
+      else acc[f.id] = all.filter((e) => e.status.state === f.id).length;
       return acc;
     }, {});
   }, [all]);
 
+  // Most-recent settled events with a Bilan, capped at 3 — feeds the
+  // "Récents bilans" strip pinned above the filter tabs. Sorted by
+  // event end date so the freshest bilan reads first.
+  const recentBilans = useMemo(() => {
+    return all
+      .filter((e) => hasBilan(e))
+      .sort((a, b) => (a.endsAt < b.endsAt ? 1 : -1))
+      .slice(0, 3)
+      .map((e) => ({
+        event: e,
+        bilan: getBilanByEventId(e.id, all),
+      }))
+      .filter((r): r is { event: LyfeEvent; bilan: NonNullable<typeof r.bilan> } =>
+        Boolean(r.bilan),
+      );
+  }, [all]);
+
   const list = useMemo(() => {
     return all
-      .filter((e) => (filter === "all" ? true : e.status.state === filter))
+      .filter((e) => {
+        if (filter === "all") return true;
+        if (filter === "bilans") return hasBilan(e);
+        return e.status.state === filter;
+      })
       .filter((e) =>
         query.trim()
           ? e.name.toLowerCase().includes(query.toLowerCase())
@@ -124,6 +148,11 @@ export default function EventsPage() {
           <option value="tickets">Billets vendus</option>
         </select>
       </div>
+
+      {/* === Récents bilans strip (only when 1+ settled events exist) === */}
+      {recentBilans.length > 0 ? (
+        <RecentBilansStrip rows={recentBilans} />
+      ) : null}
 
       {/* === Filter tabs (segmented control with sliding violet underline) === */}
       <div className="border-b border-line-soft overflow-x-auto scroll-thin">
