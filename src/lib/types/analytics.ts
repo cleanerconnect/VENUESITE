@@ -231,6 +231,36 @@ export interface BilanData {
   reviews: ReviewItem[];
   /** Empty array for first-time editions. */
   previousEditions: PreviousEdition[];
+  /** Italic AI takeaway in the financial hero — single paragraph. */
+  aiTakeaway: string;
+  /** Three operational metrics with vs historical + platform deltas. */
+  operationalStats: OperationalStat[];
+  /** Three AI prose insights surfaced in "Ce qui a marché". */
+  whatWorked: string[];
+  /** 2-3 honest observations surfaced in "Ce qui a moins marché". */
+  whatDidntWork: string[];
+  /** Five actionable bullets surfaced in "Recommandations". */
+  recommendations: string[];
+}
+
+/**
+ * One row in the operational performance section of the Bilan. Each
+ * stat carries both a historical comparison (vs same series last year)
+ * and a platform benchmark (vs LYFE-wide median). Pre-formatted strings
+ * keep render-side logic dumb.
+ */
+export interface OperationalStat {
+  label: string;
+  /** Pre-formatted headline number, e.g. "96,4 %". */
+  value: string;
+  /** e.g. "−1,7 pt vs édition 2024" */
+  vsHistoricalLabel: string;
+  /** Whether the historical delta reads as favorable. */
+  vsHistoricalFavorable: boolean;
+  /** e.g. "+8 pts vs médiane plateforme" */
+  vsPlatformLabel: string;
+  /** Whether the platform delta reads as favorable. */
+  vsPlatformFavorable: boolean;
 }
 
 // === /audiences ===

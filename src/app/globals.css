@@ -241,3 +241,71 @@ input[type="datetime-local"],
 input[type="time"] {
   color-scheme: light;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Print stylesheet — used by the Bilan tab "Téléchargement PDF"
+   button. Strips chrome (sidebar, topbar, FAB, kebab menus, sticky
+   bottom bars), forces white background, lifts ink colours so the
+   document reads on paper, and renders the Bilan as a single A4
+   artifact with the LYFE logo top-left.
+
+   The .bilan-printable class is applied by BilanTab on its root.
+   The .no-print class is applied to chrome that should disappear
+   on print.
+   ───────────────────────────────────────────────────────────── */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+  html, body {
+    background: #ffffff !important;
+    color: #0a1f3d !important;
+  }
+  /* Hide chrome — anything outside the Bilan body. */
+  .no-print,
+  aside.no-print,
+  nav.no-print,
+  header.no-print,
+  [data-print-hidden="true"] {
+    display: none !important;
+  }
+  /* Force the Bilan area to occupy the full page width with no card
+     shadows or rounded corners on the print artifact. */
+  .bilan-printable {
+    background: #ffffff !important;
+    color: #0a1f3d !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .bilan-printable section,
+  .bilan-printable .bilan-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  /* Keep numbers + headlines crisp on paper. */
+  .bilan-printable h1,
+  .bilan-printable h2,
+  .bilan-printable h3 {
+    color: #0a1f3d !important;
+  }
+  /* Force dark ink hero into a flat ink-on-white treatment so the
+     printer doesn't waste ink rendering a navy background. */
+  .bilan-printable .bilan-hero {
+    background: #ffffff !important;
+    color: #0a1f3d !important;
+    border: 1px solid #0a1f3d !important;
+  }
+  .bilan-printable .bilan-hero * {
+    color: #0a1f3d !important;
+  }
+  /* Tinted sections lose their fills on print, replaced by a thin
+     ink rule on the left so the visual hierarchy survives B&W. */
+  .bilan-printable .bilan-tint {
+    background: #ffffff !important;
+    border-left: 3px solid #0a1f3d !important;
+  }
+}

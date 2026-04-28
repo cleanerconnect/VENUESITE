@@ -18,18 +18,24 @@ export default function OrganizerLayout({
   return (
     <SessionGuard>
       <div className="min-h-screen flex">
-        <Sidebar />
+        <div className="no-print contents">
+          <Sidebar />
+        </div>
         <div className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">
-          <Topbar />
+          <div className="no-print contents">
+            <Topbar />
+          </div>
           <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 md:px-8 py-6 md:py-8">
             {children}
           </main>
         </div>
-        <BottomTabs />
+        <div className="no-print contents">
+          <BottomTabs />
 
-        {/* Persistent global surfaces */}
-        <ScannerModal />
-        <AssistantFAB />
+          {/* Persistent global surfaces */}
+          <ScannerModal />
+          <AssistantFAB />
+        </div>
       </div>
     </SessionGuard>
   );

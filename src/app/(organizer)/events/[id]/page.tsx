@@ -7,11 +7,13 @@ import { StatusPill, Pill } from "@/components/ui/Pill";
 import { SalesTab } from "@/components/event/SalesTab";
 import { AnalysesTab } from "@/components/event/AnalysesTab";
 import { AttendeesTab } from "@/components/event/AttendeesTab";
+import { BilanTab } from "@/components/event/BilanTab";
 import { RefundsTab } from "@/components/event/RefundsTab";
 import { ScannerTab } from "@/components/event/ScannerTab";
 import { PromoteTab } from "@/components/event/PromoteTab";
 import { getEventById, getAllEvents } from "@/lib/mock/events";
 import { hasAnalyses } from "@/lib/mock/analyses";
+import { hasBilan } from "@/lib/mock/bilan";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 import type { TabDef } from "@/components/ui/Tabs";
 import type { LyfeEvent } from "@/lib/types/domain";
@@ -137,9 +139,10 @@ function EventDetailInner() {
 }
 
 // Tab builder — Analyses sits right after Ventes when the event has
-// analytics seeded (on_sale + in_review). Ordered so the operational
-// tabs (Participants, Remboursements, Scanner) and the action tab
-// (Promouvoir) read naturally after the data narrative.
+// analytics seeded (on_sale + in_review). For past / settled events,
+// Bilan replaces Scanner since door-day is over and what matters is
+// the post-event recap. Cancelled events keep the existing rose
+// ribbon, no Bilan.
 function buildTabs(event: LyfeEvent, sold: number): TabDef[] {
   const tabs: TabDef[] = [
     {
@@ -167,13 +170,22 @@ function buildTabs(event: LyfeEvent, sold: number): TabDef[] {
       label: "Remboursements",
       content: <RefundsTab event={event} />,
     },
-    { id: "scanner", label: "Scanner", content: <ScannerTab /> },
-    {
-      id: "promote",
-      label: "Promouvoir",
-      content: <PromoteTab event={event} />,
-    },
   );
+  // Conditional swap: Bilan replaces Scanner for past + settled events.
+  if (hasBilan(event)) {
+    tabs.push({
+      id: "bilan",
+      label: "Bilan",
+      content: <BilanTab event={event} />,
+    });
+  } else {
+    tabs.push({ id: "scanner", label: "Scanner", content: <ScannerTab /> });
+  }
+  tabs.push({
+    id: "promote",
+    label: "Promouvoir",
+    content: <PromoteTab event={event} />,
+  });
   return tabs;
 }
 
