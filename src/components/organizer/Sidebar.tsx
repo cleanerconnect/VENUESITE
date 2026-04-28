@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   CalendarDays,
   ChevronRight,
   LayoutDashboard,
+  LogOut,
   type LucideIcon,
   Megaphone,
+  MoreVertical,
   PlusCircle,
   Settings,
   Ticket,
@@ -16,6 +19,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Brand } from "./Brand";
+import { clearSession } from "@/lib/auth/session";
 import { cn } from "@/lib/utils/cn";
 
 interface Item {
@@ -42,6 +46,12 @@ const GROUP_B: Item[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    clearSession();
+    router.push("/splash");
+  };
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
@@ -86,9 +96,9 @@ export function Sidebar() {
         <NavGroup items={GROUP_B} pathname={pathname} />
       </nav>
 
-      {/* User card */}
+      {/* User card with kebab dropdown for account actions (logout). */}
       <div className="p-3 border-t border-line-soft">
-        <button className="w-full flex items-center gap-3 px-2.5 py-2 rounded-[10px] hover:bg-ink/[0.04] transition-colors text-left">
+        <div className="w-full flex items-center gap-3 px-2.5 py-2 rounded-[10px] hover:bg-ink/[0.04] transition-colors">
           <div
             className="h-9 w-9 rounded-full flex items-center justify-center text-ink font-bold text-[12px] shrink-0"
             style={{ background: "var(--color-tint-peach)" }}
@@ -103,8 +113,40 @@ export function Sidebar() {
               Directeur · Jazzablanca
             </div>
           </div>
-          <CalendarDays size={14} className="text-ink-mute shrink-0" />
-        </button>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button
+                aria-label="Options du compte"
+                className="h-8 w-8 rounded-full hover:bg-ink/[0.06] flex items-center justify-center text-ink-mute transition-colors"
+              >
+                <MoreVertical size={14} strokeWidth={1.8} />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                side="top"
+                align="end"
+                sideOffset={8}
+                className="min-w-[180px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
+              >
+                <DropdownMenu.Item
+                  className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                >
+                  <CalendarDays size={14} strokeWidth={1.8} className="text-ink-mute" />
+                  Calendrier
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
+                <DropdownMenu.Item
+                  onSelect={handleLogout}
+                  className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                >
+                  <LogOut size={14} strokeWidth={1.8} className="text-ink-mute" />
+                  Se déconnecter
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+        </div>
       </div>
     </aside>
   );
