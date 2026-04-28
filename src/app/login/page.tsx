@@ -8,6 +8,7 @@ import * as RadixTabs from "@radix-ui/react-tabs";
 import { ArrowRight, CheckCircle2, MailOpen } from "lucide-react";
 import { Brand } from "@/components/organizer/Brand";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 import { seedDemoSession } from "@/lib/auth/session";
@@ -30,35 +31,69 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-canvas flex flex-col">
-      <div className="flex-1 flex items-center justify-center px-6 py-12 md:py-16">
-        <div className="w-full max-w-[440px]">
-          <div className="flex flex-col items-center">
-            <Brand height={56} />
+    <main className="min-h-screen flex flex-col md:flex-row">
+      {/* === Left column — editorial identity === */}
+      <section className="bg-canvas flex flex-col justify-between p-6 md:p-12 lg:p-16 md:basis-3/5 md:flex-shrink-0">
+        <div>
+          <Brand height={52} />
+
+          <div className="mt-10 md:mt-16 text-eyebrow text-ink-mute">
+            Espace Organisateur
+          </div>
+          <h1
+            className="text-ink mt-3 max-w-[14ch]"
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontWeight: 600,
+              fontSize: "clamp(36px, 5.4vw, 64px)",
+              lineHeight: 1.02,
+              letterSpacing: "-0.03em",
+            }}
+          >
+            Le système d&apos;exploitation de vos événements.
+          </h1>
+          <p className="text-body text-ink-soft mt-5 max-w-md leading-relaxed hidden md:block">
+            Billetterie, audience, paiements et analyses — sur la même
+            plateforme. Pour les festivals, salles, et créateurs
+            d&apos;événements au Maroc.
+          </p>
+        </div>
+
+        {/* Stat tiles + quote — desktop only per spec */}
+        <div className="hidden md:block mt-10">
+          <div className="grid grid-cols-3 gap-3 max-w-2xl">
+            <StatTile number="+45 000" label="personnes touchées" />
+            <StatTile number="12" label="villes au Maroc" />
+            <StatTile number="J+3" label="versement garanti" />
           </div>
 
-          <div className="mt-12 text-center">
-            <h1
-              className="text-ink"
+          <blockquote className="mt-10 max-w-md">
+            <p
+              className="text-ink-mute leading-relaxed"
               style={{
                 fontFamily: "var(--font-serif)",
-                fontWeight: 600,
-                fontSize: "clamp(40px, 6vw, 56px)",
-                lineHeight: 1.02,
-                letterSpacing: "-0.03em",
+                fontStyle: "italic",
+                fontWeight: 400,
+                fontSize: "17px",
+                lineHeight: 1.5,
               }}
             >
-              Bienvenue.
-            </h1>
-            <p className="text-body text-ink-soft mt-3">
-              Espace organisateur LYFE.
+              &laquo; LYFE nous a permis de gérer la billetterie de notre 19e
+              édition sans friction. &raquo;
             </p>
-          </div>
+            <footer className="text-meta text-ink-soft mt-2">
+              — Équipe Jazzablanca
+            </footer>
+          </blockquote>
+        </div>
+      </section>
 
+      {/* === Right column — login form === */}
+      <section className="bg-surface flex items-center justify-center p-6 md:p-12 md:basis-2/5 md:flex-1 border-t md:border-t-0 md:border-l border-line-soft min-h-[60vh] md:min-h-screen">
+        <div className="w-full max-w-[380px]">
           <RadixTabs.Root
             value={tab}
             onValueChange={(v) => setTab(v as "magic" | "password")}
-            className="mt-10"
           >
             <RadixTabs.List className="grid grid-cols-2 gap-1 p-1 bg-canvas-2 rounded-[var(--radius-md)] border border-line-soft">
               <TabTrigger value="magic" active={tab === "magic"}>
@@ -84,7 +119,25 @@ export default function LoginPage() {
             </div>
           </RadixTabs.Root>
 
-          <div className="mt-8 pt-6 border-t border-line-soft text-center">
+          <div className="mt-6 pt-5 border-t border-line-soft">
+            <button
+              type="button"
+              onClick={handleDemo}
+              className={cn(
+                "w-full flex items-center justify-center gap-2 h-12 rounded-[var(--radius-md)]",
+                "bg-violet-soft text-violet-deep font-semibold text-[14px]",
+                "hover:bg-violet-soft/80 transition-colors",
+              )}
+            >
+              <CheckCircle2 size={16} strokeWidth={1.8} className="text-violet-deep" />
+              Connexion démo Jazzablanca
+            </button>
+            <p className="text-meta text-ink-mute text-center mt-2">
+              Pré-rempli pour les démos investisseurs.
+            </p>
+          </div>
+
+          <div className="mt-6 text-center">
             <Link
               href="/contact"
               className="inline-flex items-center gap-1.5 text-meta text-ink-mute hover:text-ink transition-colors font-medium"
@@ -94,30 +147,30 @@ export default function LoginPage() {
             </Link>
           </div>
         </div>
-      </div>
-
-      {/* Demo entry — fixed to the bottom edge of the viewport with 24px clearance.
-          Investors should see the door obviously. */}
-      <div className="sticky bottom-0 px-6 pb-6 pt-3 bg-gradient-to-t from-canvas via-canvas to-canvas/0">
-        <div className="max-w-[440px] mx-auto">
-          <button
-            type="button"
-            onClick={handleDemo}
-            className={cn(
-              "w-full flex items-center justify-center gap-2 h-12 rounded-[var(--radius-md)]",
-              "bg-violet-soft text-violet-deep font-semibold text-[14px]",
-              "hover:bg-violet-soft/80 transition-colors",
-            )}
-          >
-            <Sparkle />
-            Connexion démo Jazzablanca
-          </button>
-          <p className="text-meta text-ink-mute text-center mt-2">
-            Pré-rempli pour les démos investisseurs.
-          </p>
-        </div>
-      </div>
+      </section>
     </main>
+  );
+}
+
+function StatTile({ number, label }: { number: string; label: string }) {
+  return (
+    <Card variant="violet-soft" size="sm" className="text-center">
+      <div
+        className="text-violet-deep num"
+        style={{
+          fontFamily: "var(--font-serif)",
+          fontWeight: 600,
+          fontSize: "clamp(20px, 2vw, 26px)",
+          lineHeight: 1,
+          letterSpacing: "-0.02em",
+        }}
+      >
+        {number}
+      </div>
+      <div className="text-meta text-ink-soft mt-1.5 leading-tight">
+        {label}
+      </div>
+    </Card>
   );
 }
 
@@ -260,11 +313,5 @@ function PasswordForm({ onSuccess }: { onSuccess: () => void }) {
         Mot de passe oublié ?
       </Link>
     </motion.form>
-  );
-}
-
-function Sparkle() {
-  return (
-    <CheckCircle2 size={16} strokeWidth={1.8} className="text-violet-deep" />
   );
 }

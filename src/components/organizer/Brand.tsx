@@ -1,9 +1,17 @@
 import Image from "next/image";
 
 // LYFE wordmark — production artwork lives at /public/lyfe-logo.jpg
-// (954×522, 1.83:1). The JPG has a white background which blends into
-// the canvas (#FFFFFF) seamlessly. White-variant SVG kept for any future
-// dark-surface usage.
+// (954×522, 1.83:1). The JPG carries a white background; on tinted /
+// non-white surfaces (canvas-2 sidebar, violet washes), that background
+// shows up as a faint clipping rectangle. mix-blend-mode: multiply
+// solves it cleanly: white pixels (#FFFFFF) multiply to whatever sits
+// behind them, so they read as transparent against any surface that
+// isn't pure white. On pure-white surfaces (canvas, surface) the blend
+// is a no-op.
+//
+// On dark surfaces multiply would make the logo disappear entirely —
+// for those, pass variant="white" to swap to the pre-rendered
+// transparent SVG.
 export function Brand({
   height = 44,
   variant = "color",
@@ -27,6 +35,7 @@ export function Brand({
         width: "auto",
         objectFit: "contain",
         background: "transparent",
+        mixBlendMode: variant === "color" ? "multiply" : undefined,
       }}
     />
   );

@@ -387,10 +387,18 @@ export function getPortfolioStats(): PortfolioStats {
     (s, c) => s + c.revenueAttributedMad,
     0,
   );
+  // Weighted by spend so heavy spenders move the average more than tiny
+  // tests. The naive total-revenue / total-spend ratio inflates the
+  // headline because seeded campaign roas values aren't perfectly
+  // reconciled with their seeded revenue numbers.
+  const weightedNumerator = campaigns.reduce(
+    (s, c) => s + c.spentMad * c.roas,
+    0,
+  );
   return {
     monthlySpendMad: monthlySpend,
     monthlyRevenueAttributedMad: monthlyRevenue,
-    portfolioRoas: monthlyRevenue / Math.max(1, monthlySpend),
+    portfolioRoas: weightedNumerator / Math.max(1, monthlySpend),
   };
 }
 

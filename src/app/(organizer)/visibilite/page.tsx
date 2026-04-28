@@ -67,7 +67,7 @@ export default function VisibilitePage() {
                 </>
               }
               tone="violet"
-              subtitle="Revenu / dépense"
+              subtitle="ROAS moyen pondéré"
             />
           </div>
         </Card>

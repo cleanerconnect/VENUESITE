@@ -69,7 +69,11 @@ function SplashInner() {
               width={320}
               height={120}
               priority
-              style={{ height: "auto", width: "min(280px, 56vw)" }}
+              style={{
+                height: "auto",
+                width: "min(280px, 56vw)",
+                mixBlendMode: "multiply",
+              }}
             />
           </motion.div>
         ) : null}
