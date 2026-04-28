@@ -51,6 +51,7 @@ interface BilanCore {
   totalAttendees: number;
   scanRatePct: number;
   refundRatePct: number;
+  netRevenueMad: number;
   netRevenueLabel: string;
   channels: ChannelInput[];
   endedAtIso: string;
@@ -72,6 +73,7 @@ const CORE: Record<string, BilanCore> = {
     totalAttendees: 5500,
     scanRatePct: 96.4,
     refundRatePct: 2.1,
+    netRevenueMad: 23_100_000,
     netRevenueLabel: "23,1M MAD net",
     endedAtIso: new Date(
       new Date("2026-04-25T19:30:00+01:00").getTime() - 285 * 24 * 3600_000,
@@ -139,6 +141,7 @@ const CORE: Record<string, BilanCore> = {
     totalAttendees: 9000,
     scanRatePct: 97.8,
     refundRatePct: 0.8,
+    netRevenueMad: 4_100_000,
     netRevenueLabel: "4,1M MAD net",
     endedAtIso: new Date(
       new Date("2026-04-25T19:30:00+01:00").getTime() - 280 * 24 * 3600_000,
@@ -205,6 +208,7 @@ const CORE: Record<string, BilanCore> = {
     totalAttendees: 1200,
     scanRatePct: 98.1,
     refundRatePct: 1.4,
+    netRevenueMad: 5_100_000,
     netRevenueLabel: "5,1M MAD net",
     endedAtIso: new Date(
       new Date("2026-04-25T19:30:00+01:00").getTime() - 310 * 24 * 3600_000,
@@ -376,6 +380,7 @@ export function getBilanByEventId(
     totalAttendees: core.totalAttendees,
     scanRatePct: core.scanRatePct,
     refundRatePct: core.refundRatePct,
+    netRevenueMad: core.netRevenueMad,
     netRevenueLabel: core.netRevenueLabel,
     channels: buildChannels(core.channels),
     reviewSummary,

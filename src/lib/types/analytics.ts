@@ -224,6 +224,9 @@ export interface BilanData {
   /** Scan-rate at the door, % of valid tickets actually scanned. */
   scanRatePct: number;
   refundRatePct: number;
+  /** Numeric net revenue (post-fees, post-refunds), MAD. Used by the
+   *  /bilans aggregate hero. */
+  netRevenueMad: number;
   /** Pre-formatted financial line (post-fees, post-refunds). */
   netRevenueLabel: string;
   channels: ChannelSlice[];
