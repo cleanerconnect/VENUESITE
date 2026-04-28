@@ -56,10 +56,30 @@ export function ActivityFeedItem({ item }: { item: ActivityItem }) {
   const ageMs = NOW - new Date(item.at).getTime();
   const isFresh = ageMs < 60_000;
 
-  const linkHref =
-    item.type === "boost" && item.campaignId
-      ? `/visibilite/${item.campaignId}`
-      : null;
+  // Cross-screen deep-links: each activity row carries the user where
+  // they'd want to go to investigate / act on the signal.
+  //   boost              → campaign detail
+  //   review             → event Analyses tab (Avis & sentiment card)
+  //   segment_generated  → /audiences (the segment list)
+  //   anomaly · funnel   → event Analyses tab (Tunnel de conversion)
+  //   anomaly · spike    → event Analyses tab (cadence story)
+  //   anomaly · geo      → /audiences (geo concentration)
+  //   anomaly · cluster  → event Refunds tab (the cluster is refunds)
+  const linkHref = (() => {
+    if (item.type === "boost" && item.campaignId)
+      return `/visibilite/${item.campaignId}`;
+    if (item.type === "segment_generated") return "/audiences";
+    if (item.type === "review" && item.eventId)
+      return `/events/${item.eventId}?tab=analyses`;
+    if (item.type === "anomaly" && item.eventId) {
+      if (item.anomalyKind === "funnel" || item.anomalyKind === "spike")
+        return `/events/${item.eventId}?tab=analyses`;
+      if (item.anomalyKind === "geo") return "/audiences";
+      if (item.anomalyKind === "cluster")
+        return `/events/${item.eventId}?tab=refunds`;
+    }
+    return null;
+  })();
 
   const isAnomaly = item.type === "anomaly";
   const icon = isAnomaly && item.anomalyKind

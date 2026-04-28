@@ -20,6 +20,7 @@ import { TopClientsTable } from "@/components/audiences/TopClientsTable";
 import { BenchmarksCard } from "@/components/audiences/BenchmarksCard";
 import { BuyerProfileSheet } from "@/components/audiences/BuyerProfileSheet";
 import { LockedAudiences } from "@/components/audiences/LockedAudiences";
+import { BoostWizard } from "@/components/visibility/BoostWizard";
 import { getAllSampleBuyers } from "@/lib/mock/audiences";
 
 const FORMATTER = new Intl.NumberFormat("fr-FR");
@@ -37,6 +38,10 @@ export default function AudiencesPage() {
   const [selectedSegment, setSelectedSegment] =
     useState<AudienceSegment | null>(null);
   const [selectedBuyer, setSelectedBuyer] = useState<BuyerProfile | null>(null);
+  // BoostWizard state — opened by the sticky CTAs in either side
+  // panel. The wizard itself accepts an `initialSegmentId` so the
+  // audience step lands pre-selected.
+  const [boostSegmentId, setBoostSegmentId] = useState<string | null>(null);
 
   if (!profile || !data) {
     // SSR / first-paint: render an empty shell that matches the page
@@ -71,18 +76,15 @@ export default function AudiencesPage() {
 
   const handleLaunchBoostFromSegment = (segment: AudienceSegment) => {
     setSelectedSegment(null);
-    toast({
-      tone: "success",
-      title: `Boost vers « ${segment.name} » programmé`,
-    });
+    setBoostSegmentId(segment.id);
   };
 
   const handleLaunchBoostFromBuyer = (buyer: BuyerProfile) => {
     setSelectedBuyer(null);
-    toast({
-      tone: "success",
-      title: `Boost vers le segment de ${buyer.name.split(" ")[0]} programmé`,
-    });
+    // Pre-fill with the segment that matches the buyer's primary tag
+    // — handles the "single buyer" case without needing single-user
+    // targeting infrastructure.
+    setBoostSegmentId(buyer.primarySegmentId);
   };
 
   return (
@@ -194,6 +196,13 @@ export default function AudiencesPage() {
         buyer={selectedBuyer}
         onClose={() => setSelectedBuyer(null)}
         onLaunchBoost={handleLaunchBoostFromBuyer}
+      />
+      <BoostWizard
+        open={boostSegmentId !== null}
+        onOpenChange={(open) => {
+          if (!open) setBoostSegmentId(null);
+        }}
+        initialSegmentId={boostSegmentId ?? undefined}
       />
     </div>
   );
