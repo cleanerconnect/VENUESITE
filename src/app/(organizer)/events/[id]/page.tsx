@@ -8,6 +8,7 @@ import { SalesTab } from "@/components/event/SalesTab";
 import { AnalysesTab } from "@/components/event/AnalysesTab";
 import { AttendeesTab } from "@/components/event/AttendeesTab";
 import { BilanTab } from "@/components/event/BilanTab";
+import { InvitationsTab } from "@/components/event/InvitationsTab";
 import { RefundsTab } from "@/components/event/RefundsTab";
 import { ScannerTab } from "@/components/event/ScannerTab";
 import { PromoteTab } from "@/components/event/PromoteTab";
@@ -158,19 +159,30 @@ function buildTabs(event: LyfeEvent, sold: number): TabDef[] {
       content: <AnalysesTab event={event} />,
     });
   }
-  tabs.push(
-    {
-      id: "attendees",
-      label: "Participants",
-      count: sold,
-      content: <AttendeesTab />,
-    },
-    {
-      id: "refunds",
-      label: "Remboursements",
-      content: <RefundsTab event={event} />,
-    },
-  );
+  tabs.push({
+    id: "attendees",
+    label: "Participants",
+    count: sold,
+    content: <AttendeesTab />,
+  });
+  // Invitations tab — visible on every event except draft / in_review.
+  // It tracks comp / press allocations, with an empty-state pitch on
+  // events that haven't issued any invitations yet.
+  if (
+    event.status.state !== "draft" &&
+    event.status.state !== "in_review"
+  ) {
+    tabs.push({
+      id: "invitations",
+      label: "Invitations",
+      content: <InvitationsTab event={event} />,
+    });
+  }
+  tabs.push({
+    id: "refunds",
+    label: "Remboursements",
+    content: <RefundsTab event={event} />,
+  });
   // Conditional swap: Bilan replaces Scanner for past + settled events.
   if (hasBilan(event)) {
     tabs.push({
