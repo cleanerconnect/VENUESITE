@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import {
+  AlertTriangle,
   ArrowLeftRight,
   Check,
+  MapPin,
   Megaphone,
   ScanLine,
   ShoppingBag,
+  TrendingUp,
   Undo2,
 } from "lucide-react";
 import type { ActivityItem } from "@/lib/types/domain";
@@ -20,6 +23,7 @@ const ICON: Record<ActivityItem["type"], React.ReactNode> = {
   scan: <ScanLine size={13} strokeWidth={1.8} />,
   moderation: <Check size={13} strokeWidth={1.8} />,
   boost: <Megaphone size={13} strokeWidth={1.8} />,
+  anomaly: <AlertTriangle size={13} strokeWidth={1.8} />,
 };
 
 const COLOR: Record<ActivityItem["type"], string> = {
@@ -29,7 +33,14 @@ const COLOR: Record<ActivityItem["type"], string> = {
   scan: "var(--color-ink)",
   moderation: "var(--color-violet-deep)",
   boost: "var(--color-violet-deep)",
+  anomaly: "var(--color-warning)",
 };
+
+const ANOMALY_ICON = {
+  spike: <TrendingUp size={13} strokeWidth={1.8} />,
+  cluster: <AlertTriangle size={13} strokeWidth={1.8} />,
+  geo: <MapPin size={13} strokeWidth={1.8} />,
+} as const;
 
 const NOW = new Date("2026-04-25T19:30:00+01:00").getTime();
 
@@ -37,22 +48,34 @@ export function ActivityFeedItem({ item }: { item: ActivityItem }) {
   const ageMs = NOW - new Date(item.at).getTime();
   const isFresh = ageMs < 60_000;
 
-  // Boost rows link to the campaign performance view; otherwise plain row.
-  const linkHref = item.type === "boost" && item.campaignId
-    ? `/visibilite/${item.campaignId}`
-    : null;
+  const linkHref =
+    item.type === "boost" && item.campaignId
+      ? `/visibilite/${item.campaignId}`
+      : null;
+
+  const isAnomaly = item.type === "anomaly";
+  const icon = isAnomaly && item.anomalyKind
+    ? ANOMALY_ICON[item.anomalyKind]
+    : ICON[item.type];
 
   const inner = (
-    <div className="flex items-start gap-3 py-3">
+    <div
+      className={
+        "flex items-start gap-3 py-3 " +
+        (isAnomaly
+          ? "bg-tint-sand/60 -mx-2 px-3 rounded-[var(--radius-sm)] border-l-2 border-warning"
+          : "")
+      }
+    >
       <span
         className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
         style={{
-          backgroundColor: `color-mix(in srgb, ${COLOR[item.type]} 12%, transparent)`,
+          backgroundColor: `color-mix(in srgb, ${COLOR[item.type]} 14%, transparent)`,
           color: COLOR[item.type],
         }}
         aria-hidden
       >
-        {ICON[item.type]}
+        {icon}
       </span>
       <div className="flex-1 min-w-0">
         <div className="text-[13px] text-ink leading-snug">

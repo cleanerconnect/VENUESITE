@@ -57,12 +57,25 @@ export interface LyfeEvent {
 
 export interface ActivityItem {
   id: string;
-  type: "purchase" | "transfer" | "refund" | "scan" | "moderation" | "boost";
+  type:
+    | "purchase"
+    | "transfer"
+    | "refund"
+    | "scan"
+    | "moderation"
+    | "boost"
+    | "anomaly";
   message: string;
   actor: string;
   eventId?: string;
   /** When type === "boost", links the row to /visibilite/{campaignId}. */
   campaignId?: string;
+  /**
+   * Anomaly variant flavor — drives the icon and the row's tinted
+   * background. "spike" = positive surprise (gold-soft), "cluster" =
+   * worth investigating (warning-tinted), "geo" = geographic concentration.
+   */
+  anomalyKind?: "spike" | "cluster" | "geo";
   at: string;
 }
 
@@ -102,6 +115,14 @@ export interface OverviewData {
         salesPhaseValue: number;
         consolidatedRevenueLabel: string;
         consolidatedRevenueMad: number;
+        /** AI close-out projection, rendered as the hero's forecast strip. */
+        forecast?: {
+          finalSellThroughPct: number;
+          /** Pre-formatted, e.g. "22,8M MAD". */
+          finalRevenueLabel: string;
+          confidenceLabel: "haute" | "moyenne" | "faible";
+          confidenceMarginPct: number;
+        };
       };
   ticketsToday: {
     count: number;

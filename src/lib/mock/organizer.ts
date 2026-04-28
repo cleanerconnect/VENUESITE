@@ -178,6 +178,16 @@ const activity: ActivityItem[] = [
     at: offsetMin(7),
   },
   {
+    id: "anom_1",
+    type: "anomaly",
+    actor: "Anomalie détectée",
+    message:
+      "Vente Pass Jour Rilès en hausse de 240 % depuis 1h · campagne Instagram identifiée",
+    eventId: "evt_jzb_riles",
+    anomalyKind: "spike",
+    at: offsetMin(9),
+  },
+  {
     id: "a3b",
     type: "boost",
     actor: "Splash Robbie Williams",
@@ -203,6 +213,16 @@ const activity: ActivityItem[] = [
     at: offsetMin(34),
   },
   {
+    id: "anom_2",
+    type: "anomaly",
+    actor: "Anomalie détectée",
+    message:
+      "Cluster de remboursements · 8 demandes en 2h sur Pass Week-End 2",
+    eventId: "evt_jzb_jorja",
+    anomalyKind: "cluster",
+    at: offsetMin(40),
+  },
+  {
     id: "a5b",
     type: "boost",
     actor: "Carte Rilès",
@@ -210,6 +230,16 @@ const activity: ActivityItem[] = [
     eventId: "evt_jzb_riles",
     campaignId: "cmp_riles_card",
     at: offsetMin(48),
+  },
+  {
+    id: "anom_3",
+    type: "anomaly",
+    actor: "Anomalie détectée",
+    message:
+      "Pic d'achats Pass 10 jours depuis Rabat · 18 ventes en 30 minutes",
+    eventId: "evt_jzb_robbie",
+    anomalyKind: "geo",
+    at: offsetMin(70),
   },
   {
     id: "a6",
@@ -279,6 +309,12 @@ export function getOrganizerOverview(): OverviewData {
       salesPhaseValue: 4280,
       consolidatedRevenueLabel: "Recette consolidée",
       consolidatedRevenueMad: 3_240_000,
+      forecast: {
+        finalSellThroughPct: 87,
+        finalRevenueLabel: "22,8M MAD",
+        confidenceLabel: "moyenne",
+        confidenceMarginPct: 4,
+      },
     },
     ticketsToday: {
       count: series24h.reduce((s, n) => s + n, 0),

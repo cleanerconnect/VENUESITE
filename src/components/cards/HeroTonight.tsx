@@ -91,7 +91,45 @@ function PreparingHero({
           size={140}
         />
       </div>
+
+      {/* Forecast strip — AI's predicted close-out state. The numbers are
+          highlighted in violet so they can be read at a glance. */}
+      {data.forecast ? <ForecastStrip forecast={data.forecast} /> : null}
     </Card>
+  );
+}
+
+function ForecastStrip({
+  forecast,
+}: {
+  forecast: NonNullable<
+    Extract<OverviewData["headline"], { mode: "preparing" }>["forecast"]
+  >;
+}) {
+  return (
+    <div className="mt-7 pt-5 border-t border-canvas/10 flex items-center gap-4 flex-wrap">
+      <p className="text-meta text-canvas/75 leading-relaxed flex-1 min-w-[260px]">
+        Si la cadence actuelle se maintient, vous clôturerez à{" "}
+        <span className="text-violet font-bold num">
+          {forecast.finalSellThroughPct}&nbsp;%
+        </span>{" "}
+        de capacité — soit{" "}
+        <span className="text-violet font-bold num">
+          ~{forecast.finalRevenueLabel}
+        </span>{" "}
+        de recette consolidée.
+      </p>
+      <span
+        className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full text-meta font-semibold"
+        style={{
+          background: "var(--color-violet-soft)",
+          color: "var(--color-violet-deep)",
+        }}
+      >
+        Confiance {forecast.confidenceLabel} · ±{forecast.confidenceMarginPct}{" "}
+        %
+      </span>
+    </div>
   );
 }
 

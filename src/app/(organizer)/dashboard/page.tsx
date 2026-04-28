@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/Card";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { HeroTonight } from "@/components/cards/HeroTonight";
 import { AINudgeCard } from "@/components/cards/AINudgeCard";
+import { InsightOfTheDay } from "@/components/cards/InsightOfTheDay";
 import { StatTile } from "@/components/cards/StatTile";
 import { Sparkline } from "@/components/cards/Sparkline";
 import { UpcomingEventRow } from "@/components/cards/UpcomingEventRow";
@@ -122,22 +123,8 @@ export default function DashboardPage() {
             }}
           />
 
-          {/* Upcoming events count, pulled to white per direction review:
-              the bento should bookend money/emotion (sand + sage) with calm
-              functional whites in the middle. */}
-          <StatTile
-            variant="surface"
-            label="Événements à venir"
-            value={data.upcomingEventsCount}
-            hint="Cliquer pour les filtrer"
-            icon={
-              <CalendarDays
-                size={16}
-                strokeWidth={1.8}
-                className="text-ink-soft"
-              />
-            }
-          />
+          {/* Insight of the day, top-right of the bento, single column. */}
+          <InsightOfTheDay />
 
           {/* Next payout (2-col span) */}
           <StatTile
@@ -166,6 +153,23 @@ export default function DashboardPage() {
               </span>
             </div>
           </StatTile>
+
+          {/* Upcoming events count, paired with payout on row 2 to balance
+              the bento. */}
+          <StatTile
+            variant="surface"
+            span={2}
+            label="Événements à venir"
+            value={data.upcomingEventsCount}
+            hint="Cliquer pour les filtrer"
+            icon={
+              <CalendarDays
+                size={16}
+                strokeWidth={1.8}
+                className="text-ink-soft"
+              />
+            }
+          />
         </div>
       </StaggerItem>
 
