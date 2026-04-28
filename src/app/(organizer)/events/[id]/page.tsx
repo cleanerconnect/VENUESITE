@@ -10,7 +10,7 @@ import { AttendeesTab } from "@/components/event/AttendeesTab";
 import { BilanTab } from "@/components/event/BilanTab";
 import { InvitationsTab } from "@/components/event/InvitationsTab";
 import { RefundsTab } from "@/components/event/RefundsTab";
-import { ScannerTab } from "@/components/event/ScannerTab";
+import { RegieTab } from "@/components/event/RegieTab";
 import { PromoteTab } from "@/components/event/PromoteTab";
 import { getEventById, getAllEvents } from "@/lib/mock/events";
 import { hasAnalyses } from "@/lib/mock/analyses";
@@ -183,15 +183,24 @@ function buildTabs(event: LyfeEvent, sold: number): TabDef[] {
     label: "Remboursements",
     content: <RefundsTab event={event} />,
   });
-  // Conditional swap: Bilan replaces Scanner for past + settled events.
+  // Bilan tab on past / settled events only.
   if (hasBilan(event)) {
     tabs.push({
       id: "bilan",
       label: "Bilan",
       content: <BilanTab event={event} />,
     });
-  } else {
-    tabs.push({ id: "scanner", label: "Scanner", content: <ScannerTab /> });
+  }
+  // Régie ("door operations") replaces the older Scanner tab. Visible
+  // on every event past the gating phase — on_sale onwards. Past +
+  // settled keep the tab so the door-day data can be replayed.
+  const RÉGIE_STATES = ["on_sale", "live", "past", "settled"] as const;
+  if (RÉGIE_STATES.includes(event.status.state as (typeof RÉGIE_STATES)[number])) {
+    tabs.push({
+      id: "regie",
+      label: "Régie",
+      content: <RegieTab event={event} />,
+    });
   }
   tabs.push({
     id: "promote",
