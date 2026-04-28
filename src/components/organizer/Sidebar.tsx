@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as RadixDialog from "@radix-ui/react-dialog";
 import {
   Building2,
   CalendarDays,
@@ -35,6 +37,7 @@ import {
   switchRole,
 } from "@/lib/auth/session";
 import { PROFILES } from "@/lib/mock/profiles";
+import { useMobileNavStore } from "@/lib/stores/mobileNav";
 import { cn } from "@/lib/utils/cn";
 
 interface Item {
@@ -103,6 +106,142 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
+      <SidebarBody
+        pathname={pathname}
+        role={role}
+        profile={profile}
+        groupA={groupA}
+        groupB={groupB}
+        handleSwitchRole={handleSwitchRole}
+        handleSwitchProfile={handleSwitchProfile}
+        handleLogout={handleLogout}
+      />
+    </aside>
+  );
+}
+
+// Mobile drawer — same content as the desktop sidebar, slides in from
+// the left. Triggered by the topbar hamburger.
+export function MobileSidebarDrawer() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const role = useRole();
+  const profile = useProfile();
+  const open = useMobileNavStore((s) => s.drawerOpen);
+  const setOpen = useMobileNavStore((s) => s.setDrawerOpen);
+
+  // Close the drawer whenever the pathname changes — tapping any nav
+  // link should advance + dismiss in one motion.
+  useCloseOnPathChange(pathname, setOpen);
+
+  const handleLogout = () => {
+    clearSession();
+    setOpen(false);
+    router.push("/splash");
+  };
+
+  const handleSwitchRole = (next: Role) => {
+    switchRole(next);
+    emitSessionChanged();
+    router.refresh();
+  };
+
+  const handleSwitchProfile = (organizerId: string) => {
+    switchProfile(organizerId);
+    emitSessionChanged();
+    router.refresh();
+  };
+
+  const groupA = GROUP_A.filter(
+    (i) => !i.allow || (role && i.allow.includes(role)),
+  );
+  const groupB = GROUP_B.filter(
+    (i) => !i.allow || (role && i.allow.includes(role)),
+  );
+
+  return (
+    <RadixDialog.Root open={open} onOpenChange={setOpen}>
+      <AnimatePresence>
+        {open ? (
+          <RadixDialog.Portal forceMount>
+            <RadixDialog.Overlay asChild>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className="fixed inset-0 z-50 bg-ink/30 backdrop-blur-sm md:hidden"
+              />
+            </RadixDialog.Overlay>
+            <RadixDialog.Content asChild>
+              <motion.aside
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed top-0 left-0 bottom-0 z-50 w-[280px] max-w-[88vw] bg-canvas-2 border-r border-line-soft shadow-deep flex flex-col md:hidden"
+                aria-label="Navigation principale"
+              >
+                <RadixDialog.Title className="sr-only">
+                  Menu principal
+                </RadixDialog.Title>
+                <SidebarBody
+                  pathname={pathname}
+                  role={role}
+                  profile={profile}
+                  groupA={groupA}
+                  groupB={groupB}
+                  handleSwitchRole={handleSwitchRole}
+                  handleSwitchProfile={handleSwitchProfile}
+                  handleLogout={handleLogout}
+                />
+              </motion.aside>
+            </RadixDialog.Content>
+          </RadixDialog.Portal>
+        ) : null}
+      </AnimatePresence>
+    </RadixDialog.Root>
+  );
+}
+
+function useCloseOnPathChange(
+  pathname: string | null,
+  setOpen: (open: boolean) => void,
+) {
+  // Close drawer when route changes. Skips initial mount.
+  const seen = useRef<string | null>(null);
+  useEffect(() => {
+    if (seen.current && seen.current !== pathname) {
+      setOpen(false);
+    }
+    seen.current = pathname;
+  }, [pathname, setOpen]);
+}
+
+// Inner sidebar content — shared between the desktop aside wrapper and
+// the mobile drawer surface. Pure presentation; all state + handlers
+// flow in via props so the surfaces stay decoupled.
+function SidebarBody({
+  pathname,
+  role,
+  profile,
+  groupA,
+  groupB,
+  handleSwitchRole,
+  handleSwitchProfile,
+  handleLogout,
+}: {
+  pathname: string | null;
+  role: Role | null;
+  profile: ReturnType<typeof useProfile>;
+  groupA: Item[];
+  groupB: Item[];
+  handleSwitchRole: (next: Role) => void;
+  handleSwitchProfile: (organizerId: string) => void;
+  handleLogout: () => void;
+}) {
+  return (
+    <>
       {/* Brand, real wordmark, no accompanying "LYFE" text label.
           44px height ensures the y descender + purple ascender both render
           without clipping. */}
@@ -273,7 +412,7 @@ export function Sidebar() {
           </DropdownMenu.Root>
         </div>
       </div>
-    </aside>
+    </>
   );
 }
 

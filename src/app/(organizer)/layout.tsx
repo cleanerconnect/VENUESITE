@@ -1,4 +1,4 @@
-import { Sidebar } from "@/components/organizer/Sidebar";
+import { MobileSidebarDrawer, Sidebar } from "@/components/organizer/Sidebar";
 import { Topbar } from "@/components/organizer/Topbar";
 import { BottomTabs } from "@/components/organizer/BottomTabs";
 import { ScannerModal } from "@/components/organizer/ScannerModal";
@@ -20,6 +20,7 @@ export default function OrganizerLayout({
       <div className="min-h-screen flex">
         <div className="no-print contents">
           <Sidebar />
+          <MobileSidebarDrawer />
         </div>
         <div className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">
           <div className="no-print contents">
