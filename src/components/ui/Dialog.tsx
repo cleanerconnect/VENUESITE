@@ -25,7 +25,7 @@ export function Dialog({
   footer?: ReactNode;
   size?: "md" | "lg";
 }) {
-  const widthClass = size === "lg" ? "max-w-xl" : "max-w-md";
+  const widthClass = size === "lg" ? "md:max-w-xl" : "md:max-w-md";
 
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
@@ -42,18 +42,35 @@ export function Dialog({
               />
             </RadixDialog.Overlay>
             <RadixDialog.Content asChild>
+              {/* Renders as a bottom sheet on mobile (<768px) and a centered
+                  modal on tablet+. Two motion variants on desktop, slide-up
+                  on mobile. */}
               <motion.div
-                initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, y: "8%" }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: "12%" }}
+                transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)]",
-                  "bg-surface rounded-[var(--radius-xl)] shadow-deep border border-line",
+                  // Mobile: bottom-anchored sheet, full width, rounded top.
+                  "fixed z-50 bg-surface shadow-deep border border-line",
+                  "left-0 right-0 bottom-0 w-full rounded-t-[var(--radius-xl)] rounded-b-none",
+                  "max-h-[92vh] overflow-y-auto",
+                  // Desktop: centered modal with the sized width and full corners.
+                  "md:left-1/2 md:top-1/2 md:right-auto md:bottom-auto",
+                  "md:-translate-x-1/2 md:-translate-y-1/2",
+                  "md:w-[calc(100%-2rem)] md:rounded-[var(--radius-xl)]",
+                  "md:max-h-[90vh] md:overflow-visible",
                   widthClass,
                 )}
               >
-                <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-3">
+                {/* Mobile-only drag handle for sheet affordance. */}
+                <div
+                  aria-hidden
+                  className="md:hidden flex justify-center pt-3"
+                >
+                  <span className="h-1 w-10 rounded-full bg-line" />
+                </div>
+                <div className="flex items-start justify-between gap-4 px-6 pt-4 md:pt-6 pb-3">
                   <div>
                     <RadixDialog.Title className="text-h3 text-ink">
                       {title}
@@ -73,7 +90,7 @@ export function Dialog({
                 </div>
                 <div className="px-6 py-4">{children}</div>
                 {footer ? (
-                  <div className="px-6 py-4 border-t border-line-soft bg-canvas-2/40 rounded-b-[var(--radius-xl)] flex justify-end gap-2">
+                  <div className="px-6 py-4 border-t border-line-soft bg-canvas-2/40 md:rounded-b-[var(--radius-xl)] flex justify-end gap-2 sticky bottom-0 md:static">
                     {footer}
                   </div>
                 ) : null}

@@ -93,8 +93,64 @@ export function AttendeesTab() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto scroll-thin">
+      {/* Mobile: stacked cards. Tables don't read at 375px. */}
+      <ul className="md:hidden divide-y divide-line-soft">
+        {filtered.map((a) => (
+          <li key={a.id} className="px-5 py-4">
+            <div className="flex items-start gap-3">
+              <div
+                className="h-9 w-9 rounded-full flex items-center justify-center text-[11px] font-bold text-ink shrink-0"
+                style={{ background: "var(--color-tint-peach)" }}
+              >
+                {a.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[14px] font-semibold text-ink">
+                  {a.name}
+                </div>
+                {a.transferredTo ? (
+                  <div className="text-meta text-ink-mute mt-0.5">
+                    {a.originalBuyer} → {a.transferredTo}
+                  </div>
+                ) : null}
+                <div className="text-meta text-ink-soft mt-1 num truncate">
+                  {a.email} · {a.phone}
+                </div>
+                <div className="mt-2 flex items-center gap-2 flex-wrap">
+                  <Pill tone="neutral">{a.tierName}</Pill>
+                  {a.qrStatus === "unused" ? (
+                    <Pill tone="neutral">Non utilisé</Pill>
+                  ) : a.qrStatus === "scanned" ? (
+                    <span className="text-meta font-semibold text-violet-deep num">
+                      Scanné · {formatRelativeFR(a.scannedAt!)}
+                    </span>
+                  ) : (
+                    <Pill tone="violet" dot>
+                      Transféré
+                    </Pill>
+                  )}
+                </div>
+                <div className="text-meta text-ink-mute num mt-2">
+                  Acheté le {formatDateFR(a.purchaseDate)}
+                </div>
+              </div>
+            </div>
+          </li>
+        ))}
+        {filtered.length === 0 ? (
+          <li className="px-5 py-14 text-center text-meta text-ink-mute">
+            Aucun participant ne correspond à ces filtres.
+          </li>
+        ) : null}
+      </ul>
+
+      {/* Tablet+: full table */}
+      <div className="hidden md:block overflow-x-auto scroll-thin">
         <table className="w-full text-[13px]">
           <thead>
             <tr className="text-eyebrow text-ink-mute text-left border-b border-line-soft">
