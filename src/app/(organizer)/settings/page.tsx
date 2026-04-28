@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Trash2 } from "lucide-react";
+import { Lock, Sparkles, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Pill } from "@/components/ui/Pill";
 import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
+import { getAudienceSegments } from "@/lib/mock/visibility";
 import { cn } from "@/lib/utils/cn";
 
 const SECTIONS = [
@@ -18,6 +19,7 @@ const SECTIONS = [
   { id: "venue", label: "Détails du lieu" },
   { id: "payout", label: "Coordonnées de versement" },
   { id: "notifications", label: "Notifications" },
+  { id: "boost", label: "Préférences de boost" },
   { id: "language", label: "Langue" },
   { id: "api", label: "API" },
   { id: "danger", label: "Zone dangereuse" },
@@ -67,6 +69,7 @@ export default function SettingsPage() {
           {active === "venue" ? <VenueSection /> : null}
           {active === "payout" ? <PayoutSection /> : null}
           {active === "notifications" ? <NotificationsSection /> : null}
+          {active === "boost" ? <BoostPrefsSection /> : null}
           {active === "language" ? <LanguageSection /> : null}
           {active === "api" ? <ApiSection /> : null}
           {active === "danger" ? <DangerSection /> : null}
@@ -356,6 +359,123 @@ function NotificationsSection() {
         />
       </div>
     </Card>
+  );
+}
+
+function BoostPrefsSection() {
+  const segments = getAudienceSegments();
+  const { toast } = useToast();
+  const [budgetCap, setBudgetCap] = useState("8000");
+  const [defaultSegment, setDefaultSegment] = useState(segments[0]?.id ?? "");
+  const [dayParting, setDayParting] = useState(false);
+  const [autopilot, setAutopilot] = useState(false);
+  const [autopilotTarget, setAutopilotTarget] = useState("60");
+
+  return (
+    <div className="space-y-5">
+      {/* Defaults applied each time the organizer opens the boost wizard */}
+      <Card variant="surface" size="lg">
+        <h2 className="text-h2 text-ink">Préférences de boost</h2>
+        <p className="text-body text-ink-soft mt-1.5 max-w-xl leading-relaxed">
+          Vos valeurs par défaut, pré-remplies à chaque nouvelle campagne.
+          Vous pouvez les ajuster au cas par cas.
+        </p>
+
+        <div className="grid sm:grid-cols-2 gap-4 mt-7">
+          <Input
+            label="Budget par défaut, par campagne"
+            type="number"
+            value={budgetCap}
+            onChange={(e) => setBudgetCap(e.target.value)}
+            suffix="MAD"
+            hint="Plafond proposé d'office. Vous pouvez le modifier campagne par campagne."
+          />
+          <Select
+            label="Audience par défaut"
+            value={defaultSegment}
+            onChange={setDefaultSegment}
+            options={segments.map((s) => ({
+              value: s.id,
+              label: `${s.name} · ${s.memberCount.toLocaleString("fr-FR").replace(/,/g, " ")} pers.`,
+            }))}
+            hint="Segment pré-sélectionné dans l'étape de ciblage."
+          />
+        </div>
+
+        <div className="mt-7 pt-6 border-t border-line-soft">
+          <Switch
+            label="Diffusion limitée à 19h-23h par défaut"
+            description="Le créneau soirée capte la majorité des conversions sur l'app. Activez pour appliquer ce filtre par défaut sur toutes vos campagnes."
+            checked={dayParting}
+            onCheckedChange={setDayParting}
+          />
+        </div>
+
+        <div className="mt-7 flex justify-end">
+          <Button
+            onClick={() =>
+              toast({
+                tone: "success",
+                title: "Préférences enregistrées",
+              })
+            }
+          >
+            Enregistrer
+          </Button>
+        </div>
+      </Card>
+
+      {/* Auto-pilote LYFE — locked v2 panel, gold-soft styling. The toggle
+          renders so the surface feels real, but flipping it does nothing
+          beyond local state. */}
+      <Card variant="gold-soft" size="lg">
+        <div className="flex items-start gap-4">
+          <span
+            aria-hidden
+            className="h-12 w-12 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+          >
+            <Sparkles size={20} strokeWidth={1.7} className="text-violet-deep" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Pill tone="warning">BIENTÔT DISPONIBLE</Pill>
+              <Pill tone="info" dot>
+                AI
+              </Pill>
+            </div>
+            <h3 className="text-h3 text-ink mt-3">Auto-pilote LYFE</h3>
+            <p className="text-body text-ink-soft mt-2 max-w-xl leading-relaxed">
+              LYFE détecte vos événements en sous-performance et lance
+              automatiquement de petits boosts ciblés pour ramener vos
+              ventes sur la trajectoire de votre objectif. Vous gardez la
+              main: budget plafonné, validation par notification.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 grid sm:grid-cols-[1fr_auto] gap-4 items-end">
+          <Input
+            label="Objectif de ventes minimum, en % du fill rate cible"
+            type="number"
+            value={autopilotTarget}
+            onChange={(e) => setAutopilotTarget(e.target.value)}
+            suffix="%"
+            disabled
+            hint="LYFE n'agit que si votre événement passe sous ce seuil."
+          />
+          <div className="bg-canvas/60 border border-line-soft rounded-[var(--radius-md)] p-4 flex items-center gap-3">
+            <Lock size={14} strokeWidth={1.8} className="text-ink-mute shrink-0" />
+            <Switch
+              checked={autopilot}
+              onCheckedChange={setAutopilot}
+              label="Activer l'auto-pilote"
+              description="Disponible après le MVP."
+              disabled
+            />
+          </div>
+        </div>
+      </Card>
+    </div>
   );
 }
 
