@@ -1,12 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Brand } from "@/components/organizer/Brand";
 import { readSession, seedDemoSession, type Role } from "@/lib/auth/session";
 
-const HOLD_MS = 1200;
+const HOLD_MS = 2000;
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function SplashPage() {
@@ -21,8 +21,7 @@ export default function SplashPage() {
 function SplashShell() {
   return (
     <main
-      className="fixed inset-0 flex items-center justify-center"
-      style={{ background: "var(--color-ink)" }}
+      className="fixed inset-0 flex items-center justify-center bg-canvas"
       aria-hidden
     />
   );
@@ -43,21 +42,8 @@ function SplashInner() {
       return;
     }
 
-    const dismiss = () => setVisible(false);
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.code === "Space" || e.key === " ") {
-        e.preventDefault();
-        dismiss();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-
-    const t = window.setTimeout(dismiss, HOLD_MS);
-    return () => {
-      window.clearTimeout(t);
-      window.removeEventListener("keydown", onKey);
-    };
+    const t = window.setTimeout(() => setVisible(false), HOLD_MS);
+    return () => window.clearTimeout(t);
   }, [router, search]);
 
   const handleAnimationComplete = () => {
@@ -67,31 +53,27 @@ function SplashInner() {
   };
 
   return (
-    <main
-      onClick={() => setVisible(false)}
-      role="button"
-      aria-label="Continuer"
-      tabIndex={0}
-      className="fixed inset-0 flex items-center justify-center cursor-pointer focus:outline-none"
-      style={{ background: "var(--color-ink)" }}
-    >
+    <main className="fixed inset-0 flex items-center justify-center bg-canvas">
       <AnimatePresence onExitComplete={handleAnimationComplete}>
         {visible ? (
           <motion.div
             key="logo"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: EASE }}
           >
-            <Brand height={88} variant="white" />
+            <Image
+              src="/lyfe-logo.jpg"
+              alt="LYFE"
+              width={320}
+              height={120}
+              priority
+              style={{ height: "auto", width: "min(280px, 56vw)" }}
+            />
           </motion.div>
         ) : null}
       </AnimatePresence>
-
-      <span className="sr-only">
-        Appuyez sur la barre d&apos;espace ou cliquez pour continuer.
-      </span>
     </main>
   );
 }
