@@ -80,12 +80,80 @@ export const CHANNEL_PRESENTATION: Record<
   direct: { label: "Direct", colorVar: "var(--color-sky)" },
 };
 
+/**
+ * Phase performance row — one entry per pricing phase / tier on the
+ * Analyses tab. Status drives the pill color (saturated / on-track /
+ * lagging) and the narrative copy alongside.
+ */
+export type PhaseStatus = "saturated" | "on_track" | "lagging" | "upcoming";
+
+export interface PhaseStat {
+  /** Stable id, matches LyfeEvent.tiers[].id when derived from a tier. */
+  id: string;
+  label: string;
+  /** Sale window start, ISO. */
+  startedAt: string;
+  /** Sale window end, ISO. */
+  endsAt: string;
+  sold: number;
+  quantity: number;
+  /** 0-100. */
+  fillPct: number;
+  /** Pre-formatted MAD revenue. */
+  revenueLabel: string;
+  revenueMad: number;
+  status: PhaseStatus;
+  /** Short narrative line for the row, e.g. "Saturée en 11 jours". */
+  note: string;
+}
+
+export interface FunnelStep {
+  key: "visits" | "cart" | "payment" | "completed";
+  label: string;
+  count: number;
+  /** Conversion vs the previous step, %. Undefined for "visits". */
+  stepConversionPct?: number;
+}
+
+export interface FunnelData {
+  steps: FunnelStep[];
+  /** Final visit-to-purchase conversion, %. */
+  overallConversionPct: number;
+  /** vs platform median, percentage points. Negative = below median. */
+  vsPlatformPts: number;
+}
+
+/**
+ * Recommendation surfaced in the side rail. Each row is an
+ * actionable next step the organizer can take (lift a boost, adjust
+ * pricing, message a segment).
+ */
+export type RecommendationTone = "violet" | "warning" | "success";
+
+export interface Recommendation {
+  id: string;
+  body: string;
+  ctaLabel: string;
+  ctaHref?: string;
+  tone: RecommendationTone;
+}
+
 export interface AnalysesData {
   /** Full curve from sale start to event day. */
   sellThrough: SellThroughPoint[];
   forecast: EventForecast;
   /** Channel breakdown of attributed tickets / revenue. */
   channels: ChannelSlice[];
+  /** Per-phase / per-tier sell-through. */
+  phases: PhaseStat[];
+  /** Visit → cart → payment → completed counts. Empty steps array
+   *  signals "no funnel data yet" (event in modération). */
+  funnel: FunnelData | null;
+  /** Aggregated reviews from this event's series. Null when no reviews
+   *  exist yet (first-time event in modération). */
+  reviewSummary: ReviewSummary | null;
+  /** Optional next-step recommendations, rendered in the side rail. */
+  recommendations: Recommendation[];
 }
 
 // === Reviews ===

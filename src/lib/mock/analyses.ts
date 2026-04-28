@@ -13,9 +13,14 @@ import {
   type ChannelKey,
   type ChannelSlice,
   type EventForecast,
+  type FunnelData,
+  type PhaseStat,
+  type Recommendation,
+  type ReviewSummary,
   type SellThroughPoint,
   confidenceLabelFor,
 } from "@/lib/types/analytics";
+import { formatMAD } from "@/lib/utils/format";
 
 interface ChannelInput {
   key: ChannelKey;
@@ -141,6 +146,77 @@ function buildRobbieAnalyses(): AnalysesData {
       { key: "partner", tickets: 1515, revenueMad: 1_000_000 },
       { key: "direct", tickets: 2270, revenueMad: 1_490_000 },
     ]),
+    phases: [
+      buildPhase({
+        id: "t_robbie_eb",
+        label: "Pass Jour · Early Bird",
+        startDaysAgo: 120,
+        endDaysAgo: 60,
+        sold: 1500,
+        quantity: 1500,
+        faceValue: 380,
+        status: "saturated",
+        note: "Saturée en 11 jours, plus rapidement que 2024.",
+      }),
+      buildPhase({
+        id: "t_robbie_gen",
+        label: "Pass Jour · General",
+        startDaysAgo: 60,
+        endDaysFuture: 67,
+        sold: 5400,
+        quantity: 8500,
+        faceValue: 590,
+        status: "on_track",
+        note: "63 % vendu à mi-parcours, projection 88 %.",
+      }),
+      buildPhase({
+        id: "t_robbie_carre",
+        label: "Carré Or",
+        startDaysAgo: 60,
+        endDaysFuture: 67,
+        sold: 1520,
+        quantity: 2000,
+        faceValue: 1200,
+        status: "on_track",
+        note: "76 % vendu, momentum confirmé sur le segment premium.",
+      }),
+    ],
+    funnel: buildFunnel({
+      visits: 184_000,
+      cart: 25_800,
+      payment: 18_120,
+      completed: 8_420,
+      vsPlatformPts: -1.4,
+    }),
+    reviewSummary: {
+      averageRating: 4.7,
+      reviewCount: 47,
+      distribution: [0, 1, 3, 12, 31],
+      positiveTags: [
+        { name: "Son", count: 47 },
+        { name: "Ambiance", count: 38 },
+        { name: "Show", count: 24 },
+      ],
+      improvementTags: [
+        { name: "File d'attente", count: 18 },
+        { name: "Bar", count: 6 },
+      ],
+    },
+    recommendations: [
+      {
+        id: "rec_robbie_1",
+        body: "Cadence +18 % vs cible. Un Splash de bienvenue vendredi soir pourrait sécuriser le sell-out avant Phase 3.",
+        ctaLabel: "Lancer un boost",
+        ctaHref: "/visibilite",
+        tone: "violet",
+      },
+      {
+        id: "rec_robbie_2",
+        body: "Friction Payzone mobile identifiée — 38 % d'abandons à l'étape paiement. À surveiller cette semaine.",
+        ctaLabel: "Voir le tunnel",
+        tone: "warning",
+      },
+    ],
   };
 }
 
@@ -196,6 +272,52 @@ function buildRilesAnalyses(): AnalysesData {
       { key: "partner", tickets: 273, revenueMad: 382_200 },
       { key: "direct", tickets: 371, revenueMad: 519_400 },
     ]),
+    phases: [
+      buildPhase({
+        id: "t_riles_pass",
+        label: "Pass Semaine 1",
+        startDaysAgo: 80,
+        endDaysFuture: 73,
+        sold: 1240,
+        quantity: 3000,
+        faceValue: 1400,
+        status: "lagging",
+        note: "41 % à mi-parcours, légèrement sous la projection cible.",
+      }),
+    ],
+    funnel: buildFunnel({
+      visits: 96_400,
+      cart: 8_650,
+      payment: 5_180,
+      completed: 1_240,
+      vsPlatformPts: 4.0,
+    }),
+    reviewSummary: {
+      averageRating: 4.8,
+      reviewCount: 32,
+      distribution: [0, 0, 2, 6, 24],
+      positiveTags: [
+        { name: "Acoustique Stage 21", count: 22 },
+        { name: "Intimité", count: 14 },
+        { name: "Énergie", count: 11 },
+      ],
+      improvementTags: [{ name: "Capacité limitée", count: 4 }],
+    },
+    recommendations: [
+      {
+        id: "rec_riles_1",
+        body: "Cadence légèrement en avance sur Phase 1. Profitez du momentum pour annoncer la transition Phase 2 dans 5 jours.",
+        ctaLabel: "Programmer l'annonce",
+        tone: "violet",
+      },
+      {
+        id: "rec_riles_2",
+        body: "Audience Hip-hop francophone Casa-Rabat sous-exploitée. Un boost Carte mise en avant pourrait débloquer 200 ventes additionnelles.",
+        ctaLabel: "Voir l'audience",
+        ctaHref: "/audiences",
+        tone: "violet",
+      },
+    ],
   };
 }
 
@@ -233,6 +355,114 @@ function buildJorjaAnalyses(): AnalysesData {
     }),
     // No sales yet — channels stay empty until the first ticket lands.
     channels: [],
+    phases: [
+      buildPhase({
+        id: "t_jorja_we",
+        label: "Pass Week-End 2",
+        startDaysFuture: 2,
+        endDaysFuture: 76,
+        sold: 0,
+        quantity: 6000,
+        faceValue: 980,
+        status: "upcoming",
+        note: "Ouverture dans 2 jours dès la validation modération.",
+      }),
+    ],
+    // No funnel data until the first visitor lands.
+    funnel: null,
+    // No reviews on the first edition of this artist with the brand.
+    reviewSummary: null,
+    recommendations: [
+      {
+        id: "rec_jorja_1",
+        body: "Pré-vente non encore ouverte. Une fois la modération validée, les premiers signaux apparaîtront sous 24h.",
+        ctaLabel: "Voir la file de modération",
+        tone: "violet",
+      },
+    ],
+  };
+}
+
+// === Builders for the four shared shapes ===
+
+interface PhaseInput {
+  id: string;
+  label: string;
+  startDaysAgo?: number;
+  startDaysFuture?: number;
+  endDaysAgo?: number;
+  endDaysFuture?: number;
+  sold: number;
+  quantity: number;
+  faceValue: number;
+  status: PhaseStat["status"];
+  note: string;
+}
+
+const NOW = new Date("2026-04-25T19:30:00+01:00").getTime();
+const DAY_MS = 24 * 3600_000;
+
+function buildPhase(input: PhaseInput): PhaseStat {
+  const startedAt = new Date(
+    NOW -
+      (input.startDaysAgo ?? -(input.startDaysFuture ?? 0)) * DAY_MS,
+  ).toISOString();
+  const endsAt = new Date(
+    NOW -
+      (input.endDaysAgo ?? -(input.endDaysFuture ?? 0)) * DAY_MS,
+  ).toISOString();
+  const fillPct = input.quantity
+    ? Math.round((input.sold / input.quantity) * 1000) / 10
+    : 0;
+  const revenueMad = input.sold * input.faceValue;
+  return {
+    id: input.id,
+    label: input.label,
+    startedAt,
+    endsAt,
+    sold: input.sold,
+    quantity: input.quantity,
+    fillPct,
+    revenueLabel: formatMAD(revenueMad),
+    revenueMad,
+    status: input.status,
+    note: input.note,
+  };
+}
+
+function buildFunnel(input: {
+  visits: number;
+  cart: number;
+  payment: number;
+  completed: number;
+  vsPlatformPts: number;
+}): FunnelData {
+  const pct = (a: number, b: number) =>
+    b > 0 ? Math.round((a / b) * 1000) / 10 : 0;
+  return {
+    steps: [
+      { key: "visits", label: "Visites", count: input.visits },
+      {
+        key: "cart",
+        label: "Ajouts au panier",
+        count: input.cart,
+        stepConversionPct: pct(input.cart, input.visits),
+      },
+      {
+        key: "payment",
+        label: "Paiement entamé",
+        count: input.payment,
+        stepConversionPct: pct(input.payment, input.cart),
+      },
+      {
+        key: "completed",
+        label: "Achat finalisé",
+        count: input.completed,
+        stepConversionPct: pct(input.completed, input.payment),
+      },
+    ],
+    overallConversionPct: pct(input.completed, input.visits),
+    vsPlatformPts: input.vsPlatformPts,
   };
 }
 

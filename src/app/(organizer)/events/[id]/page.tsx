@@ -1,6 +1,7 @@
 "use client";
 
-import { notFound, useParams } from "next/navigation";
+import { Suspense } from "react";
+import { notFound, useParams, useSearchParams } from "next/navigation";
 import { Tabs } from "@/components/ui/Tabs";
 import { StatusPill, Pill } from "@/components/ui/Pill";
 import { SalesTab } from "@/components/event/SalesTab";
@@ -16,7 +17,18 @@ import type { TabDef } from "@/components/ui/Tabs";
 import type { LyfeEvent } from "@/lib/types/domain";
 
 export default function EventDetailPage() {
+  // useSearchParams must live under a Suspense boundary in Next 14.
+  return (
+    <Suspense fallback={null}>
+      <EventDetailInner />
+    </Suspense>
+  );
+}
+
+function EventDetailInner() {
   const params = useParams<{ id: string }>();
+  const search = useSearchParams();
+  const initialTab = search.get("tab") ?? undefined;
   const event = getEventById(params.id) ?? getAllEvents().find((e) => e.id === params.id);
   if (!event) notFound();
 
@@ -118,7 +130,7 @@ export default function EventDetailPage() {
 
       {/* === Tabs === */}
       <div className="px-4 md:px-8 py-7 md:py-9 max-w-[1440px] mx-auto">
-        <Tabs tabs={buildTabs(event, sold)} />
+        <Tabs tabs={buildTabs(event, sold)} defaultId={initialTab} />
       </div>
     </div>
   );

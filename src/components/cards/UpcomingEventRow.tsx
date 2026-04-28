@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Megaphone, MoreVertical } from "lucide-react";
+import { Megaphone, MoreVertical, Sparkles } from "lucide-react";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { Pill, StatusPill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -73,7 +73,11 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
       >
         <div className="relative bg-surface border border-line rounded-[var(--radius-lg)] hover:shadow-soft transition-shadow">
           <Link
-            href={`/events/${event.id}`}
+            href={
+              event.analyticsSignal
+                ? `/events/${event.id}?tab=analyses`
+                : `/events/${event.id}`
+            }
             className="block p-4"
           >
             <div className="flex items-center gap-4">
@@ -122,6 +126,19 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
                       <span className="ml-2 text-ink-mute">·</span>
                       <span className="ml-2 font-semibold">{pct}%</span>
                     </div>
+                  </div>
+                ) : null}
+
+                {event.analyticsSignal ? (
+                  <div className="mt-3 inline-flex items-start gap-1.5 max-w-full bg-violet-soft text-violet-deep rounded-[var(--radius-sm)] px-2.5 py-1.5">
+                    <Sparkles
+                      size={12}
+                      strokeWidth={1.9}
+                      className="shrink-0 mt-[1px]"
+                    />
+                    <span className="text-[12px] leading-snug font-medium truncate">
+                      {event.analyticsSignal.summary}
+                    </span>
                   </div>
                 ) : null}
               </div>
