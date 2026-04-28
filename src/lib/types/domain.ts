@@ -96,6 +96,20 @@ export interface Tier {
   transferable: boolean;
 }
 
+/**
+ * Lightweight signal LYFE surfaces on the events list as a violet-soft
+ * pill on the row. Click deep-links to the relevant tab on the event
+ * detail (Analyses for forecast deviations, Bilan for review clusters
+ * once the event is past).
+ */
+export type AnalyticsSignalKind = "forecast_deviation" | "review_cluster";
+
+export interface AnalyticsSignal {
+  kind: AnalyticsSignalKind;
+  /** Single-line summary surfaced in the events list pill. */
+  summary: string;
+}
+
 export interface LyfeEvent {
   id: string;
   name: string;
@@ -114,6 +128,19 @@ export interface LyfeEvent {
   createdAt: string;
   pageViews: number;
   peakHour?: string;
+  /**
+   * Series identifier shared across editions. Drives the Bilan tab's
+   * "édition précédente" comparisons — events with the same
+   * `parentEventSeriesId` are matched as priors. Undefined for
+   * first-time events on the platform.
+   */
+  parentEventSeriesId?: string;
+  /**
+   * Inline insight LYFE has surfaced on this event. Renders as a
+   * violet-soft pill on the events list row. Undefined for events
+   * with no current signal.
+   */
+  analyticsSignal?: AnalyticsSignal;
 }
 
 export interface ActivityItem {

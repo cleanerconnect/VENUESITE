@@ -56,6 +56,11 @@ const upcomingEvents: LyfeEvent[] = [
     status: { state: "on_sale", saleStartAt: offsetMin(60 * 24 * 60), saleEndAt: futureDays(67) },
     createdAt: offsetMin(60 * 24 * 90),
     pageViews: 184_000,
+    analyticsSignal: {
+      kind: "forecast_deviation",
+      summary:
+        "Cadence de ventes 18 % au-dessus de la projection — pic à 22h confirmé.",
+    },
     tiers: [
       {
         id: "t_robbie_eb",
@@ -107,6 +112,11 @@ const upcomingEvents: LyfeEvent[] = [
     status: { state: "on_sale", saleStartAt: offsetMin(60 * 24 * 80), saleEndAt: futureDays(73) },
     createdAt: offsetMin(60 * 24 * 80),
     pageViews: 96_400,
+    analyticsSignal: {
+      kind: "review_cluster",
+      summary:
+        "Cluster de mentions positives sur l'acoustique du Stage 21.",
+    },
     tiers: [
       {
         id: "t_riles_pass",

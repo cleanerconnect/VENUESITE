@@ -24,7 +24,10 @@ export function getEventById(id: string): LyfeEvent | undefined {
 
 export function getAllEvents(): LyfeEvent[] {
   const base = getOrganizerOverview().upcomingEvents;
-  // Past edition (2024 demo data)
+  // Past edition (2024 demo data) — Diana Krall is its own series.
+  // No current edition shares this id, so its purpose in the demo is
+  // to demonstrate that Bilan comparisons match by `parentEventSeriesId`
+  // — a future Diana Krall edition would compare against this one.
   const past: LyfeEvent = {
     id: "evt_jzb_2024_diana",
     name: "Diana Krall, Jazzablanca 2024",
@@ -39,6 +42,7 @@ export function getAllEvents(): LyfeEvent[] {
     status: { state: "past", endedAt: offsetDays(280) },
     createdAt: offsetDays(360),
     pageViews: 156_000,
+    parentEventSeriesId: "diana_krall",
     tiers: [
       {
         id: "t_diana_pass",
@@ -142,6 +146,7 @@ export function getAllEvents(): LyfeEvent[] {
     },
     createdAt: offsetDays(420),
     pageViews: 84_000,
+    parentEventSeriesId: "jazzablanca_annual",
     tiers: [
       {
         id: "t_2024_loyal",
@@ -156,7 +161,44 @@ export function getAllEvents(): LyfeEvent[] {
       },
     ],
   };
-  return [...base, draft, past, settled, cancelled, rejected];
+  // Jazzablanca 2025, full edition — settled. The Bilan demo anchors
+  // here. Shares `parentEventSeriesId` "jazzablanca_annual" with the
+  // 2024 pré-vente so the prior-edition comparison block has data.
+  const jzb2025: LyfeEvent = {
+    id: "evt_jzb_2025_full",
+    name: "Jazzablanca, édition 2025",
+    description:
+      "18e édition. 10 jours, 4 scènes, 92 % de sell-through, retour public excellent.",
+    category: "festival",
+    venue: base[0].venue,
+    startsAt: offsetDays(295),
+    endsAt: offsetDays(285),
+    agePolicy: "all",
+    refundPolicy: "auto",
+    coverUrl: "/covers/jzb-2025.jpg",
+    status: {
+      state: "settled",
+      settledAt: offsetDays(278),
+      payoutRef: "PAY-2025-0723",
+    },
+    createdAt: offsetDays(420),
+    pageViews: 312_000,
+    parentEventSeriesId: "jazzablanca_annual",
+    tiers: [
+      {
+        id: "t_2025_pass10",
+        name: "Pass 10 jours",
+        faceValueMad: 4500,
+        quantity: 6000,
+        sold: 5500,
+        saleStart: offsetDays(395),
+        saleEnd: offsetDays(295),
+        maxPerOrder: 6,
+        transferable: true,
+      },
+    ],
+  };
+  return [...base, draft, past, settled, jzb2025, cancelled, rejected];
 }
 
 // 30-day revenue series, Jazzablanca scale (much higher daily ranges).
