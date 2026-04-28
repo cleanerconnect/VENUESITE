@@ -9,6 +9,7 @@ import type { EventStatus, LyfeEvent } from "@/lib/types/domain";
 import { UpcomingEventRow } from "@/components/cards/UpcomingEventRow";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useRole } from "@/lib/auth/role";
 import { cn } from "@/lib/utils/cn";
 
 type Filter = "all" | EventStatus;
@@ -27,6 +28,8 @@ export default function EventsPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("date_desc");
+  const role = useRole();
+  const canCreate = role === "owner" || role === "admin";
 
   const all = useMemo(getAllEvents, []);
 
@@ -69,14 +72,18 @@ export default function EventsPage() {
         <div>
           <h1 className="text-h1 text-ink">Mes événements</h1>
           <p className="text-body text-ink-soft mt-1.5">
-            Ce que vous organisez, passés, en cours, à venir.
+            {canCreate
+              ? "Ce que vous organisez, passés, en cours, à venir."
+              : "Les événements que vous pouvez scanner."}
           </p>
         </div>
-        <Link href="/events/new" className="hidden md:block">
-          <Button iconLeft={<Plus size={16} strokeWidth={2} />}>
-            Créer un événement
-          </Button>
-        </Link>
+        {canCreate ? (
+          <Link href="/events/new" className="hidden md:block">
+            <Button iconLeft={<Plus size={16} strokeWidth={2} />}>
+              Créer un événement
+            </Button>
+          </Link>
+        ) : null}
       </div>
 
       {/* === Search + sort === */}
@@ -154,14 +161,16 @@ export default function EventsPage() {
       {/* === List === */}
       {list.length === 0 ? (
         <EmptyState
-          title="Pas encore d'événement."
+          title={canCreate ? "Pas encore d'événement." : "Aucun événement à scanner"}
           description={
-            filter === "all"
-              ? "Lancez votre premier événement en quelques minutes."
-              : "Aucun événement ne correspond à ce filtre."
+            !canCreate
+              ? "Le Propriétaire de l'organisation publiera ici les événements ouverts à votre rôle."
+              : filter === "all"
+                ? "Lancez votre premier événement en quelques minutes."
+                : "Aucun événement ne correspond à ce filtre."
           }
           cta={
-            filter === "all"
+            canCreate && filter === "all"
               ? { label: "Créer un événement", href: "/events/new" }
               : undefined
           }
@@ -178,13 +187,15 @@ export default function EventsPage() {
         </div>
       )}
 
-      <div className="md:hidden pt-4">
-        <Link href="/events/new">
-          <Button fullWidth size="lg" iconLeft={<Plus size={18} strokeWidth={2} />}>
-            Créer un événement
-          </Button>
-        </Link>
-      </div>
+      {canCreate ? (
+        <div className="md:hidden pt-4">
+          <Link href="/events/new">
+            <Button fullWidth size="lg" iconLeft={<Plus size={18} strokeWidth={2} />}>
+              Créer un événement
+            </Button>
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
 }

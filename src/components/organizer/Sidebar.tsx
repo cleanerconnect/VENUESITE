@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   CalendarDays,
+  Check,
   ChevronRight,
   LayoutDashboard,
   LogOut,
@@ -15,11 +16,18 @@ import {
   PlusCircle,
   Settings,
   Ticket,
+  UserCog,
   Users,
   Wallet,
 } from "lucide-react";
 import { Brand } from "./Brand";
-import { clearSession } from "@/lib/auth/session";
+import { emitSessionChanged, useRole } from "@/lib/auth/role";
+import {
+  ROLE_LABEL,
+  type Role,
+  clearSession,
+  switchRole,
+} from "@/lib/auth/session";
 import { cn } from "@/lib/utils/cn";
 
 interface Item {
@@ -27,6 +35,8 @@ interface Item {
   href: string;
   icon: LucideIcon;
   pulse?: boolean;
+  /** When set, this nav item is hidden for any role NOT in the allow list. */
+  allow?: Role[];
 }
 
 // Two groups, no spelled-out labels, separated by a hairline divider.
@@ -34,24 +44,44 @@ interface Item {
 const GROUP_A: Item[] = [
   { label: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboard },
   { label: "Mes événements", href: "/events", icon: Ticket },
-  { label: "Visibilité", href: "/visibilite", icon: Megaphone },
-  { label: "Créer un événement", href: "/events/new", icon: PlusCircle, pulse: true },
+  { label: "Visibilité", href: "/visibilite", icon: Megaphone, allow: ["owner", "admin"] },
+  {
+    label: "Créer un événement",
+    href: "/events/new",
+    icon: PlusCircle,
+    pulse: true,
+    allow: ["owner", "admin"],
+  },
 ];
 
 const GROUP_B: Item[] = [
-  { label: "Versements", href: "/settlements", icon: Wallet },
-  { label: "Équipe", href: "/team", icon: Users },
+  { label: "Versements", href: "/settlements", icon: Wallet, allow: ["owner", "admin"] },
+  { label: "Équipe", href: "/team", icon: Users, allow: ["owner", "admin"] },
   { label: "Réglages", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const role = useRole();
 
   const handleLogout = () => {
     clearSession();
     router.push("/splash");
   };
+
+  const handleSwitchRole = (next: Role) => {
+    switchRole(next);
+    emitSessionChanged();
+    router.refresh();
+  };
+
+  const groupA = GROUP_A.filter(
+    (i) => !i.allow || (role && i.allow.includes(role)),
+  );
+  const groupB = GROUP_B.filter(
+    (i) => !i.allow || (role && i.allow.includes(role)),
+  );
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
@@ -88,12 +118,12 @@ export function Sidebar() {
 
       {/* Nav, groups separated by a 1px line-soft divider, no labels */}
       <nav className="flex-1 px-3 overflow-y-auto scroll-thin">
-        <NavGroup items={GROUP_A} pathname={pathname} />
+        <NavGroup items={groupA} pathname={pathname} />
         <div
           aria-hidden
           className="my-3 mx-3 h-px bg-line-soft"
         />
-        <NavGroup items={GROUP_B} pathname={pathname} />
+        <NavGroup items={groupB} pathname={pathname} />
       </nav>
 
       {/* User card with kebab dropdown for account actions (logout). */}
@@ -110,7 +140,7 @@ export function Sidebar() {
               Mido Reffas
             </div>
             <div className="text-meta text-ink-mute truncate">
-              Directeur · Jazzablanca
+              {role ? ROLE_LABEL[role] : "Directeur"} · Jazzablanca
             </div>
           </div>
           <DropdownMenu.Root>
@@ -127,7 +157,7 @@ export function Sidebar() {
                 side="top"
                 align="end"
                 sideOffset={8}
-                className="min-w-[180px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
+                className="min-w-[200px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
               >
                 <DropdownMenu.Item
                   className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
@@ -135,6 +165,41 @@ export function Sidebar() {
                   <CalendarDays size={14} strokeWidth={1.8} className="text-ink-mute" />
                   Calendrier
                 </DropdownMenu.Item>
+                <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
+
+                {/* Demo-only role switcher. Removed in production. */}
+                <DropdownMenu.Sub>
+                  <DropdownMenu.SubTrigger
+                    className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none data-[state=open]:bg-ink/[0.04]"
+                  >
+                    <UserCog size={14} strokeWidth={1.8} className="text-ink-mute" />
+                    <span className="flex-1">Vue démo</span>
+                    <ChevronRight size={12} strokeWidth={2} className="text-ink-mute" />
+                  </DropdownMenu.SubTrigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.SubContent
+                      sideOffset={4}
+                      className="min-w-[200px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
+                    >
+                      {(["owner", "admin", "scanner"] as Role[]).map((r) => {
+                        const active = role === r;
+                        return (
+                          <DropdownMenu.Item
+                            key={r}
+                            onSelect={() => handleSwitchRole(r)}
+                            className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                          >
+                            <span className="flex-1">{ROLE_LABEL[r]}</span>
+                            {active ? (
+                              <Check size={14} strokeWidth={2} className="text-violet-deep" />
+                            ) : null}
+                          </DropdownMenu.Item>
+                        );
+                      })}
+                    </DropdownMenu.SubContent>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Sub>
+
                 <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
                 <DropdownMenu.Item
                   onSelect={handleLogout}

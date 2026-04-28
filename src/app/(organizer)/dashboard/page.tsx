@@ -12,6 +12,7 @@ import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { HeroTonight } from "@/components/cards/HeroTonight";
 import { AINudgeCard } from "@/components/cards/AINudgeCard";
 import { InsightOfTheDay } from "@/components/cards/InsightOfTheDay";
+import { RoleGate } from "@/lib/auth/role";
 import { StatTile } from "@/components/cards/StatTile";
 import { Sparkline } from "@/components/cards/Sparkline";
 import { UpcomingEventRow } from "@/components/cards/UpcomingEventRow";
@@ -56,16 +57,18 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <Link
-                    href="/events/new"
-                    className="inline-flex items-center gap-2 h-10 px-4 bg-ink text-canvas rounded-[var(--radius-sm)] text-[13px] font-semibold hover:bg-ink-soft transition-colors"
-                  >
-                    <Plus size={16} strokeWidth={2} />
-                    Créer un événement
-                  </Link>
+                  <RoleGate>
+                    <Link
+                      href="/events/new"
+                      className="inline-flex items-center gap-2 h-14 px-6 bg-ink text-canvas rounded-[var(--radius-sm)] text-[14px] font-semibold hover:bg-ink-soft transition-colors"
+                    >
+                      <Plus size={16} strokeWidth={2} />
+                      Créer un événement
+                    </Link>
+                  </RoleGate>
                   <Link
                     href="/events"
-                    className="inline-flex items-center gap-2 h-10 px-4 text-[13px] font-semibold text-ink hover:text-violet-deep transition-colors"
+                    className="inline-flex items-center gap-2 h-10 px-4 text-[13px] font-semibold border border-line rounded-[var(--radius-sm)] bg-surface text-ink hover:border-ink transition-colors"
                   >
                     Voir tous les événements →
                   </Link>
@@ -182,7 +185,7 @@ export default function DashboardPage() {
               <h2 className="text-h2 text-ink">Événements à venir</h2>
               <Link
                 href="/events"
-                className="text-meta font-semibold text-ink-soft hover:text-ink transition-colors"
+                className="inline-flex items-center gap-1.5 h-10 px-3 text-[13px] font-semibold border border-line bg-surface rounded-[var(--radius-sm)] text-ink hover:border-ink transition-colors"
               >
                 Tout voir →
               </Link>

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Brand } from "@/components/organizer/Brand";
-import { readSession, seedDemoSession } from "@/lib/auth/session";
+import { readSession, seedDemoSession, type Role } from "@/lib/auth/session";
 
 const HOLD_MS = 1200;
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -35,7 +35,10 @@ function SplashInner() {
 
   useEffect(() => {
     if (search.get("demo") === "1") {
-      seedDemoSession();
+      const roleParam = search.get("role");
+      const role: Role =
+        roleParam === "scanner" || roleParam === "admin" ? roleParam : "owner";
+      seedDemoSession(role);
       router.replace("/dashboard");
       return;
     }

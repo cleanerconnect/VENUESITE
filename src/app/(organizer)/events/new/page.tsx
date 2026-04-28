@@ -12,6 +12,7 @@ import { StepReview } from "@/components/wizard/StepReview";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
+import { useRole } from "@/lib/auth/role";
 import type { DraftEvent } from "@/lib/types/domain";
 
 const INITIAL_DRAFT: DraftEvent = {
@@ -44,6 +45,11 @@ function nextFridayISO() {
 
 export default function CreateEventPage() {
   const router = useRouter();
+  const role = useRole();
+  // Route-level guard: Scanner role can't create events. Bounce to /events.
+  useEffect(() => {
+    if (role === "scanner") router.replace("/events");
+  }, [role, router]);
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [visited, setVisited] = useState(1);

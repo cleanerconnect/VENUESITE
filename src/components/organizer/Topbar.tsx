@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Bell, MessageSquare, ScanLine, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { RoleGate } from "@/lib/auth/role";
 import { useScannerStore } from "@/lib/stores/scanner";
 import { useAssistantStore } from "@/lib/stores/assistant";
 
@@ -90,9 +91,11 @@ export function Topbar() {
             />
           </button>
 
-          <Link href="/events/new" className="ml-1.5 hidden md:block">
-            <Button size="md">Créer un événement</Button>
-          </Link>
+          <RoleGate>
+            <Link href="/events/new" className="ml-1.5 hidden md:block">
+              <Button size="md">Créer un événement</Button>
+            </Link>
+          </RoleGate>
         </div>
       </div>
     </header>

@@ -4,10 +4,18 @@
 
 const KEY = "lyfe.session";
 
+export type Role = "owner" | "admin" | "scanner";
+
+export const ROLE_LABEL: Record<Role, string> = {
+  owner: "Propriétaire",
+  admin: "Administrateur",
+  scanner: "Scanner",
+};
+
 export interface Session {
   userId: string;
   organizerId: string;
-  role: "owner" | "manager" | "scanner";
+  role: Role;
   email: string;
   expiresAt: number; // ms epoch
 }
@@ -40,14 +48,28 @@ export function clearSession() {
   window.localStorage.removeItem(KEY);
 }
 
-export function seedDemoSession(): Session {
+export function seedDemoSession(role: Role = "owner"): Session {
   const session: Session = {
     userId: "usr_mido",
     organizerId: "org_jazzablanca",
-    role: "owner",
-    email: "mido@jazzablanca.com",
+    role,
+    email:
+      role === "scanner"
+        ? "scan@jazzablanca.com"
+        : role === "admin"
+          ? "admin@jazzablanca.com"
+          : "mido@jazzablanca.com",
     expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 30, // 30 days
   };
   writeSession(session);
   return session;
+}
+
+/** Demo-only role switch — preserves session identity, swaps role. */
+export function switchRole(role: Role): Session | null {
+  const current = readSession();
+  if (!current) return null;
+  const next: Session = { ...current, role };
+  writeSession(next);
+  return next;
 }
