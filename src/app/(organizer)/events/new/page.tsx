@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Sparkles } from "lucide-react";
+import { getEventById } from "@/lib/mock/events";
 import { WizardLayout } from "@/components/wizard/WizardLayout";
 import { StepInfo } from "@/components/wizard/StepInfo";
 import { StepTiers, emptyTier } from "@/components/wizard/StepTiers";
@@ -44,8 +45,17 @@ function nextFridayISO() {
 }
 
 export default function CreateEventPage() {
+  return (
+    <Suspense fallback={null}>
+      <CreateEventInner />
+    </Suspense>
+  );
+}
+
+function CreateEventInner() {
   const router = useRouter();
   const role = useRole();
+  const search = useSearchParams();
   // Route-level guard: Scanner role can't create events. Bounce to /events.
   useEffect(() => {
     if (role === "scanner") router.replace("/events");
@@ -53,7 +63,39 @@ export default function CreateEventPage() {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [visited, setVisited] = useState(1);
-  const [draft, setDraft] = useState<DraftEvent>(INITIAL_DRAFT);
+
+  // ?duplicateFrom=eventId pre-fills the wizard with the source event,
+  // clearing dates and suffixing the name with " (copie)". Festival
+  // organizers run the same lineup year over year.
+  const duplicateFromId = search.get("duplicateFrom");
+  const seededDraft = useMemo<DraftEvent>(() => {
+    if (!duplicateFromId) return INITIAL_DRAFT;
+    const src = getEventById(duplicateFromId);
+    if (!src) return INITIAL_DRAFT;
+    return {
+      ...INITIAL_DRAFT,
+      name: `${src.name} (copie)`,
+      description: src.description,
+      category: src.category,
+      agePolicy: src.agePolicy,
+      refundPolicy: src.refundPolicy,
+      tiers:
+        src.tiers.length > 0
+          ? src.tiers.map((t) => ({
+              id: `${t.id}_copy`,
+              name: t.name,
+              faceValueMad: t.faceValueMad,
+              quantity: t.quantity,
+              saleStart: "",
+              saleEnd: "",
+              maxPerOrder: t.maxPerOrder,
+              transferable: t.transferable,
+            }))
+          : [emptyTier()],
+    };
+  }, [duplicateFromId]);
+
+  const [draft, setDraft] = useState<DraftEvent>(seededDraft);
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);

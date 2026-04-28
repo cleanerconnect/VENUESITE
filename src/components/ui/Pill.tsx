@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils/cn";
 import type { ReactNode } from "react";
-import type { EventStatus } from "@/lib/types/domain";
+import type { EventState, LifecycleStatus } from "@/lib/types/domain";
 
 // Pill = status badges and filter chips. 10% bg / full text colour, uppercase
 // 10px tracking 0.12em, see brief spec.
@@ -36,12 +36,26 @@ const STYLES: Record<Tone, Style> = {
   neutral: { bg: "rgba(10,31,61,0.06)", text: "var(--color-ink)" },
 };
 
-const LABEL: Record<EventStatus, string> = {
-  live: "EN VENTE",
-  pending: "EN MODÉRATION",
+const STATE_LABEL: Record<EventState, string> = {
   draft: "BROUILLON",
-  past: "PASSÉ",
+  in_review: "EN MODÉRATION",
   rejected: "REFUSÉ",
+  on_sale: "EN VENTE",
+  live: "EN COURS",
+  past: "TERMINÉ",
+  settled: "VERSÉ",
+  cancelled: "ANNULÉ",
+};
+
+const STATE_TONE: Record<EventState, Tone> = {
+  draft: "draft",
+  in_review: "pending",
+  rejected: "rejected",
+  on_sale: "live",
+  live: "live",
+  past: "past",
+  settled: "success",
+  cancelled: "danger",
 };
 
 export function Pill({
@@ -77,11 +91,10 @@ export function Pill({
   );
 }
 
-export function StatusPill({ status }: { status: EventStatus }) {
-  const tone: Tone = status;
+export function StatusPill({ status }: { status: LifecycleStatus }) {
   return (
-    <Pill tone={tone} dot>
-      {LABEL[status]}
+    <Pill tone={STATE_TONE[status.state]} dot>
+      {STATE_LABEL[status.state]}
     </Pill>
   );
 }

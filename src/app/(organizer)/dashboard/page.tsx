@@ -192,7 +192,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex flex-col gap-3">
               {data.upcomingEvents
-                .filter((e) => e.status !== "draft")
+                .filter((e) => e.status.state !== "draft")
                 .map((event) => (
                   <UpcomingEventRow key={event.id} event={event} />
                 ))}

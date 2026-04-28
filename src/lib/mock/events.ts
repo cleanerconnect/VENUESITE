@@ -36,7 +36,7 @@ export function getAllEvents(): LyfeEvent[] {
     agePolicy: "all",
     refundPolicy: "auto",
     coverUrl: "/covers/past.jpg",
-    status: "past",
+    status: { state: "past", endedAt: offsetDays(280) },
     createdAt: offsetDays(360),
     pageViews: 156_000,
     tiers: [
@@ -64,14 +64,99 @@ export function getAllEvents(): LyfeEvent[] {
     agePolicy: "21+",
     refundPolicy: "manual",
     coverUrl: "/covers/rej.jpg",
-    status: "rejected",
-    rejectionReason:
-      "Photo de couverture floue et description trop courte. Merci d'ajouter une description de 500 caractères minimum et une image en 1080×1350.",
+    status: {
+      state: "rejected",
+      rejectedAt: offsetMin(60 * 24),
+      reason:
+        "Photo de couverture floue et description trop courte. Merci d'ajouter une description de 500 caractères minimum et une image en 1080×1350.",
+      rejectedFields: ["cover_image", "description"],
+    },
     createdAt: offsetMin(60 * 24 * 2),
     pageViews: 0,
     tiers: [],
   };
-  return [...base, past, rejected];
+  // One event per remaining state so screenshots cover the lifecycle.
+  const draft: LyfeEvent = {
+    id: "evt_jzb_draft_lounge",
+    name: "Lounge Latino, brouillon",
+    description: "Soirée en cours de configuration, non encore soumise.",
+    category: "club_night",
+    venue: base[0].venue,
+    startsAt: futureDays(110),
+    endsAt: futureDays(110),
+    agePolicy: "18+",
+    refundPolicy: "manual",
+    coverUrl: "/covers/draft.jpg",
+    status: { state: "draft", lastSavedAt: offsetMin(45) },
+    createdAt: offsetMin(60 * 24),
+    pageViews: 0,
+    tiers: [],
+  };
+  const cancelled: LyfeEvent = {
+    id: "evt_jzb_cancelled_brunch",
+    name: "Brunch Jazz Anfa, annulé",
+    description: "Annulé pour raisons de programmation.",
+    category: "concert",
+    venue: base[0].venue,
+    startsAt: futureDays(40),
+    endsAt: futureDays(40),
+    agePolicy: "all",
+    refundPolicy: "auto",
+    coverUrl: "/covers/cancelled.jpg",
+    status: {
+      state: "cancelled",
+      cancelledAt: offsetDays(2),
+      refundsTriggered: true,
+    },
+    createdAt: offsetDays(20),
+    pageViews: 12_400,
+    tiers: [
+      {
+        id: "t_brunch_pass",
+        name: "Pass Brunch",
+        faceValueMad: 320,
+        quantity: 800,
+        sold: 412,
+        saleStart: offsetDays(15),
+        saleEnd: offsetDays(2),
+        maxPerOrder: 4,
+        transferable: true,
+      },
+    ],
+  };
+  const settled: LyfeEvent = {
+    id: "evt_jzb_2024_settled",
+    name: "Pré-vente fidèles 2024, Jazzablanca",
+    description: "Édition 2024, pré-vente fidèles, soldée.",
+    category: "festival",
+    venue: base[0].venue,
+    startsAt: offsetDays(310),
+    endsAt: offsetDays(310),
+    agePolicy: "all",
+    refundPolicy: "auto",
+    coverUrl: "/covers/settled.jpg",
+    status: {
+      state: "settled",
+      settledAt: offsetDays(305),
+      payoutRef: "PAY-2024-0712",
+    },
+    createdAt: offsetDays(420),
+    pageViews: 84_000,
+    tiers: [
+      {
+        id: "t_2024_loyal",
+        name: "Pass 10 jours · Fidélité",
+        faceValueMad: 4500,
+        quantity: 1200,
+        sold: 1200,
+        saleStart: offsetDays(420),
+        saleEnd: offsetDays(310),
+        maxPerOrder: 4,
+        transferable: false,
+      },
+    ],
+  };
+  return [...base, draft, past, settled, cancelled, rejected];
 }
 
 // 30-day revenue series, Jazzablanca scale (much higher daily ranges).

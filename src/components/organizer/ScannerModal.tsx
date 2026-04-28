@@ -42,7 +42,9 @@ export function ScannerModal() {
     cameraAvailable,
     setCameraAvailable,
   } = useScannerStore();
-  const liveEvents = getAllEvents().filter((e) => e.status === "live");
+  const liveEvents = getAllEvents().filter(
+    (e) => e.status.state === "on_sale" || e.status.state === "live",
+  );
   const selected = liveEvents.find((e) => e.id === selectedEventId);
   const [manualCode, setManualCode] = useState("");
   const { toast } = useToast();

@@ -55,7 +55,7 @@ export default function EventDetailPage() {
         />
 
         <div className="relative px-4 md:px-8 py-10 md:py-14 max-w-[1440px] mx-auto">
-          {event.status === "rejected" && event.rejectionReason ? (
+          {event.status.state === "rejected" ? (
             <div
               className="mb-6 rounded-[var(--radius-md)] p-4 max-w-2xl"
               style={{ background: "rgba(161,44,44,0.18)", color: "#FAF7F0" }}
@@ -64,7 +64,7 @@ export default function EventDetailPage() {
                 Refusé par LYFE
               </div>
               <p className="text-[14px] leading-relaxed">
-                {event.rejectionReason}
+                {event.status.reason}
               </p>
             </div>
           ) : null}

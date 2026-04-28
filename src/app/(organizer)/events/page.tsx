@@ -17,10 +17,13 @@ type Sort = "date_desc" | "date_asc" | "revenue" | "tickets";
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "Tous" },
-  { id: "live", label: "En vente" },
-  { id: "pending", label: "En modération" },
+  { id: "on_sale", label: "En vente" },
+  { id: "live", label: "En cours" },
+  { id: "in_review", label: "En modération" },
   { id: "draft", label: "Brouillons" },
   { id: "past", label: "Passés" },
+  { id: "settled", label: "Versés" },
+  { id: "cancelled", label: "Annulés" },
   { id: "rejected", label: "Refusés" },
 ];
 
@@ -38,14 +41,14 @@ export default function EventsPage() {
       acc[f.id] =
         f.id === "all"
           ? all.length
-          : all.filter((e) => e.status === f.id).length;
+          : all.filter((e) => e.status.state === f.id).length;
       return acc;
     }, {});
   }, [all]);
 
   const list = useMemo(() => {
     return all
-      .filter((e) => (filter === "all" ? true : e.status === filter))
+      .filter((e) => (filter === "all" ? true : e.status.state === filter))
       .filter((e) =>
         query.trim()
           ? e.name.toLowerCase().includes(query.toLowerCase())
@@ -178,8 +181,10 @@ export default function EventsPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {list.map((event) =>
-            event.status === "rejected" && event.rejectionReason ? (
+            event.status.state === "rejected" ? (
               <RejectedRow key={event.id} event={event} />
+            ) : event.status.state === "cancelled" ? (
+              <CancelledRow key={event.id} event={event} />
             ) : (
               <UpcomingEventRow key={event.id} event={event} />
             ),
@@ -201,21 +206,41 @@ export default function EventsPage() {
 }
 
 function RejectedRow({ event }: { event: LyfeEvent }) {
+  if (event.status.state !== "rejected") return null;
   return (
     <div className="rounded-[var(--radius-lg)] overflow-hidden border border-line bg-surface">
       <UpcomingEventRow event={event} />
       <div className="bg-tint-rose px-5 py-3.5">
         <div className="text-eyebrow text-danger mb-1">Refusé par LYFE</div>
         <p className="text-[13px] text-ink leading-relaxed">
-          {event.rejectionReason}
+          {event.status.reason}
         </p>
         <Link
-          href={`/events/${event.id}`}
+          href={`/events/${event.id}/edit?reason=rejected`}
           className="inline-flex items-center gap-1 text-meta font-bold uppercase tracking-[0.08em] text-violet-deep hover:text-ink mt-2 transition-colors"
         >
           Corriger & resoumettre
           <ChevronRight size={12} strokeWidth={2} />
         </Link>
+      </div>
+    </div>
+  );
+}
+
+function CancelledRow({ event }: { event: LyfeEvent }) {
+  if (event.status.state !== "cancelled") return null;
+  const sold = event.tiers.reduce((s, t) => s + t.sold, 0);
+  return (
+    <div className="rounded-[var(--radius-lg)] overflow-hidden border border-line bg-surface">
+      <UpcomingEventRow event={event} />
+      <div className="bg-tint-rose px-5 py-3.5">
+        <div className="text-eyebrow text-danger mb-1">
+          Annulé · {sold} remboursements en cours
+        </div>
+        <p className="text-[13px] text-ink-soft leading-relaxed">
+          L&apos;équipe LYFE traite les remboursements automatiques. Les
+          acheteurs reçoivent leur courriel sous 48h.
+        </p>
       </div>
     </div>
   );

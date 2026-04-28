@@ -53,7 +53,7 @@ const upcomingEvents: LyfeEvent[] = [
     agePolicy: "all",
     refundPolicy: "manual",
     coverUrl: "/covers/robbie.jpg",
-    status: "live",
+    status: { state: "on_sale", saleStartAt: offsetMin(60 * 24 * 60), saleEndAt: futureDays(67) },
     createdAt: offsetMin(60 * 24 * 90),
     pageViews: 184_000,
     tiers: [
@@ -104,7 +104,7 @@ const upcomingEvents: LyfeEvent[] = [
     agePolicy: "all",
     refundPolicy: "manual",
     coverUrl: "/covers/riles.jpg",
-    status: "live",
+    status: { state: "on_sale", saleStartAt: offsetMin(60 * 24 * 80), saleEndAt: futureDays(73) },
     createdAt: offsetMin(60 * 24 * 80),
     pageViews: 96_400,
     tiers: [
@@ -133,7 +133,7 @@ const upcomingEvents: LyfeEvent[] = [
     agePolicy: "all",
     refundPolicy: "manual",
     coverUrl: "/covers/jorja.jpg",
-    status: "pending",
+    status: { state: "in_review", submittedAt: offsetMin(60 * 8), slaDeadline: futureDays(1) },
     createdAt: offsetMin(60 * 8),
     pageViews: 0,
     tiers: [
@@ -325,8 +325,9 @@ export function getOrganizerOverview(): OverviewData {
       amountMad: 412_800,
       deltaPctVsLastWeek: 14.6,
     },
-    upcomingEventsCount: upcomingEvents.filter((e) => e.status === "live")
-      .length,
+    upcomingEventsCount: upcomingEvents.filter(
+      (e) => e.status.state === "on_sale" || e.status.state === "live",
+    ).length,
     nextPayout: {
       amountMad: 184_500,
       scheduledFor: futureDays(2),

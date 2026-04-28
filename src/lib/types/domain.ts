@@ -1,7 +1,37 @@
 // LYFE domain types, shape mirrors the eventual REST/GraphQL responses
 // so swapping mock for fetch() requires no component changes.
 
-export type EventStatus = "live" | "pending" | "draft" | "past" | "rejected";
+// Event lifecycle is a discriminated union — the shape carries the
+// per-state metadata that the kebab actions, status pill, and various
+// flow gates need. `EventState` is the bare-string discriminator used
+// by filter UIs.
+export type EventState =
+  | "draft"
+  | "in_review"
+  | "rejected"
+  | "on_sale"
+  | "live"
+  | "past"
+  | "settled"
+  | "cancelled";
+
+export type LifecycleStatus =
+  | { state: "draft"; lastSavedAt: string }
+  | { state: "in_review"; submittedAt: string; slaDeadline: string }
+  | {
+      state: "rejected";
+      rejectedAt: string;
+      reason: string;
+      rejectedFields: string[];
+    }
+  | { state: "on_sale"; saleStartAt: string; saleEndAt: string }
+  | { state: "live"; eventStartAt: string; eventEndAt: string }
+  | { state: "past"; endedAt: string }
+  | { state: "settled"; settledAt: string; payoutRef: string }
+  | { state: "cancelled"; cancelledAt: string; refundsTriggered: boolean };
+
+/** @deprecated. Kept as alias of EventState for incremental migration. */
+export type EventStatus = EventState;
 export type CardOrigin = "moroccan" | "international";
 export type AgePolicy = "all" | "18+" | "21+";
 export type Category =
@@ -48,8 +78,8 @@ export interface LyfeEvent {
   tiers: Tier[];
   refundPolicy: "auto" | "manual";
   coverUrl: string;
-  status: EventStatus;
-  rejectionReason?: string;
+  /** Full lifecycle status with per-state metadata. */
+  status: LifecycleStatus;
   createdAt: string;
   pageViews: number;
   peakHour?: string;
