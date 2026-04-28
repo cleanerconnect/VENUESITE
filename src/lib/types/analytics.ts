@@ -225,3 +225,29 @@ export type AudiencesData =
       state: "locked";
       emptyState: AudiencesEmptyState;
     };
+
+// === Insights ===
+
+/**
+ * Insight surface — the place in the UI where the body renders. Drives
+ * how the insight engine selects (e.g. of_the_day rotates by hour, the
+ * analyses_* surfaces resolve per event).
+ */
+export type InsightSurface =
+  | "of_the_day"
+  | "analyses_phase"
+  | "analyses_pace"
+  | "analyses_funnel"
+  | "analyses_reviews"
+  | "audiences";
+
+export interface Insight {
+  id: string;
+  surface: InsightSurface;
+  /** When set, the insight is scoped to a specific event. */
+  eventId?: string;
+  body: string;
+  /** Optional emphasised number / phrase rendered in the violet headline. */
+  accent?: string;
+  cta?: { label: string; href: string };
+}

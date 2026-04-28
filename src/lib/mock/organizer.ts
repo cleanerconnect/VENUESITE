@@ -188,6 +188,15 @@ const activity: ActivityItem[] = [
     at: offsetMin(7),
   },
   {
+    id: "rev_1",
+    type: "review",
+    actor: "Yasmine A.",
+    message: "a laissé un avis 5 étoiles · Robbie Williams",
+    eventId: "evt_jzb_robbie",
+    rating: 5,
+    at: offsetMin(8),
+  },
+  {
     id: "anom_1",
     type: "anomaly",
     actor: "Anomalie détectée",
@@ -196,6 +205,25 @@ const activity: ActivityItem[] = [
     eventId: "evt_jzb_riles",
     anomalyKind: "spike",
     at: offsetMin(9),
+  },
+  {
+    id: "anom_funnel_1",
+    type: "anomaly",
+    actor: "Anomalie détectée",
+    message:
+      "Taux de complétion checkout en baisse de 18 % cette heure · friction Payzone mobile",
+    eventId: "evt_jzb_robbie",
+    anomalyKind: "funnel",
+    at: offsetMin(11),
+  },
+  {
+    id: "seg_1",
+    type: "segment_generated",
+    actor: "LYFE a détecté",
+    message:
+      "un nouveau segment auto-généré : Acheteurs Phase 2 fidèles 2024-2025 · 4 280 personnes",
+    segmentId: "seg_2",
+    at: offsetMin(15),
   },
   {
     id: "a3b",

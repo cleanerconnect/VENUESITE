@@ -6,10 +6,13 @@ import {
   AlertTriangle,
   ArrowLeftRight,
   Check,
+  Filter,
   MapPin,
   Megaphone,
   ScanLine,
   ShoppingBag,
+  Sparkles,
+  Star,
   TrendingUp,
   Undo2,
 } from "lucide-react";
@@ -24,6 +27,8 @@ const ICON: Record<ActivityItem["type"], React.ReactNode> = {
   moderation: <Check size={13} strokeWidth={1.8} />,
   boost: <Megaphone size={13} strokeWidth={1.8} />,
   anomaly: <AlertTriangle size={13} strokeWidth={1.8} />,
+  review: <Star size={13} strokeWidth={1.8} />,
+  segment_generated: <Sparkles size={13} strokeWidth={1.8} />,
 };
 
 const COLOR: Record<ActivityItem["type"], string> = {
@@ -34,12 +39,15 @@ const COLOR: Record<ActivityItem["type"], string> = {
   moderation: "var(--color-violet-deep)",
   boost: "var(--color-violet-deep)",
   anomaly: "var(--color-warning)",
+  review: "var(--color-success)",
+  segment_generated: "var(--color-violet-deep)",
 };
 
 const ANOMALY_ICON = {
   spike: <TrendingUp size={13} strokeWidth={1.8} />,
   cluster: <AlertTriangle size={13} strokeWidth={1.8} />,
   geo: <MapPin size={13} strokeWidth={1.8} />,
+  funnel: <Filter size={13} strokeWidth={1.8} />,
 } as const;
 
 const NOW = new Date("2026-04-25T19:30:00+01:00").getTime();

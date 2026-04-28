@@ -152,18 +152,25 @@ export interface ActivityItem {
     | "scan"
     | "moderation"
     | "boost"
-    | "anomaly";
+    | "anomaly"
+    | "review"
+    | "segment_generated";
   message: string;
   actor: string;
   eventId?: string;
   /** When type === "boost", links the row to /visibilite/{campaignId}. */
   campaignId?: string;
+  /** When type === "review", the buyer's star rating (1-5). */
+  rating?: number;
+  /** When type === "segment_generated", links the row to /audiences#{id}. */
+  segmentId?: string;
   /**
    * Anomaly variant flavor — drives the icon and the row's tinted
    * background. "spike" = positive surprise (gold-soft), "cluster" =
-   * worth investigating (warning-tinted), "geo" = geographic concentration.
+   * worth investigating (warning-tinted), "geo" = geographic
+   * concentration, "funnel" = checkout drop-off pattern.
    */
-  anomalyKind?: "spike" | "cluster" | "geo";
+  anomalyKind?: "spike" | "cluster" | "geo" | "funnel";
   at: string;
 }
 
