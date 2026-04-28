@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { readSession, type Role } from "./session";
+import {
+  DEFAULT_PROFILE_ID,
+  PROFILES,
+  getProfile,
+} from "@/lib/mock/profiles";
+import type { OrganizerProfile } from "@/lib/types/domain";
 
 // Subscribe to a custom "lyfe-session-changed" event so the demo role
 // switcher can re-render every gated CTA without a full page reload.
@@ -29,6 +35,30 @@ export function useRole(): Role | null {
   }, []);
 
   return role;
+}
+
+// Active organizer profile, derived from session.organizerId. Returns
+// null until the client-side mount resolves so SSR doesn't render a
+// stale chrome (Sidebar org card) before the real profile is known.
+export function useProfile(): OrganizerProfile | null {
+  const [profile, setProfile] = useState<OrganizerProfile | null>(null);
+
+  useEffect(() => {
+    const sync = () => {
+      const session = readSession();
+      const id = session?.organizerId ?? DEFAULT_PROFILE_ID;
+      setProfile(getProfile(id) ?? PROFILES[DEFAULT_PROFILE_ID]);
+    };
+    sync();
+    window.addEventListener(EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  return profile;
 }
 
 // Wrap any element that should only render for a subset of roles. Default

@@ -1,6 +1,37 @@
 // LYFE domain types, shape mirrors the eventual REST/GraphQL responses
 // so swapping mock for fetch() requires no component changes.
 
+// Organizer profile — the entity that signs in. `type` drives whether
+// the venue-specific subsections (Détails du lieu) render. Festivals
+// don't have one fixed venue; promoters book multiple. Venues do.
+export type OrganizerType = "festival" | "venue" | "promoter";
+
+export interface OrganizerProfile {
+  id: string;
+  type: OrganizerType;
+  /** Display name on the public page and in the chrome. */
+  name: string;
+  shortName: string;
+  /** Used in the sidebar avatar tile (max 2 chars). */
+  initials: string;
+  city: string;
+  /** One-line subhead under the org switcher card. */
+  subline: string;
+  contactEmail: string;
+  contactPhone: string;
+  website: string;
+  bio: string;
+  socials: {
+    instagram?: string;
+    facebook?: string;
+    x?: string;
+    linkedin?: string;
+    tiktok?: string;
+  };
+  /** Default venue id when type === "venue". */
+  primaryVenueId?: string;
+}
+
 // Event lifecycle is a discriminated union — the shape carries the
 // per-state metadata that the kebab actions, status pill, and various
 // flow gates need. `EventState` is the bare-string discriminator used

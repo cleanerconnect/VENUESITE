@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
+  Building2,
   CalendarDays,
   Check,
   ChevronRight,
@@ -21,13 +22,15 @@ import {
   Wallet,
 } from "lucide-react";
 import { Brand } from "./Brand";
-import { emitSessionChanged, useRole } from "@/lib/auth/role";
+import { emitSessionChanged, useProfile, useRole } from "@/lib/auth/role";
 import {
   ROLE_LABEL,
   type Role,
   clearSession,
+  switchProfile,
   switchRole,
 } from "@/lib/auth/session";
+import { PROFILES } from "@/lib/mock/profiles";
 import { cn } from "@/lib/utils/cn";
 
 interface Item {
@@ -64,6 +67,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const role = useRole();
+  const profile = useProfile();
 
   const handleLogout = () => {
     clearSession();
@@ -72,6 +76,12 @@ export function Sidebar() {
 
   const handleSwitchRole = (next: Role) => {
     switchRole(next);
+    emitSessionChanged();
+    router.refresh();
+  };
+
+  const handleSwitchProfile = (organizerId: string) => {
+    switchProfile(organizerId);
     emitSessionChanged();
     router.refresh();
   };
@@ -95,21 +105,21 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Organizer switcher card, Jazzablanca demo */}
+      {/* Organizer switcher card — derived from the active demo profile. */}
       <div className="px-4 mb-3">
         <button className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow">
           <div
             className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
             style={{ background: "var(--color-violet-soft)" }}
           >
-            JZ
+            {profile?.initials ?? "JZ"}
           </div>
           <div className="min-w-0 flex-1 leading-tight">
             <div className="text-[13px] font-semibold text-ink truncate">
-              Jazzablanca
+              {profile?.shortName ?? "Jazzablanca"}
             </div>
             <div className="text-meta text-ink-mute truncate">
-              Festival · Casablanca
+              {profile?.subline ?? "Festival · Casablanca"}
             </div>
           </div>
           <ChevronRight size={14} className="text-ink-mute shrink-0" />
@@ -192,6 +202,48 @@ export function Sidebar() {
                             <span className="flex-1">{ROLE_LABEL[r]}</span>
                             {active ? (
                               <Check size={14} strokeWidth={2} className="text-violet-deep" />
+                            ) : null}
+                          </DropdownMenu.Item>
+                        );
+                      })}
+                    </DropdownMenu.SubContent>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Sub>
+
+                {/* Demo-only profile switcher (festival vs venue). Drives
+                    the conditional rendering of Settings → Détails du
+                    lieu and the chrome's org card. */}
+                <DropdownMenu.Sub>
+                  <DropdownMenu.SubTrigger
+                    className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none data-[state=open]:bg-ink/[0.04]"
+                  >
+                    <Building2 size={14} strokeWidth={1.8} className="text-ink-mute" />
+                    <span className="flex-1">Profil démo</span>
+                    <ChevronRight size={12} strokeWidth={2} className="text-ink-mute" />
+                  </DropdownMenu.SubTrigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.SubContent
+                      sideOffset={4}
+                      className="min-w-[260px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
+                    >
+                      {Object.values(PROFILES).map((p) => {
+                        const active = profile?.id === p.id;
+                        return (
+                          <DropdownMenu.Item
+                            key={p.id}
+                            onSelect={() => handleSwitchProfile(p.id)}
+                            className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold truncate">
+                                {p.shortName}
+                              </div>
+                              <div className="text-meta text-ink-mute truncate">
+                                {p.type === "venue" ? "Lieu" : p.type === "festival" ? "Festival" : "Promoteur"} · {p.city}
+                              </div>
+                            </div>
+                            {active ? (
+                              <Check size={14} strokeWidth={2} className="text-violet-deep shrink-0" />
                             ) : null}
                           </DropdownMenu.Item>
                         );

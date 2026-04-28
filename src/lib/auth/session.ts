@@ -20,6 +20,8 @@ export interface Session {
   expiresAt: number; // ms epoch
 }
 
+const DEFAULT_ORG_ID = "org_jazzablanca";
+
 const isBrowser = () => typeof window !== "undefined";
 
 export function readSession(): Session | null {
@@ -48,10 +50,13 @@ export function clearSession() {
   window.localStorage.removeItem(KEY);
 }
 
-export function seedDemoSession(role: Role = "owner"): Session {
+export function seedDemoSession(
+  role: Role = "owner",
+  organizerId: string = DEFAULT_ORG_ID,
+): Session {
   const session: Session = {
     userId: "usr_mido",
-    organizerId: "org_jazzablanca",
+    organizerId,
     role,
     email:
       role === "scanner"
@@ -70,6 +75,16 @@ export function switchRole(role: Role): Session | null {
   const current = readSession();
   if (!current) return null;
   const next: Session = { ...current, role };
+  writeSession(next);
+  return next;
+}
+
+/** Demo-only profile switch — preserves session identity, swaps which
+ *  organizer profile is active so the chrome + Settings tabs re-render. */
+export function switchProfile(organizerId: string): Session | null {
+  const current = readSession();
+  if (!current) return null;
+  const next: Session = { ...current, organizerId };
   writeSession(next);
   return next;
 }

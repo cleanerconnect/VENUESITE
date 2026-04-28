@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Lock, Sparkles, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -11,10 +11,20 @@ import { Switch } from "@/components/ui/Switch";
 import { Pill } from "@/components/ui/Pill";
 import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
+import { useProfile } from "@/lib/auth/role";
 import { getAudienceSegments } from "@/lib/mock/visibility";
+import type { OrganizerProfile } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
 
-const SECTIONS = [
+interface SectionDef {
+  id: string;
+  label: string;
+}
+
+// "venue" subsection only renders for organizers whose profile.type ===
+// "venue". Festivals and promoters book multiple venues, so the field
+// set isn't relevant — they configure venues per-event in the wizard.
+const ALL_SECTIONS: SectionDef[] = [
   { id: "profile", label: "Profil" },
   { id: "venue", label: "Détails du lieu" },
   { id: "payout", label: "Coordonnées de versement" },
@@ -23,12 +33,22 @@ const SECTIONS = [
   { id: "language", label: "Langue" },
   { id: "api", label: "API" },
   { id: "danger", label: "Zone dangereuse" },
-] as const;
-
-type Section = (typeof SECTIONS)[number]["id"];
+];
 
 export default function SettingsPage() {
-  const [active, setActive] = useState<Section>("profile");
+  const profile = useProfile();
+  const sections = ALL_SECTIONS.filter((s) =>
+    s.id === "venue" ? profile?.type === "venue" : true,
+  );
+  const [active, setActive] = useState<string>("profile");
+
+  // If profile flips to festival while user is on the venue tab,
+  // bounce to profile so the screen never goes blank.
+  useEffect(() => {
+    if (!sections.some((s) => s.id === active)) {
+      setActive("profile");
+    }
+  }, [active, sections]);
 
   return (
     <div className="space-y-7">
@@ -43,7 +63,7 @@ export default function SettingsPage() {
         {/* Vertical tab nav, sticky on desktop */}
         <aside className="lg:sticky lg:top-[88px]">
           <nav className="flex lg:flex-col gap-1 overflow-x-auto scroll-thin no-scrollbar">
-            {SECTIONS.map((s) => {
+            {sections.map((s) => {
               const isActive = active === s.id;
               return (
                 <button
@@ -65,8 +85,10 @@ export default function SettingsPage() {
         </aside>
 
         <div className="min-w-0">
-          {active === "profile" ? <ProfileSection /> : null}
-          {active === "venue" ? <VenueSection /> : null}
+          {active === "profile" ? <ProfileSection profile={profile} /> : null}
+          {active === "venue" && profile?.type === "venue" ? (
+            <VenueSection />
+          ) : null}
           {active === "payout" ? <PayoutSection /> : null}
           {active === "notifications" ? <NotificationsSection /> : null}
           {active === "boost" ? <BoostPrefsSection /> : null}
@@ -79,7 +101,7 @@ export default function SettingsPage() {
   );
 }
 
-function ProfileSection() {
+function ProfileSection({ profile }: { profile: OrganizerProfile | null }) {
   const { toast } = useToast();
   const [logoName, setLogoName] = useState<string | null>(null);
   return (
@@ -90,13 +112,16 @@ function ProfileSection() {
       </p>
 
       {/* Logo upload at the top — first visual touchpoint of the profile. */}
-      <div className="mt-7 flex items-center gap-5 flex-wrap">
+      <div
+        key={profile?.id ?? "default"}
+        className="mt-7 flex items-center gap-5 flex-wrap"
+      >
         <div
           aria-hidden
           className="h-20 w-20 rounded-[var(--radius-md)] flex items-center justify-center text-violet-deep font-bold text-h3 shrink-0"
           style={{ background: "var(--color-violet-soft)" }}
         >
-          JZ
+          {profile?.initials ?? "JZ"}
         </div>
         <div className="flex-1 min-w-[240px]">
           <label className="inline-flex items-center gap-2 h-10 px-4 rounded-[var(--radius-sm)] bg-surface border border-line text-[13px] font-semibold cursor-pointer hover:border-ink transition-colors">
@@ -116,30 +141,54 @@ function ProfileSection() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4 mt-7">
-        <Input label="Nom" defaultValue="Jazzablanca" />
+      <div
+        key={`${profile?.id ?? "default"}-form`}
+        className="grid sm:grid-cols-2 gap-4 mt-7"
+      >
+        <Input label="Nom" defaultValue={profile?.name ?? "Jazzablanca"} />
         <Input
           label="Email de contact"
           type="email"
-          defaultValue="hello@jazzablanca.com"
+          defaultValue={profile?.contactEmail ?? "hello@jazzablanca.com"}
         />
-        <Input label="Téléphone" prefix="+212" defaultValue="522 00 00 00" />
-        <Input label="Site web" defaultValue="https://jazzablanca.com" />
+        <Input
+          label="Téléphone"
+          prefix="+212"
+          defaultValue={
+            profile?.contactPhone?.replace(/^\+212\s*/, "") ?? "522 00 00 00"
+          }
+        />
+        <Input
+          label="Site web"
+          defaultValue={profile?.website ?? "https://jazzablanca.com"}
+        />
       </div>
-      <div className="mt-4">
+      <div key={`${profile?.id ?? "default"}-bio`} className="mt-4">
         <Textarea
           label="Bio (max 500 caractères)"
           rows={3}
           maxLength={500}
-          defaultValue="Festival international de musique. 19e édition du 02 au 11 juillet 2026 à l'Anfa Park de Casablanca."
+          defaultValue={profile?.bio ?? ""}
         />
       </div>
-      <div className="mt-4 grid sm:grid-cols-2 gap-4">
-        <Input label="Instagram" defaultValue="@jazzablanca" />
-        <Input label="Facebook" defaultValue="jazzablanca" />
-        <Input label="X (Twitter)" defaultValue="@jazzablanca" />
-        <Input label="LinkedIn" defaultValue="company/jazzablanca" />
-        <Input label="TikTok" defaultValue="@jazzablanca" />
+      <div
+        key={`${profile?.id ?? "default"}-socials`}
+        className="mt-4 grid sm:grid-cols-2 gap-4"
+      >
+        <Input
+          label="Instagram"
+          defaultValue={profile?.socials.instagram ?? ""}
+        />
+        <Input
+          label="Facebook"
+          defaultValue={profile?.socials.facebook ?? ""}
+        />
+        <Input label="X (Twitter)" defaultValue={profile?.socials.x ?? ""} />
+        <Input
+          label="LinkedIn"
+          defaultValue={profile?.socials.linkedin ?? ""}
+        />
+        <Input label="TikTok" defaultValue={profile?.socials.tiktok ?? ""} />
       </div>
       <div className="mt-7 flex justify-end">
         <Button
