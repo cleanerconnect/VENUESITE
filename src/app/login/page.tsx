@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import * as RadixTabs from "@radix-ui/react-tabs";
 import { ArrowRight, CheckCircle2, MailOpen } from "lucide-react";
@@ -10,16 +10,42 @@ import { Brand } from "@/components/organizer/Brand";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { useToast } from "@/components/ui/Toast";
 import { seedDemoSession } from "@/lib/auth/session";
 import { cn } from "@/lib/utils/cn";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+// Three rotating organizer testimonials. The list signals to investors
+// that LYFE has more than the Jazzablanca anchor account; quotes rotate
+// every 8 seconds with an opacity crossfade. Only renders on desktop —
+// mobile gets the static first entry.
+const TESTIMONIALS: { quote: string; attribution: string }[] = [
+  {
+    quote:
+      "LYFE nous a permis de gérer la billetterie de notre 19e édition sans friction.",
+    attribution: "— Équipe Jazzablanca",
+  },
+  {
+    quote:
+      "On a vendu nos vendredis plus vite avec LYFE qu'avec n'importe quelle plateforme avant. Les versements arrivent à J+3, sans relance.",
+    attribution: "— Soirée Atlas, Tanger",
+  },
+  {
+    quote:
+      "Pour un festival itinérant comme le nôtre, voir tous les chiffres au même endroit a tout changé sur la coordination des éditions.",
+    attribution: "— L'Boulevard Festival",
+  },
+];
+
+const TESTIMONIAL_INTERVAL_MS = 8000;
+
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [tab, setTab] = useState<"magic" | "password">("magic");
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
 
   const handleDemo = () => {
     seedDemoSession();
@@ -30,11 +56,32 @@ export default function LoginPage() {
     router.push("/dashboard");
   };
 
+  // Cycle the testimonial every 8s on desktop. Skip the timer entirely
+  // when the user prefers reduced motion — they get the first quote and
+  // it stays.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduced) return;
+    const t = window.setInterval(
+      () => setTestimonialIdx((i) => (i + 1) % TESTIMONIALS.length),
+      TESTIMONIAL_INTERVAL_MS,
+    );
+    return () => window.clearInterval(t);
+  }, []);
+
   return (
     <main className="min-h-screen flex flex-col md:flex-row">
       {/* === Left column — editorial identity === */}
-      <section className="bg-canvas flex flex-col justify-between p-6 md:p-12 lg:p-16 md:basis-3/5 md:flex-shrink-0">
-        <div>
+      <section className="relative bg-canvas flex flex-col justify-between p-6 md:p-12 lg:p-16 md:basis-3/5 md:flex-shrink-0 overflow-hidden">
+        {/* Ambient drifting gradient — desktop only, ~20s cycle, blurred,
+            never opaque enough to fight the headline. CSS-driven keyframes
+            in globals.css; respects prefers-reduced-motion. */}
+        <div aria-hidden className="login-gradient-bg" />
+
+        <div className="relative z-10">
           <Brand height={52} />
 
           <div className="mt-10 md:mt-16 text-eyebrow text-ink-mute">
@@ -60,30 +107,45 @@ export default function LoginPage() {
         </div>
 
         {/* Stat tiles + quote — desktop only per spec */}
-        <div className="hidden md:block mt-10">
+        <div className="hidden md:block mt-10 relative z-10">
           <div className="grid grid-cols-3 gap-3 max-w-2xl">
-            <StatTile number="+45 000" label="personnes touchées" />
-            <StatTile number="12" label="villes au Maroc" />
+            <AnimatedStatTile
+              value={45000}
+              format={(n) =>
+                `+${Math.round(n).toLocaleString("fr-FR").replace(/,/g, " ")}`
+              }
+              label="personnes touchées"
+            />
+            <AnimatedStatTile value={12} label="villes au Maroc" />
             <StatTile number="J+3" label="versement garanti" />
           </div>
 
-          <blockquote className="mt-10 max-w-md">
-            <p
-              className="text-ink-mute leading-relaxed"
-              style={{
-                fontFamily: "var(--font-serif)",
-                fontStyle: "italic",
-                fontWeight: 400,
-                fontSize: "17px",
-                lineHeight: 1.5,
-              }}
-            >
-              &laquo; LYFE nous a permis de gérer la billetterie de notre 19e
-              édition sans friction. &raquo;
-            </p>
-            <footer className="text-meta text-ink-soft mt-2">
-              — Équipe Jazzablanca
-            </footer>
+          <blockquote className="mt-10 max-w-md min-h-[120px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={testimonialIdx}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.6, ease: EASE }}
+              >
+                <p
+                  className="text-ink-mute leading-relaxed"
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontStyle: "italic",
+                    fontWeight: 400,
+                    fontSize: "17px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  &laquo; {TESTIMONIALS[testimonialIdx].quote} &raquo;
+                </p>
+                <footer className="text-meta text-ink-soft mt-2">
+                  {TESTIMONIALS[testimonialIdx].attribution}
+                </footer>
+              </motion.div>
+            </AnimatePresence>
           </blockquote>
         </div>
       </section>
@@ -166,6 +228,36 @@ function StatTile({ number, label }: { number: string; label: string }) {
         }}
       >
         {number}
+      </div>
+      <div className="text-meta text-ink-soft mt-1.5 leading-tight">
+        {label}
+      </div>
+    </Card>
+  );
+}
+
+function AnimatedStatTile({
+  value,
+  label,
+  format,
+}: {
+  value: number;
+  label: string;
+  format?: (n: number) => string;
+}) {
+  return (
+    <Card variant="violet-soft" size="sm" className="text-center">
+      <div
+        className="text-violet-deep num"
+        style={{
+          fontFamily: "var(--font-serif)",
+          fontWeight: 600,
+          fontSize: "clamp(20px, 2vw, 26px)",
+          lineHeight: 1,
+          letterSpacing: "-0.02em",
+        }}
+      >
+        <AnimatedNumber value={value} format={format} duration={1.2} />
       </div>
       <div className="text-meta text-ink-soft mt-1.5 leading-tight">
         {label}

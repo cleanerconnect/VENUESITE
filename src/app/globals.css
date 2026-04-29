@@ -243,6 +243,62 @@ input[type="time"] {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Login page — slow ambient gradient drifting behind the editorial
+   headline. Pure CSS so it costs nothing on the JS thread; disabled
+   on small screens (mobile keeps a static surface) and respected
+   under prefers-reduced-motion.
+   ───────────────────────────────────────────────────────────── */
+@keyframes login-gradient-drift {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+.login-gradient-bg {
+  display: none;
+}
+@media (min-width: 768px) {
+  .login-gradient-bg {
+    display: block;
+    position: absolute;
+    inset: -10%;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(
+        60% 50% at 25% 30%,
+        var(--color-violet-soft),
+        transparent 70%
+      ),
+      radial-gradient(
+        50% 60% at 80% 70%,
+        var(--color-tint-peach),
+        transparent 75%
+      ),
+      radial-gradient(
+        45% 45% at 60% 25%,
+        var(--color-gold-soft),
+        transparent 80%
+      );
+    background-size: 220% 220%;
+    filter: blur(70px);
+    opacity: 0.55;
+    animation: login-gradient-drift 20s ease-in-out infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-gradient-bg {
+    animation: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
    Print stylesheet — used by the Bilan tab "Téléchargement PDF"
    button. Strips chrome (sidebar, topbar, FAB, kebab menus, sticky
    bottom bars), forces white background, lifts ink colours so the
