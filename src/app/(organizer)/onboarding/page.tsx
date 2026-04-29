@@ -70,15 +70,16 @@ export default function OnboardingPage() {
   const [draft, setDraft] = useState<OnboardingDraft>({ lastStep: 0 });
 
   // Resume on mount: jump to step lastStep + 1, capped at 5.
+  const profileId = profile?.id;
   useEffect(() => {
-    if (!profile) return;
-    const existing = readDraft(profile.id);
+    if (!profileId) return;
+    const existing = readDraft(profileId);
     setDraft(existing);
     if (existing.lastStep > 0) {
       const resume = Math.min(5, existing.lastStep + 1) as StepIdx;
       setStep(resume);
     }
-  }, [profile?.id]);
+  }, [profileId]);
 
   if (!profile) {
     return <div className="fixed inset-0 z-40 bg-canvas" aria-hidden />;

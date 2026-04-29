@@ -13,6 +13,7 @@ const PUBLIC_PATHS = new Set([
   "/",
   "/splash",
   "/login",
+  "/login/forgot",
   "/contact",
 ]);
 

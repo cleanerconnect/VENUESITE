@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Button } from "./Button";
 
 // Empty states are a moment, Fraunces serif headline, one-sentence subtitle,
@@ -28,9 +29,9 @@ export function EmptyState({
       ) : null}
       {cta ? (
         cta.href ? (
-          <a href={cta.href}>
+          <Link href={cta.href}>
             <Button>{cta.label}</Button>
-          </a>
+          </Link>
         ) : (
           <Button onClick={cta.onClick}>{cta.label}</Button>
         )

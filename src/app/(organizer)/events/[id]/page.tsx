@@ -1,18 +1,42 @@
 "use client";
 
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { notFound, useParams, useSearchParams } from "next/navigation";
 import { Tabs } from "@/components/ui/Tabs";
 import { StatusPill, Pill } from "@/components/ui/Pill";
-import { SalesTab } from "@/components/event/SalesTab";
-import { AnalysesTab } from "@/components/event/AnalysesTab";
-import { AttendeesTab } from "@/components/event/AttendeesTab";
-import { BilanTab } from "@/components/event/BilanTab";
-import { InvitationsTab } from "@/components/event/InvitationsTab";
-import { RefundsTab } from "@/components/event/RefundsTab";
-import { RegieTab } from "@/components/event/RegieTab";
-import { PromoteTab } from "@/components/event/PromoteTab";
 import { getEventById, getAllEvents } from "@/lib/mock/events";
+
+// Each tab is a heavyweight subtree (charts, dialogs, drag-and-drop).
+// Lazy them so /events/[id]'s First Load JS only carries the chrome —
+// each tab's chunk downloads when the user lands on or switches to it.
+// Radix Tabs only mounts the active panel, so the dynamic import never
+// fires for tabs the user doesn't open.
+const SalesTab = dynamic(
+  () => import("@/components/event/SalesTab").then((m) => m.SalesTab),
+);
+const AnalysesTab = dynamic(
+  () => import("@/components/event/AnalysesTab").then((m) => m.AnalysesTab),
+);
+const AttendeesTab = dynamic(
+  () => import("@/components/event/AttendeesTab").then((m) => m.AttendeesTab),
+);
+const BilanTab = dynamic(
+  () => import("@/components/event/BilanTab").then((m) => m.BilanTab),
+);
+const InvitationsTab = dynamic(
+  () =>
+    import("@/components/event/InvitationsTab").then((m) => m.InvitationsTab),
+);
+const RefundsTab = dynamic(
+  () => import("@/components/event/RefundsTab").then((m) => m.RefundsTab),
+);
+const RegieTab = dynamic(
+  () => import("@/components/event/RegieTab").then((m) => m.RegieTab),
+);
+const PromoteTab = dynamic(
+  () => import("@/components/event/PromoteTab").then((m) => m.PromoteTab),
+);
 import { hasAnalyses } from "@/lib/mock/analyses";
 import { hasBilan } from "@/lib/mock/bilan";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
