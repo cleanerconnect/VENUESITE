@@ -24,6 +24,11 @@ import { MobileSalesPulseCard } from "@/components/cards/MobileSalesPulseCard";
 import { MobileUpcomingEventsRow } from "@/components/cards/MobileUpcomingEventsRow";
 import { OnboardingBanner } from "@/components/cards/OnboardingBanner";
 
+// `daysToPayout` and the live-event window depend on Date.now(); without
+// this, Next prerenders the page at build time and freezes both values
+// until the next deploy.
+export const dynamic = "force-dynamic";
+
 const NOW = new Date("2026-04-25T19:30:00+01:00").getTime();
 
 export default function DashboardPage() {
