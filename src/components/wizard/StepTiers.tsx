@@ -11,7 +11,7 @@ import { computeCustomerPrice, formatMAD } from "@/lib/utils/format";
 
 export function emptyTier(): DraftTier {
   return {
-    id: `t_${Math.random().toString(36).slice(2, 8)}`,
+    id: `t_${crypto.randomUUID().slice(0, 8)}`,
     name: "",
     faceValueMad: 0,
     quantity: 100,
