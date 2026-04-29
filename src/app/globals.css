@@ -364,4 +364,13 @@ input[type="time"] {
     background: #ffffff !important;
     border-left: 3px solid #0a1f3d !important;
   }
+  /* Cover page — fills the full A4 minus @page margins, forces a
+     page break so the rest of the bilan starts at the top of page 2.
+     calc takes the page height (297mm) minus the top + bottom margins
+     declared on @page (14mm + 14mm). */
+  .bilan-printable .bilan-cover {
+    min-height: calc(297mm - 28mm);
+    page-break-after: always;
+    break-after: page;
+  }
 }

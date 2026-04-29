@@ -42,29 +42,75 @@ export function BilanTab({ event }: { event: LyfeEvent }) {
     if (typeof window !== "undefined") window.print();
   };
 
+  // Édition label for the cover. Falls back to the event year when no
+  // sequence number is available (most events). Jazzablanca-style series
+  // could later override via a real `editionNumber` field on LyfeEvent.
+  const editionLabel = `Édition ${new Date(event.endsAt).getFullYear()}`;
+
   return (
     <div className="bilan-printable space-y-5">
-      {/* === Print-only header — LYFE wordmark + event title === */}
-      <header className="hidden print:block mb-6">
-        <Brand height={28} />
-        <div className="text-eyebrow text-ink-mute mt-4">
-          Bilan d&apos;événement
+      {/* === Print-only cover page — full-bleed editorial title page ===
+          Three vertical thirds (logo block / serif title block / hero
+          metric + signature). page-break-after: always in the print
+          stylesheet pushes the rest of the bilan onto page 2. The
+          screen view never shows this — it's bracketed by hidden +
+          print:flex utilities so it occupies zero space outside the
+          PDF artifact. */}
+      <header className="bilan-cover hidden print:flex flex-col">
+        <div className="flex-1">
+          <Brand height={26} />
+          <div className="text-eyebrow text-ink-mute mt-6">
+            Bilan d&apos;événement
+          </div>
         </div>
-        <h1
-          className="text-ink mt-1"
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontWeight: 600,
-            fontSize: "26px",
-            lineHeight: 1.1,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {event.name}
-        </h1>
-        <div className="text-meta text-ink-soft mt-1 num">
-          Clôturé le {formatDateFR(event.endsAt)} · {event.venue.name},{" "}
-          {event.venue.city}
+
+        <div className="flex-1 flex flex-col justify-center">
+          <h1
+            className="text-ink"
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontWeight: 600,
+              fontSize: "56px",
+              lineHeight: 1.02,
+              letterSpacing: "-0.03em",
+            }}
+          >
+            {event.name}
+          </h1>
+          <div className="text-[14px] text-ink-soft mt-4 num">
+            Clôturé le {formatDateFR(event.endsAt)} · {event.venue.name},{" "}
+            {event.venue.city}
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-end">
+          <div className="text-eyebrow text-ink-mute">Revenu net</div>
+          <div
+            className="text-ink num mt-2"
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontWeight: 600,
+              fontSize: "64px",
+              lineHeight: 1,
+              letterSpacing: "-0.03em",
+            }}
+          >
+            {data.netRevenueLabel}
+          </div>
+
+          <div className="bilan-cover-signature mt-12 pt-5 border-t border-ink/30 flex items-end justify-between gap-6">
+            <div>
+              <div className="text-eyebrow text-ink-mute">
+                Édition validée par LYFE
+              </div>
+              <div className="text-meta text-ink-soft mt-1 num">
+                {editionLabel} · Référence LYFE-BILAN-{event.id.toUpperCase()}
+              </div>
+            </div>
+            <div className="text-meta text-ink-mute italic">
+              Signature&nbsp;_______________________
+            </div>
+          </div>
         </div>
       </header>
 
