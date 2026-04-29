@@ -1,10 +1,15 @@
 # LYFE — Espace Organisateur
 
-Production-grade web dashboard for event organizers using **LYFE**, Morocco's
-lifestyle discovery platform. All 7 screens shipping in the bento /
-Rondesignlab-inspired direction. Visual layer + interactions complete; mock
-data is shaped exactly like the eventual API responses so backend wiring is
-a search-and-replace later.
+BETA web dashboard for event organizers using **LYFE**, Morocco's lifestyle
+discovery platform. All 7 screens shipping in the bento / Rondesignlab-inspired
+direction. Visual layer + interactions complete; mock data is shaped exactly
+like the eventual API responses so backend wiring is a search-and-replace
+later.
+
+> **Auth status — demo only.** Sessions are kept in `localStorage` and
+> mirrored to a presence cookie that lets `middleware.ts` short-circuit
+> protected routes server-side. Real auth (Auth.js or Clerk) lands in the
+> DigiNegoce post-BETA handoff — see `docs/POST_BETA_HANDOFF.md`.
 
 ## Run
 

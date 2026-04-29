@@ -1,8 +1,15 @@
 // Session is mocked in localStorage. Real auth (NextAuth, Supabase, custom)
 // drops in by replacing this file's three functions; the rest of the app
 // only ever calls readSession/writeSession/clearSession.
+//
+// In addition to localStorage, writeSession/clearSession mirror a
+// `lyfe.session.present` cookie. middleware.ts reads only this cookie to
+// decide whether to bounce unauthenticated requests to /login server-side
+// before SSR. The cookie carries no secrets — it's a presence flag.
 
 const KEY = "lyfe.session";
+const COOKIE = "lyfe.session.present";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days, matches expiresAt
 
 export type Role = "owner" | "admin" | "scanner";
 
@@ -32,6 +39,7 @@ export function readSession(): Session | null {
     const parsed = JSON.parse(raw) as Session;
     if (Date.now() > parsed.expiresAt) {
       window.localStorage.removeItem(KEY);
+      clearPresenceCookie();
       return null;
     }
     return parsed;
@@ -43,11 +51,21 @@ export function readSession(): Session | null {
 export function writeSession(session: Session) {
   if (!isBrowser()) return;
   window.localStorage.setItem(KEY, JSON.stringify(session));
+  writePresenceCookie();
 }
 
 export function clearSession() {
   if (!isBrowser()) return;
   window.localStorage.removeItem(KEY);
+  clearPresenceCookie();
+}
+
+function writePresenceCookie() {
+  document.cookie = `${COOKIE}=1; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+}
+
+function clearPresenceCookie() {
+  document.cookie = `${COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
 }
 
 export function seedDemoSession(
