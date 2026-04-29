@@ -28,6 +28,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Brand } from "./Brand";
+import { MobilePlusMenu } from "./MobilePlusMenu";
 import { emitSessionChanged, useProfile, useRole } from "@/lib/auth/role";
 import {
   ROLE_LABEL,
@@ -124,40 +125,12 @@ export function Sidebar() {
 // the left. Triggered by the topbar hamburger.
 export function MobileSidebarDrawer() {
   const pathname = usePathname();
-  const router = useRouter();
-  const role = useRole();
-  const profile = useProfile();
   const open = useMobileNavStore((s) => s.drawerOpen);
   const setOpen = useMobileNavStore((s) => s.setDrawerOpen);
 
   // Close the drawer whenever the pathname changes — tapping any nav
   // link should advance + dismiss in one motion.
   useCloseOnPathChange(pathname, setOpen);
-
-  const handleLogout = () => {
-    clearSession();
-    setOpen(false);
-    router.push("/splash");
-  };
-
-  const handleSwitchRole = (next: Role) => {
-    switchRole(next);
-    emitSessionChanged();
-    router.refresh();
-  };
-
-  const handleSwitchProfile = (organizerId: string) => {
-    switchProfile(organizerId);
-    emitSessionChanged();
-    router.refresh();
-  };
-
-  const groupA = GROUP_A.filter(
-    (i) => !i.allow || (role && i.allow.includes(role)),
-  );
-  const groupB = GROUP_B.filter(
-    (i) => !i.allow || (role && i.allow.includes(role)),
-  );
 
   return (
     <RadixDialog.Root open={open} onOpenChange={setOpen}>
@@ -179,22 +152,21 @@ export function MobileSidebarDrawer() {
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="fixed top-0 left-0 bottom-0 z-50 w-[280px] max-w-[88vw] bg-canvas-2 border-r border-line-soft shadow-deep flex flex-col md:hidden"
+                className="fixed top-0 left-0 bottom-0 z-50 w-[300px] max-w-[88vw] bg-canvas border-r border-line-soft shadow-deep flex flex-col md:hidden"
                 aria-label="Navigation principale"
               >
                 <RadixDialog.Title className="sr-only">
                   Menu principal
                 </RadixDialog.Title>
-                <SidebarBody
-                  pathname={pathname}
-                  role={role}
-                  profile={profile}
-                  groupA={groupA}
-                  groupB={groupB}
-                  handleSwitchRole={handleSwitchRole}
-                  handleSwitchProfile={handleSwitchProfile}
-                  handleLogout={handleLogout}
-                />
+                <header className="px-5 pt-5 pb-3 border-b border-line-soft shrink-0">
+                  <Brand height={32} />
+                  <div className="text-meta text-ink-mute mt-2 lowercase">
+                    organisateur
+                  </div>
+                </header>
+                <div className="flex-1 overflow-y-auto scroll-thin p-5">
+                  <MobilePlusMenu bareHeader />
+                </div>
               </motion.aside>
             </RadixDialog.Content>
           </RadixDialog.Portal>
