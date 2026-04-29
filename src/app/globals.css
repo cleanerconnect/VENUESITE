@@ -243,6 +243,92 @@ input[type="time"] {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Login page — slow ambient gradient drifting behind the editorial
+   headline. Pure CSS so it costs nothing on the JS thread; disabled
+   on small screens (mobile keeps a static surface) and respected
+   under prefers-reduced-motion.
+   ───────────────────────────────────────────────────────────── */
+@keyframes login-gradient-drift {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+.login-gradient-bg {
+  display: none;
+}
+@media (min-width: 768px) {
+  .login-gradient-bg {
+    display: block;
+    position: absolute;
+    inset: -10%;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(
+        60% 50% at 25% 30%,
+        var(--color-violet-soft),
+        transparent 70%
+      ),
+      radial-gradient(
+        50% 60% at 80% 70%,
+        var(--color-tint-peach),
+        transparent 75%
+      ),
+      radial-gradient(
+        45% 45% at 60% 25%,
+        var(--color-gold-soft),
+        transparent 80%
+      );
+    background-size: 220% 220%;
+    filter: blur(70px);
+    opacity: 0.55;
+    animation: login-gradient-drift 20s ease-in-out infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-gradient-bg {
+    animation: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Empty-state illustrations — extremely subtle pulse, 4s cycle.
+   The classes are no-ops by default (animation only fires when the
+   glyph component opts in via JS, gated on desktop + non-reduced
+   motion) but we still null the animation under the OS-level reduce
+   flag for a defense-in-depth fallback if a future caller forgets.
+   ───────────────────────────────────────────────────────────── */
+@keyframes ill-pulse {
+  0%, 100% {
+    opacity: 0.92;
+  }
+  50% {
+    opacity: 0.97;
+  }
+}
+.ill-pulse {
+  animation: ill-pulse 4s ease-in-out infinite;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ill-pulse {
+    animation: none;
+  }
+}
+@media (max-width: 767px) {
+  .ill-pulse {
+    animation: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
    Print stylesheet — used by the Bilan tab "Téléchargement PDF"
    button. Strips chrome (sidebar, topbar, FAB, kebab menus, sticky
    bottom bars), forces white background, lifts ink colours so the
@@ -307,5 +393,14 @@ input[type="time"] {
   .bilan-printable .bilan-tint {
     background: #ffffff !important;
     border-left: 3px solid #0a1f3d !important;
+  }
+  /* Cover page — fills the full A4 minus @page margins, forces a
+     page break so the rest of the bilan starts at the top of page 2.
+     calc takes the page height (297mm) minus the top + bottom margins
+     declared on @page (14mm + 14mm). */
+  .bilan-printable .bilan-cover {
+    min-height: calc(297mm - 28mm);
+    page-break-after: always;
+    break-after: page;
   }
 }

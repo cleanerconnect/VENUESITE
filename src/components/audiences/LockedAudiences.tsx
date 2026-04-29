@@ -1,7 +1,7 @@
 "use client";
 
-import { Lock } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { AudiencesHexGlyph } from "@/components/illustrations/AudiencesHexGlyph";
 import type { AudiencesEmptyState } from "@/lib/types/analytics";
 
 export function LockedAudiences({
@@ -15,12 +15,9 @@ export function LockedAudiences({
   return (
     <div className="max-w-3xl mx-auto py-10 md:py-16">
       <div className="text-center mb-10">
-        <span
-          aria-hidden
-          className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-violet-soft mb-5"
-        >
-          <Lock size={20} strokeWidth={1.8} className="text-violet-deep" />
-        </span>
+        <div className="mx-auto max-w-[280px] mb-2" aria-hidden>
+          <AudiencesHexGlyph />
+        </div>
         <h1
           className="text-ink"
           style={{
