@@ -15,7 +15,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, Props>(function Textarea
   { label, hint, error, count, className, id, ...rest },
   ref,
 ) {
-  const inputId = id ?? useId();
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
   return (
     <div className="flex flex-col gap-1.5">
       {label ? (
