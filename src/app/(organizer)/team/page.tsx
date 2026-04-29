@@ -60,7 +60,7 @@ export default function TeamPage() {
   const sendInvite = () => {
     if (!inviteEmail.trim()) return;
     const newMember: TeamMember = {
-      id: `tm_${Math.random().toString(36).slice(2, 6)}`,
+      id: `tm_${crypto.randomUUID().slice(0, 8)}`,
       name: inviteEmail.split("@")[0],
       email: inviteEmail.trim(),
       role: inviteRole,

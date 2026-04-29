@@ -167,7 +167,7 @@ export function StepMedia({
               set("artists", [
                 ...draft.artists,
                 {
-                  id: `a_${Math.random().toString(36).slice(2, 6)}`,
+                  id: `a_${crypto.randomUUID().slice(0, 8)}`,
                   name: "",
                   role: "",
                 },
