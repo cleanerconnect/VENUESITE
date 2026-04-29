@@ -299,6 +299,36 @@ input[type="time"] {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Empty-state illustrations — extremely subtle pulse, 4s cycle.
+   The classes are no-ops by default (animation only fires when the
+   glyph component opts in via JS, gated on desktop + non-reduced
+   motion) but we still null the animation under the OS-level reduce
+   flag for a defense-in-depth fallback if a future caller forgets.
+   ───────────────────────────────────────────────────────────── */
+@keyframes ill-pulse {
+  0%, 100% {
+    opacity: 0.92;
+  }
+  50% {
+    opacity: 0.97;
+  }
+}
+.ill-pulse {
+  animation: ill-pulse 4s ease-in-out infinite;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ill-pulse {
+    animation: none;
+  }
+}
+@media (max-width: 767px) {
+  .ill-pulse {
+    animation: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
    Print stylesheet — used by the Bilan tab "Téléchargement PDF"
    button. Strips chrome (sidebar, topbar, FAB, kebab menus, sticky
    bottom bars), forces white background, lifts ink colours so the

@@ -23,6 +23,7 @@ import { MobileTodayCard } from "@/components/cards/MobileTodayCard";
 import { MobileSalesPulseCard } from "@/components/cards/MobileSalesPulseCard";
 import { MobileUpcomingEventsRow } from "@/components/cards/MobileUpcomingEventsRow";
 import { OnboardingBanner } from "@/components/cards/OnboardingBanner";
+import { TimelineGlyph } from "@/components/illustrations/TimelineGlyph";
 
 // `daysToPayout` and the live-event window depend on Date.now(); without
 // this, Next prerenders the page at build time and freezes both values
@@ -268,11 +269,15 @@ export default function DashboardPage() {
                 </Link>
               </div>
               <div className="flex flex-col gap-3">
-                {data.upcomingEvents
-                  .filter((e) => e.status.state !== "draft")
-                  .map((event) => (
+                {(() => {
+                  const visible = data.upcomingEvents.filter(
+                    (e) => e.status.state !== "draft",
+                  );
+                  if (visible.length === 0) return <DashboardEventsEmpty />;
+                  return visible.map((event) => (
                     <UpcomingEventRow key={event.id} event={event} />
-                  ))}
+                  ));
+                })()}
               </div>
             </section>
 
@@ -297,5 +302,43 @@ export default function DashboardPage() {
         </StaggerItem>
       </Stagger>
     </>
+  );
+}
+
+// Shown when the upcoming-events list resolves to zero rows — typically
+// the Rooftop Mansour profile right after onboarding. The illustration
+// is decorative; the headline + CTA carry the actual UX.
+function DashboardEventsEmpty() {
+  return (
+    <Card variant="canvas-2" size="md" className="text-center">
+      <div className="mx-auto max-w-[400px] mb-3" aria-hidden>
+        <TimelineGlyph />
+      </div>
+      <h3
+        className="text-ink"
+        style={{
+          fontFamily: "var(--font-serif)",
+          fontWeight: 600,
+          fontSize: "22px",
+          lineHeight: 1.15,
+          letterSpacing: "-0.01em",
+        }}
+      >
+        Votre première soirée commence ici.
+      </h3>
+      <p className="text-body text-ink-soft mt-2 max-w-sm mx-auto leading-relaxed">
+        Créez un événement pour ouvrir la billetterie, suivre les ventes
+        en direct et payer votre équipe à J+3.
+      </p>
+      <RoleGate>
+        <Link
+          href="/events/new"
+          className="mt-5 inline-flex items-center gap-2 h-11 px-5 bg-ink text-canvas rounded-[var(--radius-sm)] text-[14px] font-semibold hover:bg-ink-soft transition-colors"
+        >
+          <Plus size={14} strokeWidth={2} />
+          Créer un événement
+        </Link>
+      </RoleGate>
+    </Card>
   );
 }
