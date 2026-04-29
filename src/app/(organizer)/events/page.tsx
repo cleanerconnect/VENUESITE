@@ -8,7 +8,13 @@ import { getAllEvents } from "@/lib/mock/events";
 import { getBilanByEventId, hasBilan } from "@/lib/mock/bilan";
 import type { EventStatus, LyfeEvent } from "@/lib/types/domain";
 import { UpcomingEventRow } from "@/components/cards/UpcomingEventRow";
+import { MobileEventCard } from "@/components/cards/MobileEventCard";
 import { RecentBilansStrip } from "@/components/cards/RecentBilansStrip";
+import {
+  PullToRefreshIndicator,
+  usePullToRefresh,
+} from "@/components/cards/PullToRefresh";
+import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useRole } from "@/lib/auth/role";
@@ -35,7 +41,17 @@ export default function EventsPage() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("date_desc");
   const role = useRole();
+  const { toast } = useToast();
   const canCreate = role === "owner" || role === "admin";
+
+  // Pull-to-refresh — fakes a network round-trip and surfaces a toast
+  // confirming the freshness. The mock data is static so there's
+  // nothing to fetch; the affordance is what investors care about.
+  const refresh = async () => {
+    await new Promise((r) => setTimeout(r, 700));
+    toast({ tone: "success", title: "Liste rafraîchie" });
+  };
+  const pull = usePullToRefresh(refresh);
 
   const all = useMemo(getAllEvents, []);
 
@@ -93,7 +109,13 @@ export default function EventsPage() {
   }, [all, filter, query, sort]);
 
   return (
-    <div className="space-y-5">
+    <div ref={pull.ref} className="space-y-5">
+      <PullToRefreshIndicator
+        pulling={pull.pulling}
+        distance={pull.distance}
+        refreshing={pull.refreshing}
+      />
+
       {/* === Header === */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -208,17 +230,26 @@ export default function EventsPage() {
           }
         />
       ) : (
-        <div className="flex flex-col gap-3">
-          {list.map((event) =>
-            event.status.state === "rejected" ? (
-              <RejectedRow key={event.id} event={event} />
-            ) : event.status.state === "cancelled" ? (
-              <CancelledRow key={event.id} event={event} />
-            ) : (
-              <UpcomingEventRow key={event.id} event={event} />
-            ),
-          )}
-        </div>
+        <>
+          {/* Mobile: full event cards with cover, key metric, two CTAs. */}
+          <div className="md:hidden flex flex-col gap-4">
+            {list.map((event) => (
+              <MobileEventCard key={event.id} event={event} />
+            ))}
+          </div>
+          {/* Desktop: existing horizontal rows. */}
+          <div className="hidden md:flex flex-col gap-3">
+            {list.map((event) =>
+              event.status.state === "rejected" ? (
+                <RejectedRow key={event.id} event={event} />
+              ) : event.status.state === "cancelled" ? (
+                <CancelledRow key={event.id} event={event} />
+              ) : (
+                <UpcomingEventRow key={event.id} event={event} />
+              ),
+            )}
+          </div>
+        </>
       )}
 
       {canCreate ? (

@@ -34,7 +34,14 @@ export function RecentBilansStrip({
           Tout voir
         </Link>
       </div>
-      <div className="flex gap-3 overflow-x-auto scroll-thin -mx-4 md:mx-0 px-4 md:px-0 pb-1">
+      {/* Mobile: single-column vertical stack with full-width cards.
+          Desktop: horizontal scroll of fixed-width cards. */}
+      <div className="md:hidden flex flex-col gap-3">
+        {rows.map(({ event, bilan }) => (
+          <BilanCard key={event.id} event={event} bilan={bilan} fullWidth />
+        ))}
+      </div>
+      <div className="hidden md:flex gap-3 overflow-x-auto scroll-thin pb-1">
         {rows.map(({ event, bilan }) => (
           <BilanCard key={event.id} event={event} bilan={bilan} />
         ))}
@@ -46,9 +53,11 @@ export function RecentBilansStrip({
 function BilanCard({
   event,
   bilan,
+  fullWidth = false,
 }: {
   event: LyfeEvent;
   bilan: BilanData;
+  fullWidth?: boolean;
 }) {
   const router = useRouter();
 
@@ -62,7 +71,7 @@ function BilanCard({
     <motion.div
       whileHover={{ y: -2 }}
       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-      className="shrink-0 w-[300px] md:w-[340px]"
+      className={fullWidth ? "w-full" : "shrink-0 w-[300px] md:w-[340px]"}
     >
       <Link
         href={`/events/${event.id}?tab=bilan`}
