@@ -22,6 +22,7 @@ import { MobileNudgeStack } from "@/components/cards/MobileNudgeStack";
 import { MobileTodayCard } from "@/components/cards/MobileTodayCard";
 import { MobileSalesPulseCard } from "@/components/cards/MobileSalesPulseCard";
 import { MobileUpcomingEventsRow } from "@/components/cards/MobileUpcomingEventsRow";
+import { OnboardingBanner } from "@/components/cards/OnboardingBanner";
 
 const NOW = new Date("2026-04-25T19:30:00+01:00").getTime();
 
@@ -61,6 +62,10 @@ export default function DashboardPage() {
 
   return (
     <>
+      {/* Cross-breakpoint onboarding gate. Renders only when the active
+          profile hasn't finished the /onboarding wizard. */}
+      <OnboardingBanner />
+
       {/* === MOBILE feed (vertical card stack) === */}
       <div className="md:hidden space-y-4">
         {liveEvent ? (

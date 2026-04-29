@@ -30,6 +30,11 @@ export interface OrganizerProfile {
   };
   /** Default venue id when type === "venue". */
   primaryVenueId?: string;
+  /** True once the organizer has finished /onboarding. Drives whether
+   *  the dashboard banner + wizard auto-launch on first paint. The
+   *  PROFILES default is the seed value; runtime state may override
+   *  via localStorage (see lib/auth/onboarding). */
+  onboardingCompleted: boolean;
 }
 
 // Event lifecycle is a discriminated union — the shape carries the

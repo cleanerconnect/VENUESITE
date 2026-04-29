@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Lock, Sparkles, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Lock, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -12,6 +13,7 @@ import { Pill } from "@/components/ui/Pill";
 import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
 import { useProfile } from "@/lib/auth/role";
+import { resetOnboarding } from "@/lib/auth/onboarding";
 import { getAudienceSegments } from "@/lib/mock/visibility";
 import type { OrganizerProfile } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
@@ -623,8 +625,44 @@ function ApiSection() {
 function DangerSection() {
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState("");
+  const router = useRouter();
+  const profile = useProfile();
+  const { toast } = useToast();
+
+  const handleResetOnboarding = () => {
+    if (!profile) return;
+    resetOnboarding(profile.id);
+    toast({
+      tone: "info",
+      title: "Onboarding réinitialisé",
+      description:
+        "L'assistant de configuration s'ouvrira au prochain passage par /dashboard.",
+    });
+    router.push("/onboarding");
+  };
+
   return (
-    <>
+    <div className="space-y-4">
+      <Card variant="canvas-2" size="lg">
+        <div className="flex items-start gap-3 mb-2">
+          <RotateCcw size={18} strokeWidth={1.8} className="text-violet-deep mt-1" />
+          <div>
+            <h2 className="text-h2 text-ink">Réinitialiser l&apos;onboarding</h2>
+            <p className="text-body text-ink-soft mt-1.5 max-w-xl leading-relaxed">
+              Outil démo — efface l&apos;état d&apos;avancement du wizard de
+              configuration et ré-affiche la bannière en haut du tableau de
+              bord. Pratique pour rejouer le parcours nouveau-venu sur le
+              profil actif.
+            </p>
+          </div>
+        </div>
+        <div className="mt-5">
+          <Button variant="secondary" onClick={handleResetOnboarding} iconLeft={<RotateCcw size={14} strokeWidth={1.8} />}>
+            Rejouer l&apos;onboarding
+          </Button>
+        </div>
+      </Card>
+
       <Card variant="rose" size="lg">
         <div className="flex items-start gap-3 mb-2">
           <Trash2 size={18} strokeWidth={1.8} className="text-danger mt-1" />
@@ -689,6 +727,6 @@ function DangerSection() {
           />
         </div>
       </Dialog>
-    </>
+    </div>
   );
 }

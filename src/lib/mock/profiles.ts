@@ -28,6 +28,7 @@ export const PROFILES: Record<string, OrganizerProfile> = {
       linkedin: "company/jazzablanca",
       tiktok: "@jazzablanca",
     },
+    onboardingCompleted: true,
   },
   org_rooftop_mansour: {
     id: "org_rooftop_mansour",
@@ -47,6 +48,7 @@ export const PROFILES: Record<string, OrganizerProfile> = {
       tiktok: "@rooftopmansour",
     },
     primaryVenueId: "v_mansour",
+    onboardingCompleted: false,
   },
 };
 

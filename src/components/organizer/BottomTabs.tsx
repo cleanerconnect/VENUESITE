@@ -35,7 +35,11 @@ const TABS: Tab[] = [
   { label: "Plus", href: "/plus", icon: MoreHorizontal },
 ];
 
-const FULLSCREEN_ROUTES = ["/scanner", "/scanner-fullscreen"];
+const FULLSCREEN_ROUTES = [
+  "/scanner",
+  "/scanner-fullscreen",
+  "/onboarding",
+];
 
 export function BottomTabs() {
   const pathname = usePathname();
