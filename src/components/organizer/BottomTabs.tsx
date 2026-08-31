@@ -2,38 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  type LucideIcon,
-  LayoutDashboard,
-  MoreHorizontal,
-  ScanLine,
-  Sparkles,
-  Ticket,
-} from "lucide-react";
 import { motion } from "motion/react";
+import { Icon } from "@/components/dashboard/primitives";
+import { isActive, resolveWorkspace } from "@/lib/nav/workspaces";
 import { cn } from "@/lib/utils/cn";
 
-// Five-tab mobile nav. Scanner is the elevated center button — taps
-// navigate to the fullscreen /scanner takeover route. Other tabs are
-// regular Link navigation. Active tab carries a violet color + a thin
-// top border indicator.
+// Five-tab mobile nav with one elevated centre button. Which five, and
+// which one is raised, comes from the active workspace — the events
+// workspace raises the scanner for door duty, the restaurant raises the
+// floor plan for mid-service seating.
 //
 // Hidden on routes that take over the full screen (/scanner, …).
-
-interface Tab {
-  label: string;
-  href: string;
-  icon: LucideIcon;
-  raised?: boolean;
-}
-
-const TABS: Tab[] = [
-  { label: "Aperçu", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Événements", href: "/events", icon: Ticket },
-  { label: "Scanner", href: "/scanner", icon: ScanLine, raised: true },
-  { label: "Audiences", href: "/audiences", icon: Sparkles },
-  { label: "Plus", href: "/plus", icon: MoreHorizontal },
-];
 
 const FULLSCREEN_ROUTES = [
   "/scanner",
@@ -43,6 +22,8 @@ const FULLSCREEN_ROUTES = [
 
 export function BottomTabs() {
   const pathname = usePathname();
+  const workspace = resolveWorkspace(pathname);
+  const tabs = workspace.tabs;
 
   // Hide on fullscreen takeover routes.
   if (
@@ -57,11 +38,8 @@ export function BottomTabs() {
       aria-label="Navigation principale"
     >
       <ul className="grid grid-cols-5 h-16 relative">
-        {TABS.map((t) => {
-          const active =
-            pathname === t.href ||
-            (t.href !== "/dashboard" && pathname?.startsWith(`${t.href}/`));
-          const Icon = t.icon;
+        {tabs.map((t) => {
+          const active = isActive(pathname, t.href, workspace.home);
 
           if (t.raised) {
             return (
@@ -71,7 +49,7 @@ export function BottomTabs() {
                   aria-label={t.label}
                   className="absolute left-1/2 -translate-x-1/2 -top-3 h-14 w-14 rounded-full bg-violet text-canvas flex items-center justify-center shadow-[0_8px_20px_rgba(134,91,166,0.42)] active:scale-95 transition-transform"
                 >
-                  <Icon size={24} strokeWidth={1.8} />
+                  <Icon name={t.icon} size={24} strokeWidth={1.8} />
                 </Link>
                 <span className="absolute left-1/2 -translate-x-1/2 bottom-1.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink-mute">
                   {t.label}
@@ -97,6 +75,7 @@ export function BottomTabs() {
                 )}
               >
                 <Icon
+                  name={t.icon}
                   size={18}
                   strokeWidth={1.7}
                   className={active ? "text-violet" : "text-ink-mute"}

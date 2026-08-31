@@ -11,22 +11,19 @@ import {
   CalendarDays,
   Check,
   ChevronRight,
-  FileText,
-  LayoutDashboard,
   LogOut,
-  type LucideIcon,
-  Megaphone,
-  MessageCircle,
   MoreVertical,
-  PlusCircle,
-  Settings,
-  Sparkles,
-  Tag,
-  Ticket,
   UserCog,
-  Users,
-  Wallet,
 } from "lucide-react";
+import { Icon } from "@/components/dashboard/primitives";
+import {
+  WORKSPACES,
+  type NavItem,
+  type Workspace,
+  isActive,
+  resolveWorkspace,
+  visibleItems,
+} from "@/lib/nav/workspaces";
 import { Brand } from "./Brand";
 import { MobilePlusMenu } from "./MobilePlusMenu";
 import { emitSessionChanged, useProfile, useRole } from "@/lib/auth/role";
@@ -40,40 +37,6 @@ import {
 import { PROFILES } from "@/lib/mock/profiles";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
 import { cn } from "@/lib/utils/cn";
-
-interface Item {
-  label: string;
-  href: string;
-  icon: LucideIcon;
-  pulse?: boolean;
-  /** When set, this nav item is hidden for any role NOT in the allow list. */
-  allow?: Role[];
-}
-
-// Two groups, no spelled-out labels, separated by a hairline divider.
-// The grouping reads visually; the items are obvious enough.
-const GROUP_A: Item[] = [
-  { label: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Mes événements", href: "/events", icon: Ticket },
-  { label: "Bilans", href: "/bilans", icon: FileText, allow: ["owner", "admin"] },
-  { label: "Support", href: "/support", icon: MessageCircle, allow: ["owner", "admin"] },
-  { label: "Audiences", href: "/audiences", icon: Sparkles, allow: ["owner", "admin"] },
-  { label: "Visibilité", href: "/visibilite", icon: Megaphone, allow: ["owner", "admin"] },
-  { label: "Codes promo", href: "/promo-codes", icon: Tag, allow: ["owner", "admin"] },
-  {
-    label: "Créer un événement",
-    href: "/events/new",
-    icon: PlusCircle,
-    pulse: true,
-    allow: ["owner", "admin"],
-  },
-];
-
-const GROUP_B: Item[] = [
-  { label: "Versements", href: "/settlements", icon: Wallet, allow: ["owner", "admin"] },
-  { label: "Équipe", href: "/team", icon: Users, allow: ["owner", "admin"] },
-  { label: "Réglages", href: "/settings", icon: Settings },
-];
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -98,12 +61,13 @@ export function Sidebar() {
     router.refresh();
   };
 
-  const groupA = GROUP_A.filter(
-    (i) => !i.allow || (role && i.allow.includes(role)),
-  );
-  const groupB = GROUP_B.filter(
-    (i) => !i.allow || (role && i.allow.includes(role)),
-  );
+  // Which product this route belongs to decides the whole sidebar:
+  // caption, identity card, nav groups. Nothing below knows the names of
+  // any of them.
+  const workspace = resolveWorkspace(pathname);
+  const groups = workspace.groups
+    .map((group) => visibleItems(group, role))
+    .filter((group) => group.length > 0);
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
@@ -111,8 +75,8 @@ export function Sidebar() {
         pathname={pathname}
         role={role}
         profile={profile}
-        groupA={groupA}
-        groupB={groupB}
+        workspace={workspace}
+        groups={groups}
         handleSwitchRole={handleSwitchRole}
         handleSwitchProfile={handleSwitchProfile}
         handleLogout={handleLogout}
@@ -125,6 +89,7 @@ export function Sidebar() {
 // the left. Triggered by the topbar hamburger.
 export function MobileSidebarDrawer() {
   const pathname = usePathname();
+  const workspace = resolveWorkspace(pathname);
   const open = useMobileNavStore((s) => s.drawerOpen);
   const setOpen = useMobileNavStore((s) => s.setDrawerOpen);
 
@@ -161,7 +126,7 @@ export function MobileSidebarDrawer() {
                 <header className="px-5 pt-5 pb-3 border-b border-line-soft shrink-0">
                   <Brand height={32} />
                   <div className="text-meta text-ink-mute mt-2 lowercase">
-                    organisateur
+                    {workspace.caption}
                   </div>
                 </header>
                 <div className="flex-1 overflow-y-auto scroll-thin p-5">
@@ -197,8 +162,8 @@ function SidebarBody({
   pathname,
   role,
   profile,
-  groupA,
-  groupB,
+  workspace,
+  groups,
   handleSwitchRole,
   handleSwitchProfile,
   handleLogout,
@@ -206,12 +171,20 @@ function SidebarBody({
   pathname: string | null;
   role: Role | null;
   profile: ReturnType<typeof useProfile>;
-  groupA: Item[];
-  groupB: Item[];
+  workspace: Workspace;
+  groups: NavItem[][];
   handleSwitchRole: (next: Role) => void;
   handleSwitchProfile: (organizerId: string) => void;
   handleLogout: () => void;
 }) {
+  // The workspace supplies its own identity when it has one (the
+  // restaurant); otherwise the signed-in organizer profile fills it.
+  const entity = workspace.entity ?? {
+    initials: profile?.initials ?? "JZ",
+    shortName: profile?.shortName ?? "Jazzablanca",
+    subline: profile?.subline ?? "Festival · Casablanca",
+  };
+
   return (
     <>
       {/* Brand, real wordmark, no accompanying "LYFE" text label.
@@ -220,39 +193,69 @@ function SidebarBody({
       <div className="px-6 pt-7 pb-5">
         <Brand height={44} />
         <div className="text-meta text-ink-mute mt-2 lowercase">
-          organisateur
+          {workspace.caption}
         </div>
       </div>
 
-      {/* Organizer switcher card — derived from the active demo profile. */}
+      {/* Identity card, doubling as the workspace switcher. */}
       <div className="px-4 mb-3">
-        <button className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow">
-          <div
-            className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
-            style={{ background: "var(--color-violet-soft)" }}
-          >
-            {profile?.initials ?? "JZ"}
-          </div>
-          <div className="min-w-0 flex-1 leading-tight">
-            <div className="text-[13px] font-semibold text-ink truncate">
-              {profile?.shortName ?? "Jazzablanca"}
-            </div>
-            <div className="text-meta text-ink-mute truncate">
-              {profile?.subline ?? "Festival · Casablanca"}
-            </div>
-          </div>
-          <ChevronRight size={14} className="text-ink-mute shrink-0" />
-        </button>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <button className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow">
+              <div
+                className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
+                style={{ background: "var(--color-violet-soft)" }}
+              >
+                {entity.initials}
+              </div>
+              <div className="min-w-0 flex-1 leading-tight">
+                <div className="text-[13px] font-semibold text-ink truncate">
+                  {entity.shortName}
+                </div>
+                <div className="text-meta text-ink-mute truncate">
+                  {entity.subline}
+                </div>
+              </div>
+              <ChevronRight size={14} className="text-ink-mute shrink-0" />
+            </button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              side="bottom"
+              align="start"
+              sideOffset={6}
+              className="min-w-[228px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
+            >
+              {WORKSPACES.map((w) => (
+                <DropdownMenu.Item key={w.id} asChild>
+                  <Link
+                    href={w.home}
+                    className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                  >
+                    <span className="flex-1">{w.switcherLabel}</span>
+                    {w.id === workspace.id ? (
+                      <Check size={14} strokeWidth={2} className="text-violet-deep" />
+                    ) : null}
+                  </Link>
+                </DropdownMenu.Item>
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
       </div>
 
       {/* Nav, groups separated by a 1px line-soft divider, no labels */}
+      {/* Groups render with a hairline between them and no spelled-out
+          labels — the grouping reads visually. Any number of groups. */}
       <nav className="flex-1 px-3 overflow-y-auto scroll-thin">
-        <NavGroup items={groupA} pathname={pathname} />
-        <div
-          aria-hidden
-          className="my-3 mx-3 h-px bg-line-soft"
-        />
-        <NavGroup items={groupB} pathname={pathname} />
+        {groups.map((items, i) => (
+          <div key={items[0]?.href ?? i}>
+            {i > 0 ? (
+              <div aria-hidden className="my-3 mx-3 h-px bg-line-soft" />
+            ) : null}
+            <NavGroup items={items} pathname={pathname} home={workspace.home} />
+          </div>
+        ))}
       </nav>
 
       {/* User card with kebab dropdown for account actions (logout). */}
@@ -391,17 +394,16 @@ function SidebarBody({
 function NavGroup({
   items,
   pathname,
+  home,
 }: {
-  items: Item[];
+  items: NavItem[];
   pathname: string | null;
+  home: string;
 }) {
   return (
     <div>
       {items.map((item) => {
-        const active =
-          pathname === item.href ||
-          (item.href !== "/dashboard" && pathname?.startsWith(item.href));
-        const Icon = item.icon;
+        const active = isActive(pathname, item.href, home);
         return (
           <Link
             key={item.href}
@@ -423,6 +425,7 @@ function NavGroup({
               />
             ) : null}
             <Icon
+              name={item.icon}
               size={18}
               strokeWidth={1.6}
               className={cn(

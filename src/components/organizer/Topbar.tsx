@@ -2,15 +2,25 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { Bell, Menu, ScanLine, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Bell, Menu, Search } from "lucide-react";
 import { Brand } from "./Brand";
 import { Button } from "@/components/ui/Button";
+import { Icon } from "@/components/dashboard/primitives";
 import { RoleGate } from "@/lib/auth/role";
+import { resolveWorkspace } from "@/lib/nav/workspaces";
 import { useScannerStore } from "@/lib/stores/scanner";
 import { useAssistantStore } from "@/lib/stores/assistant";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
 
+// Search copy, the dark quick-action pill and the primary CTA all come
+// from the active workspace. The keyboard shortcuts stay global because
+// they are chrome, not product surface.
 export function Topbar() {
+  const pathname = usePathname();
+  const workspace = resolveWorkspace(pathname);
+  const { searchPlaceholder, quickAction, primaryAction } = workspace.topbar;
+
   const openScanner = useScannerStore((s) => s.setOpen);
   const openAssistant = useAssistantStore((s) => s.setOpen);
   const openDrawer = useMobileNavStore((s) => s.setDrawerOpen);
@@ -33,6 +43,14 @@ export function Topbar() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [openScanner, openAssistant]);
+
+  // The topbar lives outside any screen's CommandProvider, so it maps its
+  // own verbs. Unknown verbs fall through to the assistant rather than
+  // dead-ending on a silent button.
+  const runQuickAction = (command: string) => {
+    if (command === "scanner.open") return openScanner(true);
+    return openAssistant(true);
+  };
 
   return (
     <header className="sticky top-0 z-20 h-14 md:h-[72px] bg-canvas/80 backdrop-blur-md border-b border-line-soft">
@@ -67,7 +85,7 @@ export function Topbar() {
           <button className="group w-full h-11 px-4 bg-surface rounded-full border border-line flex items-center gap-3 text-left hover:border-ink/40 transition-colors">
             <Search size={16} className="text-ink-mute" strokeWidth={1.8} />
             <span className="flex-1 text-[13px] text-ink-mute">
-              Rechercher un événement, un participant…
+              {searchPlaceholder}
             </span>
             <kbd className="text-[11px] font-semibold text-ink-mute bg-canvas-2 border border-line px-1.5 py-0.5 rounded">
               ⌘K
@@ -76,17 +94,21 @@ export function Topbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-2 ml-auto">
-          <button
-            onClick={() => openScanner(true)}
-            title="Scanner, ⌘ + Shift + S"
-            className="inline-flex items-center gap-2 h-11 px-4 bg-ink text-canvas rounded-full text-[13px] font-bold hover:bg-ink-soft transition-colors group"
-          >
-            <ScanLine size={16} strokeWidth={1.8} className="text-violet" />
-            Scanner
-            <kbd className="hidden lg:inline text-[10px] font-semibold bg-canvas/10 px-1.5 py-0.5 rounded text-canvas/65 ml-0.5 group-hover:bg-canvas/15">
-              ⌘⇧S
-            </kbd>
-          </button>
+          {quickAction ? (
+            <button
+              onClick={() => runQuickAction(quickAction.command)}
+              title={quickAction.title ?? quickAction.label}
+              className="inline-flex items-center gap-2 h-11 px-4 bg-ink text-canvas rounded-full text-[13px] font-bold hover:bg-ink-soft transition-colors group"
+            >
+              <Icon name={quickAction.icon} size={16} className="text-violet" />
+              {quickAction.label}
+              {quickAction.shortcut ? (
+                <kbd className="hidden lg:inline text-[10px] font-semibold bg-canvas/10 px-1.5 py-0.5 rounded text-canvas/65 ml-0.5 group-hover:bg-canvas/15">
+                  {quickAction.shortcut}
+                </kbd>
+              ) : null}
+            </button>
+          ) : null}
 
           <button
             aria-label="Notifications"
@@ -99,11 +121,13 @@ export function Topbar() {
             />
           </button>
 
-          <RoleGate>
-            <Link href="/events/new" className="ml-1.5">
-              <Button size="md">Créer un événement</Button>
-            </Link>
-          </RoleGate>
+          {primaryAction ? (
+            <RoleGate allow={primaryAction.allow ?? ["owner", "admin"]}>
+              <Link href={primaryAction.href} className="ml-1.5">
+                <Button size="md">{primaryAction.label}</Button>
+              </Link>
+            </RoleGate>
+          ) : null}
         </div>
       </div>
     </header>

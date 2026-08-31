@@ -34,6 +34,81 @@ Boots at `http://localhost:3000`, redirects to `/dashboard`.
 | `/settings` | Vertical tab nav with 7 sections; payout section locked behind password+OTP gate |
 | `/more` | Mobile-only sheet for Team / Settings / Logout |
 
+## Espace Restaurant — spec-driven
+
+The restaurant workspace follows the organizer dashboard's UX exactly —
+same bento, same dark hero, same violet-soft nudge, same activity rail —
+but none of it is written as JSX. Every screen is a **`ScreenSpec`**: an
+ordered list of typed blocks carrying their own copy, tones, icons,
+spans and CTAs. A renderer walks the list and paints it.
+
+```
+src/lib/dashboard/
+  spec.ts        # block vocabulary — the serializable screen description
+  icons.ts       # string key → Lucide component (specs carry keys, not JSX)
+  value.ts       # ValueFormat → display text (MAD, %, ratings, countdowns)
+  traverse.ts    # depth-first walk over nested blocks
+src/components/dashboard/
+  DashboardRenderer.tsx   # spec → pixels, desktop + phone lanes
+  commands.tsx            # command name → handler (a spec can't ship a fn)
+  primitives.tsx          # Metric, Delta, Badge, Action, Icon bridges
+  blocks/                 # Greeting, Hero, Nudge, KpiGrid, EntityList,
+                          # Feed, Table, Chart
+src/lib/restaurant/
+  vocabulary.ts  # every domain enum → label + tone + glyph, once
+  screens.ts     # overview payload → ScreenSpec, per screen
+src/lib/types/restaurant.ts
+src/lib/mock/restaurant.ts
+```
+
+**Blocks:** `greeting` · `hero` · `nudge` · `kpi-grid` · `entity-list` ·
+`feed` · `table` · `chart` · `split` · `group`. The last two compose the
+others, so a bento column with a rail is a value, not a layout component.
+
+### What "not hardcoded" buys
+
+- **No screen-specific JSX.** `RESTAURANT_SCREENS` maps a slug to a
+  builder; one route file (`/restaurant/[[...section]]`) serves all of
+  them. Adding a screen is adding a builder — no page, no nav edit.
+- **The layout is payload.** A `ScreenSpec` survives `JSON.stringify`, so
+  each builder's body can become `fetch('/api/screens/…')` and the UI is
+  server-driven with zero component change.
+- **Data decides the screen.** A quiet Tuesday and a full Saturday render
+  genuinely different dashboards — different hero mode, tiles, nudge —
+  because the spec differs, not because a component branched.
+- **One place per fact.** A reservation state's label, tone and icon live
+  in `vocabulary.ts`; a metric's formatting travels with the metric. No
+  component spells out "EN SALLE" or decides that a no-show is red.
+- **Closed action surface.** Buttons carry a command *name* resolved
+  through a registry, so a spec — including one off the wire — can only
+  trigger verbs the client already defines.
+- **The chrome too.** `src/lib/nav/workspaces.ts` holds sidebar groups,
+  phone tabs, the Plus hub, topbar copy and the primary CTA per
+  workspace. Sidebar / BottomTabs / Topbar / MobilePlusMenu read from it
+  and resolve the active workspace from the pathname; the identity card
+  doubles as the workspace switcher. The organizer navigation moved there
+  verbatim — nothing about the event UI changed.
+
+### Restaurant routes
+
+| Path | What it is |
+| --- | --- |
+| `/restaurant` | Greeting + dark service hero with occupancy ring + AI nudge + bento KPIs + next arrivals + live service feed + weekly revenue chart |
+| `/restaurant/reservations` | Booking KPIs, waitlist, service book |
+| `/restaurant/salle` | Floor KPIs + one list per zone with table state, party and running bill |
+| `/restaurant/services` | Upcoming sittings with fill progress |
+| `/restaurant/menu` | Plate performance table with derived margins |
+| `/restaurant/avis` | Rating KPIs + reviews with sentiment badges |
+| `/restaurant/versements` | Next-payout hero + settlement history |
+
+### Demo clock
+
+`src/lib/mock/restaurant.ts` anchors to `Date.now()` rather than a frozen
+date, and rebuilds the payload each minute. Every timestamp is an offset,
+the current sitting's *kind* is derived from the hour, and copy that names
+a slot or a weekday is generated — so the service always reads as live
+whenever the demo is opened, instead of decaying into "il y a 4 mois".
+
 ## Stack
 
 - **Next.js 14** App Router, src/ layout, TypeScript strict mode

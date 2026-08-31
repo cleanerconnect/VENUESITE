@@ -2,27 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import * as RadixDialog from "@radix-ui/react-dialog";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Building2,
   Check,
   ChevronRight,
-  type LucideIcon,
-  FileText,
   HelpCircle,
-  History,
   LogOut,
-  Megaphone,
-  MessageCircle,
-  Settings,
-  Tag,
   UserCog,
-  Users,
-  Wallet,
   X,
 } from "lucide-react";
+import { Icon } from "@/components/dashboard/primitives";
+import type { IconKey } from "@/lib/dashboard/icons";
+import { resolveWorkspace, visibleItems } from "@/lib/nav/workspaces";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
 import { emitSessionChanged, useProfile, useRole } from "@/lib/auth/role";
@@ -52,7 +46,9 @@ import { cn } from "@/lib/utils/cn";
 interface MenuItem {
   label: string;
   href?: string;
-  icon: LucideIcon;
+  /** Registry key, or a raw node for the two chrome rows below. */
+  icon: IconKey;
+  node?: React.ReactNode;
   external?: boolean;
   destructive?: boolean;
   onClick?: () => void;
@@ -66,9 +62,11 @@ export function MobilePlusMenu({
   bareHeader?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
   const profile = useProfile();
   const role = useRole();
+  const workspace = resolveWorkspace(pathname);
   const closeDrawer = useMobileNavStore((s) => s.setDrawerOpen);
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -78,17 +76,24 @@ export function MobilePlusMenu({
     router.push("/splash");
   };
 
+  // Product rows come from the active workspace; help and logout are
+  // chrome and belong to every workspace, so they are appended here.
   const items: MenuItem[] = [
-    { label: "Bilans", href: "/bilans", icon: FileText },
-    { label: "Visibilité", href: "/visibilite", icon: Megaphone },
-    { label: "Versements", href: "/settlements", icon: Wallet },
-    { label: "Codes promo", href: "/promo-codes", icon: Tag },
-    { label: "Équipe", href: "/team", icon: Users },
-    { label: "Réglages", href: "/settings", icon: Settings },
-    { label: "Activité", href: "/activity", icon: History },
-    { label: "Support", href: "/support", icon: MessageCircle },
-    { label: "Aide & FAQ", href: "https://lyfe.ma/aide", icon: HelpCircle, external: true },
-    { label: "Se déconnecter", icon: LogOut, destructive: true, onClick: handleLogout },
+    ...visibleItems(workspace.secondary, role),
+    {
+      label: "Aide & FAQ",
+      href: "https://lyfe.ma/aide",
+      icon: "info",
+      node: <HelpCircle size={18} strokeWidth={1.6} className="text-ink-mute" />,
+      external: true,
+    },
+    {
+      label: "Se déconnecter",
+      icon: "info",
+      node: <LogOut size={18} strokeWidth={1.6} className="text-danger" />,
+      destructive: true,
+      onClick: handleLogout,
+    },
   ];
 
   const handlePickProfile = (organizerId: string) => {
@@ -154,7 +159,6 @@ export function MobilePlusMenu({
       <Card variant="surface" size="md" className="!p-0 !overflow-hidden">
         <ul className="divide-y divide-line-soft">
           {items.map((it) => {
-            const Icon = it.icon;
             const inner = (
               <div
                 className={cn(
@@ -164,11 +168,14 @@ export function MobilePlusMenu({
                     : "text-ink hover:bg-canvas-2/40 transition-colors",
                 )}
               >
-                <Icon
-                  size={18}
-                  strokeWidth={1.6}
-                  className={it.destructive ? "text-danger" : "text-ink-mute"}
-                />
+                {it.node ?? (
+                  <Icon
+                    name={it.icon}
+                    size={18}
+                    strokeWidth={1.6}
+                    className={it.destructive ? "text-danger" : "text-ink-mute"}
+                  />
+                )}
                 <span className="flex-1 text-[14px] font-medium">{it.label}</span>
                 {it.href ? (
                   <ChevronRight
