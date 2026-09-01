@@ -26,7 +26,7 @@ import {
 } from "@/lib/nav/workspaces";
 import { Brand } from "./Brand";
 import { MobilePlusMenu } from "./MobilePlusMenu";
-import { emitSessionChanged, useProfile, useRole } from "@/lib/auth/role";
+import { emitSessionChanged, useProfile, useRole, useUser } from "@/lib/auth/role";
 import {
   ROLE_LABEL,
   type Role,
@@ -43,6 +43,7 @@ export function Sidebar() {
   const router = useRouter();
   const role = useRole();
   const profile = useProfile();
+  const user = useUser();
 
   const handleLogout = () => {
     clearSession();
@@ -75,6 +76,7 @@ export function Sidebar() {
         pathname={pathname}
         role={role}
         profile={profile}
+        user={user}
         workspace={workspace}
         groups={groups}
         handleSwitchRole={handleSwitchRole}
@@ -162,6 +164,7 @@ function SidebarBody({
   pathname,
   role,
   profile,
+  user,
   workspace,
   groups,
   handleSwitchRole,
@@ -171,6 +174,7 @@ function SidebarBody({
   pathname: string | null;
   role: Role | null;
   profile: ReturnType<typeof useProfile>;
+  user: ReturnType<typeof useUser>;
   workspace: Workspace;
   groups: NavItem[][];
   handleSwitchRole: (next: Role) => void;
@@ -180,9 +184,9 @@ function SidebarBody({
   // The workspace supplies its own identity when it has one (the
   // restaurant); otherwise the signed-in organizer profile fills it.
   const entity = workspace.entity ?? {
-    initials: profile?.initials ?? "JZ",
-    shortName: profile?.shortName ?? "Jazzablanca",
-    subline: profile?.subline ?? "Festival · Casablanca",
+    initials: profile?.initials ?? "",
+    shortName: profile?.shortName ?? "",
+    subline: profile?.subline ?? "",
   };
 
   return (
@@ -265,14 +269,18 @@ function SidebarBody({
             className="h-9 w-9 rounded-full flex items-center justify-center text-ink font-bold text-[12px] shrink-0"
             style={{ background: "var(--color-tint-peach)" }}
           >
-            MR
+            {user?.initials}
           </div>
           <div className="min-w-0 flex-1 leading-tight">
             <div className="text-[13px] font-semibold text-ink truncate">
-              Mido Reffas
+              {user?.name}
             </div>
+            {/* Role from the session, organisation from the workspace —
+                so the restaurant workspace stops claiming the festival. */}
             <div className="text-meta text-ink-mute truncate">
-              {role ? ROLE_LABEL[role] : "Directeur"} · Jazzablanca
+              {[role ? ROLE_LABEL[role] : null, entity.shortName]
+                .filter(Boolean)
+                .join(" · ")}
             </div>
           </div>
           <DropdownMenu.Root>

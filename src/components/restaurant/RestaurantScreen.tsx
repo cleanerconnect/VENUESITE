@@ -1,51 +1,108 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useMemo } from "react";
-import type { ScreenSpec } from "@/lib/dashboard/spec";
+import { useRouter } from "next/navigation";
+import { buildScreen } from "@/lib/restaurant/screens";
+import type { RestaurantOverview } from "@/lib/types/restaurant";
 import { containsBlockType } from "@/lib/dashboard/traverse";
 import { DashboardRenderer } from "@/components/dashboard/DashboardRenderer";
 import type { CommandHandler } from "@/components/dashboard/commands";
+import { useDetailStore } from "@/lib/stores/detail";
+import {
+  useHydrateRestaurant,
+  useRestaurantStore,
+} from "@/lib/restaurant/store";
 import { useToast } from "@/components/ui/Toast";
 
 // Client boundary for the restaurant workspace.
 //
-// The spec arrives from the server as plain JSON; this supplies the
-// verbs its buttons refer to. Floor actions are optimistic in the real
-// build (seat the party, then reconcile) — here they resolve to the same
-// toast vocabulary the rest of the demo uses, which keeps the command
-// surface honest about what is wired and what isn't.
-export function RestaurantScreen({ spec }: { spec: ScreenSpec }) {
+// The server renders the first paint from its own payload; from there the
+// client owns an optimistic copy, and the screen is re-derived from it by
+// the same pure builder. So an action doesn't patch a widget — it changes
+// the data, and every surface reading that data moves at once: seating a
+// party turns the table orange on the plan, drops the free-seat count,
+// raises seated covers in the hero ring, and pushes a line onto the
+// activity feed, in one render.
+export function RestaurantScreen({
+  slug,
+  data: serverData,
+}: {
+  slug: string;
+  data: RestaurantOverview;
+}) {
   const router = useRouter();
   const { toast } = useToast();
+  const data = useHydrateRestaurant(serverData);
+  const closeDetail = useDetailStore((s) => s.close);
 
-  const commands = useMemo<Record<string, CommandHandler>>(
-    () => ({
-      "reservation.seat": () => {
-        toast({ tone: "success", title: "Table installée" });
-        router.refresh();
+  const spec = useMemo(() => buildScreen(slug, data), [slug, data]);
+
+  const commands = useMemo<Record<string, CommandHandler>>(() => {
+    const store = useRestaurantStore.getState;
+
+    // Every mutating verb closes the sheet it may have been fired from,
+    // then offers a real undo — the store keeps the prior payload.
+    const withUndo = (title: string, tone: "success" | "danger" = "success") => {
+      closeDetail();
+      toast({ tone, title, undo: () => useRestaurantStore.getState().undo() });
+    };
+
+    return {
+      "reservation.seat": (payload) => {
+        const id = String(payload?.id ?? "");
+        const before = store().data;
+        store().seatReservation(id);
+        if (store().data === before) {
+          toast({ tone: "info", title: "Aucune table libre pour cette table" });
+          return;
+        }
+        withUndo("Table installée");
       },
+
+      "reservation.confirm": (payload) => {
+        const before = store().data;
+        store().confirmReservation(String(payload?.id ?? ""));
+        if (store().data === before) return;
+        withUndo("Réservation confirmée");
+      },
+
+      "reservation.cancel": (payload) => {
+        const before = store().data;
+        store().cancelReservation(String(payload?.id ?? ""));
+        if (store().data === before) return;
+        withUndo("Réservation annulée", "danger");
+      },
+
       "reservation.remind": () =>
         toast({ tone: "info", title: "Rappel SMS envoyé au client" }),
-      "reservation.cancel": () =>
-        toast({ tone: "danger", title: "Réservation annulée" }),
-      "table.seat": () => {
-        toast({ tone: "success", title: "Prochaine arrivée placée" });
-        router.refresh();
+
+      "table.clear": (payload) => {
+        const before = store().data;
+        store().clearTable(String(payload?.id ?? ""));
+        if (store().data === before) return;
+        withUndo("Table libérée");
       },
-      "table.clear": () => {
-        toast({ tone: "success", title: "Table marquée comme débarrassée" });
-        router.refresh();
+
+      "floor.seat": () => {
+        const result = store().seatNextWaiting();
+        if (!result) {
+          toast({
+            tone: "info",
+            title: "Rien à placer",
+            description: "Liste d'attente vide ou aucune table assez grande.",
+          });
+          return;
+        }
+        withUndo(`${result.seated} installé en ${result.table}`);
       },
-      "review.reply": () =>
-        toast({ tone: "info", title: "Réponse enregistrée" }),
-      "nudge.dismiss": () =>
-        toast({ tone: "info", title: "Suggestion ignorée" }),
-      "floor.seat": () =>
-        toast({ tone: "info", title: "Aucune arrivée en attente" }),
-    }),
-    [router, toast],
-  );
+
+      "review.reply": () => toast({ tone: "info", title: "Réponse enregistrée" }),
+      "nudge.dismiss": () => toast({ tone: "info", title: "Suggestion ignorée" }),
+      "route.refresh": () => router.refresh(),
+    };
+  }, [closeDetail, router, toast]);
+
+  if (!spec) return null;
 
   // A screen that opens with its own greeting card supplies the heading
   // itself; anything else gets the standard page header. Checked against

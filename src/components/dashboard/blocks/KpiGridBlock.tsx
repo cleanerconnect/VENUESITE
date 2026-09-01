@@ -27,10 +27,23 @@ const COLUMNS: Record<1 | 2 | 3 | 4, string> = {
 // The bento. Tile order, surface tints and column spans all arrive as
 // data — which is what makes the sand → white → white → sage rhythm from
 // the direction review a *composition* decision rather than a code one.
-export function KpiGridBlock({ block }: { block: Spec }) {
+export function KpiGridBlock({
+  block,
+  surface = "desktop",
+}: {
+  block: Spec;
+  surface?: "desktop" | "mobile";
+}) {
+  // A tile declares its own lane, the same way a block does. The phone
+  // lane therefore never has to know that "the payout tile" is the one
+  // it drops — it drops whatever says it is desktop-only.
+  const tiles = block.tiles.filter(
+    (t) => !t.surface || t.surface === "both" || t.surface === surface,
+  );
+
   return (
     <div className={cn("grid grid-cols-1 gap-4", COLUMNS[block.columns ?? 4])}>
-      {block.tiles.map((tile) => (
+      {tiles.map((tile) => (
         <Tile key={tile.id} tile={tile} />
       ))}
     </div>

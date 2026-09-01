@@ -19,7 +19,7 @@ import type { IconKey } from "@/lib/dashboard/icons";
 import { resolveWorkspace, visibleItems } from "@/lib/nav/workspaces";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
-import { emitSessionChanged, useProfile, useRole } from "@/lib/auth/role";
+import { emitSessionChanged, useProfile, useRole, useUser } from "@/lib/auth/role";
 import {
   ROLE_LABEL,
   type Role,
@@ -40,8 +40,8 @@ import { cn } from "@/lib/utils/cn";
 //   - The profile switcher card at the top — tap opens a bottom
 //     sheet listing every demo profile + the role switcher.
 //   - The vertical nav list (10 rows including external + logout).
-//   - A Mido Reffas footer line so the user always sees their own
-//     identity at the bottom.
+//   - A footer line with the signed-in user, their role and the active
+//     workspace, so identity is always visible.
 
 interface MenuItem {
   label: string;
@@ -66,7 +66,9 @@ export function MobilePlusMenu({
   const { toast } = useToast();
   const profile = useProfile();
   const role = useRole();
+  const user = useUser();
   const workspace = resolveWorkspace(pathname);
+  const orgName = workspace.entity?.shortName ?? profile?.shortName ?? "";
   const closeDrawer = useMobileNavStore((s) => s.setDrawerOpen);
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -218,8 +220,9 @@ export function MobilePlusMenu({
       </Card>
 
       <div className="text-meta text-ink-mute text-center pt-2 pb-2">
-        Mido Reffas · {role ? ROLE_LABEL[role] : "Propriétaire"}
-        {profile ? ` · ${profile.shortName}` : ""}
+        {[user?.name, role ? ROLE_LABEL[role] : null, orgName]
+          .filter(Boolean)
+          .join(" · ")}
       </div>
 
       {/* Profile + role picker bottom sheet */}

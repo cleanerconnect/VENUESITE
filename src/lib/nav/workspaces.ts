@@ -14,6 +14,10 @@
 import type { IconKey } from "@/lib/dashboard/icons";
 import type { Role } from "@/lib/auth/session";
 import { RESTAURANT } from "@/lib/mock/restaurant";
+import {
+  RESTAURANT_BASE,
+  restaurantHref,
+} from "@/lib/restaurant/slugs";
 
 export interface NavItem {
   label: string;
@@ -143,9 +147,9 @@ const EVENT_WORKSPACE: Workspace = {
 const RESTAURANT_WORKSPACE: Workspace = {
   id: "restaurant",
   caption: "restaurant",
-  home: "/restaurant",
+  home: RESTAURANT_BASE,
   switcherLabel: "Espace restaurant",
-  matches: ["/restaurant"],
+  matches: [RESTAURANT_BASE],
   entity: {
     initials: RESTAURANT.initials,
     shortName: RESTAURANT.shortName,
@@ -153,31 +157,31 @@ const RESTAURANT_WORKSPACE: Workspace = {
   },
   groups: [
     [
-      { label: "Vue d'ensemble", href: "/restaurant", icon: "layout" },
-      { label: "Réservations", href: "/restaurant/reservations", icon: "calendar-clock" },
-      { label: "Plan de salle", href: "/restaurant/salle", icon: "table" },
-      { label: "Services", href: "/restaurant/services", icon: "sunset", allow: ["owner", "admin"] },
-      { label: "Carte", href: "/restaurant/menu", icon: "utensils-crossed", allow: ["owner", "admin"] },
-      { label: "Avis", href: "/restaurant/avis", icon: "star", allow: ["owner", "admin"] },
+      { label: "Vue d'ensemble", href: restaurantHref(""), icon: "layout" },
+      { label: "Réservations", href: restaurantHref("reservations"), icon: "calendar-clock" },
+      { label: "Plan de salle", href: restaurantHref("salle"), icon: "table" },
+      { label: "Services", href: restaurantHref("services"), icon: "sunset", allow: ["owner", "admin"] },
+      { label: "Carte", href: restaurantHref("menu"), icon: "utensils-crossed", allow: ["owner", "admin"] },
+      { label: "Avis", href: restaurantHref("avis"), icon: "star", allow: ["owner", "admin"] },
     ],
     [
-      { label: "Versements", href: "/restaurant/versements", icon: "wallet", allow: ["owner", "admin"] },
+      { label: "Versements", href: restaurantHref("versements"), icon: "wallet", allow: ["owner", "admin"] },
       { label: "Équipe", href: "/team", icon: "users", allow: ["owner", "admin"] },
       { label: "Réglages", href: "/settings", icon: "settings" },
     ],
   ],
   secondary: [
-    { label: "Services", href: "/restaurant/services", icon: "sunset" },
-    { label: "Avis", href: "/restaurant/avis", icon: "star" },
-    { label: "Versements", href: "/restaurant/versements", icon: "wallet" },
+    { label: "Services", href: restaurantHref("services"), icon: "sunset" },
+    { label: "Avis", href: restaurantHref("avis"), icon: "star" },
+    { label: "Versements", href: restaurantHref("versements"), icon: "wallet" },
     { label: "Équipe", href: "/team", icon: "users" },
     { label: "Réglages", href: "/settings", icon: "settings" },
   ],
   tabs: [
-    { label: "Aperçu", href: "/restaurant", icon: "layout" },
-    { label: "Carnet", href: "/restaurant/reservations", icon: "calendar-clock" },
-    { label: "Salle", href: "/restaurant/salle", icon: "table", raised: true },
-    { label: "Carte", href: "/restaurant/menu", icon: "utensils-crossed" },
+    { label: "Aperçu", href: restaurantHref(""), icon: "layout" },
+    { label: "Carnet", href: restaurantHref("reservations"), icon: "calendar-clock" },
+    { label: "Salle", href: restaurantHref("salle"), icon: "table", raised: true },
+    { label: "Carte", href: restaurantHref("menu"), icon: "utensils-crossed" },
     { label: "Plus", href: "/plus", icon: "grid" },
   ],
   topbar: {
@@ -190,7 +194,7 @@ const RESTAURANT_WORKSPACE: Workspace = {
     },
     primaryAction: {
       label: "Nouvelle réservation",
-      href: "/restaurant/reservations?nouvelle=1",
+      href: `${restaurantHref("reservations")}?nouvelle=1`,
       allow: ["owner", "admin"],
     },
   },

@@ -22,10 +22,13 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import type {
   Block,
+  DetailSpec,
   EntityRow,
   FeedEntry,
+  FloorTile,
   KpiTile,
   ScreenSpec,
+  SemanticTone,
 } from "@/lib/dashboard/spec";
 import type {
   DiningTable,
@@ -41,13 +44,20 @@ import {
   RESERVATION_CHANNEL,
   RESERVATION_STATE,
   SERVICE_KIND,
+  TABLE_STATE,
   menuBadge,
   payoutBadge,
   reservationBadge,
   serviceBadge,
-  tableBadge,
 } from "./vocabulary";
+import { formatValue } from "@/lib/dashboard/value";
 import { getRestaurantOverview } from "@/lib/mock/restaurant";
+import {
+  RESTAURANT_SLUGS,
+  type RestaurantSlug,
+  isRestaurantSlug,
+  restaurantHref,
+} from "./slugs";
 
 const MAD = { kind: "currency" as const, currency: "MAD" };
 const COUNT = { kind: "number" as const };
@@ -57,6 +67,7 @@ const dayLabel = (iso: string) =>
   format(new Date(iso), "EEEE d MMMM", { locale: fr });
 
 const covers = (n: number) => `${n} ${n > 1 ? "couverts" : "couvert"}`;
+const money = (n: number) => formatValue(n, MAD);
 
 // ── Dashboard ────────────────────────────────────────────────
 
@@ -149,7 +160,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         action: {
           kind: "link",
           label: "Nouvelle réservation",
-          href: "/restaurant/reservations?nouvelle=1",
+          href: `${restaurantHref("reservations")}?nouvelle=1`,
           icon: "plus",
         },
         allow: ["owner", "admin"],
@@ -158,7 +169,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         action: {
           kind: "link",
           label: "Voir le plan de salle →",
-          href: "/restaurant/salle",
+          href: restaurantHref("salle"),
         },
         variant: "secondary",
       },
@@ -210,6 +221,9 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
       },
       {
         id: "payout",
+        // Money-in-three-days is an owner's question, not a question a
+        // manager asks on a phone mid-service.
+        surface: "desktop",
         label: "Prochain versement",
         tone: "sage",
         span: 2,
@@ -225,7 +239,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
             tone: "muted",
           },
         ],
-        action: { kind: "link", label: "Voir les versements", href: "/restaurant/versements" },
+        action: { kind: "link", label: "Voir les versements", href: restaurantHref("versements") },
       },
       {
         id: "no-shows",
@@ -254,7 +268,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         hint: `${data.rating.reviewCount} avis · ${
           data.rating.deltaVsLastMonth >= 0 ? "+" : ""
         }${data.rating.deltaVsLastMonth.toFixed(1).replace(".", ",")} ce mois-ci`,
-        action: { kind: "link", label: "Voir les avis", href: "/restaurant/avis" },
+        action: { kind: "link", label: "Voir les avis", href: restaurantHref("avis") },
       },
     ],
   };
@@ -266,7 +280,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
     headingAction: {
       kind: "link",
       label: "Tout voir →",
-      href: "/restaurant/reservations",
+      href: restaurantHref("reservations"),
     },
     rows: data.upcomingReservations.map(reservationRow),
     empty: {
@@ -309,6 +323,9 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         rail: [heroBlock],
       },
       kpiBlock,
+      // Operational before strategic: which half-hour is about to break
+      // comes above how the week is trending.
+      serviceLoadBlock(data),
       {
         id: "floor",
         type: "split",
@@ -325,25 +342,32 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
       heroBlock,
       nudgeBlock,
       { ...kpiBlock, id: "kpis-mobile", columns: 1, tiles: mobileTiles(kpiBlock) },
+      { ...(serviceLoadBlock(data) as Block), id: "service-load-mobile" },
       arrivalsBlock,
       { ...feedBlock, id: "activity-mobile", entries: data.activity.slice(0, 5).map(activityEntry) },
     ],
   };
 }
 
-/** Phone bento: a vertical stack, spans and sparklines dropped. */
+/**
+ * Phone bento: a vertical stack. Spans and sparklines are dropped because
+ * neither survives a 390px column — a lane adaptation, applied to every
+ * tile alike. Which tiles appear at all is the tiles' own call, via
+ * `surface`.
+ */
 function mobileTiles(block: Block): KpiTile[] {
   if (block.type !== "kpi-grid") return [];
-  return block.tiles
-    .filter((t) => t.id !== "payout")
-    .map((t) => ({ ...t, span: 1 as const, sparkline: undefined }));
+  return block.tiles.map((t) => ({
+    ...t,
+    span: 1 as const,
+    sparkline: undefined,
+  }));
 }
 
 // ── Reservations ─────────────────────────────────────────────
 
 export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
   const all = [...data.upcomingReservations, ...data.waitlist];
-  const confirmed = all.filter((r) => r.state === "confirmed");
   const requested = all.filter((r) => r.state === "requested");
   const atRisk = all.filter((r) => (r.noShowRisk ?? 0) >= 0.3);
 
@@ -368,28 +392,37 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
               suffix: `/ ${data.currentService.capacity}`,
               animate: true,
             },
+            hint: `${Math.round(
+              (data.currentService.bookedCovers /
+                Math.max(1, data.currentService.capacity)) *
+                100,
+            )} % de la salle engagée`,
           },
           {
-            id: "confirmed",
-            label: "Confirmées",
+            id: "seated",
+            label: "Déjà installés",
             tone: "surface",
-            icon: "check",
-            metric: { value: confirmed.length, format: COUNT, animate: true },
+            icon: "armchair",
+            metric: {
+              value: data.currentService.seatedCovers,
+              format: COUNT,
+              animate: true,
+            },
           },
           {
             id: "requested",
-            label: "En attente de confirmation",
-            tone: "surface",
+            label: "À confirmer",
+            tone: requested.length > 0 ? "peach" : "surface",
             icon: "hourglass",
             metric: { value: requested.length, format: COUNT, animate: true },
             hint: requested.length
-              ? "À traiter avant le début du service"
-              : "Rien à traiter",
+              ? "À traiter avant le coup de feu"
+              : "Rien en attente",
           },
           {
             id: "risk",
             label: "Risque d'absence",
-            tone: "rose",
+            tone: atRisk.length > 0 ? "rose" : "sage",
             icon: "user-x",
             metric: { value: atRisk.length, format: COUNT, animate: true },
             hint: atRisk.length
@@ -398,57 +431,115 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
           },
         ],
       },
-      {
-        id: "waitlist",
-        type: "entity-list",
-        heading: "Liste d'attente",
-        rows: data.waitlist.map(reservationRow),
-        empty: {
-          title: "Personne n'attend",
-          body: "Les arrivées sans réservation apparaîtront ici.",
-          icon: "timer",
-        },
-      },
+      serviceLoadBlock(data),
       {
         id: "book",
         type: "entity-list",
         heading: "Carnet du service",
-        rows: data.upcomingReservations.map(reservationRow),
+        // One list, filtered — rather than four lists a manager has to
+        // scan in turn. Counts, search and sort all derive from the rows.
+        tabs: [
+          { id: "all", label: "Tous" },
+          {
+            id: "requested",
+            label: "À confirmer",
+            match: { facet: "state", values: ["requested"] },
+          },
+          {
+            id: "confirmed",
+            label: "Confirmées",
+            match: { facet: "state", values: ["confirmed"] },
+          },
+          {
+            id: "seated",
+            label: "En salle",
+            match: { facet: "state", values: ["seated"] },
+          },
+          {
+            id: "waiting",
+            label: "Liste d'attente",
+            match: { facet: "state", values: ["waitlisted"] },
+          },
+          {
+            id: "risk",
+            label: "À risque",
+            match: { facet: "risk", values: ["high"] },
+          },
+        ],
+        search: { placeholder: "Rechercher un client, un téléphone, une table…" },
+        sorts: [
+          { id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" },
+          { id: "time_desc", label: "Heure · tard → tôt", key: "time", direction: "desc" },
+          { id: "party", label: "Couverts", key: "party", direction: "desc" },
+          { id: "visits", label: "Fidélité", key: "visits", direction: "desc" },
+          { id: "name", label: "Nom", key: "name", direction: "asc" },
+        ],
+        rows: all.map(reservationRow),
         empty: {
           title: "Carnet vide",
           body: "Aucune table réservée sur ce service.",
           icon: "calendar",
+        },
+        noMatches: {
+          title: "Aucune réservation",
+          body: "Aucun couvert ne correspond à ce filtre.",
         },
       },
     ],
   };
 }
 
+/**
+ * Booked covers per slot against the seats the floor can turn. Shared by
+ * the dashboard and the reservations screen — the same question, asked
+ * from two places.
+ */
+function serviceLoadBlock(data: RestaurantOverview): Block {
+  const service = data.currentService;
+  const now = Date.now();
+  const perSlotCapacity = Math.round(
+    service.capacity / Math.max(1, Math.ceil(service.avgTurnMinutes / 30)),
+  );
+
+  return {
+    id: "service-load",
+    type: "slot-grid",
+    heading: "Charge du service",
+    subheading:
+      "Couverts réservés par créneau de 30 min. La ligne marque ce que la salle peut tourner.",
+    capacity: perSlotCapacity,
+    capacityLabel: `${perSlotCapacity} couverts / créneau`,
+    unitLabel: "couverts",
+    slots: service.slotLoad.map((slot) => {
+      const start = new Date(slot.at).getTime();
+      return {
+        label: hm(slot.at),
+        value: slot.covers,
+        current: now >= start && now < start + 30 * 60_000,
+      };
+    }),
+  };
+}
+
 // ── Floor plan ───────────────────────────────────────────────
 
 export function buildFloorScreen(data: RestaurantOverview): ScreenSpec {
-  // One group per zone, built from the zone list — adding a terrace is a
-  // data change, not a layout change.
-  const zoneGroups: Block[] = data.zones.map((zone) => {
-    const zoneTables = data.tables.filter((t) => t.zoneId === zone.id);
-    const seated = zoneTables.filter((t) => t.state === "seated" || t.state === "dessert");
-    return {
-      id: `zone-${zone.id}`,
-      type: "entity-list",
-      heading: `${zone.name} · ${seated.length}/${zoneTables.length} tables occupées`,
-      rows: zoneTables.map((table) => tableRow(table, data)),
-      empty: {
-        title: `${zone.name} vide`,
-        body: "Aucune table configurée dans cette zone.",
-        icon: "table",
-      },
-    };
+  const occupied = data.tables.filter(
+    (t) => t.state === "seated" || t.state === "dessert",
+  );
+  const toClean = data.tables.filter((t) => t.state === "to_clean");
+  const overrun = data.tables.filter((t) => {
+    if (!t.seatedAt) return false;
+    const min = (Date.now() - new Date(t.seatedAt).getTime()) / 60_000;
+    return min > data.currentService.avgTurnMinutes;
   });
 
   return {
     slug: "salle",
     title: "Plan de salle",
-    subtitle: `${data.currentService.label} · ${hm(data.currentService.opensAt)} – ${hm(data.currentService.closesAt)}`,
+    subtitle: `${data.currentService.label} · ${hm(
+      data.currentService.opensAt,
+    )} – ${hm(data.currentService.closesAt)}`,
     blocks: [
       {
         id: "floor-kpis",
@@ -461,7 +552,7 @@ export function buildFloorScreen(data: RestaurantOverview): ScreenSpec {
             tone: "sand",
             icon: "armchair",
             metric: {
-              value: data.tables.filter((t) => t.state === "seated" || t.state === "dessert").length,
+              value: occupied.length,
               format: COUNT,
               suffix: `/ ${data.tables.length}`,
               animate: true,
@@ -473,35 +564,82 @@ export function buildFloorScreen(data: RestaurantOverview): ScreenSpec {
             tone: "surface",
             icon: "users",
             metric: { value: freeSeatCount(data.tables), format: COUNT, animate: true },
+            hint: waitlistHint(data),
           },
           {
             id: "to-clean",
             label: "À débarrasser",
-            tone: "surface",
+            tone: toClean.length > 0 ? "peach" : "surface",
             icon: "repeat",
-            metric: {
-              value: data.tables.filter((t) => t.state === "to_clean").length,
-              format: COUNT,
-              animate: true,
-            },
+            metric: { value: toClean.length, format: COUNT, animate: true },
             hint: "Chaque minute gagnée, c'est un couvert de plus",
           },
           {
-            id: "open-bills",
-            label: "Addition en cours",
-            tone: "sage",
-            icon: "receipt",
-            metric: {
-              value: data.tables.reduce((s, t) => s + (t.billMad ?? 0), 0),
-              format: MAD,
-              animate: true,
-            },
+            id: "overrun",
+            label: "Rotation dépassée",
+            tone: overrun.length > 0 ? "rose" : "sage",
+            icon: "hourglass",
+            metric: { value: overrun.length, format: COUNT, animate: true },
+            hint: overrun.length
+              ? `${overrun.map((t) => t.code).join(", ")} au-delà de ${
+                  data.currentService.avgTurnMinutes
+                } min`
+              : "Tout le monde dans les temps",
           },
         ],
       },
-      ...zoneGroups,
+      {
+        id: "floor-plan",
+        type: "floor-plan",
+        subheading:
+          "Chaque table porte son état, sa part de rotation écoulée et son addition. Cliquer ouvre la fiche.",
+        // The legend is generated from the states actually on the floor —
+        // a legend listing states nobody is in is noise.
+        legend: floorLegend(data),
+        zones: data.zones.map((zone) => {
+          const zoneTables = data.tables.filter((t) => t.zoneId === zone.id);
+          const seated = zoneTables.filter(
+            (t) => t.state === "seated" || t.state === "dessert",
+          );
+          return {
+            id: zone.id,
+            name: zone.name,
+            caption: `${seated.length}/${zoneTables.length} occupées · ${zone.capacity} places`,
+            tiles: zoneTables.map((t) => floorTile(t, data)),
+          };
+        }),
+      },
+      {
+        id: "waitlist",
+        type: "entity-list",
+        heading: "Liste d'attente",
+        rows: data.waitlist.map(reservationRow),
+        empty: {
+          title: "Personne n'attend",
+          body: "Les arrivées sans réservation apparaîtront ici.",
+          icon: "timer",
+        },
+      },
     ],
   };
+}
+
+/** Only the states present on the floor right now. */
+function floorLegend(data: RestaurantOverview) {
+  const seen = new Set(data.tables.map((t) => t.state));
+  return [...seen].map((state) => ({
+    label: TABLE_STATE[state].label,
+    tone: TABLE_STATE[state].tone as SemanticTone,
+  }));
+}
+
+function waitlistHint(data: RestaurantOverview): string {
+  const waiting = data.waitlist.reduce((n, r) => n + r.partySize, 0);
+  if (waiting === 0) return "Aucune attente";
+  const free = freeSeatCount(data.tables);
+  return free >= waiting
+    ? `Assez pour placer les ${waiting} en attente`
+    : `${waiting} en attente — il en manque ${waiting - free}`;
 }
 
 // ── Menu ─────────────────────────────────────────────────────
@@ -732,7 +870,6 @@ export function buildPayoutsScreen(data: RestaurantOverview): ScreenSpec {
 // ── Row builders ─────────────────────────────────────────────
 
 function reservationRow(reservation: Reservation): EntityRow {
-  const state = RESERVATION_STATE[reservation.state];
   const badges = [reservationBadge(reservation.state)];
   if (reservation.vip) badges.push({ label: "Habitué", tone: "violet", icon: "star" });
   if ((reservation.noShowRisk ?? 0) >= 0.3) {
@@ -759,79 +896,289 @@ function reservationRow(reservation: Reservation): EntityRow {
           label: "Visites",
           metric: { value: reservation.visits, format: COUNT },
         },
-    href: `/restaurant/reservations?res=${reservation.id}`,
-    menu: [
+    // Facets are what the tabs filter on; sortKeys what the select orders
+    // by; keywords what search reaches beyond the visible text.
+    facets: {
+      state: reservation.state,
+      channel: reservation.channel,
+      risk: (reservation.noShowRisk ?? 0) >= 0.3 ? "high" : "low",
+      guest: reservation.vip ? "regular" : "new",
+    },
+    sortKeys: {
+      time: new Date(reservation.at).getTime(),
+      party: reservation.partySize,
+      visits: reservation.visits,
+      name: reservation.guestName,
+    },
+    keywords: [reservation.guestPhone, reservation.note, reservation.tableCode]
+      .filter(Boolean)
+      .join(" "),
+    detail: reservationDetail(reservation),
+    menu: reservationMenu(reservation),
+  };
+}
+
+function reservationMenu(reservation: Reservation): EntityRow["menu"] {
+  const items: NonNullable<EntityRow["menu"]> = [];
+
+  // The kebab offers what the reservation's current state actually
+  // allows — a seated party has nothing left to confirm.
+  if (reservation.state === "requested") {
+    items.push({
+      id: "confirm",
+      label: "Confirmer la réservation",
+      action: {
+        kind: "command",
+        command: "reservation.confirm",
+        payload: { id: reservation.id },
+      },
+    });
+  }
+  if (reservation.state !== "seated" && reservation.state !== "completed") {
+    items.push({
+      id: "seat",
+      label: "Installer la table",
+      action: {
+        kind: "command",
+        command: "reservation.seat",
+        payload: { id: reservation.id },
+      },
+    });
+    items.push({
+      id: "remind",
+      label: "Envoyer un rappel SMS",
+      action: {
+        kind: "command",
+        command: "reservation.remind",
+        payload: { id: reservation.id },
+      },
+    });
+    items.push({
+      id: "cancel",
+      label: "Annuler la réservation",
+      destructive: true,
+      action: {
+        kind: "command",
+        command: "reservation.cancel",
+        payload: { id: reservation.id },
+      },
+    });
+  }
+  return items;
+}
+
+function reservationDetail(reservation: Reservation): DetailSpec {
+  const risk = Math.round((reservation.noShowRisk ?? 0) * 100);
+
+  return {
+    title: reservation.guestName,
+    subtitle: `${hm(reservation.at)} · ${covers(reservation.partySize)} · ${
+      RESERVATION_CHANNEL[reservation.channel]
+    }`,
+    badges: [
+      reservationBadge(reservation.state),
+      ...(reservation.vip
+        ? [{ label: "Habitué", tone: "violet" as const, icon: "star" as const }]
+        : []),
+    ],
+    sections: [
       {
-        id: "seat",
-        label: "Installer la table",
-        action: {
-          kind: "command",
-          command: "reservation.seat",
-          payload: { id: reservation.id },
-        },
+        label: "Le couvert",
+        items: [
+          { label: "Heure", metric: { value: hm(reservation.at) } },
+          {
+            label: "Personnes",
+            metric: { value: reservation.partySize, format: COUNT },
+          },
+          {
+            label: "Table",
+            metric: { value: reservation.tableCode ?? "Non assignée" },
+          },
+          {
+            label: "Canal",
+            metric: { value: RESERVATION_CHANNEL[reservation.channel] },
+          },
+        ],
       },
       {
-        id: "remind",
-        label: "Envoyer un rappel",
+        label: "Le client",
+        items: [
+          { label: "Téléphone", metric: { value: reservation.guestPhone } },
+          {
+            label: "Visites",
+            metric: { value: reservation.visits, format: COUNT },
+          },
+          ...(reservation.depositMad
+            ? [
+                {
+                  label: "Acompte versé",
+                  metric: { value: reservation.depositMad, format: MAD },
+                },
+              ]
+            : []),
+          {
+            label: "Risque d'absence",
+            metric: { value: risk, format: { kind: "percent" as const } },
+          },
+        ],
+      },
+    ],
+    notes: reservation.note
+      ? [{ label: "Note de salle", text: reservation.note, icon: "note" }]
+      : undefined,
+    actions: [
+      {
         action: {
           kind: "command",
+          label: "Installer la table",
+          command: "reservation.seat",
+          payload: { id: reservation.id },
+          icon: "armchair",
+        },
+        allow: ["owner", "admin"],
+      },
+      {
+        action: {
+          kind: "command",
+          label: "Rappel SMS",
           command: "reservation.remind",
           payload: { id: reservation.id },
         },
-      },
-      {
-        id: "cancel",
-        label: `Annuler (${state.label.toLowerCase()})`,
-        destructive: true,
-        action: {
-          kind: "command",
-          command: "reservation.cancel",
-          payload: { id: reservation.id },
-        },
+        variant: "secondary",
       },
     ],
   };
 }
 
-function tableRow(table: DiningTable, data: RestaurantOverview): EntityRow {
-  const term = tableBadge(table.state);
+function floorTile(
+  table: DiningTable,
+  data: RestaurantOverview,
+): FloorTile {
+  const term = TABLE_STATE[table.state];
   const reservation = [...data.upcomingReservations, ...data.waitlist].find(
     (r) => r.id === table.reservationId,
   );
   const seatedMin = table.seatedAt
-    ? Math.round((Date.now() - new Date(table.seatedAt).getTime()) / 60_000)
+    ? Math.max(0, Math.round((Date.now() - new Date(table.seatedAt).getTime()) / 60_000))
     : null;
+  const turn = data.currentService.avgTurnMinutes;
+  const turnProgress = seatedMin === null ? undefined : seatedMin / turn;
 
-  const meta = [
-    `${table.seats} places`,
-    reservation ? reservation.guestName : null,
-    seatedMin !== null ? `assis depuis ${seatedMin} min` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const lines = [
+    reservation?.guestName ?? null,
+    seatedMin !== null ? `${seatedMin} min · ${Math.round((turnProgress ?? 0) * 100)} % du service` : null,
+    table.billMad !== undefined ? money(table.billMad) : null,
+  ].filter((l): l is string => Boolean(l));
 
   return {
     id: table.id,
+    code: table.code,
+    seats: table.seats,
+    tone: term.tone,
+    stateLabel: term.label,
+    lines,
+    turnProgress,
+    // A party past its expected turn and a table waiting to be cleared
+    // are the two things that stop the next seating. Both get the flag.
+    flagged:
+      table.state === "to_clean" ||
+      table.state === "blocked" ||
+      (turnProgress ?? 0) > 1,
+    detail: tableDetail(table, reservation, seatedMin, turn),
+  };
+}
+
+function tableDetail(
+  table: DiningTable,
+  reservation: Reservation | undefined,
+  seatedMin: number | null,
+  turnMinutes: number,
+): DetailSpec {
+  const term = TABLE_STATE[table.state];
+
+  return {
     title: `Table ${table.code}`,
-    icon: "table",
-    meta,
-    badges: [term],
-    trailing:
-      table.billMad !== undefined
-        ? { label: "Addition", metric: { value: table.billMad, format: MAD } }
-        : undefined,
-    menu: [
+    subtitle: `${table.seats} places`,
+    badges: [{ label: term.label, tone: term.tone, dot: true }],
+    sections: [
       {
-        id: "seat",
-        label: "Installer une table",
-        action: { kind: "command", command: "table.seat", payload: { id: table.id } },
+        label: "État",
+        items: [
+          { label: "Statut", metric: { value: term.label } },
+          {
+            label: "Places",
+            metric: { value: table.seats, format: COUNT },
+          },
+          ...(seatedMin !== null
+            ? [
+                {
+                  label: "Assis depuis",
+                  metric: {
+                    value: seatedMin,
+                    format: { kind: "duration" as const, unit: "minutes" as const },
+                  },
+                },
+                {
+                  label: "Rotation prévue",
+                  metric: {
+                    value: turnMinutes,
+                    format: { kind: "duration" as const, unit: "minutes" as const },
+                  },
+                },
+              ]
+            : []),
+          ...(table.billMad !== undefined
+            ? [{ label: "Addition en cours", metric: { value: table.billMad, format: MAD } }]
+            : []),
+        ],
       },
-      {
-        id: "clear",
-        label: "Marquer comme débarrassée",
-        action: { kind: "command", command: "table.clear", payload: { id: table.id } },
-      },
+      ...(reservation
+        ? [
+            {
+              label: "Le couvert",
+              items: [
+                { label: "Client", metric: { value: reservation.guestName } },
+                {
+                  label: "Personnes",
+                  metric: { value: reservation.partySize, format: COUNT },
+                },
+                { label: "Heure", metric: { value: hm(reservation.at) } },
+                { label: "Téléphone", metric: { value: reservation.guestPhone } },
+              ],
+            },
+          ]
+        : []),
     ],
+    notes: reservation?.note
+      ? [{ label: "Note de salle", text: reservation.note, icon: "note" }]
+      : undefined,
+    actions:
+      table.state === "to_clean"
+        ? [
+            {
+              action: {
+                kind: "command",
+                label: "Marquer débarrassée",
+                command: "table.clear",
+                payload: { id: table.id },
+                icon: "repeat",
+              },
+              allow: ["owner", "admin"],
+            },
+          ]
+        : table.state === "free"
+          ? [
+              {
+                action: {
+                  kind: "command",
+                  label: "Placer la prochaine arrivée",
+                  command: "floor.seat",
+                  icon: "armchair",
+                },
+                allow: ["owner", "admin"],
+              },
+            ]
+          : undefined,
   };
 }
 
@@ -878,7 +1225,7 @@ function serviceRow(service: Service): EntityRow {
       service.revenueMad > 0
         ? { label: "Recette", metric: { value: service.revenueMad, format: MAD } }
         : undefined,
-    href: `/restaurant/services?service=${service.id}`,
+    href: `${restaurantHref("services")}?service=${service.id}`,
   };
 }
 
@@ -895,11 +1242,11 @@ function activityEntry(
     tone: term.tone,
     highlight: item.needsAttention,
     href: item.reservationId
-      ? `/restaurant/reservations?res=${item.reservationId}`
+      ? `${restaurantHref("reservations")}?res=${item.reservationId}`
       : item.type === "review_received"
-        ? "/restaurant/avis"
+        ? restaurantHref("avis")
         : item.tableCode
-          ? "/restaurant/salle"
+          ? restaurantHref("salle")
           : undefined,
   };
 }
@@ -951,7 +1298,7 @@ function initialsOf(name: string): string {
  * than kept in sync by hand.
  */
 export const RESTAURANT_SCREENS: Record<
-  string,
+  RestaurantSlug,
   (data: RestaurantOverview) => ScreenSpec
 > = {
   "": buildDashboardScreen,
@@ -963,12 +1310,25 @@ export const RESTAURANT_SCREENS: Record<
   versements: buildPayoutsScreen,
 };
 
-export function getRestaurantScreen(slug: string): ScreenSpec | null {
-  const build = RESTAURANT_SCREENS[slug];
-  if (!build) return null;
-  return build(getRestaurantOverview());
+/**
+ * Pure builder. The client re-runs this whenever its optimistic copy of
+ * the payload changes, which is what makes seating a party repaint the
+ * floor plan, the KPIs and the activity feed in one pass — they are all
+ * derived from the same data by the same function.
+ */
+export function buildScreen(
+  slug: string,
+  data: RestaurantOverview,
+): ScreenSpec | null {
+  if (!isRestaurantSlug(slug)) return null;
+  return RESTAURANT_SCREENS[slug](data);
 }
 
-export function restaurantScreenSlugs(): string[] {
-  return Object.keys(RESTAURANT_SCREENS);
+/** Server-side convenience: build against the current payload. */
+export function getRestaurantScreen(slug: string): ScreenSpec | null {
+  return buildScreen(slug, getRestaurantOverview());
+}
+
+export function restaurantScreenSlugs(): readonly string[] {
+  return RESTAURANT_SLUGS;
 }

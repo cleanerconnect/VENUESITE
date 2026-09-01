@@ -117,6 +117,26 @@ function buildOverview(): RestaurantOverview {
   const nextLunch = { opens: atClock(1, 12, 0), closes: atClock(1, 15, 30) };
   const nextDinner = { opens: atClock(1, 19, 0), closes: atClock(1, 23, 30) };
 
+  /**
+   * Booked covers per 30-min slot across a window, shaped like a real
+   * sitting: a build, a peak an hour in, a tail. `peak` scales the whole
+   * curve so a 120-cover Saturday and a 92-cover Tuesday keep the shape.
+   */
+  const slotLoad = (opens: Date, closes: Date, peak: number) => {
+    const out: { at: string; covers: number }[] = [];
+    const span = closes.getTime() - opens.getTime();
+    const steps = Math.max(1, Math.round(span / (30 * 60_000)));
+    const SHAPE = [0.28, 0.55, 0.82, 1, 0.94, 0.76, 0.58, 0.4, 0.26, 0.14];
+    for (let i = 0; i <= steps; i += 1) {
+      const share = SHAPE[Math.min(SHAPE.length - 1, i)];
+      out.push({
+        at: new Date(opens.getTime() + i * 30 * 60_000).toISOString(),
+        covers: Math.round(peak * share),
+      });
+    }
+    return out;
+  };
+
   const services: Service[] = [
     {
       id: "svc_current",
@@ -133,6 +153,7 @@ function buildOverview(): RestaurantOverview {
       noShowCovers: 6,
       revenueMad: 63_400,
       avgTurnMinutes: 96,
+      slotLoad: slotLoad(currentOpens, currentCloses, 34),
     },
     {
       id: "svc_next_dejeuner",
@@ -149,6 +170,7 @@ function buildOverview(): RestaurantOverview {
       noShowCovers: 0,
       revenueMad: 0,
       avgTurnMinutes: 74,
+      slotLoad: slotLoad(nextLunch.opens, nextLunch.closes, 22),
     },
     {
       id: "svc_next_diner",
@@ -165,6 +187,7 @@ function buildOverview(): RestaurantOverview {
       noShowCovers: 0,
       revenueMad: 0,
       avgTurnMinutes: 96,
+      slotLoad: slotLoad(nextDinner.opens, nextDinner.closes, 38),
     },
   ];
 
@@ -449,35 +472,6 @@ function currentOverview(): RestaurantOverview {
 /** Whole dashboard payload. One call, mirrors `GET /restaurants/:id/overview`. */
 export function getRestaurantOverview(): RestaurantOverview {
   return currentOverview();
-}
-
-export function getServices(): Service[] {
-  return currentOverview().services;
-}
-
-export function getReservations(): Reservation[] {
-  const data = currentOverview();
-  return [...data.upcomingReservations, ...data.waitlist];
-}
-
-export function getTables(): DiningTable[] {
-  return currentOverview().tables;
-}
-
-export function getZones(): Zone[] {
-  return currentOverview().zones;
-}
-
-export function getMenuItems(): MenuItem[] {
-  return currentOverview().topItems;
-}
-
-export function getReviews(): GuestReview[] {
-  return currentOverview().reviews;
-}
-
-export function getPayouts(): RestaurantPayout[] {
-  return currentOverview().payouts;
 }
 
 /** The clock the current payload was built against. */

@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Search } from "lucide-react";
 import type { EntityListBlock as Spec, EntityRow } from "@/lib/dashboard/spec";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useDetailStore } from "@/lib/stores/detail";
 import {
   ActionLink,
   Icon,
@@ -21,6 +23,48 @@ import { cn } from "@/lib/utils/cn";
 // a title, badges, a meta line, a progress bar, a trailing figure and a
 // signal strip — never about what any of them mean.
 export function EntityListBlock({ block }: { block: Spec }) {
+  const [tab, setTab] = useState(block.tabs?.[0]?.id ?? "");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState(block.sorts?.[0]?.id ?? "");
+
+  // Counts are derived from the rows rather than passed in, so a tab can
+  // never disagree with the list underneath it.
+  const counts = useMemo(() => {
+    const out: Record<string, number> = {};
+    for (const t of block.tabs ?? []) {
+      out[t.id] = block.rows.filter((r) => matchesTab(r, t)).length;
+    }
+    return out;
+  }, [block.rows, block.tabs]);
+
+  const rows = useMemo(() => {
+    const activeTab = block.tabs?.find((t) => t.id === tab);
+    const needle = query.trim().toLowerCase();
+    const activeSort = block.sorts?.find((o) => o.id === sort);
+
+    const filtered = block.rows
+      .filter((r) => (activeTab ? matchesTab(r, activeTab) : true))
+      .filter((r) => (needle ? searchText(r).includes(needle) : true));
+
+    if (!activeSort) return filtered;
+
+    // Sorting a copy — the spec's row order is the caller's, not ours to
+    // mutate.
+    return [...filtered].sort((a, b) => {
+      const av = a.sortKeys?.[activeSort.key];
+      const bv = b.sortKeys?.[activeSort.key];
+      if (av === undefined || bv === undefined) return 0;
+      const delta =
+        typeof av === "number" && typeof bv === "number"
+          ? av - bv
+          : String(av).localeCompare(String(bv), "fr");
+      return activeSort.direction === "asc" ? delta : -delta;
+    });
+  }, [block.rows, block.sorts, block.tabs, query, sort, tab]);
+
+  const hasControls = Boolean(block.search || block.sorts?.length);
+  const filteredToNothing = block.rows.length > 0 && rows.length === 0;
+
   return (
     <section>
       {block.heading ? (
@@ -29,6 +73,82 @@ export function EntityListBlock({ block }: { block: Spec }) {
           {block.headingAction ? (
             <ActionLink action={block.headingAction} />
           ) : null}
+        </div>
+      ) : null}
+
+      {hasControls ? (
+        <div className="flex flex-col md:flex-row gap-3 mb-4">
+          {block.search ? (
+            <div className="md:flex-1 md:max-w-xl relative">
+              <Search
+                size={16}
+                strokeWidth={1.8}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-mute pointer-events-none"
+              />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={block.search.placeholder}
+                aria-label={block.search.placeholder}
+                className="w-full h-12 pl-10 pr-4 bg-surface border border-line rounded-full text-[14px] outline-none focus:border-ink transition-colors"
+              />
+            </div>
+          ) : null}
+
+          {block.sorts?.length ? (
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              aria-label="Trier"
+              className="h-12 px-4 pr-10 bg-surface border border-line rounded-[var(--radius-sm)] text-[14px] focus:outline-none focus:border-ink transition-colors appearance-none"
+              style={SELECT_CHEVRON}
+            >
+              {block.sorts.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          ) : null}
+        </div>
+      ) : null}
+
+      {block.tabs?.length ? (
+        <div className="border-b border-line-soft overflow-x-auto scroll-thin mb-4">
+          <div className="flex gap-1 min-w-max">
+            {block.tabs.map((t) => {
+              const active = t.id === tab;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTab(t.id)}
+                  aria-pressed={active}
+                  className={cn(
+                    "relative px-4 py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors",
+                    active ? "text-ink" : "text-ink-mute hover:text-ink",
+                  )}
+                >
+                  {t.label}
+                  <span
+                    className={cn(
+                      "ml-2 inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[11px] rounded-full num",
+                      active ? "bg-ink text-canvas" : "bg-ink/[0.06] text-ink-soft",
+                    )}
+                  >
+                    {counts[t.id] ?? 0}
+                  </span>
+                  {active ? (
+                    <motion.span
+                      layoutId={`entity-list-underline-${block.id}`}
+                      className="absolute bottom-0 left-2 right-2 h-[2px] bg-violet rounded-full"
+                      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
         </div>
       ) : null}
 
@@ -42,9 +162,21 @@ export function EntityListBlock({ block }: { block: Spec }) {
               : undefined
           }
         />
+      ) : filteredToNothing ? (
+        // An empty *result* is a different message from an empty list —
+        // conflating them tells a user their book is empty when they have
+        // simply typed a name that isn't in it.
+        <div className="bg-canvas-2 rounded-[var(--radius-xl)] py-10 px-6 text-center">
+          <div className="text-body font-semibold text-ink">
+            {block.noMatches?.title ?? "Aucun résultat"}
+          </div>
+          <p className="text-meta text-ink-mute mt-1">
+            {block.noMatches?.body ?? "Ajustez la recherche ou le filtre."}
+          </p>
+        </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {block.rows.map((row) => (
+          {rows.map((row) => (
             <Row key={row.id} row={row} />
           ))}
         </div>
@@ -53,8 +185,30 @@ export function EntityListBlock({ block }: { block: Spec }) {
   );
 }
 
+const SELECT_CHEVRON = {
+  backgroundImage:
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%236B7689' stroke-width='1.4' stroke-linecap='round'%3E%3Cpath d='m3 5 3 3 3-3'/%3E%3C/svg%3E\")",
+  backgroundRepeat: "no-repeat",
+  backgroundPosition: "right 14px center",
+  backgroundSize: "12px",
+} as const;
+
+function matchesTab(row: EntityRow, tab: NonNullable<Spec["tabs"]>[number]) {
+  if (!tab.match) return true;
+  const value = row.facets?.[tab.match.facet];
+  return value !== undefined && tab.match.values.includes(value);
+}
+
+function searchText(row: EntityRow) {
+  return [row.title, row.meta, row.keywords, ...(row.badges ?? []).map((b) => b.label)]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
 function Row({ row }: { row: EntityRow }) {
   const run = useCommandRunner();
+  const openDetail = useDetailStore((s) => s.open);
 
   const inner = (
     <div className="flex items-center gap-4">
@@ -126,7 +280,18 @@ function Row({ row }: { row: EntityRow }) {
       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="relative bg-surface border border-line rounded-[var(--radius-lg)] hover:shadow-soft transition-shadow">
-        {row.href ? (
+        {/* Three row behaviours, in priority order: open the detail sheet,
+            navigate, or sit still. A row that does nothing gets no hover
+            affordance and no button semantics. */}
+        {row.detail ? (
+          <button
+            type="button"
+            onClick={() => row.detail && openDetail(row.detail)}
+            className="block w-full text-left p-4"
+          >
+            {inner}
+          </button>
+        ) : row.href ? (
           <Link href={row.href} className="block p-4">
             {inner}
           </Link>

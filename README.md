@@ -62,8 +62,36 @@ src/lib/mock/restaurant.ts
 ```
 
 **Blocks:** `greeting` · `hero` · `nudge` · `kpi-grid` · `entity-list` ·
-`feed` · `table` · `chart` · `split` · `group`. The last two compose the
-others, so a bento column with a rail is a value, not a layout component.
+`floor-plan` · `slot-grid` · `feed` · `table` · `chart` · `split` ·
+`group`. The last two compose the others, so a bento column with a rail
+is a value, not a layout component.
+
+`entity-list` also carries optional filter tabs, a search field and sort
+options — all declarative. A tab names a facet and the values it accepts;
+rows carry `facets`, `sortKeys` and `keywords`. Counts derive from the
+rows, so a tab can never disagree with the list under it.
+
+### Actions land
+
+The client owns an optimistic copy of the overview payload, and screens
+are pure functions of it — so an action changes the *data* and every
+surface reading that data moves in one render. Seating a party turns the
+table on the plan, drops the free-seat count, raises seated covers in the
+hero ring, flips the reservation row to EN SALLE and pushes a line onto
+the activity feed, together. Each mutation snapshots the prior payload,
+which is what lets the toast offer a real undo.
+
+`src/lib/restaurant/store.ts` holds that copy. In production the same
+mutation fires the API call and reconciles or rolls back on the response;
+the shape is already right for it.
+
+### Nothing can drift
+
+`src/lib/restaurant/slugs.ts` is the one list of screens. The registry is
+typed as a total map over it (a missing builder is a compile error), and
+every internal link — nav items, row hrefs, KPI targets — is built by
+`restaurantHref(slug)`, so a link to a screen that doesn't exist is a
+type error rather than a 404 someone finds later.
 
 ### What "not hardcoded" buys
 
@@ -82,6 +110,12 @@ others, so a bento column with a rail is a value, not a layout component.
 - **Closed action surface.** Buttons carry a command *name* resolved
   through a registry, so a spec — including one off the wire — can only
   trigger verbs the client already defines.
+- **Identity is asked for, not asserted.** The user card reads the signed-in
+  person from the session and the organisation from the active workspace,
+  so the restaurant workspace stops claiming a festival.
+- **Lanes are declared.** A block or a KPI tile says whether it belongs to
+  the desktop lane, the phone lane or both — the phone lane never has to
+  know that "the payout tile" is the one it drops.
 - **The chrome too.** `src/lib/nav/workspaces.ts` holds sidebar groups,
   phone tabs, the Plus hub, topbar copy and the primary CTA per
   workspace. Sidebar / BottomTabs / Topbar / MobilePlusMenu read from it
@@ -93,9 +127,9 @@ others, so a bento column with a rail is a value, not a layout component.
 
 | Path | What it is |
 | --- | --- |
-| `/restaurant` | Greeting + dark service hero with occupancy ring + AI nudge + bento KPIs + next arrivals + live service feed + weekly revenue chart |
-| `/restaurant/reservations` | Booking KPIs, waitlist, service book |
-| `/restaurant/salle` | Floor KPIs + one list per zone with table state, party and running bill |
+| `/restaurant` | Greeting + dark service hero with occupancy ring + AI nudge + bento KPIs + service-load curve + next arrivals + live service feed + weekly revenue chart |
+| `/restaurant/reservations` | Booking KPIs, service-load curve, and one filterable book (tabs · search · sort) |
+| `/restaurant/salle` | Floor KPIs + a zoned table map: state colour, turn-progress edge, party and running bill; tiles open a detail sheet |
 | `/restaurant/services` | Upcoming sittings with fill progress |
 | `/restaurant/menu` | Plate performance table with derived margins |
 | `/restaurant/avis` | Rating KPIs + reviews with sentiment badges |
@@ -108,6 +142,14 @@ date, and rebuilds the payload each minute. Every timestamp is an offset,
 the current sitting's *kind* is derived from the hour, and copy that names
 a slot or a weekday is generated — so the service always reads as live
 whenever the demo is opened, instead of decaying into "il y a 4 mois".
+
+### Known caveat
+
+`notFound()` renders the 404 page but responds `200`, because the
+`(organizer)` shell is a client component and the response has already
+begun streaming by the time the nested server component throws. This is
+pre-existing app behaviour — `/events/[id]` does the same — not specific
+to the restaurant routes.
 
 ## Stack
 

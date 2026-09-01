@@ -109,11 +109,6 @@ export function reservationBadge(state: ReservationState): Badge {
   return { label: term.label, tone: term.tone, dot: true };
 }
 
-export function tableBadge(state: TableState): Badge {
-  const term = TABLE_STATE[state];
-  return { label: term.label, tone: term.tone, dot: true };
-}
-
 export function serviceBadge(state: ServiceState): Badge {
   const term = SERVICE_STATE[state];
   return { label: term.label, tone: term.tone, dot: true };

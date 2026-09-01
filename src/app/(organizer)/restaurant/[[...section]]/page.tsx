@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getRestaurantScreen } from "@/lib/restaurant/screens";
+import { getRestaurantOverview } from "@/lib/mock/restaurant";
 import { RestaurantScreen } from "@/components/restaurant/RestaurantScreen";
 
 // One route file for the whole restaurant workspace.
@@ -29,8 +30,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RestaurantSectionPage({ params }: Props) {
   const { section } = await params;
-  const spec = getRestaurantScreen(slugOf(section));
-  if (!spec) notFound();
+  const slug = slugOf(section);
 
-  return <RestaurantScreen spec={spec} />;
+  // Resolve the slug here so an unknown one 404s server-side. The client
+  // gets the payload rather than the built spec: it re-derives the screen
+  // from its own optimistic copy, and shipping both would mean shipping
+  // the same data twice.
+  if (!getRestaurantScreen(slug)) notFound();
+
+  return <RestaurantScreen slug={slug} data={getRestaurantOverview()} />;
 }

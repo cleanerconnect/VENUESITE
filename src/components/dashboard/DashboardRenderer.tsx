@@ -5,12 +5,15 @@ import type { Block, ScreenSpec } from "@/lib/dashboard/spec";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { useRole } from "@/lib/auth/role";
 import { CommandProvider, type CommandHandler } from "./commands";
+import { DetailDrawer } from "./DetailDrawer";
 import { ActionLink } from "./primitives";
 import { GreetingBlock } from "./blocks/GreetingBlock";
 import { HeroBlock } from "./blocks/HeroBlock";
 import { NudgeBlock } from "./blocks/NudgeBlock";
 import { KpiGridBlock } from "./blocks/KpiGridBlock";
 import { EntityListBlock } from "./blocks/EntityListBlock";
+import { FloorPlanBlock } from "./blocks/FloorPlanBlock";
+import { SlotGridBlock } from "./blocks/SlotGridBlock";
 import { FeedBlock } from "./blocks/FeedBlock";
 import { TableBlock } from "./blocks/TableBlock";
 import { ChartBlock } from "./blocks/ChartBlock";
@@ -65,6 +68,9 @@ export function DashboardRenderer({
           wrap={(child, key) => <StaggerItem key={key}>{child}</StaggerItem>}
         />
       </Stagger>
+
+      {/* Mounted once per screen — any row or tile in the spec can raise it. */}
+      <DetailDrawer />
     </CommandProvider>
   );
 }
@@ -117,9 +123,13 @@ function BlockView({
     case "nudge":
       return <NudgeBlock block={block} />;
     case "kpi-grid":
-      return <KpiGridBlock block={block} />;
+      return <KpiGridBlock block={block} surface={surface} />;
     case "entity-list":
       return <EntityListBlock block={block} />;
+    case "floor-plan":
+      return <FloorPlanBlock block={block} />;
+    case "slot-grid":
+      return <SlotGridBlock block={block} />;
     case "feed":
       return <FeedBlock block={block} />;
     case "table":

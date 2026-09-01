@@ -111,6 +111,25 @@ export interface CtaAction {
   allow?: string[];
 }
 
+/**
+ * A detail surface a row or tile can open. Declarative like everything
+ * else, so "what the drawer shows" is part of the payload rather than a
+ * second component tree kept in sync with the first by hand.
+ */
+export interface DetailSpec {
+  title: string;
+  subtitle?: string;
+  badges?: Badge[];
+  /** Grouped label/value pairs — the body of the sheet. */
+  sections?: {
+    label: string;
+    items: { label: string; metric: Metric }[];
+  }[];
+  /** Free-text lines: allergies, occasion, seating preference. */
+  notes?: { label: string; text: string; icon?: IconKey }[];
+  actions?: CtaAction[];
+}
+
 export interface Progress {
   value: number;
   max: number;
@@ -176,6 +195,8 @@ export interface NudgeBlock extends BlockBase {
 
 export interface KpiTile {
   id: string;
+  /** Which lane paints it. Defaults to "both". */
+  surface?: "desktop" | "mobile" | "both";
   label: string;
   metric: Metric;
   tone?: SurfaceTone;
@@ -218,6 +239,34 @@ export interface EntityRow {
   href?: string;
   /** Kebab entries. They label themselves, so they carry a bare Intent. */
   menu?: { id: string; label: string; action: Intent; destructive?: boolean }[];
+  /**
+   * Values the block's filter tabs match against, e.g.
+   * `{ state: "confirmed", channel: "lyfe" }`. Filtering stays data:
+   * a tab names a facet and the values it accepts.
+   */
+  facets?: Record<string, string>;
+  /** Values the block's sort options order by. */
+  sortKeys?: Record<string, number | string>;
+  /** Extra text the search box matches, beyond title and meta. */
+  keywords?: string;
+  /** Opens in the detail drawer instead of navigating. */
+  detail?: DetailSpec;
+}
+
+/** A filter tab. Counts are derived from the rows, never passed in. */
+export interface FilterTab {
+  id: string;
+  label: string;
+  /** Omit to match every row — the "Tous" tab. */
+  match?: { facet: string; values: string[] };
+}
+
+export interface SortOption {
+  id: string;
+  label: string;
+  /** Key into a row's `sortKeys`. */
+  key: string;
+  direction: "asc" | "desc";
 }
 
 export interface EntityListBlock extends BlockBase {
@@ -225,7 +274,74 @@ export interface EntityListBlock extends BlockBase {
   heading?: string;
   headingAction?: Action;
   rows: EntityRow[];
+  /** Sliding-underline filter tabs. Omit for a plain list. */
+  tabs?: FilterTab[];
+  /** Enables the search field. */
+  search?: { placeholder: string };
+  /** Enables the sort select. First option is the default. */
+  sorts?: SortOption[];
   empty?: { title: string; body?: string; icon?: IconKey; action?: Action };
+  /** Shown when filters exclude everything, as opposed to an empty list. */
+  noMatches?: { title: string; body?: string };
+}
+
+// ── Floor plan ───────────────────────────────────────────────
+
+export interface FloorTile {
+  id: string;
+  /** Short code painted large, e.g. "P4". */
+  code: string;
+  seats: number;
+  tone: SemanticTone;
+  stateLabel: string;
+  /** Lines under the code: party name, elapsed time, bill. */
+  lines?: string[];
+  /** 0·1 share of the expected turn elapsed — the tile's edge ring. */
+  turnProgress?: number;
+  /** Draws attention: over-run tables, blocked tables. */
+  flagged?: boolean;
+  detail?: DetailSpec;
+}
+
+/**
+ * Zoned table map. The one block that is genuinely restaurant-shaped —
+ * but still generic over what a "zone" and a "tile" mean, so it would
+ * serve a co-working floor or a clinic's rooms unchanged.
+ */
+export interface FloorPlanBlock extends BlockBase {
+  type: "floor-plan";
+  heading?: string;
+  subheading?: string;
+  legend?: { label: string; tone: SemanticTone }[];
+  zones: {
+    id: string;
+    name: string;
+    caption?: string;
+    tiles: FloorTile[];
+  }[];
+}
+
+// ── Slot grid ────────────────────────────────────────────────
+
+/**
+ * Load per time slot against a capacity line — the shape a service
+ * manager actually reads a booking book in.
+ */
+export interface SlotGridBlock extends BlockBase {
+  type: "slot-grid";
+  heading: string;
+  subheading?: string;
+  capacity: number;
+  capacityLabel?: string;
+  unitLabel: string;
+  slots: {
+    label: string;
+    value: number;
+    /** Marks the slot the service is currently in. */
+    current?: boolean;
+    /** Overrides the derived tone, e.g. an over-booked slot. */
+    tone?: SemanticTone;
+  }[];
 }
 
 export interface FeedEntry {
@@ -313,6 +429,8 @@ export type Block =
   | NudgeBlock
   | KpiGridBlock
   | EntityListBlock
+  | FloorPlanBlock
+  | SlotGridBlock
   | FeedBlock
   | TableBlock
   | ChartBlock

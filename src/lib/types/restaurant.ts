@@ -61,6 +61,13 @@ export interface Service {
   revenueMad: number;
   /** Average minutes a table is held, drives the turn projection. */
   avgTurnMinutes: number;
+  /**
+   * Booked covers per sitting slot across the service window. Comes from
+   * the booking engine rather than being inferred from the reservation
+   * list — the list a dashboard holds is a page of the book, not all of
+   * it, so deriving the curve client-side would understate every slot.
+   */
+  slotLoad: { at: string; covers: number }[];
 }
 
 // ── Reservations ─────────────────────────────────────────────
