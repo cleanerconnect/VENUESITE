@@ -750,7 +750,13 @@ export function buildReviewsScreen(data: RestaurantOverview): ScreenSpec {
               format: { kind: "rating", max: 5 },
               animate: false,
             },
-            delta: { value: data.rating.deltaVsLastMonth * 10, period: "vs mois dernier" },
+            // The stored delta is a change in rating *points* (+0.2 of 5),
+            // not a percentage. Express it against last month's average
+            // rather than scaling it by ten and calling it a percent.
+            delta: {
+              value: ratingDeltaPct(data.rating.average, data.rating.deltaVsLastMonth),
+              period: "vs mois dernier",
+            },
           },
           {
             id: "count",
@@ -1281,6 +1287,13 @@ function countdownLabel(iso: string): string {
   );
   if (days === 0) return "aujourd'hui";
   return days === 1 ? "dans 1 jour" : `dans ${days} jours`;
+}
+
+/** A rating change in points, as a percentage of last month's average. */
+function ratingDeltaPct(average: number, deltaPoints: number): number {
+  const previous = average - deltaPoints;
+  if (previous <= 0) return 0;
+  return Number(((deltaPoints / previous) * 100).toFixed(1));
 }
 
 function initialsOf(name: string): string {
