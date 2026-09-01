@@ -151,6 +151,26 @@ begun streaming by the time the nested server component throws. This is
 pre-existing app behaviour — `/events/[id]` does the same — not specific
 to the restaurant routes.
 
+## Handing off to the dev team
+
+**`docs/INTEGRATION.md`** is the map. Three seams carry every external
+dependency — data, AI, app connections — each an interface with a mock
+that ships today and a real implementation selected by an environment
+variable. Integration is filling in the real side; no screen, block or
+component changes.
+
+```
+src/lib/data/          repository · mock · HTTP · selection
+src/lib/ai/            advisor · Zod schemas · mock · Claude · selection
+src/lib/integrations/  event contract · HMAC verification
+src/app/api/           assistant (SSE) · webhooks/lyfe · health
+```
+
+`GET /api/health` reports which side of each seam is live. Read it after
+every deploy: both seams fall back to mocks when unconfigured, which is
+what lets a designer run the app with no credentials — and how a
+misconfigured production deploy can look healthy while serving demo data.
+
 ## Stack
 
 - **Next.js 14** App Router, src/ layout, TypeScript strict mode

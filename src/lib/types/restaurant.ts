@@ -275,8 +275,13 @@ export interface RestaurantOverview {
     amountMad: number;
     scheduledFor: string;
   };
-  /** Assistant output for the current service. */
-  nudge: {
+  /**
+   * Assistant output for the current service. Optional: the advisor
+   * returns nothing when the data doesn't justify a recommendation, and
+   * a suggestion card with nothing to say trains the team to ignore the
+   * one that matters.
+   */
+  nudge?: {
     headline: string;
     body: string;
     /** Deep link the primary CTA follows. */

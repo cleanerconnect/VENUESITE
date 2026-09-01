@@ -80,22 +80,75 @@ function AssistantPanel() {
     }
   }, [messages]);
 
-  const send = (text: string) => {
-    if (!text.trim()) return;
-    pushUser(text.trim());
+  // Talks to /api/assistant, which streams Server-Sent Events. The key,
+  // the system prompt and the model all stay server-side; this component
+  // only knows how to append text deltas — the same thing it did against
+  // the canned generator, so the typing UI is unchanged.
+  //
+  // On any failure it falls back to the local mock rather than leaving an
+  // empty bubble: an assistant that answers from stale canned text is a
+  // better failure than one that silently does nothing.
+  const send = async (text: string) => {
+    const prompt = text.trim();
+    if (!prompt) return;
+
+    pushUser(prompt);
     setInput("");
     const id = pushAssistant();
-    const stream = makeStream(mockResponse(text));
-    const tick = () => {
-      const { chunk, done } = stream();
-      if (chunk) appendToAssistant(id, chunk);
-      if (done) {
-        finishAssistant(id);
-        return;
+
+    try {
+      const response = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!response.ok || !response.body) throw new Error("assistant failed");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        // SSE frames are newline-delimited but arrive on arbitrary chunk
+        // boundaries — hold the partial tail until its terminator lands.
+        buffer += decoder.decode(value, { stream: true });
+        const frames = buffer.split("\n\n");
+        buffer = frames.pop() ?? "";
+
+        for (const frame of frames) {
+          const line = frame.trim();
+          if (!line.startsWith("data:")) continue;
+          const payload = line.slice(5).trim();
+          if (payload === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(payload) as {
+              text?: string;
+              error?: string;
+            };
+            if (parsed.error) throw new Error(parsed.error);
+            if (parsed.text) appendToAssistant(id, parsed.text);
+          } catch {
+            // A malformed frame is not worth dropping the whole reply.
+          }
+        }
       }
-      setTimeout(tick, 28);
-    };
-    setTimeout(tick, 360);
+      finishAssistant(id);
+    } catch {
+      const stream = makeStream(mockResponse(prompt));
+      const tick = () => {
+        const { chunk, done } = stream();
+        if (chunk) appendToAssistant(id, chunk);
+        if (done) {
+          finishAssistant(id);
+          return;
+        }
+        setTimeout(tick, 28);
+      };
+      tick();
+    }
   };
 
   return (

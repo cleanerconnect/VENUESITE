@@ -129,24 +129,27 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
     },
   };
 
-  const nudgeBlock: Block = {
-    id: "service-nudge",
-    type: "nudge",
-    eyebrow: "Suggestion",
-    icon: "sparkles",
-    headline: data.nudge.headline,
-    body: data.nudge.body,
-    actions: [
-      {
-        action: { kind: "link", label: data.nudge.ctaLabel, href: data.nudge.href },
-        allow: ["owner", "admin"],
-      },
-      {
-        action: { kind: "command", label: "Ignorer", command: "nudge.dismiss" },
-        variant: "ghost",
-      },
-    ],
-  };
+  const nudge = data.nudge;
+  const nudgeBlock: Block | null = nudge
+    ? {
+        id: "service-nudge",
+        type: "nudge",
+        eyebrow: "Suggestion",
+        icon: "sparkles",
+        headline: nudge.headline,
+        body: nudge.body,
+        actions: [
+          {
+            action: { kind: "link", label: nudge.ctaLabel, href: nudge.href },
+            allow: ["owner", "admin"],
+          },
+          {
+            action: { kind: "command", label: "Ignorer", command: "nudge.dismiss" },
+            variant: "ghost",
+          },
+        ],
+      }
+    : null;
 
   const greetingBlock: Block = {
     id: "greeting",
@@ -319,7 +322,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         id: "top",
         type: "split",
         railWidth: 420,
-        main: [greetingBlock, nudgeBlock],
+        main: nudgeBlock ? [greetingBlock, nudgeBlock] : [greetingBlock],
         rail: [heroBlock],
       },
       kpiBlock,
@@ -340,7 +343,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
     // trimmed KPI set — a layout decision, so it lives in the layout.
     mobileBlocks: [
       heroBlock,
-      nudgeBlock,
+      ...(nudgeBlock ? [nudgeBlock] : []),
       { ...kpiBlock, id: "kpis-mobile", columns: 1, tiles: mobileTiles(kpiBlock) },
       { ...(serviceLoadBlock(data) as Block), id: "service-load-mobile" },
       arrivalsBlock,
