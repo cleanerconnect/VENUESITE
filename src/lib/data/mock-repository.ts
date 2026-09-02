@@ -1,14 +1,20 @@
-// Mock adapter — the behaviour the app ships with today.
+// Local adapter.
 //
-// Mutations are no-ops that echo the current payload back: the client
-// already applied them optimistically, and the demo has no server to
-// disagree. That is exactly the contract the HTTP adapter honours with a
-// real write behind it, which is why swapping them changes nothing above.
+// Named "mock" for the seam it fills, but it is no longer fixtures: the
+// entities below read and write a real database (`db/schema.sql` on
+// SQLite, seeded by `db/seed.mjs`). That is what the brief asks for — the
+// local adapter must behave like production, and in-memory objects that
+// forget on reload do not.
+//
+// Entities still served from `mock/business.ts` are marked; they are the
+// remaining migration, and each is a straight port of a query that
+// already has a table.
 
 import type { RestaurantOverview } from "@/lib/types/restaurant";
 import type { CheckInResult, NotificationPreferences } from "@/lib/types/business";
 import { getRestaurantOverview } from "@/lib/mock/restaurant";
 import * as business from "@/lib/mock/business";
+import * as store from "@/lib/db/venue-store";
 import type {
   AnalyticsInput,
   CheckInInput,
@@ -50,9 +56,14 @@ export class MockRestaurantRepository implements RestaurantRepository {
     // No review platform in the demo.
   }
 
-  // ── Business account ──
+  // ── Business account ── persisted
   async getBusinessAccount() {
-    return business.BUSINESS_ACCOUNT;
+    // Falls back to the fixture only when the database has not been
+    // seeded, so a fresh checkout still boots.
+    return (
+      store.businessAccountForUser(business.BUSINESS_ACCOUNT.ownerId) ??
+      business.BUSINESS_ACCOUNT
+    );
   }
 
   // ── Booking lifecycle ──
@@ -92,21 +103,38 @@ export class MockRestaurantRepository implements RestaurantRepository {
       (r) => r.id === reservationId,
     );
     // Writes per-customer history, not only the booking — that history is
-    // what the risk indicator and the no-show rate both read.
-    if (reservation) business.recordNoShow(reservation);
+    // what the risk indicator and the no-show rate both read. Persisted,
+    // so the risk on the customer profile survives a reload.
+    if (reservation) {
+      store.recordNoShow(business.BUSINESS_ACCOUNT.venueId, reservationId);
+    }
     return data;
   }
 
-  // ── Availability ──
-  async getAvailability() {
-    return business.getAvailability();
+  // ── Availability ── persisted
+  async getAvailability(venueId: string) {
+    return store.availability(venueId);
   }
 
+  /**
+   * Applies a slot at a time with optimistic concurrency rather than
+   * replacing the set. Availability changes what customers can book right
+   * now, so a blind overwrite could silently reopen a slot a colleague
+   * just closed.
+   */
   async updateAvailability(
-    _venueId: string,
-    availability: Parameters<typeof business.setAvailability>[0],
+    venueId: string,
+    next: Parameters<typeof business.setAvailability>[0],
   ) {
-    return business.setAvailability(availability);
+    for (const slot of next.slots) {
+      store.updateSlot(venueId, slot.id, {
+        opensAt: slot.opensAt,
+        closesAt: slot.closesAt,
+        capacity: slot.capacity,
+        enabled: slot.enabled,
+      });
+    }
+    return store.availability(venueId);
   }
 
   // ── Analytics & visibility ──
@@ -118,29 +146,29 @@ export class MockRestaurantRepository implements RestaurantRepository {
     return business.getVisibilityMetrics(period);
   }
 
-  // ── CRM ──
-  async listCustomers() {
-    return business.listCustomers();
+  // ── CRM ── persisted
+  async listCustomers(venueId: string) {
+    return store.customers(venueId);
   }
 
-  async getCustomer(_venueId: string, customerId: string) {
-    return business.getCustomer(customerId);
+  async getCustomer(venueId: string, customerId: string) {
+    return store.customer(venueId, customerId);
   }
 
-  // ── Notifications ──
-  async getNotifications() {
-    return business.listNotifications();
+  // ── Notifications ── persisted
+  async getNotifications(venueId: string) {
+    return store.notifications(venueId);
   }
 
-  async markNotificationRead(_venueId: string, id: string) {
-    business.markNotificationRead(id);
+  async markNotificationRead(venueId: string, id: string) {
+    store.markNotificationRead(venueId, id);
   }
 
-  async getNotificationPreferences() {
-    return business.getNotificationPreferences();
+  async getNotificationPreferences(venueId: string) {
+    return store.notificationPreferences(venueId);
   }
 
   async updateNotificationPreferences(prefs: NotificationPreferences) {
-    return business.setNotificationPreferences(prefs);
+    return store.setNotificationPreferences(prefs);
   }
 }
