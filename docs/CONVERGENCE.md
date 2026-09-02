@@ -23,10 +23,12 @@ says so explicitly.
 | 4 | Page header | 9 hand-written headers | 2 hand-written headers | **New `ui/PageHeader`** | Done |
 | 5 | Chart appearance | 4 recharts wrappers | 2 recharts wrappers | **New `lib/charts/theme.ts` + `ui/ChartTooltip`** | Done |
 | 6 | Value formats | `MAD`/`COUNT` in `screens.ts` | same literals in `operations.ts`, `crm.ts` | **New `lib/dashboard/formats.ts`** | Done |
-| 7 | Loading state | none | none | **New `ui/Skeleton`** + `loading.tsx` | Done (venue routes) |
-| 8 | Error state | none | none | **New `(organizer)/error.tsx`** | Done |
-| 9 | Data source | fixtures in `lib/mock/*` | SQLite via the repository seam | **Venue side** — the repository seam | **Open** (see §4) |
-| 10 | Screen definition | hand-written JSX pages | `ScreenSpec` builders + renderer | **Venue side** — the spec engine | **Open by design** (see §4) |
+| 7 | Chrome commands | inline `if` chain in `Topbar` | inline `if` chain in `BottomTabs` | **New `lib/nav/chrome-commands.ts`** | Done |
+| 8 | Loading state | none | none | **New `ui/Skeleton`** + `loading.tsx` | Done (venue routes) |
+| 9 | Error state | none | none | **New `(organizer)/error.tsx`** | Done |
+| 10 | Door duty | `ScannerModal`, raised centre tab | nothing — the slot was empty | **Venue side gains `CheckInSheet`**, same raised-tab pattern | Done |
+| 11 | Data source | fixtures in `lib/mock/*` | SQLite via the repository seam | **Venue side** — the repository seam | **Open** (see §4) |
+| 12 | Screen definition | hand-written JSX pages | `ScreenSpec` builders + renderer | **Venue side** — the spec engine | **Open by design** (see §4) |
 
 ### 1 · Side panel
 
@@ -93,7 +95,17 @@ the one tooltip shell.
 
 This removed the largest cluster of hex literals in the codebase. See §2.
 
-### 7–8 · Loading and error
+### 7 · Chrome commands
+
+A nav entry names a command rather than carrying a handler, so
+`workspaces.ts` stays plain data. Both the topbar and the bottom tabs
+kept their own inline `if (command === …)` chain to resolve those names,
+and they had diverged on the fallback: the topbar opened the assistant
+for anything it did not recognise, the tabs did nothing.
+`lib/nav/chrome-commands.ts` is now the one resolver, and an unknown
+command warns rather than opening something arbitrary.
+
+### 8–9 · Loading and error
 
 Neither workspace had either. Every route rendered nothing until its data
 arrived — which on a phone mid-service reads as a broken app — and a
@@ -174,7 +186,7 @@ editor. See `docs/APP_MAPPING.md`.
 
 ## 4. Still open
 
-**9 · The event workspace still reads fixtures.** Twelve modules under
+**11 · The event workspace still reads fixtures.** Twelve modules under
 `src/lib/mock/*` and 22 components import them directly. Phase 2 moved
 the venue workspace behind the repository seam and onto a real database;
 the event side never went through that pass. Every component in
@@ -188,7 +200,7 @@ leverage: the seam already exists, so the work is moving each fixture
 module behind a repository method and deleting it, exactly as
 `mock-repository.ts` did for the venue side.
 
-**10 · Two ways of defining a screen.** The venue workspace is a spec
+**12 · Two ways of defining a screen.** The venue workspace is a spec
 engine — pure builders returning a `ScreenSpec`, rendered by a block
 registry, serialisable as JSON so specs could arrive from a backend. The
 event workspace is hand-written JSX pages.

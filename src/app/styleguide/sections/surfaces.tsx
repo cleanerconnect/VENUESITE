@@ -235,6 +235,19 @@ export function SurfacesSection() {
         </SideSheet>
       </Specimen>
 
+      <Specimen
+        name="MetricTile · lanes"
+        note="une tuile déclare sa propre voie — desktop, mobile, ou les deux"
+      >
+        <p className="text-body text-ink-soft">
+          Le bento filtre sur <code className="text-[12px]">surface</code>,
+          pas sur l&apos;identité d&apos;une tuile. La voie téléphone laisse
+          donc tomber ce qui se déclare desktop-only, sans savoir de quelle
+          tuile il s&apos;agit. Voir <code className="text-[12px]">kpi-grid</code>
+          dans « Blocs d&apos;écran ».
+        </p>
+      </Specimen>
+
       <Specimen name="Skeleton" note="chargement — calqué sur la forme réelle">
         <div className="space-y-6">
           <PageHeaderSkeleton />
