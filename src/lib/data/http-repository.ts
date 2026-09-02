@@ -1,19 +1,32 @@
 import "server-only";
 
-// HTTP adapter — the one the dev team points at the real backend.
+// HTTP adapter — the Business Service.
 //
-// This is written against the contract in docs/INTEGRATION.md, not
-// against a guess: every method maps to exactly one documented endpoint,
-// and the response shape is `RestaurantOverview` verbatim. If the backend
-// returns something else, the fix belongs in `mapOverview` below and
-// nowhere else in the app.
+// Paths follow the `/api/business/*` contract from the scope brief, with
+// `LYFE_API_BASE_URL` pointing at the service root. Every method maps to
+// exactly one documented endpoint; if the service returns a different
+// shape, map it in this file and nowhere else.
 //
 // server-only: this holds the API token. Importing it from a client
 // component is a build error rather than a leaked credential.
 
 import type { RestaurantOverview } from "@/lib/types/restaurant";
+import type {
+  BusinessAccount,
+  CheckInResult,
+  Customer,
+  NotificationPreferences,
+  PortalNotification,
+  VenueAnalytics,
+  VenueAvailability,
+  VisibilityMetrics,
+} from "@/lib/types/business";
 import {
   RepositoryError,
+  type AnalyticsInput,
+  type CheckInInput,
+  type NoShowInput,
+  type RejectBookingInput,
   type ReservationRefInput,
   type RestaurantRepository,
   type ReviewReplyInput,
@@ -31,59 +44,164 @@ export interface HttpRepositoryConfig {
 export class HttpRestaurantRepository implements RestaurantRepository {
   constructor(private readonly config: HttpRepositoryConfig) {}
 
-  getOverview(restaurantId: string) {
+  // ── Account ──
+  getBusinessAccount() {
+    return this.request<BusinessAccount>("GET", "/api/business/account");
+  }
+
+  // ── Reads ──
+  getOverview(venueId: string) {
     return this.request<RestaurantOverview>(
       "GET",
-      `/restaurants/${restaurantId}/overview`,
+      `/api/business/overview?venue_id=${encodeURIComponent(venueId)}`,
     );
   }
 
-  seatReservation({ restaurantId, reservationId, tableId }: SeatReservationInput) {
+  // ── Booking lifecycle ──
+  seatReservation({ reservationId, tableId }: SeatReservationInput) {
     return this.request<RestaurantOverview>(
       "POST",
-      `/restaurants/${restaurantId}/reservations/${reservationId}/seat`,
-      { tableId },
+      `/api/business/bookings/${reservationId}/check-in`,
+      { table_id: tableId, method: "manual" },
     );
   }
 
-  confirmReservation({ restaurantId, reservationId }: ReservationRefInput) {
+  confirmReservation({ reservationId }: ReservationRefInput) {
     return this.request<RestaurantOverview>(
-      "POST",
-      `/restaurants/${restaurantId}/reservations/${reservationId}/confirm`,
+      "PUT",
+      `/api/business/bookings/${reservationId}/confirm`,
     );
   }
 
-  cancelReservation({ restaurantId, reservationId }: ReservationRefInput) {
+  rejectReservation({ reservationId, reason, note }: RejectBookingInput) {
+    return this.request<RestaurantOverview>(
+      "PUT",
+      `/api/business/bookings/${reservationId}/reject`,
+      { reason, note },
+    );
+  }
+
+  cancelReservation({ reservationId }: ReservationRefInput) {
+    return this.request<RestaurantOverview>(
+      "PUT",
+      `/api/business/bookings/${reservationId}/cancel`,
+    );
+  }
+
+  checkIn({ reservationId, qrCode }: CheckInInput) {
+    // The booking id is optional: a scanned code identifies the booking on
+    // its own, which is the whole point of scanning it.
+    const path = reservationId
+      ? `/api/business/bookings/${reservationId}/check-in`
+      : "/api/business/bookings/check-in";
+    return this.request<CheckInResult>("POST", path, { qr_code: qrCode });
+  }
+
+  reportNoShow({ reservationId }: NoShowInput) {
     return this.request<RestaurantOverview>(
       "POST",
-      `/restaurants/${restaurantId}/reservations/${reservationId}/cancel`,
+      `/api/business/bookings/${reservationId}/no-show`,
     );
   }
 
   clearTable({ restaurantId, tableId }: TableRefInput) {
     return this.request<RestaurantOverview>(
       "POST",
-      `/restaurants/${restaurantId}/tables/${tableId}/clear`,
+      `/api/business/venues/${restaurantId}/tables/${tableId}/clear`,
     );
   }
 
-  async sendReminder({ restaurantId, reservationId }: ReservationRefInput) {
+  async sendReminder({ reservationId }: ReservationRefInput) {
     await this.request<void>(
       "POST",
-      `/restaurants/${restaurantId}/reservations/${reservationId}/remind`,
+      `/api/business/bookings/${reservationId}/remind`,
     );
   }
 
-  async replyToReview({ restaurantId, reviewId, message }: ReviewReplyInput) {
-    await this.request<void>(
-      "POST",
-      `/restaurants/${restaurantId}/reviews/${reviewId}/reply`,
-      { message },
+  // ── Availability ──
+  getAvailability(venueId: string) {
+    return this.request<VenueAvailability>(
+      "GET",
+      `/api/business/venues/${venueId}/availability`,
+    );
+  }
+
+  updateAvailability(
+    venueId: string,
+    availability: Omit<VenueAvailability, "updatedAt">,
+  ) {
+    return this.request<VenueAvailability>(
+      "PUT",
+      `/api/business/venues/${venueId}/availability`,
+      availability,
+    );
+  }
+
+  // ── Analytics & visibility ──
+  getAnalytics({ restaurantId, period }: AnalyticsInput) {
+    return this.request<VenueAnalytics>(
+      "GET",
+      `/api/business/analytics?venue_id=${encodeURIComponent(restaurantId)}&period=${period}`,
+    );
+  }
+
+  getVisibilityMetrics({ restaurantId, period }: AnalyticsInput) {
+    return this.request<VisibilityMetrics>(
+      "GET",
+      `/api/business/visibility?venue_id=${encodeURIComponent(restaurantId)}&period=${period}`,
+    );
+  }
+
+  // ── CRM ──
+  listCustomers(venueId: string) {
+    return this.request<Customer[]>(
+      "GET",
+      `/api/business/customers?venue_id=${encodeURIComponent(venueId)}`,
+    );
+  }
+
+  async getCustomer(venueId: string, customerId: string) {
+    return this.request<Customer | null>(
+      "GET",
+      `/api/business/customers/${customerId}?venue_id=${encodeURIComponent(venueId)}`,
+    );
+  }
+
+  async replyToReview({ reviewId, message }: ReviewReplyInput) {
+    await this.request<void>("POST", `/api/business/reviews/${reviewId}/reply`, {
+      message,
+    });
+  }
+
+  // ── Notifications ──
+  getNotifications(venueId: string) {
+    return this.request<PortalNotification[]>(
+      "GET",
+      `/api/business/notifications?venue_id=${encodeURIComponent(venueId)}`,
+    );
+  }
+
+  async markNotificationRead(_venueId: string, id: string) {
+    await this.request<void>("PUT", `/api/business/notifications/${id}/read`);
+  }
+
+  getNotificationPreferences(venueId: string) {
+    return this.request<NotificationPreferences>(
+      "GET",
+      `/api/business/venues/${venueId}/notification-preferences`,
+    );
+  }
+
+  updateNotificationPreferences(prefs: NotificationPreferences) {
+    return this.request<NotificationPreferences>(
+      "PUT",
+      `/api/business/venues/${prefs.venueId}/notification-preferences`,
+      prefs,
     );
   }
 
   private async request<T>(
-    method: "GET" | "POST",
+    method: "GET" | "POST" | "PUT",
     path: string,
     body?: unknown,
   ): Promise<T> {

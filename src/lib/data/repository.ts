@@ -11,6 +11,18 @@
 // round trips would let the hero disagree with the floor plan.
 
 import type { RestaurantOverview } from "@/lib/types/restaurant";
+import type {
+  AnalyticsPeriod,
+  BusinessAccount,
+  CheckInResult,
+  Customer,
+  NotificationPreferences,
+  PortalNotification,
+  RejectionReason,
+  VenueAnalytics,
+  VenueAvailability,
+  VisibilityMetrics,
+} from "@/lib/types/business";
 
 export interface SeatReservationInput {
   restaurantId: string;
@@ -35,6 +47,31 @@ export interface ReviewReplyInput {
   message: string;
 }
 
+export interface RejectBookingInput {
+  restaurantId: string;
+  reservationId: string;
+  /** Coded so rejections can be aggregated for quality analytics. */
+  reason: RejectionReason;
+  note?: string;
+}
+
+export interface CheckInInput {
+  restaurantId: string;
+  reservationId?: string;
+  /** The code scanned from the app's QR, or typed into the fallback. */
+  qrCode: string;
+}
+
+export interface NoShowInput {
+  restaurantId: string;
+  reservationId: string;
+}
+
+export interface AnalyticsInput {
+  restaurantId: string;
+  period: AnalyticsPeriod;
+}
+
 /**
  * Mutations return the authoritative payload so the client can reconcile
  * its optimistic copy against what actually happened. A void return would
@@ -50,6 +87,55 @@ export interface RestaurantRepository {
 
   sendReminder(input: ReservationRefInput): Promise<void>;
   replyToReview(input: ReviewReplyInput): Promise<void>;
+
+  // ── Business account ──
+  /** The signed-in partner's account row. Drives feature gating. */
+  getBusinessAccount(): Promise<BusinessAccount>;
+
+  // ── Booking lifecycle ──
+  /**
+   * Rejection carries a coded reason. Separate from `cancelReservation`
+   * because a venue refusing a request and a guest cancelling are
+   * different events with different downstream analytics.
+   */
+  rejectReservation(input: RejectBookingInput): Promise<RestaurantOverview>;
+  /**
+   * Marks the guest arrived. `qrCode` comes from the app-side QR
+   * (EP20-US9) or from the manual fallback — the server cannot tell the
+   * difference and should not need to.
+   */
+  checkIn(input: CheckInInput): Promise<CheckInResult>;
+  /**
+   * Flags a no-show. Writes per-customer history as well as the booking,
+   * because the rate feeds analytics and the risk indicator feeds the
+   * customer profile.
+   */
+  reportNoShow(input: NoShowInput): Promise<RestaurantOverview>;
+
+  // ── Availability ──
+  getAvailability(venueId: string): Promise<VenueAvailability>;
+  /** Propagates immediately to what the consumer app shows as bookable. */
+  updateAvailability(
+    venueId: string,
+    availability: Omit<VenueAvailability, "updatedAt">,
+  ): Promise<VenueAvailability>;
+
+  // ── Analytics & visibility ──
+  getAnalytics(input: AnalyticsInput): Promise<VenueAnalytics>;
+  getVisibilityMetrics(input: AnalyticsInput): Promise<VisibilityMetrics>;
+
+  // ── CRM ──
+  /** Auto-populated from bookings; there is deliberately no create. */
+  listCustomers(restaurantId: string): Promise<Customer[]>;
+  getCustomer(restaurantId: string, customerId: string): Promise<Customer | null>;
+
+  // ── Notifications ──
+  getNotifications(restaurantId: string): Promise<PortalNotification[]>;
+  markNotificationRead(restaurantId: string, id: string): Promise<void>;
+  getNotificationPreferences(venueId: string): Promise<NotificationPreferences>;
+  updateNotificationPreferences(
+    prefs: NotificationPreferences,
+  ): Promise<NotificationPreferences>;
 }
 
 /** Thrown by adapters so callers can distinguish "rejected" from "offline". */
