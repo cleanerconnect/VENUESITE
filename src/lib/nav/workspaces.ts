@@ -161,8 +161,12 @@ const RESTAURANT_WORKSPACE: Workspace = {
       { label: "Réservations", href: restaurantHref("reservations"), icon: "calendar-clock" },
       { label: "Plan de salle", href: restaurantHref("salle"), icon: "table" },
       { label: "Services", href: restaurantHref("services"), icon: "sunset", allow: ["owner", "admin"] },
+      { label: "Disponibilités", href: restaurantHref("disponibilites"), icon: "calendar-plus", allow: ["owner", "admin"] },
+      { label: "Clients", href: restaurantHref("clients"), icon: "users", allow: ["owner", "admin"] },
       { label: "Carte", href: restaurantHref("menu"), icon: "utensils-crossed", allow: ["owner", "admin"] },
       { label: "Avis", href: restaurantHref("avis"), icon: "star", allow: ["owner", "admin"] },
+      { label: "Analytique", href: restaurantHref("analytique"), icon: "gauge", allow: ["owner", "admin"] },
+      { label: "Visibilité", href: restaurantHref("visibilite"), icon: "megaphone", allow: ["owner", "admin"] },
     ],
     [
       { label: "Versements", href: restaurantHref("versements"), icon: "wallet", allow: ["owner", "admin"] },
@@ -172,6 +176,10 @@ const RESTAURANT_WORKSPACE: Workspace = {
   ],
   secondary: [
     { label: "Services", href: restaurantHref("services"), icon: "sunset" },
+    { label: "Disponibilités", href: restaurantHref("disponibilites"), icon: "calendar-plus" },
+    { label: "Clients", href: restaurantHref("clients"), icon: "users" },
+    { label: "Analytique", href: restaurantHref("analytique"), icon: "gauge" },
+    { label: "Visibilité", href: restaurantHref("visibilite"), icon: "megaphone" },
     { label: "Avis", href: restaurantHref("avis"), icon: "star" },
     { label: "Versements", href: restaurantHref("versements"), icon: "wallet" },
     { label: "Équipe", href: "/team", icon: "users" },

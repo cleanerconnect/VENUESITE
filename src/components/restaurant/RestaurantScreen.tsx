@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { buildScreen } from "@/lib/restaurant/screens";
+import { buildScreen, type ScreenContext } from "@/lib/restaurant/screens";
 import type { RestaurantOverview } from "@/lib/types/restaurant";
 import { containsBlockType } from "@/lib/dashboard/traverse";
 import { DashboardRenderer } from "@/components/dashboard/DashboardRenderer";
@@ -13,6 +13,11 @@ import {
   useRestaurantStore,
 } from "@/lib/restaurant/store";
 import { useToast } from "@/components/ui/Toast";
+import {
+  RejectBookingDialog,
+  type RejectTarget,
+} from "./RejectBookingDialog";
+import { REJECTION_REASONS } from "@/lib/types/business";
 
 // Client boundary for the restaurant workspace.
 //
@@ -26,16 +31,28 @@ import { useToast } from "@/components/ui/Toast";
 export function RestaurantScreen({
   slug,
   data: serverData,
+  context = {},
 }: {
   slug: string;
   data: RestaurantOverview;
+  /** Business Service slices this screen needs, fetched server-side. */
+  context?: Omit<ScreenContext, "overview">;
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const data = useHydrateRestaurant(serverData);
   const closeDetail = useDetailStore((s) => s.close);
 
-  const spec = useMemo(() => buildScreen(slug, data), [slug, data]);
+  // Business slices are fetched server-side and passed through unchanged;
+  // only the service payload is re-derived from the optimistic copy.
+  // Refusal needs a reason before it can be applied, so the command opens
+  // a dialog instead of mutating; the store call happens on confirm.
+  const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null);
+
+  const spec = useMemo(
+    () => buildScreen(slug, { ...context, overview: data }),
+    [slug, context, data],
+  );
 
   const commands = useMemo<Record<string, CommandHandler>>(() => {
     const store = useRestaurantStore.getState;
@@ -73,8 +90,51 @@ export function RestaurantScreen({
         withUndo("Réservation annulée", "danger");
       },
 
+      "reservation.reject": (payload) =>
+        setRejectTarget({
+          id: String(payload?.id ?? ""),
+          guestName: String(payload?.name ?? "Ce client"),
+        }),
+
+      "reservation.noShow": (payload) => {
+        const before = store().data;
+        store().reportNoShow(String(payload?.id ?? ""));
+        if (store().data === before) return;
+        withUndo("Absence enregistrée", "danger");
+      },
+
       "reservation.remind": () =>
         toast({ tone: "info", title: "Rappel SMS envoyé au client" }),
+
+      "customers.export": () =>
+        toast({
+          tone: "info",
+          title: "Export CSV en préparation",
+          description: "Le fichier vous sera envoyé par e-mail.",
+        }),
+
+      "customer.call": (payload) => {
+        const phone = String(payload?.phone ?? "");
+        if (phone && typeof window !== "undefined") {
+          window.location.href = `tel:${phone.replace(/\s/g, "")}`;
+        }
+      },
+
+      "availability.toggleSlot": () => {
+        toast({ tone: "success", title: "Créneau mis à jour" });
+        router.refresh();
+      },
+
+      "availability.removeClosure": () => {
+        toast({ tone: "success", title: "Fermeture retirée" });
+        router.refresh();
+      },
+
+      "boost.start": () =>
+        toast({ tone: "success", title: "Boost lancé pour 7 jours" }),
+
+      "boost.stop": () =>
+        toast({ tone: "info", title: "Boost arrêté" }),
 
       "table.clear": (payload) => {
         const before = store().data;
@@ -120,6 +180,26 @@ export function RestaurantScreen({
         </header>
       )}
       <DashboardRenderer spec={spec} commands={commands} />
+
+      <RejectBookingDialog
+        target={rejectTarget}
+        onClose={() => setRejectTarget(null)}
+        onConfirm={(reason) => {
+          if (!rejectTarget) return;
+          const before = useRestaurantStore.getState().data;
+          useRestaurantStore
+            .getState()
+            .rejectReservation(rejectTarget.id, REJECTION_REASONS[reason]);
+          if (useRestaurantStore.getState().data === before) return;
+          closeDetail();
+          toast({
+            tone: "danger",
+            title: "Demande refusée",
+            description: REJECTION_REASONS[reason],
+            undo: () => useRestaurantStore.getState().undo(),
+          });
+        }}
+      />
     </>
   );
 }

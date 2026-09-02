@@ -32,6 +32,10 @@ interface RestaurantState {
   seatReservation: (id: string) => void;
   confirmReservation: (id: string) => void;
   cancelReservation: (id: string) => void;
+  /** Venue refused the request. Distinct from a guest cancelling. */
+  rejectReservation: (id: string, reasonLabel: string) => void;
+  /** Guest never arrived. Also writes per-customer history server-side. */
+  reportNoShow: (id: string) => void;
   clearTable: (id: string) => void;
   /** Moves the head of the waitlist onto the first table that can take it. */
   seatNextWaiting: () => { seated: string; table: string } | null;
@@ -135,6 +139,62 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
         needsAttention: true,
       });
       return `Réservation de ${reservation.guestName} annulée`;
+    }),
+
+  rejectReservation: (id, reasonLabel) =>
+    mutate(set, get, (draft) => {
+      const reservation = findReservation(draft, id);
+      if (!reservation) return null;
+
+      reservation.state = "cancelled";
+      const table = draft.tables.find((t) => t.reservationId === id);
+      if (table && table.state === "reserved") {
+        table.state = "free";
+        delete table.reservationId;
+      }
+      draft.upcomingReservations = draft.upcomingReservations.filter(
+        (r) => r.id !== id,
+      );
+      draft.currentService.bookedCovers = Math.max(
+        0,
+        draft.currentService.bookedCovers - reservation.partySize,
+      );
+
+      pushActivity(draft, {
+        type: "reservation_cancelled",
+        actor: reservation.guestName,
+        message: `demande refusée · ${reasonLabel.toLowerCase()}`,
+        needsAttention: true,
+      });
+      return `Demande de ${reservation.guestName} refusée`;
+    }),
+
+  reportNoShow: (id) =>
+    mutate(set, get, (draft) => {
+      const reservation = findReservation(draft, id);
+      if (!reservation || reservation.state === "no_show") return null;
+
+      reservation.state = "no_show";
+      const table = draft.tables.find((t) => t.reservationId === id);
+      if (table && table.state === "reserved") {
+        table.state = "free";
+        delete table.reservationId;
+      }
+      draft.upcomingReservations = draft.upcomingReservations.filter(
+        (r) => r.id !== id,
+      );
+      draft.currentService.noShowCovers += reservation.partySize;
+      draft.noShows.count += 1;
+      draft.noShows.lostRevenueMad +=
+        reservation.partySize * draft.averageTicket.amountMad;
+
+      pushActivity(draft, {
+        type: "no_show",
+        actor: reservation.guestName,
+        message: `noté absent · ${reservation.partySize} couverts`,
+        needsAttention: true,
+      });
+      return `${reservation.guestName} noté absent`;
     }),
 
   clearTable: (id) =>

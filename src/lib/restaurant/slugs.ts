@@ -17,8 +17,12 @@ export const RESTAURANT_SLUGS = [
   "reservations",
   "salle",
   "services",
+  "clients",
   "menu",
   "avis",
+  "analytique",
+  "visibilite",
+  "disponibilites",
   "versements",
 ] as const;
 

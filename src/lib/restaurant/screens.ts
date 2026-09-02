@@ -52,6 +52,19 @@ import {
 } from "./vocabulary";
 import { formatValue } from "@/lib/dashboard/value";
 import { getRestaurantOverview } from "@/lib/mock/restaurant";
+import { buildCustomersScreen } from "./crm";
+import {
+  buildAnalyticsScreen,
+  buildAvailabilityScreen,
+  buildVisibilityScreen,
+} from "./operations";
+import type {
+  AnalyticsPeriod,
+  Customer,
+  VenueAnalytics,
+  VenueAvailability,
+  VisibilityMetrics,
+} from "@/lib/types/business";
 import {
   RESTAURANT_SLUGS,
   type RestaurantSlug,
@@ -962,6 +975,31 @@ function reservationMenu(reservation: Reservation): EntityRow["menu"] {
         payload: { id: reservation.id },
       },
     });
+    // Refusing a request and a guest cancelling are different events with
+    // different analytics, so they are different actions — and refusing
+    // captures a coded reason.
+    if (reservation.state === "requested") {
+      items.push({
+        id: "reject",
+        label: "Refuser la demande…",
+        destructive: true,
+        action: {
+          kind: "command",
+          command: "reservation.reject",
+          payload: { id: reservation.id, name: reservation.guestName },
+        },
+      });
+    }
+    items.push({
+      id: "no-show",
+      label: "Signaler une absence",
+      destructive: true,
+      action: {
+        kind: "command",
+        command: "reservation.noShow",
+        payload: { id: reservation.id },
+      },
+    });
     items.push({
       id: "cancel",
       label: "Annuler la réservation",
@@ -1313,36 +1351,74 @@ function initialsOf(name: string): string {
  * page file, and the nav can be generated from the same source rather
  * than kept in sync by hand.
  */
-export const RESTAURANT_SCREENS: Record<
-  RestaurantSlug,
-  (data: RestaurantOverview) => ScreenSpec
-> = {
-  "": buildDashboardScreen,
-  reservations: buildReservationsScreen,
-  salle: buildFloorScreen,
-  menu: buildMenuScreen,
-  avis: buildReviewsScreen,
-  services: buildServicesScreen,
-  versements: buildPayoutsScreen,
-};
-
 /**
- * Pure builder. The client re-runs this whenever its optimistic copy of
- * the payload changes, which is what makes seating a party repaint the
- * floor plan, the KPIs and the activity feed in one pass — they are all
- * derived from the same data by the same function.
+ * What a builder is given. The service payload is always present; the
+ * Business Service slices are optional because fetching all four for
+ * every screen would cost four round trips to render one. `SCREEN_NEEDS`
+ * below says which slug needs which, so the page fetches exactly that.
  */
-export function buildScreen(
-  slug: string,
-  data: RestaurantOverview,
-): ScreenSpec | null {
-  if (!isRestaurantSlug(slug)) return null;
-  return RESTAURANT_SCREENS[slug](data);
+export interface ScreenContext {
+  overview: RestaurantOverview;
+  customers?: Customer[];
+  analytics?: VenueAnalytics;
+  visibility?: VisibilityMetrics;
+  availability?: VenueAvailability;
+  period?: AnalyticsPeriod;
 }
 
-/** Server-side convenience: build against the current payload. */
+export type ScreenDataNeed = "customers" | "analytics" | "visibility" | "availability";
+
+/** Which extra slices each screen requires. */
+export const SCREEN_NEEDS: Record<RestaurantSlug, ScreenDataNeed[]> = {
+  "": [],
+  reservations: [],
+  salle: [],
+  services: [],
+  clients: ["customers"],
+  menu: [],
+  avis: [],
+  analytique: ["analytics"],
+  visibilite: ["visibility"],
+  disponibilites: ["availability"],
+  versements: [],
+};
+
+/** Adapts a builder that only needs the service payload. */
+const fromOverview =
+  (build: (data: RestaurantOverview) => ScreenSpec) =>
+  (ctx: ScreenContext): ScreenSpec =>
+    build(ctx.overview);
+
+export const RESTAURANT_SCREENS: Record<
+  RestaurantSlug,
+  (ctx: ScreenContext) => ScreenSpec
+> = {
+  "": fromOverview(buildDashboardScreen),
+  reservations: fromOverview(buildReservationsScreen),
+  salle: fromOverview(buildFloorScreen),
+  services: fromOverview(buildServicesScreen),
+  menu: fromOverview(buildMenuScreen),
+  avis: fromOverview(buildReviewsScreen),
+  versements: fromOverview(buildPayoutsScreen),
+  clients: (ctx) =>
+    buildCustomersScreen(ctx.customers ?? [], ctx.overview.reviews),
+  analytique: (ctx) => buildAnalyticsScreen(ctx.analytics, ctx.period ?? "30d"),
+  visibilite: (ctx) => buildVisibilityScreen(ctx.visibility, ctx.period ?? "30d"),
+  disponibilites: (ctx) => buildAvailabilityScreen(ctx.availability),
+};
+
+export function buildScreen(
+  slug: string,
+  ctx: ScreenContext,
+): ScreenSpec | null {
+  if (!isRestaurantSlug(slug)) return null;
+  return RESTAURANT_SCREENS[slug](ctx);
+}
+
+/** Server-side convenience: does this slug exist, and what is it called? */
 export function getRestaurantScreen(slug: string): ScreenSpec | null {
-  return buildScreen(slug, getRestaurantOverview());
+  if (!isRestaurantSlug(slug)) return null;
+  return buildScreen(slug, { overview: getRestaurantOverview() });
 }
 
 export function restaurantScreenSlugs(): readonly string[] {
