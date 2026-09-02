@@ -58,6 +58,7 @@ import type {
   VenueFeature,
 } from "@/lib/types/restaurant";
 import { RESTAURANT_SETTINGS_PATH } from "@/lib/restaurant/slugs";
+import { COPY } from "@/lib/copy/fr";
 
 const RESTAURANT_PATH = "/restaurant/[[...section]]";
 
@@ -85,7 +86,7 @@ export async function saveVenueIdentity(
   try {
     session = await requireVenueAccess(await currentVenueId());
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   if (session.role === "staff") {
     return failed("Votre rôle ne permet pas de modifier la fiche.");
@@ -127,7 +128,7 @@ export async function saveVenueIdentity(
 
   revalidatePath(RESTAURANT_PATH, "page");
   const profile = venueProfile(session.venueId);
-  return profile ? ok(profile) : failed("Lieu introuvable.");
+  return profile ? ok(profile) : failed(COPY.error.venueNotFound);
 }
 
 // ── Listing facets ───────────────────────────────────────────
@@ -149,7 +150,7 @@ export async function saveVenueListing(
   try {
     session = await requireVenueAccess(await currentVenueId());
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   if (session.role === "staff") {
     return failed("Votre rôle ne permet pas de modifier la fiche.");
@@ -188,7 +189,7 @@ export async function saveVenueListing(
   revalidatePath(RESTAURANT_PATH, "page");
   revalidatePath(RESTAURANT_SETTINGS_PATH, "page");
   const profile = venueProfile(session.venueId);
-  return profile ? ok(profile) : failed("Lieu introuvable.");
+  return profile ? ok(profile) : failed(COPY.error.venueNotFound);
 }
 
 function unique(values: string[]): string[] {
@@ -223,7 +224,7 @@ export async function saveMenuItem(
   try {
     session = await requireVenueAccess(await currentVenueId());
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   if (session.role === "staff") {
     return failed("Votre rôle ne permet pas de modifier la carte.");
@@ -273,7 +274,7 @@ export async function saveSlot(input: {
       return failed("Votre rôle ne permet pas de modifier les horaires.");
     }
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
 
   const errors = validateSlot(input);
@@ -290,9 +291,7 @@ export async function saveSlot(input: {
     if (error instanceof AvailabilityConflict) {
       // Availability is the one edit that changes what customers can book
       // right now, so a lost update is a double-booking.
-      return failed(
-        "Ce créneau a été modifié par quelqu'un d'autre. Rechargez la page avant de réessayer.",
-      );
+      return failed(COPY.error.stale);
     }
     throw error;
   }
@@ -309,7 +308,7 @@ export async function saveClosure(input: {
   try {
     await requireVenueAccess(venueId);
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
     return invalid([{ field: "date", message: "Date invalide." }]);
@@ -326,7 +325,7 @@ export async function deleteClosure(
   try {
     await requireVenueAccess(venueId);
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   removeClosure(venueId, id);
   revalidatePath(RESTAURANT_PATH, "page");
@@ -348,7 +347,7 @@ export async function requestUpload(input: {
       return failed("Votre rôle ne permet pas d'ajouter des fichiers.");
     }
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
 
   const problem = validateAsset(input.kind, input.contentType, input.sizeBytes);
@@ -380,7 +379,7 @@ export async function confirmUpload(input: {
   try {
     await requireVenueAccess(venueId);
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   // The key was minted for this venue; refuse anything else.
   if (!input.objectKey.startsWith(`venues/${venueId}/`)) {
@@ -399,7 +398,7 @@ export async function removeAsset(
   try {
     await requireVenueAccess(venueId);
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   const asset = deleteAsset(venueId, id);
   // Row first, object second: an orphaned object is invisible, an
@@ -417,7 +416,7 @@ export async function saveAssetOrder(
   try {
     await requireVenueAccess(venueId);
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   return ok(reorderAssets(venueId, kind, orderedIds));
 }
@@ -436,7 +435,7 @@ export async function saveStaffInvite(input: {
       return failed("Seul un propriétaire peut inviter un membre.");
     }
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
 
   const errors = validate(input, {
@@ -465,7 +464,7 @@ export async function saveStaffRole(
       return failed("Seul un propriétaire peut changer un rôle.");
     }
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   try {
     updateStaffRole(venueId, staffId, role);
@@ -489,7 +488,7 @@ export async function deleteStaff(
       return failed("Seul un propriétaire peut retirer un membre.");
     }
   } catch {
-    return failed("Session expirée. Reconnectez-vous.");
+    return failed(COPY.error.sessionExpired);
   }
   try {
     removeStaff(venueId, staffId);

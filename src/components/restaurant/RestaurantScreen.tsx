@@ -18,6 +18,7 @@ import {
   type RejectTarget,
 } from "./RejectBookingDialog";
 import { REJECTION_REASONS } from "@/lib/types/business";
+import { COPY } from "@/lib/copy/fr";
 
 // Client boundary for the restaurant workspace.
 //
@@ -69,21 +70,21 @@ export function RestaurantScreen({
         const before = store().data;
         store().markArrived(String(payload?.id ?? ""));
         if (store().data === before) return;
-        withUndo("Arrivée enregistrée");
+        withUndo(COPY.toast.arrived);
       },
 
       "reservation.confirm": (payload) => {
         const before = store().data;
         store().confirmReservation(String(payload?.id ?? ""));
         if (store().data === before) return;
-        withUndo("Réservation confirmée");
+        withUndo(COPY.toast.confirmed);
       },
 
       "reservation.cancel": (payload) => {
         const before = store().data;
         store().cancelReservation(String(payload?.id ?? ""));
         if (store().data === before) return;
-        withUndo("Réservation annulée", "danger");
+        withUndo(COPY.toast.cancelled, "danger");
       },
 
       "reservation.reject": (payload) =>
@@ -96,17 +97,17 @@ export function RestaurantScreen({
         const before = store().data;
         store().reportNoShow(String(payload?.id ?? ""));
         if (store().data === before) return;
-        withUndo("Absence enregistrée", "danger");
+        withUndo(COPY.toast.noShow, "danger");
       },
 
       "reservation.remind": () =>
-        toast({ tone: "info", title: "Rappel SMS envoyé au client" }),
+        toast({ tone: "info", title: COPY.toast.reminderSent }),
 
       "customers.export": () =>
         toast({
           tone: "info",
-          title: "Export CSV en préparation",
-          description: "Le fichier vous sera envoyé par e-mail.",
+          title: COPY.toast.exportQueued,
+          description: COPY.toast.exportQueuedBody,
         }),
 
       "customer.call": (payload) => {
@@ -117,27 +118,27 @@ export function RestaurantScreen({
       },
 
       "availability.toggleSlot": () => {
-        toast({ tone: "success", title: "Créneau mis à jour" });
+        toast({ tone: "success", title: COPY.toast.slotUpdated });
         router.refresh();
       },
 
       "availability.removeClosure": () => {
-        toast({ tone: "success", title: "Fermeture retirée" });
+        toast({ tone: "success", title: COPY.toast.closureRemoved });
         router.refresh();
       },
 
       "boost.start": () =>
-        toast({ tone: "success", title: "Boost lancé pour 7 jours" }),
+        toast({ tone: "success", title: COPY.toast.boostStarted }),
 
       "boost.stop": () =>
-        toast({ tone: "info", title: "Boost arrêté" }),
+        toast({ tone: "info", title: COPY.toast.boostStopped }),
 
       "waitlist.admitNext": () => {
         const result = store().admitNextWaiting();
         if (!result) {
           toast({
             tone: "info",
-            title: "Rien à confirmer",
+            title: COPY.toast.nothingToConfirm,
             description: "Liste d'attente vide ou service complet.",
           });
           return;
@@ -147,8 +148,8 @@ export function RestaurantScreen({
         );
       },
 
-      "review.reply": () => toast({ tone: "info", title: "Réponse enregistrée" }),
-      "nudge.dismiss": () => toast({ tone: "info", title: "Suggestion ignorée" }),
+      "review.reply": () => toast({ tone: "info", title: COPY.toast.replySaved }),
+      "nudge.dismiss": () => toast({ tone: "info", title: COPY.toast.nudgeDismissed }),
       "route.refresh": () => router.refresh(),
     };
   }, [closeDetail, router, toast]);
@@ -185,7 +186,7 @@ export function RestaurantScreen({
           closeDetail();
           toast({
             tone: "danger",
-            title: "Demande refusée",
+            title: COPY.toast.rejected,
             description: REJECTION_REASONS[reason],
             undo: () => useRestaurantStore.getState().undo(),
           });

@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import * as RadixDialog from "@radix-ui/react-dialog";
 import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
+import { COPY } from "@/lib/copy/fr";
 import { cn } from "@/lib/utils/cn";
 
 // The one drawer surface in the portal.
@@ -97,7 +98,7 @@ export function SideSheet({
                   <RadixDialog.Close asChild>
                     <button
                       type="button"
-                      aria-label="Fermer"
+                      aria-label={COPY.action.close}
                       className="h-9 w-9 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink-mute shrink-0 transition-colors"
                     >
                       <X size={16} strokeWidth={1.8} />

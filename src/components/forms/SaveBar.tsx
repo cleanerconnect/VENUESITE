@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import type { SaveState } from "@/lib/forms/useOptimisticForm";
+import { COPY } from "@/lib/copy/fr";
 
 // The visible saved state.
 //
@@ -39,7 +40,7 @@ export function SaveBar({
                 transition={{ duration: 0.12 }}
                 className="inline-flex items-center gap-1.5 text-success font-semibold"
               >
-                <Check size={14} strokeWidth={2.2} /> Enregistré
+                <Check size={14} strokeWidth={2.2} /> {COPY.form.saved}
               </motion.span>
             ) : state === "error" ? (
               <motion.span
@@ -51,7 +52,7 @@ export function SaveBar({
                 className="inline-flex items-start gap-1.5 text-danger font-semibold"
               >
                 <TriangleAlert size={14} strokeWidth={2.2} className="mt-[1px] shrink-0" />
-                {message ?? "L'enregistrement a échoué."}
+                {message ?? COPY.form.savingFailed}
               </motion.span>
             ) : dirty ? (
               <motion.span
@@ -62,7 +63,7 @@ export function SaveBar({
                 transition={{ duration: 0.12 }}
                 className="text-ink-mute"
               >
-                Modifications non enregistrées
+                {COPY.form.unsaved}
               </motion.span>
             ) : (
               <motion.span
@@ -81,7 +82,7 @@ export function SaveBar({
 
         {dirty ? (
           <Button variant="ghost" size="sm" onClick={onReset} disabled={saving}>
-            Annuler
+            {COPY.action.cancel}
           </Button>
         ) : null}
         <Button
@@ -92,7 +93,7 @@ export function SaveBar({
             saving ? <Loader2 size={14} strokeWidth={2.2} className="animate-spin" /> : undefined
           }
         >
-          {saving ? "Enregistrement…" : "Enregistrer"}
+          {saving ? COPY.action.saving : COPY.action.save}
         </Button>
       </div>
     </div>

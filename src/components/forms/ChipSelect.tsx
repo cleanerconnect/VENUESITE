@@ -2,6 +2,7 @@
 
 import { Check, X } from "lucide-react";
 import { useState } from "react";
+import { COPY } from "@/lib/copy/fr";
 import { cn } from "@/lib/utils/cn";
 
 // Two chip controls, one look.
@@ -107,7 +108,7 @@ export function ChipInput({
             {chip}
             <button
               type="button"
-              aria-label={`Retirer ${chip}`}
+              aria-label={`${COPY.action.remove} ${chip}`}
               onClick={() => onChange(value.filter((v) => v !== chip))}
               className="h-5 w-5 rounded-full hover:bg-ink/[0.08] flex items-center justify-center text-ink-mute"
             >

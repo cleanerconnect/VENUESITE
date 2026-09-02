@@ -9,6 +9,7 @@ import type { EntityListBlock as Spec, EntityRow } from "@/lib/dashboard/spec";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterTabs } from "@/components/ui/FilterTabs";
+import { COPY } from "@/lib/copy/fr";
 import { useDetailStore } from "@/lib/stores/detail";
 import {
   ActionLink,
@@ -130,7 +131,7 @@ export function EntityListBlock({ block }: { block: Spec }) {
 
       {block.rows.length === 0 ? (
         <EmptyState
-          title={block.empty?.title ?? "Rien à afficher"}
+          title={block.empty?.title ?? COPY.empty.nothingToShow}
           description={block.empty?.body}
           cta={
             block.empty?.action?.kind === "link"
@@ -144,7 +145,7 @@ export function EntityListBlock({ block }: { block: Spec }) {
         // simply typed a name that isn't in it.
         <div className="bg-canvas-2 rounded-[var(--radius-xl)] py-10 px-6 text-center">
           <div className="text-body font-semibold text-ink">
-            {block.noMatches?.title ?? "Aucun résultat"}
+            {block.noMatches?.title ?? COPY.empty.noResults}
           </div>
           <p className="text-meta text-ink-mute mt-1">
             {block.noMatches?.body ?? "Ajustez la recherche ou le filtre."}

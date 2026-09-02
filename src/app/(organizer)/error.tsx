@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { AlertTriangle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { COPY } from "@/lib/copy/fr";
 
 // Workspace-wide error boundary.
 //
@@ -36,19 +37,18 @@ export default function WorkspaceError({
         >
           <AlertTriangle size={20} strokeWidth={1.8} className="text-danger" />
         </span>
-        <h1 className="text-h2 text-ink mt-5">Cette page n'a pas pu charger</h1>
+        <h1 className="text-h2 text-ink mt-5">{COPY.error.title}</h1>
         <p className="text-body text-ink-soft mt-2">
-          {error.message ||
-            "Une erreur est survenue en récupérant vos données. Réessayez dans un instant."}
+          {error.message || COPY.error.body}
         </p>
         {error.digest ? (
           <p className="text-meta text-ink-mute mt-3 num">
-            Référence · {error.digest}
+            {COPY.error.reference} · {error.digest}
           </p>
         ) : null}
         <div className="mt-6 flex items-center gap-3">
           <Button onClick={reset} iconLeft={<RotateCw size={16} strokeWidth={2} />}>
-            Réessayer
+            {COPY.action.retry}
           </Button>
         </div>
       </Card>
