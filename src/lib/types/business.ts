@@ -35,7 +35,7 @@ export type BookingStatus =
   | "pending"
   | "confirmed"
   | "rejected"
-  | "seated"
+  | "arrived"
   | "completed"
   | "no_show"
   | "cancelled"

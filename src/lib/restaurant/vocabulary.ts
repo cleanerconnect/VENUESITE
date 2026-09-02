@@ -12,14 +12,12 @@ import type { IconKey } from "@/lib/dashboard/icons";
 import type { Badge, SemanticTone } from "@/lib/dashboard/spec";
 import type {
   MenuCategory,
-  MenuItemState,
   PayoutState,
   ReservationChannel,
   ReservationState,
   RestaurantActivityType,
   ServiceKind,
   ServiceState,
-  TableState,
 } from "@/lib/types/restaurant";
 
 interface Term {
@@ -32,7 +30,7 @@ export const RESERVATION_STATE: Record<ReservationState, Term> = {
   requested: { label: "À CONFIRMER", tone: "warning", icon: "hourglass" },
   confirmed: { label: "CONFIRMÉE", tone: "info", icon: "check" },
   waitlisted: { label: "LISTE D'ATTENTE", tone: "muted", icon: "timer" },
-  seated: { label: "EN SALLE", tone: "live", icon: "utensils" },
+  arrived: { label: "ARRIVÉ", tone: "live", icon: "user-check" },
   completed: { label: "TERMINÉE", tone: "success", icon: "receipt" },
   no_show: { label: "ABSENT", tone: "danger", icon: "user-x" },
   cancelled: { label: "ANNULÉE", tone: "muted", icon: "ban" },
@@ -44,15 +42,6 @@ export const RESERVATION_CHANNEL: Record<ReservationChannel, string> = {
   walk_in: "Sans réservation",
   partner: "Partenaire",
   instagram: "Instagram",
-};
-
-export const TABLE_STATE: Record<TableState, Term> = {
-  free: { label: "LIBRE", tone: "muted", icon: "armchair" },
-  reserved: { label: "RÉSERVÉE", tone: "info", icon: "calendar-clock" },
-  seated: { label: "SERVIE", tone: "live", icon: "utensils" },
-  dessert: { label: "DESSERT", tone: "violet", icon: "croissant" },
-  to_clean: { label: "À DÉBARRASSER", tone: "warning", icon: "repeat" },
-  blocked: { label: "BLOQUÉE", tone: "danger", icon: "ban" },
 };
 
 export const SERVICE_KIND: Record<ServiceKind, Term> = {
@@ -68,12 +57,6 @@ export const SERVICE_STATE: Record<ServiceState, Term> = {
   peak: { label: "COUP DE FEU", tone: "live", icon: "flame" },
   closing: { label: "FIN DE SERVICE", tone: "warning", icon: "hourglass" },
   closed: { label: "CLOS", tone: "muted", icon: "check" },
-};
-
-export const MENU_STATE: Record<MenuItemState, Term> = {
-  available: { label: "DISPONIBLE", tone: "success", icon: "check" },
-  low_stock: { label: "STOCK FAIBLE", tone: "warning", icon: "alert" },
-  sold_out: { label: "ÉPUISÉ", tone: "danger", icon: "ban" },
 };
 
 export const MENU_CATEGORY: Record<MenuCategory, Term> = {
@@ -93,12 +76,10 @@ export const PAYOUT_STATE: Record<PayoutState, Term> = {
 export const ACTIVITY_TYPE: Record<RestaurantActivityType, Term> = {
   reservation_created: { label: "Réservation", tone: "success", icon: "calendar-plus" },
   reservation_cancelled: { label: "Annulation", tone: "warning", icon: "undo" },
-  party_seated: { label: "Installation", tone: "live", icon: "armchair" },
-  table_freed: { label: "Table libérée", tone: "info", icon: "repeat" },
+  guest_arrived: { label: "Arrivée", tone: "live", icon: "user-check" },
   waitlist_joined: { label: "Liste d'attente", tone: "neutral", icon: "timer" },
   no_show: { label: "Absence", tone: "danger", icon: "user-x" },
   review_received: { label: "Avis", tone: "success", icon: "star" },
-  item_86: { label: "Rupture", tone: "warning", icon: "ban" },
   payment_settled: { label: "Versement", tone: "violet", icon: "wallet" },
   anomaly: { label: "Signal", tone: "warning", icon: "alert" },
 };
@@ -111,11 +92,6 @@ export function reservationBadge(state: ReservationState): Badge {
 
 export function serviceBadge(state: ServiceState): Badge {
   const term = SERVICE_STATE[state];
-  return { label: term.label, tone: term.tone, dot: true };
-}
-
-export function menuBadge(state: MenuItemState): Badge {
-  const term = MENU_STATE[state];
   return { label: term.label, tone: term.tone, dot: true };
 }
 

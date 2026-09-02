@@ -65,15 +65,11 @@ export function RestaurantScreen({
     };
 
     return {
-      "reservation.seat": (payload) => {
-        const id = String(payload?.id ?? "");
+      "reservation.arrive": (payload) => {
         const before = store().data;
-        store().seatReservation(id);
-        if (store().data === before) {
-          toast({ tone: "info", title: "Aucune table libre pour cette table" });
-          return;
-        }
-        withUndo("Table installée");
+        store().markArrived(String(payload?.id ?? ""));
+        if (store().data === before) return;
+        withUndo("Arrivée enregistrée");
       },
 
       "reservation.confirm": (payload) => {
@@ -136,24 +132,19 @@ export function RestaurantScreen({
       "boost.stop": () =>
         toast({ tone: "info", title: "Boost arrêté" }),
 
-      "table.clear": (payload) => {
-        const before = store().data;
-        store().clearTable(String(payload?.id ?? ""));
-        if (store().data === before) return;
-        withUndo("Table libérée");
-      },
-
-      "floor.seat": () => {
-        const result = store().seatNextWaiting();
+      "waitlist.admitNext": () => {
+        const result = store().admitNextWaiting();
         if (!result) {
           toast({
             tone: "info",
-            title: "Rien à placer",
-            description: "Liste d'attente vide ou aucune table assez grande.",
+            title: "Rien à confirmer",
+            description: "Liste d'attente vide ou service complet.",
           });
           return;
         }
-        withUndo(`${result.seated} installé en ${result.table}`);
+        withUndo(
+          `${result.admitted} confirmé · ${result.partySize} couverts`,
+        );
       },
 
       "review.reply": () => toast({ tone: "info", title: "Réponse enregistrée" }),

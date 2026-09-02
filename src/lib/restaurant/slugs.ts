@@ -15,7 +15,6 @@
 export const RESTAURANT_SLUGS = [
   "",
   "reservations",
-  "salle",
   "services",
   "clients",
   "menu",

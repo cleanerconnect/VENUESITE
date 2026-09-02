@@ -15,12 +15,11 @@ export type LyfeEventType =
   | "reservation.created"
   | "reservation.confirmed"
   | "reservation.cancelled"
-  | "reservation.seated"
+  | "reservation.arrived"
   | "reservation.no_show"
   | "waitlist.joined"
   | "table.freed"
   | "review.received"
-  | "menu.item_86"
   | "payout.settled";
 
 export interface LyfeEvent {
@@ -41,12 +40,11 @@ const EVENT_TYPES = new Set<string>([
   "reservation.created",
   "reservation.confirmed",
   "reservation.cancelled",
-  "reservation.seated",
+  "reservation.arrived",
   "reservation.no_show",
   "waitlist.joined",
   "table.freed",
   "review.received",
-  "menu.item_86",
   "payout.settled",
 ]);
 

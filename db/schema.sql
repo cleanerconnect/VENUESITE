@@ -36,10 +36,21 @@ CREATE TABLE IF NOT EXISTS venues (
   website              TEXT NOT NULL DEFAULT '',
   currency             TEXT NOT NULL DEFAULT 'MAD',
   capacity             INTEGER NOT NULL DEFAULT 0,
-  default_turn_minutes INTEGER NOT NULL DEFAULT 90,
+  -- 1-4, rendered in the app as € to €€€€.
+  price_range          INTEGER NOT NULL DEFAULT 2,
   onboarding_completed INTEGER NOT NULL DEFAULT 0,
   created_at           TEXT NOT NULL,
   updated_at           TEXT NOT NULL
+);
+
+-- Listing facets the app renders as chips. Rows rather than a JSON blob
+-- so the app can filter on them without parsing.
+CREATE TABLE IF NOT EXISTS venue_tags (
+  venue_id TEXT NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+  kind     TEXT NOT NULL CHECK (kind IN ('tag','feature','ambience')),
+  value    TEXT NOT NULL,
+  position INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (venue_id, kind, value)
 );
 
 CREATE TABLE IF NOT EXISTS business_accounts (
@@ -109,20 +120,6 @@ CREATE TABLE IF NOT EXISTS zones (
 );
 CREATE INDEX IF NOT EXISTS idx_zones_venue ON zones(venue_id);
 
-CREATE TABLE IF NOT EXISTS dining_tables (
-  id             TEXT PRIMARY KEY,
-  venue_id       TEXT NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
-  zone_id        TEXT NOT NULL REFERENCES zones(id) ON DELETE CASCADE,
-  code           TEXT NOT NULL,
-  seats          INTEGER NOT NULL,
-  state          TEXT NOT NULL DEFAULT 'free'
-                 CHECK (state IN ('free','reserved','seated','dessert','to_clean','blocked')),
-  reservation_id TEXT,
-  seated_at      TEXT,
-  bill_cents     INTEGER
-);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_tables_venue_code ON dining_tables(venue_id, code);
-
 -- ── Availability ─────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS availability_slots (
@@ -162,11 +159,9 @@ CREATE TABLE IF NOT EXISTS services (
   state             TEXT NOT NULL DEFAULT 'scheduled',
   capacity          INTEGER NOT NULL,
   booked_covers     INTEGER NOT NULL DEFAULT 0,
-  seated_covers     INTEGER NOT NULL DEFAULT 0,
-  walk_in_covers    INTEGER NOT NULL DEFAULT 0,
+  arrived_covers    INTEGER NOT NULL DEFAULT 0,
   no_show_covers    INTEGER NOT NULL DEFAULT 0,
-  revenue_cents     INTEGER NOT NULL DEFAULT 0,
-  avg_turn_minutes  INTEGER NOT NULL
+  revenue_cents     INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_services_venue_date ON services(venue_id, date);
 
@@ -221,10 +216,9 @@ CREATE TABLE IF NOT EXISTS reservations (
   -- (user withdrew) are distinct states and must never be collapsed.
   state         TEXT NOT NULL CHECK (state IN
                   ('requested','confirmed','modified','cancelled','rejected',
-                   'waitlisted','seated','no_show','completed')),
+                   'waitlisted','arrived','no_show','completed')),
   channel       TEXT NOT NULL,
   zone_id       TEXT REFERENCES zones(id) ON DELETE SET NULL,
-  table_code    TEXT,
   note          TEXT,
   deposit_cents INTEGER,
   no_show_risk  REAL,
@@ -266,19 +260,25 @@ CREATE INDEX IF NOT EXISTS idx_no_shows_customer ON no_show_records(customer_id,
 
 -- ── Menu ─────────────────────────────────────────────────────
 
+-- A dish as the app displays it: no cost, no stock, no covers sold.
 CREATE TABLE IF NOT EXISTS menu_items (
-  id              TEXT PRIMARY KEY,
-  venue_id        TEXT NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
-  name            TEXT NOT NULL,
-  category        TEXT NOT NULL,
-  price_cents     INTEGER NOT NULL,
-  food_cost_cents INTEGER NOT NULL,
-  state           TEXT NOT NULL DEFAULT 'available',
-  remaining       INTEGER,
-  signature       INTEGER NOT NULL DEFAULT 0,
-  position        INTEGER NOT NULL DEFAULT 0
+  id          TEXT PRIMARY KEY,
+  venue_id    TEXT NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  category    TEXT NOT NULL,
+  price_cents INTEGER NOT NULL,
+  signature   INTEGER NOT NULL DEFAULT 0,
+  visible     INTEGER NOT NULL DEFAULT 1,
+  position    INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_menu_venue ON menu_items(venue_id, position);
+
+CREATE TABLE IF NOT EXISTS menu_item_dietary (
+  item_id TEXT NOT NULL REFERENCES menu_items(id) ON DELETE CASCADE,
+  tag     TEXT NOT NULL,
+  PRIMARY KEY (item_id, tag)
+);
 
 -- ── Reviews ──────────────────────────────────────────────────
 
@@ -385,7 +385,6 @@ CREATE TABLE IF NOT EXISTS activity (
   actor           TEXT NOT NULL,
   message         TEXT NOT NULL,
   reservation_id  TEXT,
-  table_code      TEXT,
   needs_attention INTEGER NOT NULL DEFAULT 0,
   at              TEXT NOT NULL
 );

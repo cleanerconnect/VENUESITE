@@ -61,7 +61,7 @@ insert("venues", {
   website: "https://darzellij.ma",
   currency: "MAD",
   capacity: 120,
-  default_turn_minutes: 96,
+  price_range: 3,
   onboarding_completed: 1,
   created_at: daysAgo(400),
   updated_at: iso(now),
@@ -78,6 +78,17 @@ insert("business_accounts", {
   ]),
   created_at: daysAgo(400),
 });
+
+// Listing facets — what the app shows as chips and filters on.
+[
+  ["tag", ["Marocain", "Riad", "Romantique", "Vue sur la médina", "Groupes"]],
+  ["feature", ["terrasse", "climatisation", "acces_pmr", "wifi", "vue", "musique_live"]],
+  ["ambience", ["Intimiste", "Traditionnel", "Cadre exceptionnel"]],
+].forEach(([kind, values]) =>
+  values.forEach((value, i) =>
+    insert("venue_tags", { venue_id: VENUE, kind, value, position: i }),
+  ),
+);
 
 // ── Staff ────────────────────────────────────────────────────
 [
@@ -100,30 +111,6 @@ const ZONES = [
 ];
 ZONES.forEach(([id, name, capacity, position]) =>
   insert("zones", { id, venue_id: VENUE, name, capacity, available: 1, position }),
-);
-
-const TABLES = [
-  ["t_p1", "z_patio", "P1", 4, "seated", 74, 1840],
-  ["t_p2", "z_patio", "P2", 2, "dessert", 98, 960],
-  ["t_p3", "z_patio", "P3", 6, "seated", 41, 2310],
-  ["t_p4", "z_patio", "P4", 4, "to_clean", null, null],
-  ["t_p5", "z_patio", "P5", 4, "reserved", null, null],
-  ["t_s1", "z_salle", "S1", 8, "seated", 63, 4120],
-  ["t_s2", "z_salle", "S2", 4, "seated", 29, 780],
-  ["t_s3", "z_salle", "S3", 2, "free", null, null],
-  ["t_s4", "z_salle", "S4", 6, "reserved", null, null],
-  ["t_s5", "z_salle", "S5", 4, "blocked", null, null],
-  ["t_t1", "z_terrasse", "T1", 2, "seated", 52, 640],
-  ["t_t2", "z_terrasse", "T2", 4, "free", null, null],
-  ["t_t3", "z_terrasse", "T3", 4, "reserved", null, null],
-];
-TABLES.forEach(([id, zone, code, seats, state, seatedMin, bill]) =>
-  insert("dining_tables", {
-    id, venue_id: VENUE, zone_id: zone, code, seats, state,
-    reservation_id: null,
-    seated_at: seatedMin === null ? null : minutesAgo(seatedMin),
-    bill_cents: bill === null ? null : mad(bill),
-  }),
 );
 
 // ── Availability ─────────────────────────────────────────────
@@ -183,7 +170,7 @@ CUSTOMERS.forEach(([id, name, phone, email, visits, lastDays, avg, noShows, pref
       id: `res_hist_${id}_${n}`, venue_id: VENUE, service_id: null, customer_id: id,
       guest_name: name, guest_phone: phone, party_size: 2 + (n % 3),
       at: daysAgo(20 * (n + 1)), state: "no_show", channel: "lyfe",
-      zone_id: null, table_code: null, note: null, deposit_cents: null,
+      zone_id: null, note: null, deposit_cents: null,
       no_show_risk: null, qr_code: `LYFE-HIST-${id}-${n}`, checked_in_at: null,
       created_at: daysAgo(21 * (n + 1)), updated_at: daysAgo(20 * (n + 1)),
     });
@@ -202,9 +189,8 @@ const closes = new Date(now.getTime() + 170 * 60_000);
 insert("services", {
   id: SERVICE, venue_id: VENUE, kind: "diner", label: "Service en cours",
   date: day(opens), opens_at: iso(opens), closes_at: iso(closes),
-  state: "peak", capacity: 120, booked_covers: 104, seated_covers: 86,
-  walk_in_covers: 11, no_show_covers: 6, revenue_cents: mad(63_400),
-  avg_turn_minutes: 96,
+  state: "peak", capacity: 120, booked_covers: 104, arrived_covers: 86,
+  no_show_covers: 6, revenue_cents: mad(63_400),
 });
 const SHAPE = [0.28, 0.55, 0.82, 1, 0.94, 0.76, 0.58, 0.4, 0.26, 0.14];
 for (let i = 0; i < SHAPE.length; i += 1) {
@@ -217,19 +203,19 @@ for (let i = 0; i < SHAPE.length; i += 1) {
 
 // ── Live bookings ────────────────────────────────────────────
 const BOOKINGS = [
-  ["res_001", "cus_1", "Salma Bennani", "+212 661 20 44 18", 4, 20, "confirmed", "lyfe", "z_patio", "P5", "Anniversaire, dessert avec bougie", 400, 0.04],
-  ["res_002", "cus_3", "Groupe Karam", "+212 662 88 10 03", 6, 35, "confirmed", "phone", "z_salle", "S4", "Sans gluten pour deux couverts", null, 0.11],
-  ["res_003", "cus_4", "Yasmine El Alaoui", "+212 663 41 77 92", 4, 50, "confirmed", "instagram", "z_terrasse", "T3", null, null, 0.38],
-  ["res_010", "cus_5", "Nabil Cherkaoui", "+212 665 09 33 71", 2, 80, "requested", "lyfe", null, null, "Demande une table près de la fontaine", null, 0.22],
-  ["res_011", "cus_2", "Hind Tazi", "+212 660 15 62 40", 5, 105, "confirmed", "partner", "z_salle", null, null, 500, 0.03],
-  ["res_w1", "cus_6", "Omar Idrissi", "+212 667 74 21 08", 2, 15, "waitlisted", "walk_in", null, null, null, null, null],
-  ["res_w2", "cus_7", "Famille Berrada", "+212 668 30 90 55", 4, 25, "waitlisted", "walk_in", null, null, null, null, null],
+  ["res_001", "cus_1", "Salma Bennani", "+212 661 20 44 18", 4, 20, "confirmed", "lyfe", "z_patio", "Anniversaire, dessert avec bougie", 400, 0.04],
+  ["res_002", "cus_3", "Groupe Karam", "+212 662 88 10 03", 6, 35, "confirmed", "phone", "z_salle", "Sans gluten pour deux couverts", null, 0.11],
+  ["res_003", "cus_4", "Yasmine El Alaoui", "+212 663 41 77 92", 4, 50, "confirmed", "instagram", "z_terrasse", null, null, 0.38],
+  ["res_010", "cus_5", "Nabil Cherkaoui", "+212 665 09 33 71", 2, 80, "requested", "lyfe", null, "Demande une table près de la fontaine", null, 0.22],
+  ["res_011", "cus_2", "Hind Tazi", "+212 660 15 62 40", 5, 105, "confirmed", "partner", "z_salle", null, 500, 0.03],
+  ["res_w1", "cus_6", "Omar Idrissi", "+212 667 74 21 08", 2, 15, "waitlisted", "walk_in", null, null, null, null],
+  ["res_w2", "cus_7", "Famille Berrada", "+212 668 30 90 55", 4, 25, "waitlisted", "walk_in", null, null, null, null],
 ];
-BOOKINGS.forEach(([id, cus, name, phone, size, inMin, state, channel, zone, table, note, deposit, risk]) => {
+BOOKINGS.forEach(([id, cus, name, phone, size, inMin, state, channel, zone, note, deposit, risk]) => {
   insert("reservations", {
     id, venue_id: VENUE, service_id: SERVICE, customer_id: cus,
     guest_name: name, guest_phone: phone, party_size: size,
-    at: minutesAhead(inMin), state, channel, zone_id: zone, table_code: table,
+    at: minutesAhead(inMin), state, channel, zone_id: zone,
     note, deposit_cents: deposit === null ? null : mad(deposit),
     no_show_risk: risk,
     // The QR the app shows the guest (EP20-US9). The portal validates it.
@@ -250,29 +236,23 @@ BOOKINGS.forEach(([id, cus, name, phone, size, inMin, state, channel, zone, tabl
     });
   }
 });
-// Point held tables at the booking holding them.
-db.prepare("UPDATE dining_tables SET reservation_id = ? WHERE venue_id = ? AND code = ?")
-  .run("res_001", VENUE, "P5");
-db.prepare("UPDATE dining_tables SET reservation_id = ? WHERE venue_id = ? AND code = ?")
-  .run("res_002", VENUE, "S4");
-db.prepare("UPDATE dining_tables SET reservation_id = ? WHERE venue_id = ? AND code = ?")
-  .run("res_003", VENUE, "T3");
 
-// ── Menu ─────────────────────────────────────────────────────
+// ── Menu (customer-facing listing) ─────────────────────────
 [
-  ["mi_pastilla", "Pastilla de pigeon", "entree", 180, 52, "available", null, 1],
-  ["mi_tajine", "Tajine d'agneau aux pruneaux", "plat", 260, 84, "low_stock", 6, 1],
-  ["mi_seabass", "Loup de mer chermoula", "plat", 320, 128, "available", null, 0],
-  ["mi_couscous", "Couscous royal du vendredi", "plat", 240, 71, "sold_out", 0, 0],
-  ["mi_orange", "Salade d'orange à la cannelle", "dessert", 90, 18, "available", null, 0],
-  ["mi_negroni", "Negroni safrané", "cocktail", 140, 34, "available", null, 1],
-].forEach(([id, name, category, price, cost, state, remaining, signature], i) =>
+  ["mi_pastilla", "Pastilla de pigeon", "Feuilleté croustillant, amandes et cannelle.", "entree", 180, 1, []],
+  ["mi_tajine", "Tajine d'agneau aux pruneaux", "Cuit sept heures, amandes grillées.", "plat", 260, 1, []],
+  ["mi_seabass", "Loup de mer chermoula", "Pêche du jour, marinade chermoula.", "plat", 320, 0, ["sans_gluten"]],
+  ["mi_couscous", "Couscous royal du vendredi", "Servi le vendredi uniquement.", "plat", 240, 0, []],
+  ["mi_zaalouk", "Zaalouk d'aubergines", "Aubergines fumées, tomate, coriandre.", "entree", 80, 0, ["vegetarien", "vegan"]],
+  ["mi_orange", "Salade d'orange à la cannelle", "Oranges de Marrakech, fleur d'oranger.", "dessert", 90, 0, ["vegetarien", "sans_gluten"]],
+  ["mi_negroni", "Negroni safrané", "Safran de Taliouine, gin infusé.", "cocktail", 140, 1, []],
+].forEach(([id, name, description, category, price, signature, dietary], i) => {
   insert("menu_items", {
-    id, venue_id: VENUE, name, category,
-    price_cents: mad(price), food_cost_cents: mad(cost),
-    state, remaining, signature, position: i,
-  }),
-);
+    id, venue_id: VENUE, name, description, category,
+    price_cents: mad(price), signature, visible: 1, position: i,
+  });
+  dietary.forEach((tag) => insert("menu_item_dietary", { item_id: id, tag }));
+});
 
 // ── Reviews ──────────────────────────────────────────────────
 [
@@ -346,27 +326,26 @@ for (let i = 0; i < 365; i += 1) {
 
 // ── Activity ─────────────────────────────────────────────────
 [
-  ["act_1", "party_seated", "Rachid", "a installé la table S2 · 4 couverts", null, "S2", 0, 1],
-  ["act_2", "reservation_created", "Nabil Cherkaoui", "a demandé une table pour 2", "res_010", null, 0, 4],
-  ["act_3", "anomaly", "LYFE", "détecte 3 annulations sur le même créneau", null, null, 1, 9],
-  ["act_4", "table_freed", "Salle", "a libéré la table P4, à débarrasser", null, "P4", 0, 12],
-  ["act_5", "item_86", "Cuisine", "a passé le couscous royal en rupture", null, null, 0, 18],
-  ["act_6", "waitlist_joined", "Famille Berrada", "rejoint la liste d'attente · 4 couverts", "res_w2", null, 0, 23],
-  ["act_7", "review_received", "Leïla M.", "a laissé un avis 5 étoiles", null, null, 0, 180],
-  ["act_8", "no_show", "Réservation précédente", "notée absente après 25 min · 3 couverts", null, null, 1, 40],
-  ["act_9", "reservation_cancelled", "Sofia Lahlou", "a annulé sa table de 2", null, null, 0, 47],
-  ["act_10", "payment_settled", "LYFE", "a clôturé le versement de la semaine", null, null, 0, 2880],
-].forEach(([id, type, actor, message, res, table, attention, mins]) =>
+  ["act_1", "guest_arrived", "Salma Bennani", "est arrivée · 4 couverts", "res_001", 0, 1],
+  ["act_2", "reservation_created", "Nabil Cherkaoui", "a demandé une table pour 2", "res_010", 0, 4],
+  ["act_3", "anomaly", "LYFE", "détecte 3 annulations sur le même créneau", null, 1, 9],
+  ["act_4", "guest_arrived", "Hind Tazi", "est arrivée · 5 couverts", "res_011", 0, 12],
+  ["act_6", "waitlist_joined", "Famille Berrada", "rejoint la liste d'attente · 4 couverts", "res_w2", 0, 23],
+  ["act_7", "review_received", "Leïla M.", "a laissé un avis 5 étoiles", null, 0, 180],
+  ["act_8", "no_show", "Réservation précédente", "notée absente après 25 min · 3 couverts", null, 1, 40],
+  ["act_9", "reservation_cancelled", "Sofia Lahlou", "a annulé sa table de 2", null, 0, 47],
+  ["act_10", "payment_settled", "LYFE", "a clôturé le versement de la semaine", null, 0, 2880],
+].forEach(([id, type, actor, message, res, attention, mins]) =>
   insert("activity", {
     id, venue_id: VENUE, type, actor, message,
-    reservation_id: res, table_code: table,
+    reservation_id: res,
     needs_attention: attention, at: minutesAgo(mins),
   }),
 );
 
 const count = (t) => db.prepare(`SELECT COUNT(*) c FROM ${t}`).get().c;
 console.log(`seeded ${dbPath}`);
-for (const t of ["venues","business_accounts","staff","zones","dining_tables","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_items","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity"]) {
+for (const t of ["venues","business_accounts","staff","zones","venue_tags","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_items","menu_item_dietary","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity"]) {
   console.log(`  ${t.padEnd(28)} ${count(t)}`);
 }
 db.close();

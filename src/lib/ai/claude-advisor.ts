@@ -226,16 +226,11 @@ ${serviceContext(data)}`,
  */
 function serviceContext(data: RestaurantOverview): string {
   const service = data.currentService;
-  const freeSeats = data.tables
-    .filter((t) => t.state === "free")
-    .reduce((n, t) => n + t.seats, 0);
 
   return `Restaurant : ${data.restaurant.name} (${data.restaurant.city}), ${data.restaurant.capacity} couverts.
 Service : ${service.label}, ${service.opensAt} → ${service.closesAt}, état ${service.state}.
-Réservé ${service.bookedCovers} / ${service.capacity} · installés ${service.seatedCovers} · sans réservation ${service.walkInCovers} · absences ${service.noShowCovers}.
-Recette ${service.revenueMad} MAD · rotation moyenne ${service.avgTurnMinutes} min.
-Places libres ${freeSeats} · liste d'attente ${data.waitlist.reduce((n, r) => n + r.partySize, 0)} couverts.
-Tables : ${data.tables.map((t) => `${t.code}(${t.seats}p,${t.state})`).join(" ")}
-Créneaux : ${service.slotLoad.map((s) => `${s.at.slice(11, 16)}=${s.covers}`).join(" ")}
-Ruptures : ${data.topItems.filter((i) => i.state !== "available").map((i) => i.name).join(", ") || "aucune"}`;
+Réservé ${service.bookedCovers} / ${service.capacity} · arrivés ${service.arrivedCovers} · absences ${service.noShowCovers}.
+Recette ${service.revenueMad} MAD.
+Liste d'attente ${data.waitlist.reduce((n, r) => n + r.partySize, 0)} couverts.
+Créneaux : ${service.slotLoad.map((s) => `${s.at.slice(11, 16)}=${s.covers}`).join(" ")}`;
 }

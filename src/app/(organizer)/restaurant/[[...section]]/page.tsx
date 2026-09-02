@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
   SCREEN_NEEDS,
-  getRestaurantScreen,
+  restaurantScreenTitle,
   type ScreenContext,
 } from "@/lib/restaurant/screens";
 import {
@@ -41,8 +41,8 @@ const slugOf = (section?: string[]) => (section ?? []).join("/");
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { section } = await params;
-  const spec = getRestaurantScreen(slugOf(section));
-  return { title: spec ? `${spec.title} · LYFE` : "LYFE" };
+  const title = restaurantScreenTitle(slugOf(section));
+  return { title: title ? `${title} · LYFE` : "LYFE" };
 }
 
 export default async function RestaurantSectionPage({

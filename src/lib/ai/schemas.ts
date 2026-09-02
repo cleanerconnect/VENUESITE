@@ -22,7 +22,7 @@ export const ServiceNudgeSchema = z.object({
   /** Imperative CTA label, e.g. "Placer la liste d'attente →". */
   ctaLabel: z.string(),
   /** Which screen resolves it. Must be a slug the workspace serves. */
-  target: z.enum(["salle", "reservations", "menu", "avis", "services"]),
+  target: z.enum(["reservations", "menu", "avis", "services"]),
   /** 0·1. Below the display threshold the card is suppressed. */
   confidence: z.number().min(0).max(1),
 });

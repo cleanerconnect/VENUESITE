@@ -12,7 +12,6 @@ import { HeroBlock } from "./blocks/HeroBlock";
 import { NudgeBlock } from "./blocks/NudgeBlock";
 import { KpiGridBlock } from "./blocks/KpiGridBlock";
 import { EntityListBlock } from "./blocks/EntityListBlock";
-import { FloorPlanBlock } from "./blocks/FloorPlanBlock";
 import { SlotGridBlock } from "./blocks/SlotGridBlock";
 import { FeedBlock } from "./blocks/FeedBlock";
 import { TableBlock } from "./blocks/TableBlock";
@@ -126,8 +125,6 @@ function BlockView({
       return <KpiGridBlock block={block} surface={surface} />;
     case "entity-list":
       return <EntityListBlock block={block} />;
-    case "floor-plan":
-      return <FloorPlanBlock block={block} />;
     case "slot-grid":
       return <SlotGridBlock block={block} />;
     case "feed":

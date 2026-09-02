@@ -6,16 +6,21 @@
 // local adapter must behave like production, and in-memory objects that
 // forget on reload do not.
 //
-// Entities still served from `mock/business.ts` are marked; they are the
-// remaining migration, and each is a straight port of a query that
-// already has a table.
+// Every entity is served from the database. There is no fixture
+// fallback: an unseeded database raises rather than rendering a
+// plausible-looking empty dashboard.
 
 import type { RestaurantOverview } from "@/lib/types/restaurant";
 import type { CheckInResult, NotificationPreferences } from "@/lib/types/business";
-import { getRestaurantOverview } from "@/lib/mock/restaurant";
-import * as business from "@/lib/mock/business";
 import * as store from "@/lib/db/venue-store";
-import { overview as overviewFromStore } from "@/lib/db/overview-store";
+import {
+  analytics as analyticsFromStore,
+  overview as overviewFromStore,
+  visibility as visibilityFromStore,
+} from "@/lib/db/overview-store";
+import {
+  RepositoryError,
+} from "./repository";
 import type {
   AnalyticsInput,
   CheckInInput,
@@ -24,31 +29,29 @@ import type {
   ReservationRefInput,
   RestaurantRepository,
   ReviewReplyInput,
-  SeatReservationInput,
-  TableRefInput,
 } from "./repository";
 
 export class MockRestaurantRepository implements RestaurantRepository {
   async getOverview(venueId: string): Promise<RestaurantOverview> {
-    // Seeded database wins. The fixture remains only so an un-seeded
-    // checkout boots instead of erroring — run `npm run db:reset`.
-    return overviewFromStore(venueId, "") ?? getRestaurantOverview();
-  }
-
-  async seatReservation(_input: SeatReservationInput) {
-    return getRestaurantOverview();
+    const data = overviewFromStore(venueId, "");
+    if (!data) {
+      // An unseeded database is an operator error, not a UI state. Saying
+      // so beats rendering a plausible-looking empty dashboard.
+      throw new RepositoryError(
+        `Aucun lieu ${venueId}. Lancez \`npm run db:reset\`.`,
+        404,
+        "venue_not_seeded",
+      );
+    }
+    return data;
   }
 
   async confirmReservation(_input: ReservationRefInput) {
-    return getRestaurantOverview();
+    return this.getOverview(_input.restaurantId);
   }
 
   async cancelReservation(_input: ReservationRefInput) {
-    return getRestaurantOverview();
-  }
-
-  async clearTable(_input: TableRefInput) {
-    return getRestaurantOverview();
+    return this.getOverview(_input.restaurantId);
   }
 
   async sendReminder(_input: ReservationRefInput) {
@@ -61,17 +64,18 @@ export class MockRestaurantRepository implements RestaurantRepository {
 
   // ── Business account ── persisted
   async getBusinessAccount() {
-    // Falls back to the fixture only when the database has not been
-    // seeded, so a fresh checkout still boots.
-    return (
-      store.businessAccountForUser(business.BUSINESS_ACCOUNT.ownerId) ??
-      business.BUSINESS_ACCOUNT
+    const account = store.businessAccountForUser(
+      process.env.LYFE_DEMO_USER_ID ?? "usr_yassine",
     );
+    if (!account) {
+      throw new RepositoryError("Aucun compte partenaire.", 404, "no_account");
+    }
+    return account;
   }
 
   // ── Booking lifecycle ──
-  async rejectReservation(_input: RejectBookingInput) {
-    return getRestaurantOverview();
+  async rejectReservation(input: RejectBookingInput) {
+    return this.getOverview(input.restaurantId);
   }
 
   /**
@@ -79,15 +83,16 @@ export class MockRestaurantRepository implements RestaurantRepository {
    * demo; the real QR is opaque and resolved server-side, which is why the
    * portal never parses it beyond passing it along.
    */
-  async checkIn({ qrCode }: CheckInInput): Promise<CheckInResult> {
-    const data = getRestaurantOverview();
+  async checkIn(input: CheckInInput): Promise<CheckInResult> {
+    const { qrCode } = input;
+    const data = await this.getOverview(input.restaurantId);
     const code = qrCode.trim().toUpperCase();
     const match = [...data.upcomingReservations, ...data.waitlist].find(
       (r) => `LYFE-${r.id}`.toUpperCase() === code || r.id.toUpperCase() === code,
     );
 
     if (!match) return { ok: false, method: "manual", error: "unknown_code" };
-    if (match.state === "seated") {
+    if (match.state === "arrived") {
       return { ok: false, method: "manual", error: "already_used" };
     }
 
@@ -100,18 +105,11 @@ export class MockRestaurantRepository implements RestaurantRepository {
     };
   }
 
-  async reportNoShow({ reservationId }: NoShowInput) {
-    const data = getRestaurantOverview();
-    const reservation = [...data.upcomingReservations, ...data.waitlist].find(
-      (r) => r.id === reservationId,
-    );
+  async reportNoShow({ restaurantId, reservationId }: NoShowInput) {
     // Writes per-customer history, not only the booking — that history is
-    // what the risk indicator and the no-show rate both read. Persisted,
-    // so the risk on the customer profile survives a reload.
-    if (reservation) {
-      store.recordNoShow(business.BUSINESS_ACCOUNT.venueId, reservationId);
-    }
-    return data;
+    // what the risk indicator and the no-show rate both read.
+    store.recordNoShow(restaurantId, reservationId);
+    return this.getOverview(restaurantId);
   }
 
   // ── Availability ── persisted
@@ -127,7 +125,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
    */
   async updateAvailability(
     venueId: string,
-    next: Parameters<typeof business.setAvailability>[0],
+    next: Omit<import("@/lib/types/business").VenueAvailability, "updatedAt">,
   ) {
     for (const slot of next.slots) {
       store.updateSlot(venueId, slot.id, {
@@ -141,12 +139,12 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
 
   // ── Analytics & visibility ──
-  async getAnalytics({ period }: AnalyticsInput) {
-    return business.getAnalytics(period);
+  async getAnalytics({ restaurantId, period }: AnalyticsInput) {
+    return analyticsFromStore(restaurantId, period);
   }
 
-  async getVisibilityMetrics({ period }: AnalyticsInput) {
-    return business.getVisibilityMetrics(period);
+  async getVisibilityMetrics({ restaurantId, period }: AnalyticsInput) {
+    return visibilityFromStore(restaurantId, period);
   }
 
   // ── CRM ── persisted

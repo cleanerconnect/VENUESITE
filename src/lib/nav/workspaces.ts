@@ -13,7 +13,6 @@
 
 import type { IconKey } from "@/lib/dashboard/icons";
 import type { Role } from "@/lib/auth/session";
-import { RESTAURANT } from "@/lib/mock/restaurant";
 import {
   RESTAURANT_BASE,
   RESTAURANT_SETTINGS_PATH,
@@ -40,7 +39,7 @@ export interface BottomTab {
 
 export interface TopbarSpec {
   searchPlaceholder: string;
-  /** Dark pill left of the bell — scanner on events, seating on floor. */
+  /** Dark pill left of the bell — scanner on events, check-in on venues. */
   quickAction?: {
     label: string;
     icon: IconKey;
@@ -151,16 +150,10 @@ const RESTAURANT_WORKSPACE: Workspace = {
   home: RESTAURANT_BASE,
   switcherLabel: "Espace restaurant",
   matches: [RESTAURANT_BASE],
-  entity: {
-    initials: RESTAURANT.initials,
-    shortName: RESTAURANT.shortName,
-    subline: RESTAURANT.subline,
-  },
   groups: [
     [
       { label: "Vue d'ensemble", href: restaurantHref(""), icon: "layout" },
       { label: "Réservations", href: restaurantHref("reservations"), icon: "calendar-clock" },
-      { label: "Plan de salle", href: restaurantHref("salle"), icon: "table" },
       { label: "Services", href: restaurantHref("services"), icon: "sunset", allow: ["owner", "admin"] },
       { label: "Disponibilités", href: restaurantHref("disponibilites"), icon: "calendar-plus", allow: ["owner", "admin"] },
       { label: "Clients", href: restaurantHref("clients"), icon: "users", allow: ["owner", "admin"] },
@@ -187,17 +180,16 @@ const RESTAURANT_WORKSPACE: Workspace = {
   tabs: [
     { label: "Aperçu", href: restaurantHref(""), icon: "layout" },
     { label: "Carnet", href: restaurantHref("reservations"), icon: "calendar-clock" },
-    { label: "Salle", href: restaurantHref("salle"), icon: "table", raised: true },
     { label: "Carte", href: restaurantHref("menu"), icon: "utensils-crossed" },
     { label: "Plus", href: "/plus", icon: "grid" },
   ],
   topbar: {
     searchPlaceholder: "Rechercher une réservation, un client…",
     quickAction: {
-      label: "Placer",
-      icon: "armchair",
-      command: "floor.seat",
-      title: "Placer la prochaine arrivée",
+      label: "Confirmer",
+      icon: "user-check",
+      command: "waitlist.admitNext",
+      title: "Confirmer la prochaine personne en attente",
     },
     primaryAction: {
       label: "Nouvelle réservation",

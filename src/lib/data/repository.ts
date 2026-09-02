@@ -8,7 +8,7 @@
 //
 // Reads are one call per screen payload rather than one per entity. That
 // is deliberate — the dashboard renders a coherent snapshot, and six
-// round trips would let the hero disagree with the floor plan.
+// round trips would let the hero disagree with the reservation list.
 
 import type { RestaurantOverview } from "@/lib/types/restaurant";
 import type {
@@ -24,21 +24,9 @@ import type {
   VisibilityMetrics,
 } from "@/lib/types/business";
 
-export interface SeatReservationInput {
-  restaurantId: string;
-  reservationId: string;
-  /** Omit to let the backend pick the first table that fits. */
-  tableId?: string;
-}
-
 export interface ReservationRefInput {
   restaurantId: string;
   reservationId: string;
-}
-
-export interface TableRefInput {
-  restaurantId: string;
-  tableId: string;
 }
 
 export interface ReviewReplyInput {
@@ -80,10 +68,8 @@ export interface AnalyticsInput {
 export interface RestaurantRepository {
   getOverview(restaurantId: string): Promise<RestaurantOverview>;
 
-  seatReservation(input: SeatReservationInput): Promise<RestaurantOverview>;
   confirmReservation(input: ReservationRefInput): Promise<RestaurantOverview>;
   cancelReservation(input: ReservationRefInput): Promise<RestaurantOverview>;
-  clearTable(input: TableRefInput): Promise<RestaurantOverview>;
 
   sendReminder(input: ReservationRefInput): Promise<void>;
   replyToReview(input: ReviewReplyInput): Promise<void>;

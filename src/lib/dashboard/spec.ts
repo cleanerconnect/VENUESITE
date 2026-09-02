@@ -285,42 +285,6 @@ export interface EntityListBlock extends BlockBase {
   noMatches?: { title: string; body?: string };
 }
 
-// ── Floor plan ───────────────────────────────────────────────
-
-export interface FloorTile {
-  id: string;
-  /** Short code painted large, e.g. "P4". */
-  code: string;
-  seats: number;
-  tone: SemanticTone;
-  stateLabel: string;
-  /** Lines under the code: party name, elapsed time, bill. */
-  lines?: string[];
-  /** 0·1 share of the expected turn elapsed — the tile's edge ring. */
-  turnProgress?: number;
-  /** Draws attention: over-run tables, blocked tables. */
-  flagged?: boolean;
-  detail?: DetailSpec;
-}
-
-/**
- * Zoned table map. The one block that is genuinely restaurant-shaped —
- * but still generic over what a "zone" and a "tile" mean, so it would
- * serve a co-working floor or a clinic's rooms unchanged.
- */
-export interface FloorPlanBlock extends BlockBase {
-  type: "floor-plan";
-  heading?: string;
-  subheading?: string;
-  legend?: { label: string; tone: SemanticTone }[];
-  zones: {
-    id: string;
-    name: string;
-    caption?: string;
-    tiles: FloorTile[];
-  }[];
-}
-
 // ── Slot grid ────────────────────────────────────────────────
 
 /**
@@ -429,7 +393,6 @@ export type Block =
   | NudgeBlock
   | KpiGridBlock
   | EntityListBlock
-  | FloorPlanBlock
   | SlotGridBlock
   | FeedBlock
   | TableBlock

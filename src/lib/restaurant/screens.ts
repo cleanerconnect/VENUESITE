@@ -25,33 +25,30 @@ import type {
   DetailSpec,
   EntityRow,
   FeedEntry,
-  FloorTile,
   KpiTile,
   ScreenSpec,
   SemanticTone,
 } from "@/lib/dashboard/spec";
 import type {
-  DiningTable,
   GuestReview,
   MenuItem,
   Reservation,
   RestaurantOverview,
   Service,
+  Zone,
 } from "@/lib/types/restaurant";
+import { DIETARY_TAG, PRICE_RANGE_LABEL } from "@/lib/types/restaurant";
 import {
   ACTIVITY_TYPE,
   MENU_CATEGORY,
   RESERVATION_CHANNEL,
   RESERVATION_STATE,
   SERVICE_KIND,
-  TABLE_STATE,
-  menuBadge,
   payoutBadge,
   reservationBadge,
   serviceBadge,
 } from "./vocabulary";
 import { formatValue } from "@/lib/dashboard/value";
-import { getRestaurantOverview } from "@/lib/mock/restaurant";
 import { buildCustomersScreen } from "./crm";
 import {
   buildAnalyticsScreen,
@@ -87,7 +84,7 @@ const money = (n: number) => formatValue(n, MAD);
 export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
   const service = data.currentService;
   const inService = service.state === "open" || service.state === "peak";
-  const freeSeats = freeSeatCount(data.tables);
+  const remainingCovers = Math.max(0, service.capacity - service.bookedCovers);
 
   const heroBlock: Block = {
     id: "service-hero",
@@ -101,12 +98,12 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
     title: service.label,
     subtitle: `${hm(service.opensAt)} – ${hm(service.closesAt)} · ${data.restaurant.name}`,
     ring: {
-      progress: service.seatedCovers / Math.max(1, service.capacity),
-      topLabel: inService ? "Salle occupée" : "Réservé",
+      progress: service.arrivedCovers / Math.max(1, service.capacity),
+      topLabel: inService ? "Arrivés" : "Réservé",
       centerLabel: `${Math.round(
-        (service.seatedCovers / Math.max(1, service.capacity)) * 100,
+        (service.arrivedCovers / Math.max(1, service.capacity)) * 100,
       )}%`,
-      bottomLabel: `${service.seatedCovers} / ${service.capacity}`,
+      bottomLabel: `${service.arrivedCovers} / ${service.capacity}`,
     },
     stats: [
       {
@@ -115,28 +112,23 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         accent: true,
       },
       {
-        label: "Couverts installés",
+        label: "Couverts arrivés",
         metric: {
-          value: service.seatedCovers,
+          value: service.arrivedCovers,
           format: COUNT,
           suffix: `/ ${service.bookedCovers}`,
           animate: true,
         },
       },
       {
-        label: "Places libres",
-        metric: { value: freeSeats, format: COUNT, animate: true },
+        label: "Couverts disponibles",
+        metric: { value: remainingCovers, format: COUNT, animate: true },
       },
     ],
     footnote: {
-      text: `Rotation moyenne ${service.avgTurnMinutes} min · ${service.walkInCovers} couverts sans réservation · ${service.noShowCovers} absences enregistrées.`,
+      text: `${service.bookedCovers} couverts réservés sur ${service.capacity} · ${service.noShowCovers} absences enregistrées.`,
       badge: {
-        label: `Second service ~${hm(
-          new Date(
-            new Date(service.opensAt).getTime() +
-              service.avgTurnMinutes * 60_000,
-          ).toISOString(),
-        )}`,
+        label: `${Math.round((service.bookedCovers / Math.max(1, service.capacity)) * 100)} % engagé`,
         tone: "violet",
       },
     },
@@ -185,7 +177,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         action: {
           kind: "link",
           label: "Voir le plan de salle →",
-          href: restaurantHref("salle"),
+          href: restaurantHref("reservations"),
         },
         variant: "secondary",
       },
@@ -298,7 +290,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
       label: "Tout voir →",
       href: restaurantHref("reservations"),
     },
-    rows: data.upcomingReservations.map(reservationRow),
+    rows: data.upcomingReservations.map((r) => reservationRow(r, data.zones)),
     empty: {
       title: "Plus personne d'attendu",
       body: "Le carnet est vide pour la fin de ce service.",
@@ -415,12 +407,12 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
             )} % de la salle engagée`,
           },
           {
-            id: "seated",
-            label: "Déjà installés",
+            id: "arrived",
+            label: "Déjà arrivés",
             tone: "surface",
-            icon: "armchair",
+            icon: "user-check",
             metric: {
-              value: data.currentService.seatedCovers,
+              value: data.currentService.arrivedCovers,
               format: COUNT,
               animate: true,
             },
@@ -467,9 +459,9 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
             match: { facet: "state", values: ["confirmed"] },
           },
           {
-            id: "seated",
-            label: "En salle",
-            match: { facet: "state", values: ["seated"] },
+            id: "arrived",
+            label: "Arrivés",
+            match: { facet: "state", values: ["arrived"] },
           },
           {
             id: "waiting",
@@ -490,7 +482,7 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
           { id: "visits", label: "Fidélité", key: "visits", direction: "desc" },
           { id: "name", label: "Nom", key: "name", direction: "asc" },
         ],
-        rows: all.map(reservationRow),
+        rows: all.map((r) => reservationRow(r, data.zones)),
         empty: {
           title: "Carnet vide",
           body: "Aucune table réservée sur ce service.",
@@ -513,8 +505,10 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
 function serviceLoadBlock(data: RestaurantOverview): Block {
   const service = data.currentService;
   const now = Date.now();
-  const perSlotCapacity = Math.round(
-    service.capacity / Math.max(1, Math.ceil(service.avgTurnMinutes / 30)),
+  // Covers the room can seat per slot, from the service window itself.
+  const perSlotCapacity = Math.max(
+    1,
+    Math.round(service.capacity / Math.max(1, service.slotLoad.length / 2)),
   );
 
   return {
@@ -539,132 +533,17 @@ function serviceLoadBlock(data: RestaurantOverview): Block {
 
 // ── Floor plan ───────────────────────────────────────────────
 
-export function buildFloorScreen(data: RestaurantOverview): ScreenSpec {
-  const occupied = data.tables.filter(
-    (t) => t.state === "seated" || t.state === "dessert",
-  );
-  const toClean = data.tables.filter((t) => t.state === "to_clean");
-  const overrun = data.tables.filter((t) => {
-    if (!t.seatedAt) return false;
-    const min = (Date.now() - new Date(t.seatedAt).getTime()) / 60_000;
-    return min > data.currentService.avgTurnMinutes;
-  });
-
-  return {
-    slug: "salle",
-    title: "Plan de salle",
-    subtitle: `${data.currentService.label} · ${hm(
-      data.currentService.opensAt,
-    )} – ${hm(data.currentService.closesAt)}`,
-    blocks: [
-      {
-        id: "floor-kpis",
-        type: "kpi-grid",
-        columns: 4,
-        tiles: [
-          {
-            id: "occupied",
-            label: "Tables occupées",
-            tone: "sand",
-            icon: "armchair",
-            metric: {
-              value: occupied.length,
-              format: COUNT,
-              suffix: `/ ${data.tables.length}`,
-              animate: true,
-            },
-          },
-          {
-            id: "free-seats",
-            label: "Places libres",
-            tone: "surface",
-            icon: "users",
-            metric: { value: freeSeatCount(data.tables), format: COUNT, animate: true },
-            hint: waitlistHint(data),
-          },
-          {
-            id: "to-clean",
-            label: "À débarrasser",
-            tone: toClean.length > 0 ? "peach" : "surface",
-            icon: "repeat",
-            metric: { value: toClean.length, format: COUNT, animate: true },
-            hint: "Chaque minute gagnée, c'est un couvert de plus",
-          },
-          {
-            id: "overrun",
-            label: "Rotation dépassée",
-            tone: overrun.length > 0 ? "rose" : "sage",
-            icon: "hourglass",
-            metric: { value: overrun.length, format: COUNT, animate: true },
-            hint: overrun.length
-              ? `${overrun.map((t) => t.code).join(", ")} au-delà de ${
-                  data.currentService.avgTurnMinutes
-                } min`
-              : "Tout le monde dans les temps",
-          },
-        ],
-      },
-      {
-        id: "floor-plan",
-        type: "floor-plan",
-        subheading:
-          "Chaque table porte son état, sa part de rotation écoulée et son addition. Cliquer ouvre la fiche.",
-        // The legend is generated from the states actually on the floor —
-        // a legend listing states nobody is in is noise.
-        legend: floorLegend(data),
-        zones: data.zones.map((zone) => {
-          const zoneTables = data.tables.filter((t) => t.zoneId === zone.id);
-          const seated = zoneTables.filter(
-            (t) => t.state === "seated" || t.state === "dessert",
-          );
-          return {
-            id: zone.id,
-            name: zone.name,
-            caption: `${seated.length}/${zoneTables.length} occupées · ${zone.capacity} places`,
-            tiles: zoneTables.map((t) => floorTile(t, data)),
-          };
-        }),
-      },
-      {
-        id: "waitlist",
-        type: "entity-list",
-        heading: "Liste d'attente",
-        rows: data.waitlist.map(reservationRow),
-        empty: {
-          title: "Personne n'attend",
-          body: "Les arrivées sans réservation apparaîtront ici.",
-          icon: "timer",
-        },
-      },
-    ],
-  };
-}
-
-/** Only the states present on the floor right now. */
-function floorLegend(data: RestaurantOverview) {
-  const seen = new Set(data.tables.map((t) => t.state));
-  return [...seen].map((state) => ({
-    label: TABLE_STATE[state].label,
-    tone: TABLE_STATE[state].tone as SemanticTone,
-  }));
-}
-
-function waitlistHint(data: RestaurantOverview): string {
-  const waiting = data.waitlist.reduce((n, r) => n + r.partySize, 0);
-  if (waiting === 0) return "Aucune attente";
-  const free = freeSeatCount(data.tables);
-  return free >= waiting
-    ? `Assez pour placer les ${waiting} en attente`
-    : `${waiting} en attente — il en manque ${waiting - free}`;
-}
-
 // ── Menu ─────────────────────────────────────────────────────
 
 export function buildMenuScreen(data: RestaurantOverview): ScreenSpec {
+  const visible = data.topItems.filter((i) => i.visible);
+  const signature = data.topItems.filter((i) => i.signature);
+
   return {
     slug: "menu",
     title: "Carte",
-    subtitle: "Performance des plats sur le service en cours",
+    subtitle:
+      "La carte telle que les clients la voient dans l'application LYFE.",
     blocks: [
       {
         id: "menu-kpis",
@@ -672,65 +551,91 @@ export function buildMenuScreen(data: RestaurantOverview): ScreenSpec {
         columns: 3,
         tiles: [
           {
-            id: "plates",
-            label: "Plats servis",
+            id: "published",
+            label: "Plats publiés",
             tone: "sand",
             icon: "utensils-crossed",
             metric: {
-              value: data.topItems.reduce((s, i) => s + i.soldToday, 0),
+              value: visible.length,
               format: COUNT,
+              suffix: `/ ${data.topItems.length}`,
               animate: true,
             },
+            hint: "Visibles dans l'application",
           },
           {
-            id: "margin",
-            label: "Marge moyenne",
+            id: "signature",
+            label: "Spécialités",
             tone: "surface",
-            icon: "percent",
-            metric: {
-              value: averageMargin(data.topItems),
-              format: { kind: "percent" },
-              animate: true,
-            },
+            icon: "star",
+            metric: { value: signature.length, format: COUNT, animate: true },
+            hint: "Mises en avant sur la fiche",
           },
           {
-            id: "out",
-            label: "Ruptures",
-            tone: "rose",
-            icon: "ban",
+            id: "range",
+            label: "Gamme de prix",
+            tone: "sage",
+            icon: "coins",
             metric: {
-              value: data.topItems.filter((i) => i.state === "sold_out").length,
-              format: COUNT,
-              animate: true,
+              value: PRICE_RANGE_LABEL[data.restaurant.priceRange] ?? "—",
+              animate: false,
             },
-            hint: "Retirer de la carte évite la déception en salle",
           },
         ],
       },
       {
-        id: "menu-table",
-        type: "table",
-        heading: "Plats du service",
-        columns: [
-          { key: "name", label: "Plat" },
-          { key: "category", label: "Catégorie", hideOnMobile: true },
-          { key: "price", label: "Prix", align: "right", format: MAD },
-          { key: "sold", label: "Servis", align: "right", format: COUNT },
-          { key: "margin", label: "Marge", align: "right", format: { kind: "percent" } },
-          { key: "state", label: "État", align: "right" },
+        id: "menu-list",
+        type: "entity-list",
+        heading: "Plats",
+        tabs: [
+          { id: "all", label: "Tous" },
+          { id: "visible", label: "Publiés", match: { facet: "visible", values: ["yes"] } },
+          { id: "hidden", label: "Masqués", match: { facet: "visible", values: ["no"] } },
+          { id: "signature", label: "Spécialités", match: { facet: "signature", values: ["yes"] } },
         ],
+        search: { placeholder: "Rechercher un plat…" },
         rows: data.topItems.map((item) => ({
           id: item.id,
-          cells: {
-            name: { value: item.signature ? `${item.name} ✦` : item.name },
-            category: { value: MENU_CATEGORY[item.category].label },
-            price: { value: item.priceMad },
-            sold: { value: item.soldToday },
-            margin: { value: itemMargin(item) },
-            state: { value: "", badge: menuBadge(item.state) },
+          title: item.signature ? `${item.name} ✦` : item.name,
+          icon: MENU_CATEGORY[item.category].icon,
+          meta: [
+            MENU_CATEGORY[item.category].label,
+            item.dietary.map((d) => DIETARY_TAG[d]).join(" · "),
+          ]
+            .filter(Boolean)
+            .join(" · "),
+          badges: item.visible
+            ? []
+            : [{ label: "MASQUÉ", tone: "muted" as const, dot: true }],
+          signal: item.description
+            ? { text: item.description, icon: "note" as const }
+            : undefined,
+          trailing: {
+            label: "Prix",
+            metric: { value: item.priceMad, format: MAD },
           },
+          facets: {
+            visible: item.visible ? "yes" : "no",
+            signature: item.signature ? "yes" : "no",
+          },
+          keywords: item.description,
+          menu: [
+            {
+              id: "toggle",
+              label: item.visible ? "Masquer dans l'app" : "Publier dans l'app",
+              action: {
+                kind: "command",
+                command: "menu.toggleVisible",
+                payload: { id: item.id },
+              },
+            },
+          ],
         })),
-        empty: { title: "Carte vide", body: "Aucun plat configuré." },
+        empty: {
+          title: "Carte vide",
+          body: "Ajoutez un plat pour qu'il apparaisse dans l'application.",
+          icon: "utensils-crossed",
+        },
       },
     ],
   };
@@ -891,7 +796,12 @@ export function buildPayoutsScreen(data: RestaurantOverview): ScreenSpec {
 
 // ── Row builders ─────────────────────────────────────────────
 
-function reservationRow(reservation: Reservation): EntityRow {
+function zoneName(zones: Zone[], id?: string): string | null {
+  if (!id) return null;
+  return zones.find((z) => z.id === id)?.name ?? null;
+}
+
+function reservationRow(reservation: Reservation, zones: Zone[]): EntityRow {
   const badges = [reservationBadge(reservation.state)];
   if (reservation.vip) badges.push({ label: "Habitué", tone: "violet", icon: "star" });
   if ((reservation.noShowRisk ?? 0) >= 0.3) {
@@ -899,7 +809,7 @@ function reservationRow(reservation: Reservation): EntityRow {
   }
 
   const place = [
-    reservation.tableCode ? `Table ${reservation.tableCode}` : null,
+    zoneName(zones, reservation.zoneId),
     RESERVATION_CHANNEL[reservation.channel],
   ]
     .filter(Boolean)
@@ -932,10 +842,14 @@ function reservationRow(reservation: Reservation): EntityRow {
       visits: reservation.visits,
       name: reservation.guestName,
     },
-    keywords: [reservation.guestPhone, reservation.note, reservation.tableCode]
+    keywords: [
+      reservation.guestPhone,
+      reservation.note,
+      zoneName(zones, reservation.zoneId),
+    ]
       .filter(Boolean)
       .join(" "),
-    detail: reservationDetail(reservation),
+    detail: reservationDetail(reservation, zones),
     menu: reservationMenu(reservation),
   };
 }
@@ -956,13 +870,13 @@ function reservationMenu(reservation: Reservation): EntityRow["menu"] {
       },
     });
   }
-  if (reservation.state !== "seated" && reservation.state !== "completed") {
+  if (reservation.state !== "arrived" && reservation.state !== "completed") {
     items.push({
-      id: "seat",
-      label: "Installer la table",
+      id: "arrive",
+      label: "Marquer comme arrivé",
       action: {
         kind: "command",
-        command: "reservation.seat",
+        command: "reservation.arrive",
         payload: { id: reservation.id },
       },
     });
@@ -1014,7 +928,7 @@ function reservationMenu(reservation: Reservation): EntityRow["menu"] {
   return items;
 }
 
-function reservationDetail(reservation: Reservation): DetailSpec {
+function reservationDetail(reservation: Reservation, zones: Zone[]): DetailSpec {
   const risk = Math.round((reservation.noShowRisk ?? 0) * 100);
 
   return {
@@ -1038,8 +952,10 @@ function reservationDetail(reservation: Reservation): DetailSpec {
             metric: { value: reservation.partySize, format: COUNT },
           },
           {
-            label: "Table",
-            metric: { value: reservation.tableCode ?? "Non assignée" },
+            label: "Espace",
+            metric: {
+              value: zoneName(zones, reservation.zoneId) ?? "Sans préférence",
+            },
           },
           {
             label: "Canal",
@@ -1077,10 +993,10 @@ function reservationDetail(reservation: Reservation): DetailSpec {
       {
         action: {
           kind: "command",
-          label: "Installer la table",
-          command: "reservation.seat",
+          label: "Marquer comme arrivé",
+          command: "reservation.arrive",
           payload: { id: reservation.id },
-          icon: "armchair",
+          icon: "user-check",
         },
         allow: ["owner", "admin"],
       },
@@ -1094,138 +1010,6 @@ function reservationDetail(reservation: Reservation): DetailSpec {
         variant: "secondary",
       },
     ],
-  };
-}
-
-function floorTile(
-  table: DiningTable,
-  data: RestaurantOverview,
-): FloorTile {
-  const term = TABLE_STATE[table.state];
-  const reservation = [...data.upcomingReservations, ...data.waitlist].find(
-    (r) => r.id === table.reservationId,
-  );
-  const seatedMin = table.seatedAt
-    ? Math.max(0, Math.round((Date.now() - new Date(table.seatedAt).getTime()) / 60_000))
-    : null;
-  const turn = data.currentService.avgTurnMinutes;
-  const turnProgress = seatedMin === null ? undefined : seatedMin / turn;
-
-  const lines = [
-    reservation?.guestName ?? null,
-    seatedMin !== null ? `${seatedMin} min · ${Math.round((turnProgress ?? 0) * 100)} % du service` : null,
-    table.billMad !== undefined ? money(table.billMad) : null,
-  ].filter((l): l is string => Boolean(l));
-
-  return {
-    id: table.id,
-    code: table.code,
-    seats: table.seats,
-    tone: term.tone,
-    stateLabel: term.label,
-    lines,
-    turnProgress,
-    // A party past its expected turn and a table waiting to be cleared
-    // are the two things that stop the next seating. Both get the flag.
-    flagged:
-      table.state === "to_clean" ||
-      table.state === "blocked" ||
-      (turnProgress ?? 0) > 1,
-    detail: tableDetail(table, reservation, seatedMin, turn),
-  };
-}
-
-function tableDetail(
-  table: DiningTable,
-  reservation: Reservation | undefined,
-  seatedMin: number | null,
-  turnMinutes: number,
-): DetailSpec {
-  const term = TABLE_STATE[table.state];
-
-  return {
-    title: `Table ${table.code}`,
-    subtitle: `${table.seats} places`,
-    badges: [{ label: term.label, tone: term.tone, dot: true }],
-    sections: [
-      {
-        label: "État",
-        items: [
-          { label: "Statut", metric: { value: term.label } },
-          {
-            label: "Places",
-            metric: { value: table.seats, format: COUNT },
-          },
-          ...(seatedMin !== null
-            ? [
-                {
-                  label: "Assis depuis",
-                  metric: {
-                    value: seatedMin,
-                    format: { kind: "duration" as const, unit: "minutes" as const },
-                  },
-                },
-                {
-                  label: "Rotation prévue",
-                  metric: {
-                    value: turnMinutes,
-                    format: { kind: "duration" as const, unit: "minutes" as const },
-                  },
-                },
-              ]
-            : []),
-          ...(table.billMad !== undefined
-            ? [{ label: "Addition en cours", metric: { value: table.billMad, format: MAD } }]
-            : []),
-        ],
-      },
-      ...(reservation
-        ? [
-            {
-              label: "Le couvert",
-              items: [
-                { label: "Client", metric: { value: reservation.guestName } },
-                {
-                  label: "Personnes",
-                  metric: { value: reservation.partySize, format: COUNT },
-                },
-                { label: "Heure", metric: { value: hm(reservation.at) } },
-                { label: "Téléphone", metric: { value: reservation.guestPhone } },
-              ],
-            },
-          ]
-        : []),
-    ],
-    notes: reservation?.note
-      ? [{ label: "Note de salle", text: reservation.note, icon: "note" }]
-      : undefined,
-    actions:
-      table.state === "to_clean"
-        ? [
-            {
-              action: {
-                kind: "command",
-                label: "Marquer débarrassée",
-                command: "table.clear",
-                payload: { id: table.id },
-                icon: "repeat",
-              },
-              allow: ["owner", "admin"],
-            },
-          ]
-        : table.state === "free"
-          ? [
-              {
-                action: {
-                  kind: "command",
-                  label: "Placer la prochaine arrivée",
-                  command: "floor.seat",
-                  icon: "armchair",
-                },
-                allow: ["owner", "admin"],
-              },
-            ]
-          : undefined,
   };
 }
 
@@ -1292,31 +1076,11 @@ function activityEntry(
       ? `${restaurantHref("reservations")}?res=${item.reservationId}`
       : item.type === "review_received"
         ? restaurantHref("avis")
-        : item.tableCode
-          ? restaurantHref("salle")
-          : undefined,
+        : undefined,
   };
 }
 
 // ── Derivations ──────────────────────────────────────────────
-
-function freeSeatCount(tables: DiningTable[]): number {
-  return tables
-    .filter((t) => t.state === "free")
-    .reduce((sum, t) => sum + t.seats, 0);
-}
-
-function itemMargin(item: MenuItem): number {
-  if (item.priceMad <= 0) return 0;
-  return Math.round(((item.priceMad - item.foodCostMad) / item.priceMad) * 100);
-}
-
-function averageMargin(items: MenuItem[]): number {
-  if (items.length === 0) return 0;
-  return Math.round(
-    items.reduce((sum, i) => sum + itemMargin(i), 0) / items.length,
-  );
-}
 
 function countdownLabel(iso: string): string {
   const days = Math.max(
@@ -1372,7 +1136,6 @@ export type ScreenDataNeed = "customers" | "analytics" | "visibility" | "availab
 export const SCREEN_NEEDS: Record<RestaurantSlug, ScreenDataNeed[]> = {
   "": [],
   reservations: [],
-  salle: [],
   services: [],
   clients: ["customers"],
   menu: [],
@@ -1395,7 +1158,6 @@ export const RESTAURANT_SCREENS: Record<
 > = {
   "": fromOverview(buildDashboardScreen),
   reservations: fromOverview(buildReservationsScreen),
-  salle: fromOverview(buildFloorScreen),
   services: fromOverview(buildServicesScreen),
   menu: fromOverview(buildMenuScreen),
   avis: fromOverview(buildReviewsScreen),
@@ -1415,11 +1177,26 @@ export function buildScreen(
   return RESTAURANT_SCREENS[slug](ctx);
 }
 
-/** Server-side convenience: does this slug exist, and what is it called? */
-export function getRestaurantScreen(slug: string): ScreenSpec | null {
-  if (!isRestaurantSlug(slug)) return null;
-  return buildScreen(slug, { overview: getRestaurantOverview() });
+/**
+ * Slug lookup for routing and metadata. Deliberately does not build a
+ * spec — a title should not cost a database read.
+ */
+export function restaurantScreenTitle(slug: string): string | null {
+  return isRestaurantSlug(slug) ? SCREEN_TITLES[slug] : null;
 }
+
+const SCREEN_TITLES: Record<RestaurantSlug, string> = {
+  "": "Vue d'ensemble",
+  reservations: "Réservations",
+  services: "Services",
+  clients: "Clients",
+  menu: "Carte",
+  avis: "Avis",
+  analytique: "Analytique",
+  visibilite: "Visibilité",
+  disponibilites: "Disponibilités",
+  versements: "Versements",
+};
 
 export function restaurantScreenSlugs(): readonly string[] {
   return RESTAURANT_SLUGS;

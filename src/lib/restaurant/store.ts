@@ -9,9 +9,9 @@ import type {
 
 // Optimistic service state.
 //
-// The dashboard's actions have to *land*. Seating a party that leaves the
-// floor plan unchanged reads as a mock, and a manager mid-rush will not
-// wait for a round trip to see the table go orange.
+// The dashboard's actions have to *land*. Checking a party in and seeing
+// the row stay unchanged reads as a mock, and a host mid-rush will not
+// wait for a round trip before greeting the next guest.
 //
 // So the client owns a copy of the overview payload, mutations apply to
 // it immediately, and the screen specs — pure functions of that payload —
@@ -29,16 +29,16 @@ interface RestaurantState {
   hydrate: (data: RestaurantOverview) => void;
   undo: () => void;
 
-  seatReservation: (id: string) => void;
+  /** Guest presented at the door. The LYFE check-in, not a table seating. */
+  markArrived: (id: string) => void;
   confirmReservation: (id: string) => void;
   cancelReservation: (id: string) => void;
   /** Venue refused the request. Distinct from a guest cancelling. */
   rejectReservation: (id: string, reasonLabel: string) => void;
   /** Guest never arrived. Also writes per-customer history server-side. */
   reportNoShow: (id: string) => void;
-  clearTable: (id: string) => void;
-  /** Moves the head of the waitlist onto the first table that can take it. */
-  seatNextWaiting: () => { seated: string; table: string } | null;
+  /** Promotes the head of the waitlist to a confirmed booking. */
+  admitNextWaiting: () => { admitted: string; partySize: number } | null;
 }
 
 const UNDO_DEPTH = 10;
@@ -58,37 +58,25 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
       return { data: previous, past: s.past.slice(0, -1) };
     }),
 
-  seatReservation: (id) =>
+  markArrived: (id) =>
     mutate(set, get, (draft) => {
       const reservation = findReservation(draft, id);
-      if (!reservation || reservation.state === "seated") return null;
+      if (!reservation || reservation.state === "arrived") return null;
+      if (reservation.state === "cancelled" || reservation.state === "no_show") {
+        return null;
+      }
 
-      const table =
-        draft.tables.find((t) => t.reservationId === id) ??
-        draft.tables.find(
-          (t) => t.state === "free" && t.seats >= reservation.partySize,
-        );
-      if (!table) return null;
-
-      reservation.state = "seated";
-      reservation.tableCode = table.code;
-      reservation.zoneId = table.zoneId;
-
-      table.state = "seated";
-      table.reservationId = reservation.id;
-      table.seatedAt = new Date().toISOString();
-      table.billMad = 0;
-
+      reservation.state = "arrived";
       draft.waitlist = draft.waitlist.filter((r) => r.id !== id);
-      draft.currentService.seatedCovers += reservation.partySize;
+      draft.currentService.arrivedCovers += reservation.partySize;
 
       pushActivity(draft, {
-        type: "party_seated",
-        actor: "Salle",
-        message: `a installé ${reservation.guestName} en ${table.code} · ${reservation.partySize} couverts`,
-        tableCode: table.code,
+        type: "guest_arrived",
+        actor: reservation.guestName,
+        message: `est arrivé · ${reservation.partySize} couverts`,
+        reservationId: reservation.id,
       });
-      return `${reservation.guestName} installé en ${table.code}`;
+      return `${reservation.guestName} enregistré à l'arrivée`;
     }),
 
   confirmReservation: (id) =>
@@ -113,13 +101,6 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
       const wasBooked =
         reservation.state === "confirmed" || reservation.state === "requested";
       reservation.state = "cancelled";
-
-      // A cancelled party releases the table it was holding.
-      const table = draft.tables.find((t) => t.reservationId === id);
-      if (table && table.state === "reserved") {
-        table.state = "free";
-        delete table.reservationId;
-      }
 
       draft.upcomingReservations = draft.upcomingReservations.filter(
         (r) => r.id !== id,
@@ -147,11 +128,6 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
       if (!reservation) return null;
 
       reservation.state = "cancelled";
-      const table = draft.tables.find((t) => t.reservationId === id);
-      if (table && table.state === "reserved") {
-        table.state = "free";
-        delete table.reservationId;
-      }
       draft.upcomingReservations = draft.upcomingReservations.filter(
         (r) => r.id !== id,
       );
@@ -175,11 +151,6 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
       if (!reservation || reservation.state === "no_show") return null;
 
       reservation.state = "no_show";
-      const table = draft.tables.find((t) => t.reservationId === id);
-      if (table && table.state === "reserved") {
-        table.state = "free";
-        delete table.reservationId;
-      }
       draft.upcomingReservations = draft.upcomingReservations.filter(
         (r) => r.id !== id,
       );
@@ -197,36 +168,32 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
       return `${reservation.guestName} noté absent`;
     }),
 
-  clearTable: (id) =>
-    mutate(set, get, (draft) => {
-      const table = draft.tables.find((t) => t.id === id);
-      if (!table || table.state === "free") return null;
-
-      table.state = "free";
-      delete table.reservationId;
-      delete table.seatedAt;
-      delete table.billMad;
-
-      pushActivity(draft, {
-        type: "table_freed",
-        actor: "Salle",
-        message: `a débarrassé la table ${table.code}`,
-        tableCode: table.code,
-      });
-      return `Table ${table.code} libérée`;
-    }),
-
-  seatNextWaiting: () => {
+  admitNextWaiting: () => {
     const data = get().data;
     if (!data) return null;
     const next = data.waitlist[0];
     if (!next) return null;
-    const table = data.tables.find(
-      (t) => t.state === "free" && t.seats >= next.partySize,
-    );
-    if (!table) return null;
-    get().seatReservation(next.id);
-    return { seated: next.guestName, table: table.code };
+
+    const service = data.currentService;
+    if (service.bookedCovers + next.partySize > service.capacity) return null;
+
+    mutate(set, get, (draft) => {
+      const reservation = findReservation(draft, next.id);
+      if (!reservation) return null;
+      reservation.state = "confirmed";
+      draft.waitlist = draft.waitlist.filter((r) => r.id !== next.id);
+      draft.upcomingReservations = [...draft.upcomingReservations, reservation]
+        .sort((a, b) => a.at.localeCompare(b.at));
+      draft.currentService.bookedCovers += reservation.partySize;
+      pushActivity(draft, {
+        type: "reservation_created",
+        actor: reservation.guestName,
+        message: `sort de la liste d'attente · ${reservation.partySize} couverts`,
+        reservationId: reservation.id,
+      });
+      return `${reservation.guestName} confirmé depuis la liste d'attente`;
+    });
+    return { admitted: next.guestName, partySize: next.partySize };
   },
 }));
 

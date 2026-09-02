@@ -30,7 +30,50 @@ export interface RestaurantProfile {
   website: string;
   currency: string;
   onboardingCompleted: boolean;
+  /** Free text shown on the listing. */
+  description: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
+  /** 1–4, rendered in the app as € to €€€€. */
+  priceRange: number;
+  /** Search and filter facets in the app. */
+  tags: string[];
+  /** Practical facilities the app lists as icons. */
+  features: VenueFeature[];
+  /** How the room feels — the app's ambience chips. */
+  ambience: string[];
 }
+
+export type VenueFeature =
+  | "terrasse"
+  | "climatisation"
+  | "acces_pmr"
+  | "wifi"
+  | "parking"
+  | "animaux"
+  | "vue"
+  | "musique_live"
+  | "groupes";
+
+export const VENUE_FEATURE: Record<VenueFeature, string> = {
+  terrasse: "Terrasse",
+  climatisation: "Climatisation",
+  acces_pmr: "Accès PMR",
+  wifi: "Wi-Fi",
+  parking: "Parking",
+  animaux: "Animaux acceptés",
+  vue: "Vue",
+  musique_live: "Musique live",
+  groupes: "Groupes acceptés",
+};
+
+export const PRICE_RANGE_LABEL: Record<number, string> = {
+  1: "€ · économique",
+  2: "€€ · modéré",
+  3: "€€€ · haut de gamme",
+  4: "€€€€ · gastronomique",
+};
 
 // ── Service ──────────────────────────────────────────────────
 
@@ -55,12 +98,9 @@ export interface Service {
   /** Seats the floor plan can actually turn during this window. */
   capacity: number;
   bookedCovers: number;
-  seatedCovers: number;
-  walkInCovers: number;
+  arrivedCovers: number;
   noShowCovers: number;
   revenueMad: number;
-  /** Average minutes a table is held, drives the turn projection. */
-  avgTurnMinutes: number;
   /**
    * Booked covers per sitting slot across the service window. Comes from
    * the booking engine rather than being inferred from the reservation
@@ -76,7 +116,7 @@ export type ReservationState =
   | "requested"
   | "confirmed"
   | "waitlisted"
-  | "seated"
+  | "arrived"
   | "completed"
   | "no_show"
   | "cancelled";
@@ -98,8 +138,8 @@ export interface Reservation {
   at: string;
   state: ReservationState;
   channel: ReservationChannel;
+  /** Seating area the guest asked for — terrace, salle, rooftop. */
   zoneId?: string;
-  tableCode?: string;
   /** Allergies, occasion, seating preference — shown on the row. */
   note?: string;
   /** Repeat guest, drives the VIP badge and the prep list. */
@@ -111,35 +151,19 @@ export interface Reservation {
   noShowRisk?: number;
 }
 
-// ── Floor ────────────────────────────────────────────────────
+// ── Seating areas ────────────────────────────────────────────
 
-export type TableState =
-  | "free"
-  | "reserved"
-  | "seated"
-  | "dessert"
-  | "to_clean"
-  | "blocked";
-
+/**
+ * A named part of the venue a guest can ask for when booking — terrace,
+ * salle, rooftop. This is a booking preference the app offers, not a
+ * floor plan: LYFE does not place parties at tables.
+ */
 export interface Zone {
   id: string;
   name: string;
   capacity: number;
-  /** Terrace closes when it rains; blocked zones drop out of capacity. */
+  /** Terrace closes when it rains; blocked zones leave the app. */
   available: boolean;
-}
-
-export interface DiningTable {
-  id: string;
-  code: string;
-  zoneId: string;
-  seats: number;
-  state: TableState;
-  reservationId?: string;
-  /** ISO time the current party sat down. */
-  seatedAt?: string;
-  /** Running bill for the seated party. */
-  billMad?: number;
 }
 
 // ── Menu ─────────────────────────────────────────────────────
@@ -151,22 +175,34 @@ export type MenuCategory =
   | "boisson"
   | "cocktail";
 
-export type MenuItemState = "available" | "low_stock" | "sold_out";
-
+/**
+ * A dish as the LYFE app displays it. This is a customer-facing listing,
+ * not kitchen management: no cost, no stock, no covers sold. What a
+ * diner sees before booking, and nothing else.
+ */
 export interface MenuItem {
   id: string;
   name: string;
+  description: string;
   category: MenuCategory;
   priceMad: number;
-  /** Ingredient cost — margin is derived, never stored twice. */
-  foodCostMad: number;
-  soldToday: number;
-  soldLast7d: number;
-  state: MenuItemState;
-  /** Portions left before the dish is 86'd. */
-  remaining?: number;
-  signature?: boolean;
+  /** Highlighted in the app as a house speciality. */
+  signature: boolean;
+  /** Hidden listings stay in the dashboard but leave the app. */
+  visible: boolean;
+  /** Dietary markers the app renders as chips. */
+  dietary: DietaryTag[];
 }
+
+export type DietaryTag = "vegetarien" | "vegan" | "sans_gluten" | "halal" | "epice";
+
+export const DIETARY_TAG: Record<DietaryTag, string> = {
+  vegetarien: "Végétarien",
+  vegan: "Vegan",
+  sans_gluten: "Sans gluten",
+  halal: "Halal",
+  epice: "Épicé",
+};
 
 // ── Reviews ──────────────────────────────────────────────────
 
@@ -187,12 +223,10 @@ export interface GuestReview {
 export type RestaurantActivityType =
   | "reservation_created"
   | "reservation_cancelled"
-  | "party_seated"
-  | "table_freed"
+  | "guest_arrived"
   | "waitlist_joined"
   | "no_show"
   | "review_received"
-  | "item_86"
   | "payment_settled"
   | "anomaly";
 
@@ -203,7 +237,6 @@ export interface RestaurantActivityItem {
   message: string;
   at: string;
   reservationId?: string;
-  tableCode?: string;
   /** Flags the row for the tinted, left-bordered treatment. */
   needsAttention?: boolean;
 }
@@ -239,7 +272,6 @@ export interface RestaurantOverview {
   /** The service the dashboard leads with. */
   currentService: Service;
   zones: Zone[];
-  tables: DiningTable[];
   coversToday: {
     count: number;
     deltaPctVsYesterday: number;

@@ -14,7 +14,6 @@ import "server-only";
 import { differenceInMinutes, format, startOfDay, subDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import type {
-  DiningTable,
   GuestReview,
   MenuItem,
   Reservation,
@@ -41,6 +40,14 @@ export function venueProfile(venueId: string): RestaurantProfile | null {
     id: String(r.id),
     kind: "gastronomique",
     name: String(r.name),
+    description: String(r.description),
+    address: String(r.address),
+    latitude: r.latitude === null ? undefined : Number(r.latitude),
+    longitude: r.longitude === null ? undefined : Number(r.longitude),
+    priceRange: Number(r.price_range),
+    tags: facets(String(r.id), "tag"),
+    features: facets(String(r.id), "feature") as RestaurantProfile["features"],
+    ambience: facets(String(r.id), "ambience"),
     shortName: String(r.short_name),
     initials: String(r.initials),
     city: String(r.city),
@@ -57,6 +64,15 @@ export function venueProfile(venueId: string): RestaurantProfile | null {
 
 // ── Room ─────────────────────────────────────────────────────
 
+/** Listing chips the app renders — tags, facilities, ambience. */
+function facets(venueId: string, kind: string): string[] {
+  return all(
+    "SELECT value FROM venue_tags WHERE venue_id = ? AND kind = ? ORDER BY position",
+    venueId,
+    kind,
+  ).map((r) => String(r.value));
+}
+
 function zones(venueId: string): Zone[] {
   return all(
     "SELECT id, name, capacity, available FROM zones WHERE venue_id = ? ORDER BY position",
@@ -69,22 +85,6 @@ function zones(venueId: string): Zone[] {
   }));
 }
 
-function tables(venueId: string): DiningTable[] {
-  return all(
-    `SELECT id, code, zone_id, seats, state, reservation_id, seated_at, bill_cents
-       FROM dining_tables WHERE venue_id = ? ORDER BY code`,
-    venueId,
-  ).map((r) => ({
-    id: String(r.id),
-    code: String(r.code),
-    zoneId: String(r.zone_id),
-    seats: Number(r.seats),
-    state: String(r.state) as DiningTable["state"],
-    reservationId: (r.reservation_id as string | null) ?? undefined,
-    seatedAt: (r.seated_at as string | null) ?? undefined,
-    billMad: r.bill_cents === null ? undefined : toMad(Number(r.bill_cents)),
-  }));
-}
 
 // ── Services ─────────────────────────────────────────────────
 
@@ -99,11 +99,9 @@ function serviceRow(r: Record<string, string | number | null>): Service {
     state: String(r.state) as Service["state"],
     capacity: Number(r.capacity),
     bookedCovers: Number(r.booked_covers),
-    seatedCovers: Number(r.seated_covers),
-    walkInCovers: Number(r.walk_in_covers),
+    arrivedCovers: Number(r.arrived_covers),
     noShowCovers: Number(r.no_show_covers),
     revenueMad: toMad(Number(r.revenue_cents)),
-    avgTurnMinutes: Number(r.avg_turn_minutes),
     slotLoad: all(
       "SELECT at, covers FROM service_slot_load WHERE service_id = ? ORDER BY at",
       String(r.id),
@@ -150,7 +148,6 @@ function reservationRow(r: Record<string, string | number | null>): Reservation 
     state: String(r.state) as Reservation["state"],
     channel: String(r.channel) as Reservation["channel"],
     zoneId: (r.zone_id as string | null) ?? undefined,
-    tableCode: (r.table_code as string | null) ?? undefined,
     note: (r.note as string | null) ?? undefined,
     visits: Number(r.visit_count ?? 0),
     vip: Number(r.visit_count ?? 0) >= 8,
@@ -168,7 +165,7 @@ const BOOKING_SELECT = `
 
 function upcomingReservations(venueId: string): Reservation[] {
   return all(
-    `${BOOKING_SELECT} AND r.state IN ('requested','confirmed','modified','seated')
+    `${BOOKING_SELECT} AND r.state IN ('requested','confirmed','modified','arrived')
        ORDER BY r.at`,
     venueId,
   ).map(reservationRow);
@@ -187,18 +184,22 @@ function menuItems(venueId: string): MenuItem[] {
   return all(
     "SELECT * FROM menu_items WHERE venue_id = ? ORDER BY position",
     venueId,
-  ).map((r) => ({
-    id: String(r.id),
-    name: String(r.name),
-    category: String(r.category) as MenuItem["category"],
-    priceMad: toMad(Number(r.price_cents)),
-    foodCostMad: toMad(Number(r.food_cost_cents)),
-    soldToday: 0,
-    soldLast7d: 0,
-    state: String(r.state) as MenuItem["state"],
-    remaining: r.remaining === null ? undefined : Number(r.remaining),
-    signature: bool(r.signature as number),
-  }));
+  ).map((r) => {
+    const id = String(r.id);
+    return {
+      id,
+      name: String(r.name),
+      description: String(r.description),
+      category: String(r.category) as MenuItem["category"],
+      priceMad: toMad(Number(r.price_cents)),
+      signature: bool(r.signature as number),
+      visible: bool(r.visible as number),
+      dietary: all(
+        "SELECT tag FROM menu_item_dietary WHERE item_id = ?",
+        id,
+      ).map((t) => String(t.tag)) as MenuItem["dietary"],
+    };
+  });
 }
 
 function reviews(venueId: string): GuestReview[] {
@@ -236,7 +237,6 @@ function activity(venueId: string): RestaurantActivityItem[] {
     message: String(r.message),
     at: String(r.at),
     reservationId: (r.reservation_id as string | null) ?? undefined,
-    tableCode: (r.table_code as string | null) ?? undefined,
     needsAttention: bool(r.needs_attention as number),
   }));
 }
@@ -273,7 +273,7 @@ function aggregates(venueId: string, service: Service | null) {
   const todayRow = daily(venueId, day(today));
   const yesterdayRow = daily(venueId, day(subDays(today, 1)));
 
-  const coversToday = Number(todayRow?.covers_served ?? service?.seatedCovers ?? 0);
+  const coversToday = Number(todayRow?.covers_served ?? service?.arrivedCovers ?? 0);
   const coversYesterday = Number(yesterdayRow?.covers_served ?? 0);
 
   const week = all(
@@ -390,14 +390,14 @@ export function overview(venueId: string, viewerFirstName: string): RestaurantOv
 
   const list = services(venueId);
   const service = currentService(venueId, list);
-  const room = tables(venueId);
   const queue = waitlist(venueId);
   const agg = aggregates(venueId, service);
 
-  const freeSeats = room
-    .filter((t) => t.state === "free")
-    .reduce((n, t) => n + t.seats, 0);
   const waiting = queue.reduce((n, r) => n + r.partySize, 0);
+  // Remaining capacity, which is what LYFE knows — not free tables.
+  const remainingCovers = service
+    ? Math.max(0, service.capacity - service.bookedCovers)
+    : 0;
 
   const nextPayout = one(
     `SELECT amount_cents, scheduled_for FROM payouts
@@ -417,16 +417,15 @@ export function overview(venueId: string, viewerFirstName: string): RestaurantOv
       firstName: viewerFirstName,
       salutation: salutation(new Date()),
       clause:
-        service && service.seatedCovers / Math.max(1, service.capacity) > 0.7
-          ? "la salle tourne à plein."
+        service && service.bookedCovers / Math.max(1, service.capacity) > 0.85
+          ? "le service est complet."
           : "le service est lancé.",
       subline: service
-        ? `${service.seatedCovers} couverts installés, ${waiting} en liste d'attente, ${freeSeats} places libres.`
+        ? `${service.bookedCovers} couverts réservés, ${waiting} en liste d'attente, ${remainingCovers} encore disponibles.`
         : "Aucun service en cours.",
     },
     currentService: service ?? list[0],
     zones: zones(venueId),
-    tables: room,
     ...agg,
     nextPayout: {
       amountMad: toMad(Number(nextPayout?.amount_cents ?? 0)),
@@ -480,4 +479,137 @@ export function transitionBooking(
     note ?? null,
     at,
   );
+}
+
+// ── Analytics & visibility ───────────────────────────────────
+
+const PERIOD_DAYS: Record<string, number> = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+  "12m": 365,
+};
+
+/**
+ * Rolled up from `analytics_daily`, which the tracking pipeline owns.
+ * Each period is compared against the equivalent window before it, so a
+ * number on screen means something relative rather than in isolation.
+ */
+export function analytics(
+  venueId: string,
+  period: string,
+): import("@/lib/types/business").VenueAnalytics {
+  const days = PERIOD_DAYS[period] ?? 30;
+  const today = startOfDay(new Date());
+
+  const window = (from: number, to: number) =>
+    all(
+      `SELECT date, covers_served, revenue_cents, no_shows, capacity
+         FROM analytics_daily
+        WHERE venue_id = ? AND date >= ? AND date < ?
+        ORDER BY date`,
+      venueId,
+      day(subDays(today, from)),
+      day(subDays(today, to)),
+    );
+
+  const current = window(days, -1);
+  const prior = window(days * 2, days);
+  const sum = (rows: typeof current, key: string) =>
+    rows.reduce((n, r) => n + Number(r[key] ?? 0), 0);
+
+  const covers = sum(current, "covers_served");
+  const coversPrior = sum(prior, "covers_served");
+  const revenue = toMad(sum(current, "revenue_cents"));
+  const revenuePrior = toMad(sum(prior, "revenue_cents"));
+  const noShows = sum(current, "no_shows");
+  const noShowsPrior = sum(prior, "no_shows");
+  const capacity = sum(current, "capacity");
+  const capacityPrior = sum(prior, "capacity");
+
+  const occupancy = capacity === 0 ? 0 : (covers / capacity) * 100;
+  const occupancyPrior =
+    capacityPrior === 0 ? 0 : (coversPrior / capacityPrior) * 100;
+  const noShowRate = covers === 0 ? 0 : (noShows / covers) * 100;
+  const noShowRatePrior = coversPrior === 0 ? 0 : (noShowsPrior / coversPrior) * 100;
+
+  // Long periods are bucketed so the chart stays readable; a 365-point
+  // line is a smear, not a trend.
+  const buckets = days <= 30 ? current.length : 12;
+  const size = Math.max(1, Math.ceil(current.length / buckets));
+  const series: import("@/lib/types/business").VenueAnalytics["series"] = [];
+  for (let i = 0; i < current.length; i += size) {
+    const slice = current.slice(i, i + size);
+    if (slice.length === 0) continue;
+    series.push({
+      label: format(new Date(String(slice[0].date)), days > 90 ? "MMM" : "d MMM", {
+        locale: fr,
+      }),
+      covers: sum(slice, "covers_served"),
+      revenueMad: toMad(sum(slice, "revenue_cents")),
+      noShows: sum(slice, "no_shows"),
+    });
+  }
+
+  return {
+    venueId,
+    period: period as import("@/lib/types/business").AnalyticsPeriod,
+    occupancyRate: Math.round(occupancy),
+    occupancyDeltaPct: pctChange(occupancy, occupancyPrior),
+    estimatedRevenueMad: Math.round(revenue),
+    revenueDeltaPct: pctChange(revenue, revenuePrior),
+    noShowRate: Number(noShowRate.toFixed(1)),
+    noShowDeltaPct: pctChange(noShowRate, noShowRatePrior),
+    coversServed: covers,
+    coversDeltaPct: pctChange(covers, coversPrior),
+    series,
+  };
+}
+
+export function visibility(
+  venueId: string,
+  period: string,
+): import("@/lib/types/business").VisibilityMetrics {
+  const days = PERIOD_DAYS[period] ?? 30;
+  const today = startOfDay(new Date());
+
+  const window = (from: number, to: number) =>
+    all(
+      `SELECT impressions, listing_views, bookings_made
+         FROM analytics_daily
+        WHERE venue_id = ? AND date >= ? AND date < ?`,
+      venueId,
+      day(subDays(today, from)),
+      day(subDays(today, to)),
+    );
+
+  const current = window(days, -1);
+  const prior = window(days * 2, days);
+  const sum = (rows: typeof current, key: string) =>
+    rows.reduce((n, r) => n + Number(r[key] ?? 0), 0);
+
+  const impressions = sum(current, "impressions");
+  const views = sum(current, "listing_views");
+  const bookings = sum(current, "bookings_made");
+
+  const boost = one(
+    `SELECT ends_at FROM boost_campaigns
+      WHERE venue_id = ? AND status = 'active' AND ends_at > ?
+      ORDER BY ends_at DESC LIMIT 1`,
+    venueId,
+    new Date().toISOString(),
+  );
+
+  return {
+    venueId,
+    period: period as import("@/lib/types/business").AnalyticsPeriod,
+    impressions,
+    impressionsDeltaPct: pctChange(impressions, sum(prior, "impressions")),
+    listingViews: views,
+    listingViewsDeltaPct: pctChange(views, sum(prior, "listing_views")),
+    conversionPct: views === 0 ? 0 : Number(((bookings / views) * 100).toFixed(1)),
+    reach: Math.round(impressions * 0.56),
+    boostActive: boost !== null,
+    boostEndsAt: boost ? String(boost.ends_at) : undefined,
+  };
 }

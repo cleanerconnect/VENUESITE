@@ -30,8 +30,6 @@ import {
   type ReservationRefInput,
   type RestaurantRepository,
   type ReviewReplyInput,
-  type SeatReservationInput,
-  type TableRefInput,
 } from "./repository";
 
 export interface HttpRepositoryConfig {
@@ -58,14 +56,6 @@ export class HttpRestaurantRepository implements RestaurantRepository {
   }
 
   // ── Booking lifecycle ──
-  seatReservation({ reservationId, tableId }: SeatReservationInput) {
-    return this.request<RestaurantOverview>(
-      "POST",
-      `/api/business/bookings/${reservationId}/check-in`,
-      { table_id: tableId, method: "manual" },
-    );
-  }
-
   confirmReservation({ reservationId }: ReservationRefInput) {
     return this.request<RestaurantOverview>(
       "PUT",
@@ -101,13 +91,6 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     return this.request<RestaurantOverview>(
       "POST",
       `/api/business/bookings/${reservationId}/no-show`,
-    );
-  }
-
-  clearTable({ restaurantId, tableId }: TableRefInput) {
-    return this.request<RestaurantOverview>(
-      "POST",
-      `/api/business/venues/${restaurantId}/tables/${tableId}/clear`,
     );
   }
 

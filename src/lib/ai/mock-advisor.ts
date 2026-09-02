@@ -20,17 +20,20 @@ export class MockAdvisor implements AiAdvisor {
     const waiting = data.waitlist.reduce((n, r) => n + r.partySize, 0);
     if (waiting === 0) return null;
 
-    const seatable = data.tables
-      .filter((t) => t.state === "free")
-      .reduce((n, t) => n + t.seats, 0);
+    // Remaining capacity on the service, not free tables: LYFE knows how
+    // many covers are bookable, not which table is occupied.
+    const seatable = Math.max(
+      0,
+      data.currentService.capacity - data.currentService.bookedCovers,
+    );
     const recoverable = Math.min(waiting, seatable);
     const value = Math.round(recoverable * data.averageTicket.amountMad);
 
     return {
       headline: `${waiting} couverts en liste d'attente.`,
-      body: `${seatable} places libres immédiatement. Les placer récupère ${recoverable} couverts, soit ≈ ${value.toLocaleString("fr-FR")} MAD sur ce service.`,
-      ctaLabel: "Placer la liste d'attente →",
-      target: "salle",
+      body: `${seatable} couverts encore disponibles sur ce service. Les confirmer récupère ${recoverable} couverts, soit ≈ ${value.toLocaleString("fr-FR")} MAD.`,
+      ctaLabel: "Traiter la liste d'attente →",
+      target: "reservations",
       confidence: recoverable > 0 ? 0.82 : 0.2,
     };
   }
@@ -73,26 +76,10 @@ export class MockAdvisor implements AiAdvisor {
 
   async anomalies(data: RestaurantOverview): Promise<ServiceAnomaly> {
     const anomalies: ServiceAnomaly["anomalies"] = [];
+    const service = data.currentService;
 
-    const overrun = data.tables.filter((t) => {
-      if (!t.seatedAt) return false;
-      const min = (Date.now() - new Date(t.seatedAt).getTime()) / 60_000;
-      return min > data.currentService.avgTurnMinutes;
-    });
-    if (overrun.length > 0) {
-      anomalies.push({
-        kind: "turn_time",
-        summary: `${overrun.length} table(s) au-delà de ${data.currentService.avgTurnMinutes} min de rotation.`,
-        severity: "warning",
-        affected: overrun.map((t) => t.id),
-      });
-    }
-
-    const perSlot = Math.round(
-      data.currentService.capacity /
-        Math.max(1, Math.ceil(data.currentService.avgTurnMinutes / 30)),
-    );
-    const over = data.currentService.slotLoad.filter((s) => s.covers > perSlot);
+    const perSlot = Math.round(service.capacity / 4);
+    const over = service.slotLoad.filter((s) => s.covers > perSlot);
     if (over.length > 0) {
       anomalies.push({
         kind: "covers",
@@ -102,13 +89,15 @@ export class MockAdvisor implements AiAdvisor {
       });
     }
 
-    const soldOut = data.topItems.filter((i) => i.state === "sold_out");
-    if (soldOut.length > 0) {
+    const pending = data.upcomingReservations.filter(
+      (r) => r.state === "requested",
+    );
+    if (pending.length > 0) {
       anomalies.push({
-        kind: "menu",
-        summary: `${soldOut.length} plat(s) en rupture sur la carte.`,
+        kind: "pacing",
+        summary: `${pending.length} demande(s) en attente de réponse.`,
         severity: "info",
-        affected: soldOut.map((i) => i.id),
+        affected: pending.map((r) => r.id),
       });
     }
 
