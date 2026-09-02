@@ -117,6 +117,8 @@ export interface AnalyticsSignal {
 
 export interface LyfeEvent {
   id: string;
+  /** The organizer profile that owns this event. */
+  organizerId: string;
   name: string;
   description: string;
   category: Category;

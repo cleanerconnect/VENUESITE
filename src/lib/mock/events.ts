@@ -30,6 +30,7 @@ export function getAllEvents(): LyfeEvent[] {
   // — a future Diana Krall edition would compare against this one.
   const past: LyfeEvent = {
     id: "evt_jzb_2024_diana",
+    organizerId: "org_jazzablanca",
     name: "Diana Krall, Jazzablanca 2024",
     description: "Édition 2024, soirée signature, complète.",
     category: "concert",
@@ -59,6 +60,7 @@ export function getAllEvents(): LyfeEvent[] {
   };
   const rejected: LyfeEvent = {
     id: "evt_jzb_after_rej",
+    organizerId: "org_jazzablanca",
     name: "After-party VIP, Anfa Beach Club",
     description: "Soirée privée post-Jazzablanca.",
     category: "club_night",
@@ -82,6 +84,7 @@ export function getAllEvents(): LyfeEvent[] {
   // One event per remaining state so screenshots cover the lifecycle.
   const draft: LyfeEvent = {
     id: "evt_jzb_draft_lounge",
+    organizerId: "org_jazzablanca",
     name: "Lounge Latino, brouillon",
     description: "Soirée en cours de configuration, non encore soumise.",
     category: "club_night",
@@ -98,6 +101,7 @@ export function getAllEvents(): LyfeEvent[] {
   };
   const cancelled: LyfeEvent = {
     id: "evt_jzb_cancelled_brunch",
+    organizerId: "org_jazzablanca",
     name: "Brunch Jazz Anfa, annulé",
     description: "Annulé pour raisons de programmation.",
     category: "concert",
@@ -130,6 +134,7 @@ export function getAllEvents(): LyfeEvent[] {
   };
   const settled: LyfeEvent = {
     id: "evt_jzb_2024_settled",
+    organizerId: "org_jazzablanca",
     name: "Pré-vente fidèles 2024, Jazzablanca",
     description: "Édition 2024, pré-vente fidèles, soldée.",
     category: "festival",
@@ -166,6 +171,7 @@ export function getAllEvents(): LyfeEvent[] {
   // 2024 pré-vente so the prior-edition comparison block has data.
   const jzb2025: LyfeEvent = {
     id: "evt_jzb_2025_full",
+    organizerId: "org_jazzablanca",
     name: "Jazzablanca, édition 2025",
     description:
       "18e édition. 10 jours, 4 scènes, 92 % de sell-through, retour public excellent.",

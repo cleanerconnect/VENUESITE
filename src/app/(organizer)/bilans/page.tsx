@@ -22,13 +22,14 @@ interface Row {
 export default function BilansPage() {
   const profile = useProfile();
 
-  // Bilan factory data is currently scoped to the Jazzablanca demo
-  // events. Other profiles (Rooftop Mansour, future accounts) will
-  // populate as their first events ship — for now we hard-empty
-  // anything that isn't Jazzablanca so the empty state shows.
+  // A profile sees the bilans of the events it owns. Previously this
+  // compared the profile id against a literal, which meant a second
+  // account showed an empty screen for a reason nothing in the data
+  // expressed. Ownership is now a field on the event.
   const rows = useMemo<Row[]>(() => {
-    if (profile && profile.id !== "org_jazzablanca") return [];
-    const all = getAllEvents();
+    const all = getAllEvents().filter(
+      (e) => !profile || e.organizerId === profile.id,
+    );
     return all
       .filter((e) => hasBilan(e))
       .sort((a, b) => (a.endsAt < b.endsAt ? 1 : -1))

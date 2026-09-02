@@ -43,6 +43,7 @@ const venues: Venue[] = [
 const upcomingEvents: LyfeEvent[] = [
   {
     id: "evt_jzb_robbie",
+    organizerId: "org_jazzablanca",
     name: "Robbie Williams, Soirée d'ouverture",
     description:
       "L'ouverture officielle de la 19e édition. Set complet, première mondiale du nouveau show.",
@@ -99,6 +100,7 @@ const upcomingEvents: LyfeEvent[] = [
   },
   {
     id: "evt_jzb_riles",
+    organizerId: "org_jazzablanca",
     name: "Rilès, Pass Semaine",
     description:
       "Tête d'affiche de la mi-semaine. Flow rare, scénographie inédite pour Jazzablanca.",
@@ -133,6 +135,7 @@ const upcomingEvents: LyfeEvent[] = [
   },
   {
     id: "evt_jzb_jorja",
+    organizerId: "org_jazzablanca",
     name: "Jorja Smith, Week-End 2",
     description:
       "Week-end de clôture. Voix nouvelle génération, programmation pensée comme un seul mouvement.",

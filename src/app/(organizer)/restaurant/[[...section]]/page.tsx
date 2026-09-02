@@ -10,7 +10,8 @@ import {
   restaurantHref,
   type RestaurantSlug,
 } from "@/lib/restaurant/slugs";
-import { RESTAURANT } from "@/lib/mock/restaurant";
+import { redirect } from "next/navigation";
+import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
 import { getAdvisor } from "@/lib/ai";
 import type { AnalyticsPeriod } from "@/lib/types/business";
@@ -52,12 +53,17 @@ export default async function RestaurantSectionPage({
   const slug = slugOf(section);
   if (!isRestaurantSlug(slug)) notFound();
 
+  // Venue scoping comes from the session, server side. Nothing here
+  // reads a venue id from the URL, and no venue constant is imported.
+  const session = await resolveSession();
+  if (!session) redirect("/login");
+
   const query = await searchParams;
   const period = readPeriod(query.p);
 
   const [overview, context] = await Promise.all([
-    loadOverview(),
-    loadContext(slug, period),
+    loadOverview(session.venueId, session.firstName),
+    loadContext(slug, session.venueId, period),
   ]);
 
   return <RestaurantScreen slug={slug} data={overview} context={context} />;
@@ -74,6 +80,7 @@ function readPeriod(raw: string | string[] | undefined): AnalyticsPeriod {
 /** Only the slices this screen declares it needs. */
 async function loadContext(
   slug: RestaurantSlug,
+  venueId: string,
   period: AnalyticsPeriod,
 ): Promise<Omit<ScreenContext, "overview">> {
   const repo = getRestaurantRepository();
@@ -84,22 +91,22 @@ async function loadContext(
     needs.map(async (need) => {
       switch (need) {
         case "customers":
-          ctx.customers = await repo.listCustomers(RESTAURANT.id);
+          ctx.customers = await repo.listCustomers(venueId);
           return;
         case "analytics":
           ctx.analytics = await repo.getAnalytics({
-            restaurantId: RESTAURANT.id,
+            restaurantId: venueId,
             period,
           });
           return;
         case "visibility":
           ctx.visibility = await repo.getVisibilityMetrics({
-            restaurantId: RESTAURANT.id,
+            restaurantId: venueId,
             period,
           });
           return;
         case "availability":
-          ctx.availability = await repo.getAvailability(RESTAURANT.id);
+          ctx.availability = await repo.getAvailability(venueId);
           return;
       }
     }),
@@ -113,8 +120,12 @@ async function loadContext(
  * because the nudge sits in the first viewport — a card that pops in
  * after paint reads as a layout bug, not as intelligence.
  */
-async function loadOverview(): Promise<RestaurantOverview> {
-  const data = await getRestaurantRepository().getOverview(RESTAURANT.id);
+async function loadOverview(
+  venueId: string,
+  viewerFirstName: string,
+): Promise<RestaurantOverview> {
+  const data = await getRestaurantRepository().getOverview(venueId);
+  data.greeting.firstName = viewerFirstName || data.greeting.firstName;
   const nudge = await getAdvisor().serviceNudge(data);
 
   if (!nudge) return { ...data, nudge: undefined };

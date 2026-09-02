@@ -8,6 +8,7 @@
 //     progress bar showing 23 / 100 confirmed reservations and a
 //     preview of the six categories that unlock at the threshold.
 
+import { getAllEvents } from "./events";
 import type {
   AudienceSegmentDetail,
   AudiencesData,
@@ -431,8 +432,24 @@ const BENCHMARKS: BenchmarkRow[] = [
   },
 ];
 
+/**
+ * Audiences unlock once a profile has enough buyers to segment. That is
+ * the real rule; comparing the profile id against a literal only
+ * happened to produce it for one account.
+ */
+const UNLOCK_THRESHOLD_BUYERS = 500;
+
+function buyersForProfile(profileId: string): number {
+  return getAllEvents()
+    .filter((e) => e.organizerId === profileId)
+    .reduce(
+      (n, e) => n + e.tiers.reduce((t, tier) => t + tier.sold, 0),
+      0,
+    );
+}
+
 export function getAudiencesByProfileId(profileId: string): AudiencesData {
-  if (profileId === "org_jazzablanca") {
+  if (buyersForProfile(profileId) >= UNLOCK_THRESHOLD_BUYERS) {
     return {
       state: "ready",
       heroStats: {

@@ -15,6 +15,7 @@ import type { CheckInResult, NotificationPreferences } from "@/lib/types/busines
 import { getRestaurantOverview } from "@/lib/mock/restaurant";
 import * as business from "@/lib/mock/business";
 import * as store from "@/lib/db/venue-store";
+import { overview as overviewFromStore } from "@/lib/db/overview-store";
 import type {
   AnalyticsInput,
   CheckInInput,
@@ -28,8 +29,10 @@ import type {
 } from "./repository";
 
 export class MockRestaurantRepository implements RestaurantRepository {
-  async getOverview(): Promise<RestaurantOverview> {
-    return getRestaurantOverview();
+  async getOverview(venueId: string): Promise<RestaurantOverview> {
+    // Seeded database wins. The fixture remains only so an un-seeded
+    // checkout boots instead of erroring — run `npm run db:reset`.
+    return overviewFromStore(venueId, "") ?? getRestaurantOverview();
   }
 
   async seatReservation(_input: SeatReservationInput) {
