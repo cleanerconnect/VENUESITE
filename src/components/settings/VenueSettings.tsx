@@ -63,7 +63,7 @@ export function VenueSettings({
   const [active, setActive] = useState<SectionId>(visible[0]?.id ?? "staff");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4">
       <PageHeader
         title="Réglages du lieu"
         subtitle="Tout ce qui suit est enregistré et visible par vos clients dans l'application."

@@ -2,14 +2,14 @@
 //
 // The dashboard is not the only thing that changes a service. A diner
 // books from the LYFE consumer app, cancels from a confirmation SMS, or
-// leaves a review an hour after paying — and the floor plan on the pass
+// leaves a review an hour after paying — and the book on the host stand
 // has to reflect that without anyone refreshing.
 //
 // These are the events the platform sends in. They are deliberately
 // narrow: an event names what happened and to which entity, never a patch
 // to apply. The dashboard re-reads the overview and re-derives; that way
 // a missed or duplicated event costs a redundant fetch instead of a
-// floor plan that drifts out of sync with the book.
+// screen that drifts out of sync with the book.
 
 export type LyfeEventType =
   | "reservation.created"
@@ -18,7 +18,6 @@ export type LyfeEventType =
   | "reservation.arrived"
   | "reservation.no_show"
   | "waitlist.joined"
-  | "table.freed"
   | "review.received"
   | "payout.settled";
 
@@ -30,10 +29,10 @@ export interface LyfeEvent {
   restaurantId: string;
   /** ISO 8601, when the event occurred (not when it was delivered). */
   occurredAt: string;
-  /** Entity the event is about — reservation, table, review or item id. */
+  /** Entity the event is about — a reservation, review or payout id. */
   subjectId: string;
   /** Where it came from, for the activity feed's actor line. */
-  source: "app" | "web" | "phone" | "pos" | "system";
+  source: "app" | "web" | "phone" | "system";
 }
 
 const EVENT_TYPES = new Set<string>([
@@ -43,7 +42,6 @@ const EVENT_TYPES = new Set<string>([
   "reservation.arrived",
   "reservation.no_show",
   "waitlist.joined",
-  "table.freed",
   "review.received",
   "payout.settled",
 ]);
@@ -67,7 +65,7 @@ export function parseLyfeEvent(input: unknown): LyfeEvent | null {
 
   const source =
     typeof e.source === "string" &&
-    ["app", "web", "phone", "pos", "system"].includes(e.source)
+    ["app", "web", "phone", "system"].includes(e.source)
       ? (e.source as LyfeEvent["source"])
       : "system";
 

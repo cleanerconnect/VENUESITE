@@ -183,11 +183,26 @@ CUSTOMERS.forEach(([id, name, phone, email, visits, lastDays, avg, noShows, pref
 });
 
 // ── Current service ──────────────────────────────────────────
+//
+// Anchored to whenever the seed runs, so a demo opened at any hour shows
+// a service in progress. The kind is derived from that hour rather than
+// fixed: a "Dîner" running from 09h05 is the kind of detail that tells a
+// partner the whole screen is fake.
 const SERVICE = "svc_current";
 const opens = new Date(now.getTime() - 100 * 60_000);
 const closes = new Date(now.getTime() + 170 * 60_000);
+
+function serviceKindFor(date) {
+  const hour = date.getHours();
+  if (hour < 11) return ["petit_dejeuner", "Petit-déjeuner"];
+  if (hour < 16) return ["dejeuner", "Déjeuner"];
+  if (hour < 23) return ["diner", "Dîner"];
+  return ["tardif", "Service tardif"];
+}
+const [serviceKind, serviceLabel] = serviceKindFor(opens);
+
 insert("services", {
-  id: SERVICE, venue_id: VENUE, kind: "diner", label: "Service en cours",
+  id: SERVICE, venue_id: VENUE, kind: serviceKind, label: serviceLabel,
   date: day(opens), opens_at: iso(opens), closes_at: iso(closes),
   state: "peak", capacity: 120, booked_covers: 104, arrived_covers: 86,
   no_show_covers: 6, revenue_cents: mad(63_400),

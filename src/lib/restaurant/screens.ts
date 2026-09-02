@@ -126,7 +126,9 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
       },
     ],
     footnote: {
-      text: `${service.bookedCovers} couverts réservés sur ${service.capacity} · ${service.noShowCovers} absences enregistrées.`,
+      // Covers, not bookings — the KPI tile beside it counts incidents,
+      // and two unlabelled numbers that disagree read as a bug.
+      text: `${service.bookedCovers} couverts réservés sur ${service.capacity} · ${service.noShowCovers} couverts absents.`,
       badge: {
         label: `${Math.round((service.bookedCovers / Math.max(1, service.capacity)) * 100)} % engagé`,
         tone: "violet",
@@ -176,7 +178,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
       {
         action: {
           kind: "link",
-          label: "Voir le plan de salle →",
+          label: "Ouvrir le carnet →",
           href: restaurantHref("reservations"),
         },
         variant: "secondary",

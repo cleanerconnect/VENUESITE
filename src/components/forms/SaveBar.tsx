@@ -27,7 +27,9 @@ export function SaveBar({
   const saving = state === "saving";
 
   return (
-    <div className="sticky bottom-0 z-10 -mx-1 px-1 pb-1 pt-3 bg-gradient-to-t from-canvas via-canvas to-transparent">
+    // `pt-6` rather than `pt-3`: the gradient has to be tall enough that
+    // the field above fades out under it instead of being clipped by it.
+    <div className="sticky bottom-0 z-10 -mx-1 px-1 pb-1 pt-6 bg-gradient-to-t from-canvas via-canvas to-transparent">
       <div className="flex items-center gap-3 flex-wrap border border-line bg-surface rounded-[var(--radius-md)] px-4 py-3">
         <div className="flex-1 min-w-[180px] text-meta" role="status" aria-live="polite">
           <AnimatePresence mode="wait" initial={false}>

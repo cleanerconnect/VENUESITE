@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { resolveIcon } from "@/lib/dashboard/icons";
 import type {
   Action,
@@ -144,22 +144,32 @@ export function MetricText({ metric }: { metric: Metric }) {
 }
 
 export function DeltaChip({ delta }: { delta: Delta }) {
+  // No change is neither good nor bad. Painting a flat figure green with
+  // an up arrow claims an improvement that did not happen.
+  const flat = delta.value === 0;
   const good = isDeltaPositive(delta);
-  const up = delta.value >= 0;
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 text-meta font-semibold num",
-        good ? "text-success" : "text-danger",
+        "inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-meta font-semibold num",
+        flat ? "text-ink-mute" : good ? "text-success" : "text-danger",
       )}
     >
-      {up ? (
-        <ArrowUpRight size={14} strokeWidth={2} />
-      ) : (
-        <ArrowDownRight size={14} strokeWidth={2} />
-      )}
-      {formatDelta(delta)}
-      <span className="text-ink-mute font-medium">· {delta.period}</span>
+      {/* Arrow and figure are one unit — a percentage that wraps away
+          from its direction arrow reads as a different number. */}
+      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        {flat ? (
+          <Minus size={14} strokeWidth={2} />
+        ) : delta.value > 0 ? (
+          <ArrowUpRight size={14} strokeWidth={2} />
+        ) : (
+          <ArrowDownRight size={14} strokeWidth={2} />
+        )}
+        {formatDelta(delta)}
+      </span>
+      <span className="text-ink-mute font-medium whitespace-nowrap">
+        · {delta.period}
+      </span>
     </span>
   );
 }

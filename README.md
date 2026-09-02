@@ -6,10 +6,10 @@ direction. Visual layer + interactions complete; mock data is shaped exactly
 like the eventual API responses so backend wiring is a search-and-replace
 later.
 
-> **Auth status — demo only.** Sessions are kept in `localStorage` and
-> mirrored to a presence cookie that lets `middleware.ts` short-circuit
-> protected routes server-side. Real auth (Auth.js or Clerk) lands in the
-> DigiNegoce post-BETA handoff — see `docs/POST_BETA_HANDOFF.md`.
+> **Auth status — demo only.** A `DemoSessionDriver` sits behind the
+> `SessionDriver` interface, mirrored to a presence cookie that lets
+> `middleware.ts` short-circuit protected routes server-side. Real auth
+> is deliberately left open — see `docs/HANDOFF.md` §3.
 
 ## Run
 
@@ -152,6 +152,20 @@ pre-existing app behaviour — `/events/[id]` does the same — not specific
 to the restaurant routes.
 
 ## Handing off to the dev team
+
+Start with **`docs/HANDOFF.md`**, then open **`/styleguide`** — it needs
+no session and no seeded database, and it shows every component in every
+state.
+
+| Document | What it answers |
+|---|---|
+| `docs/HANDOFF.md` | What is solid, what is open, what to build first |
+| `docs/INTERFACE.md` | Layout, navigation, roles, naming, responsive, copy |
+| `docs/CONVERGENCE.md` | What was unified across the two workspaces, what is still duplicated |
+| `docs/APP_MAPPING.md` | Every app element → where a partner controls it |
+| `docs/INTEGRATION.md` | The three external seams |
+| `docs/SCOPE_AUDIT.md` | The EP40-US1/US2 scope pass |
+| `docs/PHASE2_HARDCODED_AUDIT.md` | The fixture-removal pass |
 
 **`docs/INTEGRATION.md`** is the map. Three seams carry every external
 dependency — data, AI, app connections — each an interface with a mock
