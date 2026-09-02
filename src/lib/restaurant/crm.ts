@@ -15,9 +15,9 @@ import type {
 import type { Customer, LoyaltyTier } from "@/lib/types/business";
 import { CUSTOMER_SEGMENT, LOYALTY_TIER } from "@/lib/types/business";
 import type { GuestReview } from "@/lib/types/restaurant";
+import { COUNT, MAD } from "@/lib/dashboard/formats";
 
-const MAD = { kind: "currency" as const, currency: "MAD" };
-const COUNT = { kind: "number" as const };
+
 
 const LOYALTY_TONE: Record<LoyaltyTier, Badge["tone"]> = {
   nouveau: "muted",

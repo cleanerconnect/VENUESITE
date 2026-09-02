@@ -14,6 +14,10 @@ const PUBLIC_PATHS = new Set([
   "/splash",
   "/login",
   "/contact",
+  // The styleguide holds no venue data — it renders from literal props —
+  // so it stays reachable without a session. That is the point: a
+  // developer integrating the portal can open it before auth exists.
+  "/styleguide",
 ]);
 
 export function middleware(req: NextRequest) {

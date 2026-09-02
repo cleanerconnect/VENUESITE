@@ -15,9 +15,9 @@ import type {
 } from "@/lib/types/business";
 import { ANALYTICS_PERIOD } from "@/lib/types/business";
 import { restaurantHref } from "./slugs";
+import { COUNT, MAD } from "@/lib/dashboard/formats";
 
-const MAD = { kind: "currency" as const, currency: "MAD" };
-const COUNT = { kind: "number" as const };
+
 const PCT = { kind: "percent" as const, decimals: 1 };
 
 const WEEKDAYS = [

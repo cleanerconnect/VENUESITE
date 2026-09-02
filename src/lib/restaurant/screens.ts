@@ -68,9 +68,9 @@ import {
   isRestaurantSlug,
   restaurantHref,
 } from "./slugs";
+import { COUNT, MAD } from "@/lib/dashboard/formats";
 
-const MAD = { kind: "currency" as const, currency: "MAD" };
-const COUNT = { kind: "number" as const };
+
 
 const hm = (iso: string) => format(new Date(iso), "HH'h'mm", { locale: fr });
 const dayLabel = (iso: string) =>

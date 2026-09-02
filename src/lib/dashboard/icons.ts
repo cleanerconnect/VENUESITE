@@ -152,6 +152,9 @@ export const ICONS = {
 
 export type IconKey = keyof typeof ICONS;
 
+/** Every key, for the styleguide and for validating a spec from a backend. */
+export const ICON_KEYS = Object.keys(ICONS) as IconKey[];
+
 export function resolveIcon(key: IconKey | undefined): LucideIcon | null {
   if (!key) return null;
   return ICONS[key] ?? null;
