@@ -16,6 +16,7 @@ import * as store from "@/lib/db/venue-store";
 import {
   analytics as analyticsFromStore,
   overview as overviewFromStore,
+  transitionBooking,
   visibility as visibilityFromStore,
 } from "@/lib/db/overview-store";
 import {
@@ -95,6 +96,14 @@ export class MockRestaurantRepository implements RestaurantRepository {
     if (match.state === "arrived") {
       return { ok: false, method: "manual", error: "already_used" };
     }
+    if (match.state === "cancelled" || match.state === "no_show") {
+      return { ok: false, method: "manual", error: "expired" };
+    }
+
+    // The transition is persisted here, not left to the client's
+    // optimistic copy. A check-in that lives only in one browser lets the
+    // same code through twice — which is exactly what a QR must not do.
+    transitionBooking(input.restaurantId, match.id, "arrived", "venue");
 
     return {
       ok: true,

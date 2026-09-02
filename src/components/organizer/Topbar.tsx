@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/dashboard/primitives";
 import { RoleGate } from "@/lib/auth/role";
 import { resolveWorkspace } from "@/lib/nav/workspaces";
+import { useChromeCommand } from "@/lib/nav/chrome-commands";
 import { useScannerStore } from "@/lib/stores/scanner";
 import { useAssistantStore } from "@/lib/stores/assistant";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
@@ -23,6 +24,7 @@ export function Topbar() {
 
   const openScanner = useScannerStore((s) => s.setOpen);
   const openAssistant = useAssistantStore((s) => s.setOpen);
+  const runQuickAction = useChromeCommand();
   const openDrawer = useMobileNavStore((s) => s.setDrawerOpen);
 
   // Global keyboard shortcuts:
@@ -47,10 +49,6 @@ export function Topbar() {
   // The topbar lives outside any screen's CommandProvider, so it maps its
   // own verbs. Unknown verbs fall through to the assistant rather than
   // dead-ending on a silent button.
-  const runQuickAction = (command: string) => {
-    if (command === "scanner.open") return openScanner(true);
-    return openAssistant(true);
-  };
 
   return (
     <header className="sticky top-0 z-20 h-14 md:h-[72px] bg-canvas/80 backdrop-blur-md border-b border-line-soft">

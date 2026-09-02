@@ -19,6 +19,13 @@ export function formatDateTimeFR(iso: string | Date) {
   return format(d, "dd MMM · HH'h'mm", { locale: fr });
 }
 
+/** "20h30" — the French clock, used wherever a service time is shown. */
+export function formatTimeFR(iso: string | Date) {
+  return format(typeof iso === "string" ? new Date(iso) : iso, "HH'h'mm", {
+    locale: fr,
+  });
+}
+
 export function formatRelativeFR(iso: string | Date) {
   const d = typeof iso === "string" ? new Date(iso) : iso;
   return `il y a ${formatDistanceToNowStrict(d, { locale: fr })}`;

@@ -69,10 +69,11 @@ import {
   restaurantHref,
 } from "./slugs";
 import { COUNT, MAD } from "@/lib/dashboard/formats";
+import { formatTimeFR } from "@/lib/utils/format";
 
 
 
-const hm = (iso: string) => format(new Date(iso), "HH'h'mm", { locale: fr });
+const hm = formatTimeFR;
 const dayLabel = (iso: string) =>
   format(new Date(iso), "EEEE d MMMM", { locale: fr });
 

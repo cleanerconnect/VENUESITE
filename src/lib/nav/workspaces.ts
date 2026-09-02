@@ -29,13 +29,17 @@ export interface NavItem {
   allow?: Role[];
 }
 
-export interface BottomTab {
+/**
+ * A phone tab either navigates (`href`) or opens something in place
+ * (`command`) — exactly one. The raised centre button is usually a
+ * command: door duty should not cost the host their place on the screen.
+ */
+export type BottomTab = {
   label: string;
-  href: string;
   icon: IconKey;
   /** The elevated centre button. One per workspace. */
   raised?: boolean;
-}
+} & ({ href: string; command?: never } | { command: string; href?: never });
 
 export interface TopbarSpec {
   searchPlaceholder: string;
@@ -180,16 +184,20 @@ const RESTAURANT_WORKSPACE: Workspace = {
   tabs: [
     { label: "Aperçu", href: restaurantHref(""), icon: "layout" },
     { label: "Carnet", href: restaurantHref("reservations"), icon: "calendar-clock" },
+    // Door duty gets the raised centre button, the way the event
+    // workspace raises the scanner. It opens a sheet rather than
+    // navigating, so it carries a command instead of an href.
+    { label: "Arrivées", command: "checkin.open", icon: "user-check", raised: true },
     { label: "Carte", href: restaurantHref("menu"), icon: "utensils-crossed" },
     { label: "Plus", href: "/plus", icon: "grid" },
   ],
   topbar: {
     searchPlaceholder: "Rechercher une réservation, un client…",
     quickAction: {
-      label: "Confirmer",
+      label: "Arrivées",
       icon: "user-check",
-      command: "waitlist.admitNext",
-      title: "Confirmer la prochaine personne en attente",
+      command: "checkin.open",
+      title: "Enregistrer une arrivée",
     },
     primaryAction: {
       label: "Nouvelle réservation",

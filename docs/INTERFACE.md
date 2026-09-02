@@ -88,9 +88,16 @@ the chrome resolves the active workspace from the pathname and paints it.
 Adding a third product is a new entry in that file, not a fork of four
 components.
 
+A nav entry either navigates (`href`) or fires a command (`command`) —
+the type enforces exactly one. Commands resolve in
+`lib/nav/chrome-commands.ts`, which keeps `workspaces.ts` plain data. The
+raised centre tab is usually a command: a host checking a guest in should
+not lose their place on the screen behind the sheet.
+
 | Surface | Desktop | Phone |
 |---|---|---|
 | Primary nav | Left sidebar, grouped, collapsible | Bottom tabs, 4 + one raised centre |
+| Door duty | Topbar quick-action pill | The raised centre tab |
 | Overflow | — | `/plus` sheet |
 | Search + quick action | Topbar | Topbar, condensed |
 | Workspace switch | Identity card, top of the sidebar | `/plus` |
@@ -181,8 +188,12 @@ one `xl` usage — do not add more without a reason.
 1. **The day view** — `mobileBlocks` reorders the overview so the service
    hero and the next arrivals sit above the fold, and the payout tile
    drops out via `surface: "desktop"`.
-2. **Check-in** — the topbar quick action is a thumb-reachable dark pill,
-   and the scan sheet opens from the bottom.
+2. **Check-in** — the raised centre tab opens the arrivals sheet from the
+   bottom of the screen. Both ways in are within thumb reach: the code
+   field takes focus on open (which is also where a hardware scanner
+   types), and every name in the "Attendus" list has a 44px "Arrivé"
+   button on the right edge. On desktop the same sheet opens from the
+   topbar pill.
 3. **Accept / refuse** — the actions are on the row itself and in the
    bottom sheet, both within thumb reach. Neither requires the kebab.
 

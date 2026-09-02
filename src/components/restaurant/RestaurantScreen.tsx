@@ -19,6 +19,7 @@ import {
 } from "./RejectBookingDialog";
 import { REJECTION_REASONS } from "@/lib/types/business";
 import { COPY } from "@/lib/copy/fr";
+import { markGuestArrived } from "@/app/actions/checkin";
 
 // Client boundary for the restaurant workspace.
 //
@@ -67,10 +68,19 @@ export function RestaurantScreen({
 
     return {
       "reservation.arrive": (payload) => {
+        const id = String(payload?.id ?? "");
         const before = store().data;
-        store().markArrived(String(payload?.id ?? ""));
+        store().markArrived(id);
         if (store().data === before) return;
         withUndo(COPY.toast.arrived);
+        // Persist behind the optimistic update, and roll back if the
+        // server refuses. A check-in that lives only in this browser
+        // would let the same guest through twice.
+        void markGuestArrived(id).then((result) => {
+          if (result.ok) return;
+          useRestaurantStore.getState().undo();
+          toast({ tone: "danger", title: result.message ?? COPY.form.savingFailed });
+        });
       },
 
       "reservation.confirm": (payload) => {

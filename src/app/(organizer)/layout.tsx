@@ -2,6 +2,7 @@ import { MobileSidebarDrawer, Sidebar } from "@/components/organizer/Sidebar";
 import { Topbar } from "@/components/organizer/Topbar";
 import { BottomTabs } from "@/components/organizer/BottomTabs";
 import { ScannerModal } from "@/components/organizer/ScannerModal";
+import { CheckInSheet } from "@/components/restaurant/CheckInSheet";
 import { AssistantFAB } from "@/components/organizer/Assistant";
 import { SessionGuard } from "@/components/auth/SessionGuard";
 import { resolveSession } from "@/lib/auth/server-session";
@@ -45,6 +46,7 @@ export default async function OrganizerLayout({
 
           {/* Persistent global surfaces */}
           <ScannerModal />
+          <CheckInSheet />
           <AssistantFAB />
         </div>
       </div>

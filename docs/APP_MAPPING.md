@@ -76,7 +76,7 @@ The app and the portal are two ends of one state machine.
 | Guest joins the waitlist | app | Carnet → "Liste d'attente" |
 | Venue promotes from the waitlist | **portal** | `waitlist.admitNext` |
 | Guest arrives — QR scanned | app QR, portal validates | Check-in |
-| Guest arrives — manual | **portal** | `reservation.arrive` |
+| Guest arrives — manual | **portal** | `reservation.arrive`, or the arrivals sheet |
 | Guest never arrives | **portal** | `reservation.noShow` |
 
 Two invariants the portal holds and must keep holding:
@@ -87,7 +87,10 @@ Two invariants the portal holds and must keep holding:
   refusals can be aggregated; a free-text-only reason cannot be.
 - **The portal validates the QR, it never mints it.** The code is issued
   app-side (EP20-US9) and resolved server-side. The portal passes the
-  scanned string along and does not parse it beyond that.
+  scanned string along and does not parse it beyond that. The transition
+  is persisted by the resolver, not by the client's optimistic copy — a
+  check-in that lived only in one browser would let the same code through
+  twice.
 
 ### 1.5 Money
 
