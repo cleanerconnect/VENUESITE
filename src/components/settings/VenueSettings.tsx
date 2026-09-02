@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { VenueIdentityForm } from "./VenueIdentityForm";
+import { VenueListingForm } from "./VenueListingForm";
+import { MenuListingForm } from "./MenuListingForm";
 import { OpeningHoursForm } from "./OpeningHoursForm";
 import { AssetManager } from "./AssetManager";
 import { StaffForm } from "./StaffForm";
@@ -10,21 +12,39 @@ import type { PortalRole } from "@/lib/auth/server-session";
 import type { VenueAsset } from "@/lib/assets/types";
 import type { VenueAvailability } from "@/lib/types/business";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
-import type { VenueIdentityInput } from "@/app/actions/venue";
-import { cn } from "@/lib/utils/cn";
+import type {
+  MenuItemInput,
+  VenueIdentityInput,
+  VenueListingInput,
+} from "@/app/actions/venue";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { FilterTabs } from "@/components/ui/FilterTabs";
 
-type SectionId = "identity" | "hours" | "media" | "staff";
+type SectionId =
+  | "identity"
+  | "listing"
+  | "menu"
+  | "hours"
+  | "media"
+  | "staff";
 
+// Ordered the way a partner fills the fiche in: who you are, how you are
+// listed, what you serve, when you are open, what you look like, who else
+// gets in.
 const SECTIONS: { id: SectionId; label: string; minRole: PortalRole[] }[] = [
   { id: "identity", label: "Identité", minRole: ["owner", "manager"] },
+  { id: "listing", label: "Fiche", minRole: ["owner", "manager"] },
+  { id: "menu", label: "Carte", minRole: ["owner", "manager"] },
   { id: "hours", label: "Horaires", minRole: ["owner", "manager"] },
-  { id: "media", label: "Photos et carte", minRole: ["owner", "manager"] },
+  { id: "media", label: "Photos", minRole: ["owner", "manager"] },
   { id: "staff", label: "Équipe", minRole: ["owner", "manager", "staff"] },
 ];
 
 export function VenueSettings({
   role,
   identity,
+  listing,
+  menuItems,
   availability,
   photos,
   menuFiles,
@@ -32,6 +52,8 @@ export function VenueSettings({
 }: {
   role: PortalRole;
   identity: VenueIdentityInput;
+  listing: VenueListingInput;
+  menuItems: MenuItemInput[];
   availability: VenueAvailability;
   photos: VenueAsset[];
   menuFiles: VenueAsset[];
@@ -42,37 +64,21 @@ export function VenueSettings({
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-h1 text-ink">Réglages du lieu</h1>
-        <p className="text-body text-ink-soft mt-2">
-          Tout ce qui suit est enregistré et visible par vos clients dans
-          l&apos;application.
-        </p>
-      </header>
+      <PageHeader
+        title="Réglages du lieu"
+        subtitle="Tout ce qui suit est enregistré et visible par vos clients dans l'application."
+      />
 
-      <div className="border-b border-line-soft overflow-x-auto scroll-thin">
-        <div className="flex gap-1 min-w-max">
-          {visible.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setActive(s.id)}
-              aria-pressed={active === s.id}
-              className={cn(
-                "relative px-4 py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors",
-                active === s.id ? "text-ink" : "text-ink-mute hover:text-ink",
-              )}
-            >
-              {s.label}
-              {active === s.id ? (
-                <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-violet rounded-full" />
-              ) : null}
-            </button>
-          ))}
-        </div>
-      </div>
+      <FilterTabs
+        layoutId="venue-settings-underline"
+        value={active}
+        onChange={setActive}
+        tabs={visible.map((s) => ({ id: s.id, label: s.label }))}
+      />
 
       {active === "identity" ? <VenueIdentityForm initial={identity} /> : null}
+      {active === "listing" ? <VenueListingForm initial={listing} /> : null}
+      {active === "menu" ? <MenuListingForm items={menuItems} /> : null}
       {active === "hours" ? <OpeningHoursForm initial={availability} /> : null}
       {active === "media" ? (
         <div className="space-y-5">
@@ -84,7 +90,7 @@ export function VenueSettings({
           />
           <AssetManager
             kind="menu_file"
-            title="Carte"
+            title="Carte (fichier)"
             description="PDF ou image. Les clients la consultent depuis votre fiche."
             initial={menuFiles}
           />

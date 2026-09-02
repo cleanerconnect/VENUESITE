@@ -53,6 +53,113 @@ export function updateVenueIdentity(
   );
 }
 
+// ── Listing facets ───────────────────────────────────────────
+//
+// Price range, tags, features and ambience are what the consumer app
+// filters and renders as chips. They live in `venue_tags` as rows rather
+// than a JSON blob so the app can query them; the portal owns them, the
+// app only reads.
+
+export type VenueTagKind = "tag" | "feature" | "ambience";
+
+export interface VenueListingPatch {
+  /** 1–4, rendered in the app as € to €€€€. */
+  priceRange: number;
+  tags: string[];
+  features: string[];
+  ambience: string[];
+}
+
+export function updateVenueListing(
+  venueId: string,
+  patch: VenueListingPatch,
+): void {
+  // Replace-in-transaction rather than diff: the set is small, and a
+  // partial failure that left half the chips showing would be worse than
+  // the write not landing at all.
+  transaction(() => {
+    run(
+      "UPDATE venues SET price_range = ?, updated_at = ? WHERE id = ?",
+      patch.priceRange,
+      new Date().toISOString(),
+      venueId,
+    );
+    run("DELETE FROM venue_tags WHERE venue_id = ?", venueId);
+    const groups: [VenueTagKind, string[]][] = [
+      ["tag", patch.tags],
+      ["feature", patch.features],
+      ["ambience", patch.ambience],
+    ];
+    for (const [kind, values] of groups) {
+      values.forEach((value, position) => {
+        run(
+          `INSERT INTO venue_tags (venue_id, kind, value, position)
+           VALUES (?, ?, ?, ?)`,
+          venueId,
+          kind,
+          value,
+          position,
+        );
+      });
+    }
+  });
+}
+
+// ── Menu listing ─────────────────────────────────────────────
+//
+// The dishes the app shows before a guest books. Price, description,
+// dietary markers and whether the listing is live — no cost, no stock.
+
+export interface MenuItemPatch {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  priceMad: number;
+  signature: boolean;
+  visible: boolean;
+  dietary: string[];
+}
+
+export function updateMenuItem(venueId: string, patch: MenuItemPatch): void {
+  transaction(() => {
+    // The venue id in the WHERE clause is the scope check: a patch aimed
+    // at another venue's item updates zero rows rather than succeeding.
+    const { changes } = run(
+      `UPDATE menu_items SET
+         name = ?, description = ?, category = ?, price_cents = ?,
+         signature = ?, visible = ?
+       WHERE id = ? AND venue_id = ?`,
+      patch.name,
+      patch.description,
+      patch.category,
+      Math.round(patch.priceMad * 100),
+      patch.signature ? 1 : 0,
+      patch.visible ? 1 : 0,
+      patch.id,
+      venueId,
+    );
+    if (Number(changes) === 0) throw new UnknownMenuItemError(patch.id);
+
+    run("DELETE FROM menu_item_dietary WHERE item_id = ?", patch.id);
+    for (const tag of patch.dietary) {
+      run(
+        "INSERT INTO menu_item_dietary (item_id, tag) VALUES (?, ?)",
+        patch.id,
+        tag,
+      );
+    }
+  });
+}
+
+/** Raised when an id does not belong to the session's venue, or is gone. */
+export class UnknownMenuItemError extends Error {
+  constructor(id: string) {
+    super(`Plat introuvable : ${id}`);
+    this.name = "UnknownMenuItemError";
+  }
+}
+
 // ── Staff ────────────────────────────────────────────────────
 
 export interface StaffMemberRow {

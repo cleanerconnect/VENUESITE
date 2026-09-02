@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { resolveSession } from "@/lib/auth/server-session";
-import { venueProfile } from "@/lib/db/overview-store";
+import { menuItems, venueProfile } from "@/lib/db/overview-store";
 import { availability } from "@/lib/db/venue-store";
 import { listStaff } from "@/lib/db/venue-write-store";
 import { listAssets } from "@/lib/db/asset-store";
@@ -48,6 +48,13 @@ export default async function VenueSettingsPage() {
         website: profile.website,
         kind: (String(row?.kind ?? "restaurant") === "drinks" ? "drinks" : "restaurant"),
       }}
+      listing={{
+        priceRange: profile.priceRange,
+        tags: profile.tags,
+        features: profile.features,
+        ambience: profile.ambience,
+      }}
+      menuItems={menuItems(session.venueId)}
       availability={availability(session.venueId)}
       photos={listAssets(session.venueId, "photo")}
       menuFiles={listAssets(session.venueId, "menu_file")}

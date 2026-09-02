@@ -11,6 +11,9 @@ import { revalidatePath } from "next/cache";
 import { requireVenueAccess, type PortalRole } from "@/lib/auth/server-session";
 import {
   updateVenueIdentity,
+  updateVenueListing,
+  updateMenuItem,
+  UnknownMenuItemError,
   inviteStaff,
   listStaff,
   removeStaff,
@@ -47,7 +50,14 @@ import {
   validateSlot,
 } from "@/lib/forms/validation";
 import type { VenueAvailability } from "@/lib/types/business";
-import type { RestaurantProfile } from "@/lib/types/restaurant";
+import { VENUE_FEATURE } from "@/lib/types/restaurant";
+import type {
+  DietaryTag,
+  MenuCategory,
+  RestaurantProfile,
+  VenueFeature,
+} from "@/lib/types/restaurant";
+import { RESTAURANT_SETTINGS_PATH } from "@/lib/restaurant/slugs";
 
 const RESTAURANT_PATH = "/restaurant/[[...section]]";
 
@@ -118,6 +128,133 @@ export async function saveVenueIdentity(
   revalidatePath(RESTAURANT_PATH, "page");
   const profile = venueProfile(session.venueId);
   return profile ? ok(profile) : failed("Lieu introuvable.");
+}
+
+// ── Listing facets ───────────────────────────────────────────
+//
+// What the consumer app filters and renders as chips. Everything here
+// is app-facing: change it in the portal, the listing changes.
+
+export interface VenueListingInput {
+  priceRange: number;
+  tags: string[];
+  features: VenueFeature[];
+  ambience: string[];
+}
+
+export async function saveVenueListing(
+  input: VenueListingInput,
+): Promise<WriteResult<RestaurantProfile>> {
+  let session;
+  try {
+    session = await requireVenueAccess(await currentVenueId());
+  } catch {
+    return failed("Session expirée. Reconnectez-vous.");
+  }
+  if (session.role === "staff") {
+    return failed("Votre rôle ne permet pas de modifier la fiche.");
+  }
+
+  const errors = [
+    ...(input.priceRange < 1 || input.priceRange > 4
+      ? [{ field: "priceRange", message: "Choisissez une gamme de prix." }]
+      : []),
+    // A listing with thirty chips is a listing nobody reads, and the app
+    // truncates. Refusing here is kinder than silently dropping the tail.
+    ...(input.tags.length > 8
+      ? [{ field: "tags", message: "8 mots-clés au maximum." }]
+      : []),
+    ...(input.ambience.length > 5
+      ? [{ field: "ambience", message: "5 ambiances au maximum." }]
+      : []),
+    ...(input.tags.some((t) => t.length > 30)
+      ? [{ field: "tags", message: "Un mot-clé fait 30 caractères au plus." }]
+      : []),
+    ...(input.features.some((f) => !(f in VENUE_FEATURE))
+      ? [{ field: "features", message: "Équipement inconnu." }]
+      : []),
+  ];
+  if (errors.length) return invalid(errors);
+
+  updateVenueListing(session.venueId, {
+    priceRange: input.priceRange,
+    // Trimmed and de-duplicated here rather than in the form: the client
+    // is one caller of this action, not the only one.
+    tags: unique(input.tags),
+    features: unique(input.features),
+    ambience: unique(input.ambience),
+  });
+
+  revalidatePath(RESTAURANT_PATH, "page");
+  revalidatePath(RESTAURANT_SETTINGS_PATH, "page");
+  const profile = venueProfile(session.venueId);
+  return profile ? ok(profile) : failed("Lieu introuvable.");
+}
+
+function unique(values: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of values) {
+    const value = raw.trim();
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    out.push(value);
+  }
+  return out;
+}
+
+// ── Menu listing ─────────────────────────────────────────────
+
+export interface MenuItemInput {
+  id: string;
+  name: string;
+  description: string;
+  category: MenuCategory;
+  priceMad: number;
+  signature: boolean;
+  visible: boolean;
+  dietary: DietaryTag[];
+}
+
+export async function saveMenuItem(
+  input: MenuItemInput,
+): Promise<WriteResult<MenuItemInput>> {
+  let session;
+  try {
+    session = await requireVenueAccess(await currentVenueId());
+  } catch {
+    return failed("Session expirée. Reconnectez-vous.");
+  }
+  if (session.role === "staff") {
+    return failed("Votre rôle ne permet pas de modifier la carte.");
+  }
+
+  const errors = validate(input, {
+    name: [required("Le nom du plat"), maxLength(80, "Le nom du plat")],
+    description: [maxLength(280, "La description")],
+  });
+  if (input.priceMad < 0 || !Number.isFinite(input.priceMad)) {
+    errors.push({ field: "priceMad", message: "Prix invalide." });
+  }
+  if (errors.length) return invalid(errors);
+
+  try {
+    updateMenuItem(session.venueId, {
+      ...input,
+      name: input.name.trim(),
+      description: input.description.trim(),
+      dietary: unique(input.dietary),
+    });
+  } catch (error) {
+    if (error instanceof UnknownMenuItemError) {
+      return failed("Ce plat n'existe plus. Rechargez la page.");
+    }
+    throw error;
+  }
+
+  revalidatePath(RESTAURANT_PATH, "page");
+  revalidatePath(RESTAURANT_SETTINGS_PATH, "page");
+  return ok(input);
 }
 
 // ── Availability ─────────────────────────────────────────────

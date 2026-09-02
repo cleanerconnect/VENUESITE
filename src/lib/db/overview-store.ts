@@ -180,7 +180,9 @@ function waitlist(venueId: string): Reservation[] {
 
 // ── Menu, reviews, activity, payouts ─────────────────────────
 
-function menuItems(venueId: string): MenuItem[] {
+/** Also the settings editor's source — the app listing and the form
+ *  read the same rows, so what a partner edits is what a diner sees. */
+export function menuItems(venueId: string): MenuItem[] {
   return all(
     "SELECT * FROM menu_items WHERE venue_id = ? ORDER BY position",
     venueId,
