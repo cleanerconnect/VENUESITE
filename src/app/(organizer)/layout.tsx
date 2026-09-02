@@ -4,22 +4,32 @@ import { BottomTabs } from "@/components/organizer/BottomTabs";
 import { ScannerModal } from "@/components/organizer/ScannerModal";
 import { AssistantFAB } from "@/components/organizer/Assistant";
 import { SessionGuard } from "@/components/auth/SessionGuard";
+import { resolveSession } from "@/lib/auth/server-session";
 
 // Shell, sticky sidebar (desktop), top app bar, mobile bottom tabs.
 // ScannerModal and AssistantFAB live here so they're persistent across
 // every route. Keyboard shortcuts (⌘+Shift+S, ⌘+J) are wired in Topbar.
 // SessionGuard is the front door — it redirects to /login if no valid
 // session exists in localStorage.
-export default function OrganizerLayout({
+export default async function OrganizerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Resolved server-side so the shell knows which venue is active and
+  // which others this account holds, without the client asking.
+  const session = await resolveSession();
+
   return (
     <SessionGuard>
       <div className="min-h-screen flex">
         <div className="no-print contents">
-          <Sidebar />
+          <Sidebar
+            venues={session?.venues ?? []}
+            activeVenueId={session?.venueId ?? ""}
+            viewerName={session?.fullName ?? ""}
+            viewerRole={session?.role}
+          />
           <MobileSidebarDrawer />
         </div>
         <div className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">

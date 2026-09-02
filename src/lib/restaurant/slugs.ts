@@ -35,6 +35,13 @@ export function restaurantHref(slug: RestaurantSlug): string {
   return slug === "" ? RESTAURANT_BASE : `${RESTAURANT_BASE}/${slug}`;
 }
 
+/**
+ * Settings is a form surface, not a spec screen, so it lives on its own
+ * route rather than in the screen registry. The path is exported here so
+ * the nav still has one source for restaurant links.
+ */
+export const RESTAURANT_SETTINGS_PATH = `${RESTAURANT_BASE}/reglages`;
+
 export function isRestaurantSlug(value: string): value is RestaurantSlug {
   return (RESTAURANT_SLUGS as readonly string[]).includes(value);
 }

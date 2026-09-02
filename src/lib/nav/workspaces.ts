@@ -16,6 +16,7 @@ import type { Role } from "@/lib/auth/session";
 import { RESTAURANT } from "@/lib/mock/restaurant";
 import {
   RESTAURANT_BASE,
+  RESTAURANT_SETTINGS_PATH,
   restaurantHref,
 } from "@/lib/restaurant/slugs";
 
@@ -170,8 +171,7 @@ const RESTAURANT_WORKSPACE: Workspace = {
     ],
     [
       { label: "Versements", href: restaurantHref("versements"), icon: "wallet", allow: ["owner", "admin"] },
-      { label: "Équipe", href: "/team", icon: "users", allow: ["owner", "admin"] },
-      { label: "Réglages", href: "/settings", icon: "settings" },
+      { label: "Réglages du lieu", href: RESTAURANT_SETTINGS_PATH, icon: "settings" },
     ],
   ],
   secondary: [
@@ -182,8 +182,7 @@ const RESTAURANT_WORKSPACE: Workspace = {
     { label: "Visibilité", href: restaurantHref("visibilite"), icon: "megaphone" },
     { label: "Avis", href: restaurantHref("avis"), icon: "star" },
     { label: "Versements", href: restaurantHref("versements"), icon: "wallet" },
-    { label: "Équipe", href: "/team", icon: "users" },
-    { label: "Réglages", href: "/settings", icon: "settings" },
+    { label: "Réglages du lieu", href: RESTAURANT_SETTINGS_PATH, icon: "settings" },
   ],
   tabs: [
     { label: "Aperçu", href: restaurantHref(""), icon: "layout" },

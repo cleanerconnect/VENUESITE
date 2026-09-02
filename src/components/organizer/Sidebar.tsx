@@ -16,6 +16,7 @@ import {
   UserCog,
 } from "lucide-react";
 import { Icon } from "@/components/dashboard/primitives";
+import { VenueSwitcher, type SwitchableVenue } from "./VenueSwitcher";
 import {
   WORKSPACES,
   type NavItem,
@@ -38,7 +39,23 @@ import { PROFILES } from "@/lib/mock/profiles";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
 import { cn } from "@/lib/utils/cn";
 
-export function Sidebar() {
+const PORTAL_ROLE_LABEL: Record<string, string> = {
+  owner: "Propriétaire",
+  manager: "Manager",
+  staff: "Équipe",
+};
+
+export function Sidebar({
+  venues = [],
+  activeVenueId = "",
+  viewerName = "",
+  viewerRole,
+}: {
+  venues?: SwitchableVenue[];
+  activeVenueId?: string;
+  viewerName?: string;
+  viewerRole?: string;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const role = useRole();
@@ -79,6 +96,10 @@ export function Sidebar() {
         user={user}
         workspace={workspace}
         groups={groups}
+        venues={venues}
+        activeVenueId={activeVenueId}
+        viewerName={viewerName}
+        viewerRole={viewerRole}
         handleSwitchRole={handleSwitchRole}
         handleSwitchProfile={handleSwitchProfile}
         handleLogout={handleLogout}
@@ -167,6 +188,10 @@ function SidebarBody({
   user,
   workspace,
   groups,
+  venues,
+  activeVenueId,
+  viewerName,
+  viewerRole,
   handleSwitchRole,
   handleSwitchProfile,
   handleLogout,
@@ -177,6 +202,10 @@ function SidebarBody({
   user: ReturnType<typeof useUser>;
   workspace: Workspace;
   groups: NavItem[][];
+  venues: SwitchableVenue[];
+  activeVenueId: string;
+  viewerName: string;
+  viewerRole?: string;
   handleSwitchRole: (next: Role) => void;
   handleSwitchProfile: (organizerId: string) => void;
   handleLogout: () => void;
@@ -201,54 +230,58 @@ function SidebarBody({
         </div>
       </div>
 
-      {/* Identity card, doubling as the workspace switcher. */}
+      {/* Venue switcher when the session holds venues; otherwise the
+          workspace switcher, which is what the event workspace uses. */}
       <div className="px-4 mb-3">
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <button className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow">
-              <div
-                className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
-                style={{ background: "var(--color-violet-soft)" }}
+        {venues.length > 0 && workspace.id === "restaurant" ? (
+          <VenueSwitcher venues={venues} activeVenueId={activeVenueId} />
+        ) : (
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow">
+                <div
+                  className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
+                  style={{ background: "var(--color-violet-soft)" }}
+                >
+                  {entity.initials}
+                </div>
+                <div className="min-w-0 flex-1 leading-tight">
+                  <div className="text-[13px] font-semibold text-ink truncate">
+                    {entity.shortName}
+                  </div>
+                  <div className="text-meta text-ink-mute truncate">
+                    {entity.subline}
+                  </div>
+                </div>
+                <ChevronRight size={14} className="text-ink-mute shrink-0" />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                side="bottom"
+                align="start"
+                sideOffset={6}
+                className="min-w-[228px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
               >
-                {entity.initials}
-              </div>
-              <div className="min-w-0 flex-1 leading-tight">
-                <div className="text-[13px] font-semibold text-ink truncate">
-                  {entity.shortName}
-                </div>
-                <div className="text-meta text-ink-mute truncate">
-                  {entity.subline}
-                </div>
-              </div>
-              <ChevronRight size={14} className="text-ink-mute shrink-0" />
-            </button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content
-              side="bottom"
-              align="start"
-              sideOffset={6}
-              className="min-w-[228px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
-            >
-              {WORKSPACES.map((w) => (
-                <DropdownMenu.Item key={w.id} asChild>
-                  <Link
-                    href={w.home}
-                    className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
-                  >
-                    <span className="flex-1">{w.switcherLabel}</span>
-                    {w.id === workspace.id ? (
-                      <Check size={14} strokeWidth={2} className="text-violet-deep" />
-                    ) : null}
-                  </Link>
-                </DropdownMenu.Item>
-              ))}
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
+                {WORKSPACES.map((w) => (
+                  <DropdownMenu.Item key={w.id} asChild>
+                    <Link
+                      href={w.home}
+                      className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                    >
+                      <span className="flex-1">{w.switcherLabel}</span>
+                      {w.id === workspace.id ? (
+                        <Check size={14} strokeWidth={2} className="text-violet-deep" />
+                      ) : null}
+                    </Link>
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+        )}
       </div>
 
-      {/* Nav, groups separated by a 1px line-soft divider, no labels */}
       {/* Groups render with a hairline between them and no spelled-out
           labels — the grouping reads visually. Any number of groups. */}
       <nav className="flex-1 px-3 overflow-y-auto scroll-thin">
@@ -269,16 +302,24 @@ function SidebarBody({
             className="h-9 w-9 rounded-full flex items-center justify-center text-ink font-bold text-[12px] shrink-0"
             style={{ background: "var(--color-tint-peach)" }}
           >
-            {user?.initials}
+            {(viewerName || user?.name || "")
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((w) => w[0])
+              .join("")}
           </div>
           <div className="min-w-0 flex-1 leading-tight">
             <div className="text-[13px] font-semibold text-ink truncate">
-              {user?.name}
+              {viewerName || user?.name}
             </div>
             {/* Role from the session, organisation from the workspace —
                 so the restaurant workspace stops claiming the festival. */}
             <div className="text-meta text-ink-mute truncate">
-              {[role ? ROLE_LABEL[role] : null, entity.shortName]
+              {[
+                viewerRole ? PORTAL_ROLE_LABEL[viewerRole] ?? viewerRole : role ? ROLE_LABEL[role] : null,
+                venues.find((v) => v.id === activeVenueId)?.shortName ?? entity.shortName,
+              ]
                 .filter(Boolean)
                 .join(" · ")}
             </div>
