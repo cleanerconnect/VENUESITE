@@ -3,18 +3,21 @@
 import { Lock, Mail, MessageCircle, Phone, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function SupportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <h1 className="text-h1 text-ink">Boîte de réception participants</h1>
-          <Pill tone="neutral">
-            <Lock size={11} strokeWidth={2} className="-ml-0.5" />
-            Bientôt disponible
-          </Pill>
-        </div>
+        <PageHeader
+          title="Boîte de réception participants"
+          badge={
+            <Pill tone="neutral">
+              <Lock size={11} strokeWidth={2} className="-ml-0.5" />
+              Bientôt disponible
+            </Pill>
+          }
+        />
         <p className="text-body text-ink-soft mt-1.5">
           Centralisez tous les échanges avec vos participants — au même endroit
           que vos événements et vos versements.

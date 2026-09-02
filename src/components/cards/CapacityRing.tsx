@@ -52,7 +52,7 @@ export function CapacityRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#865BA6"
+          stroke="var(--color-violet)"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           fill="none"

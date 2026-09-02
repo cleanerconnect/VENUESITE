@@ -12,6 +12,7 @@ import { getEventById } from "@/lib/mock/events";
 import { useRole } from "@/lib/auth/role";
 import { formatDateFR } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 // Edit / Corriger et resoumettre flow. When opened with ?reason=rejected,
 // surfaces the rejection reason in a tint-rose callout and highlights every
@@ -80,10 +81,7 @@ function EditEventInner() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div>
-        <div className="text-eyebrow text-ink-mute">Édition</div>
-        <h1 className="text-h1 text-ink mt-2">{event.name}</h1>
-      </div>
+      <PageHeader eyebrow="Édition" title={event.name} />
 
       {isFromRejection && rejectedFields ? (
         <Card variant="rose" size="md">

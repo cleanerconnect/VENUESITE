@@ -85,16 +85,26 @@ export function Icon({
  * and automatically skipped for values that can't be animated, so a spec
  * can ask for `animate` without knowing whether the datum is a number.
  */
+/** Metric type sizes, named. Inline pixel values were the old spelling. */
+const METRIC_SIZE = {
+  sm: "text-metric-sm",
+  md: "text-metric-md",
+  lg: "text-metric-lg",
+  xl: "text-metric-xl",
+} as const;
+
+export type MetricSize = keyof typeof METRIC_SIZE;
+
 export function MetricValue({
   metric,
   className,
   affixClassName,
-  size = 44,
+  size = "lg",
 }: {
   metric: Metric;
   className?: string;
   affixClassName?: string;
-  size?: number;
+  size?: MetricSize;
 }) {
   const numeric = numericValue(metric);
   const animate = metric.animate !== false && numeric !== null;
@@ -106,10 +116,7 @@ export function MetricValue({
           {metric.prefix}
         </span>
       ) : null}
-      <span
-        className="font-extrabold tracking-[-0.03em]"
-        style={{ fontSize: size, lineHeight: 1 }}
-      >
+      <span className={METRIC_SIZE[size]}>
         {animate ? (
           <AnimatedNumber value={numeric} format={metricFormatter(metric)} />
         ) : (

@@ -13,6 +13,7 @@ import { getBilanByEventId, hasBilan } from "@/lib/mock/bilan";
 import type { BilanData } from "@/lib/types/analytics";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface Row {
   event: LyfeEvent;
@@ -57,13 +58,10 @@ export default function BilansPage() {
 
   return (
     <div className="space-y-6">
-      {/* === Header === */}
-      <div>
-        <h1 className="text-h1 text-ink">Bilans</h1>
-        <p className="text-body text-ink-soft mt-1.5">
-          Vos rapports post-événement, prêts à partager.
-        </p>
-      </div>
+      <PageHeader
+        title="Bilans"
+        subtitle="Vos rapports post-événement, prêts à partager."
+      />
 
       {rows.length === 0 ? (
         <EmptyBilans />

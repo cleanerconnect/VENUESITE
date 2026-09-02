@@ -15,6 +15,7 @@ import {
   formatDateTimeFR,
   formatMAD,
 } from "@/lib/utils/format";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function SettlementsPage() {
   const payouts = getPayouts();
@@ -32,14 +33,10 @@ export default function SettlementsPage() {
 
   return (
     <div className="space-y-5 md:space-y-7">
-      {/* === Header === */}
-      <div>
-        <h1 className="text-h1 text-ink">Versements</h1>
-        <p className="text-body text-ink-soft mt-1.5">
-          L'argent de vos billets, sur votre compte. J+3 après la fin de
-          chaque événement.
-        </p>
-      </div>
+      <PageHeader
+        title="Versements"
+        subtitle="L'argent de vos billets, sur votre compte. J+3 après la fin de chaque événement."
+      />
 
       {/* === Next payout, dark hero with Fraunces money headline === */}
       <Card variant="ink" size="hero" glow>

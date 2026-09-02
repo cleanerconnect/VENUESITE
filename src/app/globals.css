@@ -35,6 +35,12 @@
 
   /* Surfaces — white canvas so the LYFE wordmark sits flush. canvas-2 is
      a faint violet wash for sidebar / footer / sticky bars. */
+  /* On-dark counterparts. Text and marks that sit on `surface-ink` need
+     their own values — the light-surface tokens do not survive there. */
+  --color-on-ink: #faf7f0;
+  --color-on-ink-mute: #f2ddd6;
+  --color-violet-on-ink: #b388d6;
+
   --color-canvas: #ffffff;
   --color-canvas-2: #f8f5fb;
   --color-surface: #ffffff;
@@ -79,6 +85,43 @@
   --font-sans: var(--font-urbanist), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-mono: var(--font-urbanist), ui-monospace, monospace;
+
+  /* ── Data visualisation ──
+     Named by role, not by hue. A chart never reaches for a hex: it asks
+     for `series-1` or `axis`, so a rebrand is one edit here. Ordered so
+     adjacent series stay distinguishable at 2px stroke width. */
+  --color-series-1: #865ba6;
+  --color-series-2: #6395bd;
+  --color-series-3: #c4a777;
+  --color-series-4: #2f6b3d;
+  --color-series-5: #a12c2c;
+  --color-series-6: #6b7689;
+  --color-chart-axis: #6b7689;
+  --color-chart-grid: #f0ecf3;
+  --color-chart-track: #f0ecf3;
+  --color-chart-cursor: rgba(134, 91, 166, 0.08);
+  /* Projections and targets — the same hue as series-1, lightened, so a
+     dashed forecast reads as the faded twin of the solid actual. */
+  --color-chart-projection: #c7b2db;
+  --color-chart-reference: rgba(10, 31, 61, 0.18);
+
+  /* ── Metric type scale ──
+     The oversized figures a KPI or a hero shows. Sizes big enough that
+     Tailwind's body scale does not reach them, so they were inline
+     before. */
+  --text-metric-sm: 22px;
+  --text-metric-md: 32px;
+  --text-metric-lg: 44px;
+  --text-metric-xl: 64px;
+
+  /* ── Motion ──
+     One curve, four durations. Every transition in the portal picks a
+     step here rather than inventing a number. */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-instant: 120ms;
+  --duration-fast: 180ms;
+  --duration-base: 280ms;
+  --duration-slow: 420ms;
 }
 
 /* Force the canvas everywhere — never pure white at the page level. */
@@ -135,6 +178,30 @@ body {
   letter-spacing: 0.08em;
   font-weight: 700;
   text-transform: uppercase;
+}
+.text-metric-sm {
+  font-size: var(--text-metric-sm);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+.text-metric-md {
+  font-size: var(--text-metric-md);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+.text-metric-lg {
+  font-size: var(--text-metric-lg);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+.text-metric-xl {
+  font-size: var(--text-metric-xl);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 800;
 }
 .text-mono {
   font-size: 13px;

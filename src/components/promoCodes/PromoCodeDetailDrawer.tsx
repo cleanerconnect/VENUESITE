@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/Toast";
 import { getPromoCodeDetail } from "@/lib/mock/promoCodes";
 import { formatDateFR, formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 import type { PromoCode } from "@/lib/types/promoCodes";
+import { CHART, barCursor, seriesColor } from "@/lib/charts/theme";
 
 const STATUS_TONE: Record<
   PromoCode["status"],
@@ -145,7 +146,7 @@ export function PromoCodeDetailDrawer({
                     margin={{ top: 8, right: 4, bottom: 0, left: 0 }}
                   >
                     <CartesianGrid
-                      stroke="#E8E2EE"
+                      stroke={CHART.grid}
                       strokeDasharray="2 4"
                       vertical={false}
                     />
@@ -154,7 +155,7 @@ export function PromoCodeDetailDrawer({
                       tickFormatter={(iso) =>
                         format(new Date(iso), "d MMM", { locale: fr })
                       }
-                      tick={{ fill: "#6B7689", fontSize: 10 }}
+                      tick={{ fill: CHART.axis, fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
                       tickMargin={6}
@@ -163,13 +164,13 @@ export function PromoCodeDetailDrawer({
                     />
                     <YAxis
                       width={32}
-                      tick={{ fill: "#6B7689", fontSize: 10 }}
+                      tick={{ fill: CHART.axis, fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
                       allowDecimals={false}
                     />
                     <Tooltip
-                      cursor={{ fill: "#F0E8F7" }}
+                      cursor={barCursor}
                       content={({ active, payload, label }) => {
                         if (!active || !payload?.length) return null;
                         return (
@@ -186,7 +187,7 @@ export function PromoCodeDetailDrawer({
                         );
                       }}
                     />
-                    <Bar dataKey="count" fill="#865BA6" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="count" fill={seriesColor(0)} radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

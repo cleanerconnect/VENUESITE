@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, LogOut, Settings, Users } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 const ITEMS = [
   {
@@ -23,12 +24,7 @@ const ITEMS = [
 export default function MorePage() {
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-h1 text-ink">Plus</h1>
-        <p className="text-body text-ink-soft mt-1.5">
-          Équipe, réglages, et déconnexion.
-        </p>
-      </div>
+      <PageHeader title="Plus" subtitle="Équipe, réglages, et déconnexion." />
 
       <Card variant="surface" size="md" className="!p-0">
         <ul className="divide-y divide-line-soft">

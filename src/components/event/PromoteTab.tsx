@@ -292,12 +292,7 @@ function ShareGrid({ event }: { event: LyfeEvent }) {
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          {[
-            { name: "WhatsApp", color: "#25D366" },
-            { name: "Instagram", color: "#E1306C" },
-            { name: "Facebook", color: "#1877F2" },
-            { name: "X", color: "#0F0F0F" },
-          ].map((p) => (
+          {SHARE_CHANNELS.map((p) => (
             <button
               key={p.name}
               className="inline-flex items-center gap-2 h-10 px-4 text-[13px] font-semibold border border-line rounded-full hover:border-ink transition-colors"
@@ -402,6 +397,17 @@ function ShareGrid({ event }: { event: LyfeEvent }) {
 }
 
 // Mock QR, geometric placeholder. Real impl uses qrcode.react.
+/**
+ * Third-party brand colours, deliberately literal. These are not design
+ * tokens and must not be themed — WhatsApp green is WhatsApp green.
+ */
+const SHARE_CHANNELS = [
+  { name: "WhatsApp", color: "#25D366" },
+  { name: "Instagram", color: "#E1306C" },
+  { name: "Facebook", color: "#1877F2" },
+  { name: "X", color: "#0F0F0F" },
+] as const;
+
 function QrSvg() {
   return (
     <svg width="80" height="80" viewBox="0 0 80 80" aria-hidden>
@@ -411,9 +417,9 @@ function QrSvg() {
         [4, 60],
       ].map(([x, y]) => (
         <g key={`${x}-${y}`}>
-          <rect x={x} y={y} width="16" height="16" fill="#0A1F3D" rx="2" />
-          <rect x={x + 4} y={y + 4} width="8" height="8" fill="#FAF7F0" rx="1" />
-          <rect x={x + 6} y={y + 6} width="4" height="4" fill="#0A1F3D" />
+          <rect x={x} y={y} width="16" height="16" fill="var(--color-ink)" rx="2" />
+          <rect x={x + 4} y={y + 4} width="8" height="8" fill="var(--color-on-ink)" rx="1" />
+          <rect x={x + 6} y={y + 6} width="4" height="4" fill="var(--color-ink)" />
         </g>
       ))}
       {Array.from({ length: 32 }).map((_, i) => {
@@ -421,7 +427,7 @@ function QrSvg() {
         const y = Math.floor(i / 8) * 7 + 24;
         if ((i * 31) % 5 === 0) return null;
         return (
-          <rect key={i} x={x} y={y} width="5" height="5" fill="#0A1F3D" />
+          <rect key={i} x={x} y={y} width="5" height="5" fill="var(--color-ink)" />
         );
       })}
     </svg>

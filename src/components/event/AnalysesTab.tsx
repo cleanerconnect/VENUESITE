@@ -13,6 +13,7 @@ import { AnalysesSideRail } from "./AnalysesSideRail";
 import { getAnalysesByEventId } from "@/lib/mock/analyses";
 import { formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
+import { CHART, seriesColor } from "@/lib/charts/theme";
 
 export function AnalysesTab({ event }: { event: LyfeEvent }) {
   const data = getAnalysesByEventId(event.id);
@@ -94,8 +95,8 @@ export function AnalysesTab({ event }: { event: LyfeEvent }) {
                 </p>
               </div>
               <div className="hidden sm:flex items-center gap-4 text-meta">
-                <LegendDot color="#865BA6" label="Réel" solid />
-                <LegendDot color="#C7B2DB" label="Projection" solid={false} />
+                <LegendDot color={seriesColor(0)} label="Réel" solid />
+                <LegendDot color={CHART.projection} label="Projection" solid={false} />
               </div>
             </div>
             {hasActuals ? (
@@ -130,8 +131,8 @@ export function AnalysesTab({ event }: { event: LyfeEvent }) {
               </div>
             )}
             <div className="flex sm:hidden items-center gap-4 text-meta mt-3">
-              <LegendDot color="#865BA6" label="Réel" solid />
-              <LegendDot color="#C7B2DB" label="Projection" solid={false} />
+              <LegendDot color={seriesColor(0)} label="Réel" solid />
+              <LegendDot color={CHART.projection} label="Projection" solid={false} />
             </div>
           </Card>
 

@@ -17,6 +17,7 @@ import { resetOnboarding } from "@/lib/auth/onboarding";
 import { getAudienceSegments } from "@/lib/mock/visibility";
 import type { OrganizerProfile } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface SectionDef {
   id: string;
@@ -54,12 +55,10 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-7">
-      <div>
-        <h1 className="text-h1 text-ink">Réglages</h1>
-        <p className="text-body text-ink-soft mt-1.5">
-          Profil, coordonnées de versement, préférences.
-        </p>
-      </div>
+      <PageHeader
+        title="Réglages"
+        subtitle="Profil, coordonnées de versement, préférences."
+      />
 
       <div className="grid lg:grid-cols-[200px_1fr] gap-8 items-start">
         {/* Vertical tab nav, sticky on desktop */}

@@ -49,8 +49,8 @@ function DefaultMark() {
       aria-hidden
       className="opacity-70"
     >
-      <circle cx="24" cy="24" r="22" stroke="#0A1F3D" strokeWidth="1.4" />
-      <circle cx="24" cy="24" r="6" fill="#C9A64C" />
+      <circle cx="24" cy="24" r="22" stroke="var(--color-ink)" strokeWidth="1.4" />
+      <circle cx="24" cy="24" r="6" fill="var(--color-gold)" />
     </svg>
   );
 }

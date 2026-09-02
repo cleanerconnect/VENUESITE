@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "motion/react";
 import { Copy, MoreVertical, Plus, Tag } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Button } from "@/components/ui/Button";
@@ -15,8 +14,9 @@ import {
   getPromoCodesAggregate,
 } from "@/lib/mock/promoCodes";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
-import { cn } from "@/lib/utils/cn";
 import type { PromoCode } from "@/lib/types/promoCodes";
+import { FilterTabs } from "@/components/ui/FilterTabs";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 type Filter = "all" | "active" | "expired" | "depleted";
 
@@ -92,13 +92,10 @@ export default function PromoCodesPage() {
 
   return (
     <div className="space-y-6">
-      {/* === Header === */}
-      <div>
-        <h1 className="text-h1 text-ink">Codes promo</h1>
-        <p className="text-body text-ink-soft mt-1.5">
-          Réductions ciblées, partenariats, et tracking de redemptions.
-        </p>
-      </div>
+      <PageHeader
+        title="Codes promo"
+        subtitle="Réductions ciblées, partenariats, et tracking de redemptions."
+      />
 
       {/* === Hero strip — 3 Fraunces aggregates === */}
       <Card variant="surface" size="md">
@@ -125,40 +122,13 @@ export default function PromoCodesPage() {
 
       {/* === Filter bar + Create CTA === */}
       <div className="flex items-end justify-between gap-3 flex-wrap">
-        <div className="border-b border-line-soft overflow-x-auto scroll-thin flex-1 min-w-0">
-          <div className="flex gap-1 min-w-max">
-            {FILTERS.map((f) => {
-              const active = filter === f.id;
-              return (
-                <button
-                  key={f.id}
-                  onClick={() => setFilter(f.id)}
-                  className={cn(
-                    "relative px-4 py-3 text-[13px] font-semibold whitespace-nowrap transition-colors",
-                    active ? "text-ink" : "text-ink-mute hover:text-ink",
-                  )}
-                >
-                  {f.label}
-                  <span
-                    className={cn(
-                      "ml-2 inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[11px] rounded-full num",
-                      active ? "bg-ink text-canvas" : "bg-ink/[0.06] text-ink-soft",
-                    )}
-                  >
-                    {counts[f.id] ?? 0}
-                  </span>
-                  {active ? (
-                    <motion.span
-                      layoutId="promo-filter-underline"
-                      className="absolute bottom-0 left-2 right-2 h-[2px] bg-violet rounded-full"
-                      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                    />
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FilterTabs
+          className="flex-1 min-w-0"
+          layoutId="promo-filter-underline"
+          value={filter}
+          onChange={setFilter}
+          tabs={FILTERS.map((f) => ({ ...f, count: counts[f.id] ?? 0 }))}
+        />
         <Button
           size="md"
           iconLeft={<Plus size={16} strokeWidth={2} />}

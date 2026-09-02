@@ -55,7 +55,7 @@ export function HeroBlock({ block }: { block: Spec }) {
               <div className="text-eyebrow text-canvas/55">{stat.label}</div>
               <MetricValue
                 metric={stat.metric}
-                size={36}
+                size="md"
                 className={cn("mt-2", stat.accent ? "text-violet" : "text-canvas")}
                 affixClassName={
                   stat.accent ? "text-canvas/70" : "text-canvas/55"

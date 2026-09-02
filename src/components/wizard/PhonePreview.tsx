@@ -58,7 +58,7 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(160deg, #0A1F3D 0%, #2C3E5C 60%, #865BA6 130%)",
+                  "linear-gradient(160deg, var(--color-ink) 0%, var(--color-ink-soft) 60%, var(--color-violet) 130%)",
               }}
             />
             <div

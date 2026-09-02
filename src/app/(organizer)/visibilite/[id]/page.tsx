@@ -160,7 +160,7 @@ export default function CampaignPerformancePage() {
                     data={campaign.conversionsByHour}
                     width={180}
                     height={60}
-                    stroke="#B388D6"
+                    stroke="var(--color-violet-on-ink)"
                   />
                   <div className="text-meta text-canvas/55 mt-1 num">
                     Conversions / h, 24 dernières

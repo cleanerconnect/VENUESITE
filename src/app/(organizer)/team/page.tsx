@@ -15,6 +15,7 @@ import {
 } from "@/lib/utils/format";
 import { describeAuditAction, getAuditLog, getTeam } from "@/lib/mock/team";
 import type { TeamMember, TeamRole } from "@/lib/types/domain";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 const ROLE_LABEL: Record<TeamRole, string> = {
   owner: "Propriétaire",
@@ -80,20 +81,18 @@ export default function TeamPage() {
 
   return (
     <div className="space-y-5 md:space-y-7">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-h1 text-ink">Équipe</h1>
-          <p className="text-body text-ink-soft mt-1.5">
-            Qui peut accéder à votre espace organisateur.
-          </p>
-        </div>
-        <Button
-          onClick={() => setInviteOpen(true)}
-          iconLeft={<Plus size={16} strokeWidth={2} />}
-        >
-          Inviter un membre
-        </Button>
-      </div>
+      <PageHeader
+        title="Équipe"
+        subtitle="Qui peut accéder à votre espace organisateur."
+        action={
+          <Button
+            onClick={() => setInviteOpen(true)}
+            iconLeft={<Plus size={16} strokeWidth={2} />}
+          >
+            Inviter un membre
+          </Button>
+        }
+      />
 
       {/* === Active members === */}
       <Card variant="surface" size="md" className="!p-0">

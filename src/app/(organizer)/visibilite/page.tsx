@@ -22,6 +22,7 @@ import {
   getPortfolioStats,
 } from "@/lib/mock/visibility";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function VisibilitePage() {
   const stats = getPortfolioStats();
@@ -31,20 +32,16 @@ export default function VisibilitePage() {
 
   return (
     <div className="space-y-6">
-      {/* === Header === */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-h1 text-ink">Visibilité</h1>
-          <p className="text-body text-ink-soft mt-1.5 max-w-xl">
-            Vos campagnes de mise en avant et vos partenaires affiliés. Le
-            ROAS est la métrique qui compte.
-          </p>
-        </div>
-        <BoostWizardLauncher className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[14px] rounded-[var(--radius-sm)] font-semibold bg-violet text-canvas hover:bg-violet-deep transition-colors">
-          <Plus size={16} strokeWidth={2} />
-          Lancer un boost
-        </BoostWizardLauncher>
-      </div>
+      <PageHeader
+        title="Visibilité"
+        subtitle="Vos campagnes de mise en avant et vos partenaires affiliés. Le ROAS est la métrique qui compte."
+        action={
+          <BoostWizardLauncher className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[14px] rounded-[var(--radius-sm)] font-semibold bg-violet text-canvas hover:bg-violet-deep transition-colors">
+            <Plus size={16} strokeWidth={2} />
+            Lancer un boost
+          </BoostWizardLauncher>
+        }
+      />
 
       <Tabs
         tabs={[

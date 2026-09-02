@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Card } from "@/components/ui/Card";
+import { MetricTile } from "@/components/ui/MetricTile";
 import { Sparkline } from "@/components/cards/Sparkline";
 import type { KpiGridBlock as Spec, KpiTile } from "@/lib/dashboard/spec";
 import {
@@ -54,56 +54,51 @@ function Tile({ tile }: { tile: KpiTile }) {
   const run = useCommandRunner();
 
   const body = (
-    <Card
+    <MetricTile
       variant={cardVariant(tile.tone)}
-      size="md"
-      className={cn("h-full", tile.span === 2 ? "lg:col-span-2" : "")}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="text-eyebrow text-ink-soft">{tile.label}</div>
-        {tile.icon ? (
-          <span
-            className="h-9 w-9 rounded-[12px] flex items-center justify-center bg-surface/70 shrink-0"
-            aria-hidden
-          >
-            <Icon name={tile.icon} size={16} className="text-ink-soft" />
-          </span>
-        ) : null}
-      </div>
-
-      <MetricValue metric={tile.metric} className="mt-5 text-ink" />
-
-      {tile.delta ? (
-        <div className="mt-3">
+      span={tile.span}
+      label={tile.label}
+      icon={
+        tile.icon ? (
+          <Icon name={tile.icon} size={16} className="text-ink-soft" />
+        ) : null
+      }
+      value={<MetricValue metric={tile.metric} />}
+      meta={
+        tile.delta ? (
           <DeltaChip delta={tile.delta} />
-        </div>
-      ) : null}
-
-      {tile.hint && !tile.delta ? (
-        <div className="mt-3 text-meta text-ink-soft">{tile.hint}</div>
-      ) : null}
-
-      {tile.chips?.length ? (
-        <div className="mt-4 flex items-center gap-2 flex-wrap">
-          {tile.chips.map((chip, i) => (
-            <SpecBadge key={`${chip.label}-${i}`} badge={chip} />
-          ))}
-        </div>
-      ) : null}
-
-      {tile.sparkline?.length ? (
-        <div className="mt-4 flex items-end justify-between gap-3">
-          {tile.hint && tile.delta ? (
-            <div className="text-meta text-ink-soft flex-1 min-w-0">
-              {tile.hint}
-            </div>
-          ) : (
-            <span />
-          )}
-          <Sparkline data={tile.sparkline} />
-        </div>
-      ) : null}
-    </Card>
+        ) : tile.hint ? (
+          <span className="text-meta text-ink-soft">{tile.hint}</span>
+        ) : null
+      }
+      footer={
+        tile.chips?.length || tile.sparkline?.length ? (
+          <div className="space-y-4">
+            {tile.chips?.length ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                {tile.chips.map((chip, i) => (
+                  <SpecBadge key={`${chip.label}-${i}`} badge={chip} />
+                ))}
+              </div>
+            ) : null}
+            {tile.sparkline?.length ? (
+              <div className="flex items-end justify-between gap-3">
+                {/* The hint moves down here once a delta has taken the
+                    meta line, so a tile never shows two stacked hints. */}
+                {tile.hint && tile.delta ? (
+                  <div className="text-meta text-ink-soft flex-1 min-w-0">
+                    {tile.hint}
+                  </div>
+                ) : (
+                  <span />
+                )}
+                <Sparkline data={tile.sparkline} />
+              </div>
+            ) : null}
+          </div>
+        ) : null
+      }
+    />
   );
 
   // A tile only becomes interactive when the spec gives it somewhere to

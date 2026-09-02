@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { motion } from "motion/react";
 import { ChevronRight, Plus, Printer, Search } from "lucide-react";
 import { getAllEvents } from "@/lib/mock/events";
 import { getBilanByEventId, hasBilan } from "@/lib/mock/bilan";
@@ -18,7 +17,8 @@ import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useRole } from "@/lib/auth/role";
-import { cn } from "@/lib/utils/cn";
+import { FilterTabs } from "@/components/ui/FilterTabs";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 type Filter = "all" | EventStatus | "bilans";
 type Sort = "date_desc" | "date_asc" | "revenue" | "tickets";
@@ -116,24 +116,23 @@ export default function EventsPage() {
         refreshing={pull.refreshing}
       />
 
-      {/* === Header === */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-h1 text-ink">Mes événements</h1>
-          <p className="text-body text-ink-soft mt-1.5">
-            {canCreate
-              ? "Ce que vous organisez, passés, en cours, à venir."
-              : "Les événements que vous pouvez scanner."}
-          </p>
-        </div>
-        {canCreate ? (
-          <Link href="/events/new" className="hidden md:block">
-            <Button iconLeft={<Plus size={16} strokeWidth={2} />}>
-              Créer un événement
-            </Button>
-          </Link>
-        ) : null}
-      </div>
+      <PageHeader
+        title="Mes événements"
+        subtitle={
+          canCreate
+            ? "Ce que vous organisez, passés, en cours, à venir."
+            : "Les événements que vous pouvez scanner."
+        }
+        action={
+          canCreate ? (
+            <Link href="/events/new" className="hidden md:block">
+              <Button iconLeft={<Plus size={16} strokeWidth={2} />}>
+                Créer un événement
+              </Button>
+            </Link>
+          ) : null
+        }
+      />
 
       {/* === Search + sort === */}
       <div className="flex flex-col md:flex-row gap-3">
@@ -176,41 +175,12 @@ export default function EventsPage() {
         <RecentBilansStrip rows={recentBilans} />
       ) : null}
 
-      {/* === Filter tabs (segmented control with sliding violet underline) === */}
-      <div className="border-b border-line-soft overflow-x-auto scroll-thin">
-        <div className="flex gap-1 min-w-max">
-          {FILTERS.map((f) => {
-            const active = filter === f.id;
-            return (
-              <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                className={cn(
-                  "relative px-4 py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors",
-                  active ? "text-ink" : "text-ink-mute hover:text-ink",
-                )}
-              >
-                {f.label}
-                <span
-                  className={cn(
-                    "ml-2 inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[11px] rounded-full num",
-                    active ? "bg-ink text-canvas" : "bg-ink/[0.06] text-ink-soft",
-                  )}
-                >
-                  {counts[f.id] ?? 0}
-                </span>
-                {active ? (
-                  <motion.span
-                    layoutId="events-filter-underline"
-                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-violet rounded-full"
-                    transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <FilterTabs
+        layoutId="events-filter-underline"
+        value={filter}
+        onChange={setFilter}
+        tabs={FILTERS.map((f) => ({ ...f, count: counts[f.id] ?? 0 }))}
+      />
 
       {/* === List === */}
       {list.length === 0 ? (

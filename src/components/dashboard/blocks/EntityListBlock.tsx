@@ -8,6 +8,7 @@ import { MoreVertical, Search } from "lucide-react";
 import type { EntityListBlock as Spec, EntityRow } from "@/lib/dashboard/spec";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FilterTabs } from "@/components/ui/FilterTabs";
 import { useDetailStore } from "@/lib/stores/detail";
 import {
   ActionLink,
@@ -114,42 +115,17 @@ export function EntityListBlock({ block }: { block: Spec }) {
       ) : null}
 
       {block.tabs?.length ? (
-        <div className="border-b border-line-soft overflow-x-auto scroll-thin mb-4">
-          <div className="flex gap-1 min-w-max">
-            {block.tabs.map((t) => {
-              const active = t.id === tab;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTab(t.id)}
-                  aria-pressed={active}
-                  className={cn(
-                    "relative px-4 py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors",
-                    active ? "text-ink" : "text-ink-mute hover:text-ink",
-                  )}
-                >
-                  {t.label}
-                  <span
-                    className={cn(
-                      "ml-2 inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[11px] rounded-full num",
-                      active ? "bg-ink text-canvas" : "bg-ink/[0.06] text-ink-soft",
-                    )}
-                  >
-                    {counts[t.id] ?? 0}
-                  </span>
-                  {active ? (
-                    <motion.span
-                      layoutId={`entity-list-underline-${block.id}`}
-                      className="absolute bottom-0 left-2 right-2 h-[2px] bg-violet rounded-full"
-                      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                    />
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FilterTabs
+          className="mb-4"
+          layoutId={`entity-list-underline-${block.id}`}
+          value={tab}
+          onChange={setTab}
+          tabs={block.tabs.map((t) => ({
+            id: t.id,
+            label: t.label,
+            count: counts[t.id] ?? 0,
+          }))}
+        />
       ) : null}
 
       {block.rows.length === 0 ? (

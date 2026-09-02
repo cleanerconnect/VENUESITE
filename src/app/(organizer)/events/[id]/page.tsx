@@ -77,9 +77,9 @@ function EventDetailInner() {
           {event.status.state === "rejected" ? (
             <div
               className="mb-6 rounded-[var(--radius-md)] p-4 max-w-2xl"
-              style={{ background: "rgba(161,44,44,0.18)", color: "#FAF7F0" }}
+              style={{ background: "rgba(161,44,44,0.18)", color: "var(--color-on-ink)" }}
             >
-              <div className="text-eyebrow mb-1.5" style={{ color: "#F2DDD6" }}>
+              <div className="text-eyebrow mb-1.5" style={{ color: "var(--color-on-ink-mute)" }}>
                 Refusé par LYFE
               </div>
               <p className="text-[14px] leading-relaxed">
