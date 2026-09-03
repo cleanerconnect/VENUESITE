@@ -3,6 +3,8 @@
 What a development team receives, what it can rely on, and what it has to
 build. Written to be read before the code, not after.
 
+Phase 4 (handoff completion) is reported in `docs/PHASE4.md`.
+
 Companion documents:
 `docs/INTERFACE.md` (how the UI is put together) ·
 `docs/CONVERGENCE.md` (what was unified and what is still duplicated) ·
@@ -16,13 +18,18 @@ Companion documents:
 
 ```bash
 npm install
-npm run db:reset     # creates and seeds .data/lyfe.db
-npm run dev
+npm run dev          # runs on the committed static dataset — no database needed
 ```
+
+Optionally, `npm run db:reset` seeds `.data/lyfe.db` and the portal
+switches to it, so edits persist across restarts. `GET /api/health` says
+which of the three data drivers is live.
 
 Then open **`/styleguide`**. It needs no session and no seeded database
 — every specimen renders from literal props — and it is the fastest way
-to see what exists before reading a line of code.
+to see what exists before reading a line of code. Its "Écrans" section
+is the route index: all 33 screens, linked, with what each is for and
+what it still lacks.
 
 ---
 
@@ -87,12 +94,12 @@ they exist.
 
 | # | Gap | Consequence | Size |
 |---|---|---|---|
-| 1 | Event workspace still reads fixtures (`lib/mock/*`, 12 modules, 22 components) | Nothing a partner edits on the event side persists | Large, but the seam already exists — repeat the venue-side pass |
+| 1 | ~~Event workspace reads fixtures directly~~ — **done in Phase 4.** What remains is the *write* path: there is no `EventRepository` mutation surface, because there is no event backend to shape one against | Creating an event, promo code or boost persists nothing | Large. The venue side is the worked example to copy |
 | 2 | No add/remove for menu items | A venue with a new dish has to call support | Small |
 | 3 | No editor for seating areas | A venue that opens a rooftop cannot list it | Small |
 | 4 | No preview of the app listing | A partner edits blind, finds out from a customer | Medium; all the data is present |
-| 5 | 501 French literals inline across 81 files | A copy change means a code change | Medium, mechanical |
-| 6 | `loading.tsx` only on the venue routes | Event routes will flash empty once they are async | Small; skeletons are built |
+| 5 | ~500 French literals inline, almost all one-off headings | A copy change means a code change | Medium, mechanical |
+| 6 | ~~`loading.tsx` only on venue routes~~ — **done in Phase 4.** Every route has loading, empty, error and denied states | — | — |
 
 Gap 1 is the one to do first. Gap 4 is the one worth arguing for: every
 listing field is edited in one place and rendered somewhere else
