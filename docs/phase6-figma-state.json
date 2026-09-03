@@ -1,0 +1,66 @@
+{
+  "runId": "lyfe-figma-phase6",
+  "file": {
+    "name": "LYFE Portail Partenaire",
+    "key": "fztoNaEvTrZrWDaLy1MEWg",
+    "url": "https://www.figma.com/design/fztoNaEvTrZrWDaLy1MEWg",
+    "editorType": "design"
+  },
+  "blockedBy": {
+    "toolCalls": "Figma Starter = 20 MCP tool calls/month; use_figma is not exempt. Budget spent.",
+    "pages": "Figma Starter = 3 pages/file; the brief asked for 8.",
+    "unblock": "Professional plan with a Full or Dev seat -> 200 calls/day, unlimited pages."
+  },
+  "pages": {
+    "A · 00 Lisez-moi + 01 Fondations + 02 Composants": "0:1",
+    "B · 03 Entrée + 04 Espace partenaire + 05 Espace organisateur": "3:2",
+    "C · 06 États + 07 Téléphone": "3:3"
+  },
+  "sections": {
+    "00 Lisez-moi": { "id": "10:2", "page": "0:1", "state": "empty" },
+    "01 Fondations": { "id": "10:3", "page": "0:1", "state": "built", "wrapper": "11:2" },
+    "02 Composants": { "id": "10:4", "page": "0:1", "state": "empty" },
+    "03 Entrée": { "state": "not created", "page": "3:2" },
+    "04 Espace partenaire": { "state": "not created", "page": "3:2" },
+    "05 Espace organisateur": { "state": "not created", "page": "3:2" },
+    "06 États": { "state": "not created", "page": "3:3" },
+    "07 Téléphone": { "state": "not created", "page": "3:3" }
+  },
+  "collections": {
+    "Primitives": { "id": "VariableCollectionId:4:2", "mode": "Valeur", "count": 23 },
+    "Couleur": { "id": "VariableCollectionId:5:2", "mode": "Clair", "count": 42 },
+    "Espacement": { "id": "VariableCollectionId:6:3", "mode": "Valeur", "count": 19 },
+    "Rayon": { "id": "VariableCollectionId:6:23", "mode": "Valeur", "count": 6 },
+    "Typographie": { "id": "VariableCollectionId:7:2", "mode": "Valeur", "count": 14 },
+    "Mouvement": { "id": "VariableCollectionId:7:17", "mode": "Valeur", "count": 5 }
+  },
+  "textStyles": [
+    "text-display", "text-h1", "text-h2", "text-h3", "text-body", "text-mono",
+    "text-meta", "text-eyebrow", "text-metric-xl", "text-metric-lg",
+    "text-metric-md", "text-metric-sm", "font-serif-italic"
+  ],
+  "effectStyles": ["shadow-soft", "shadow-lift", "shadow-deep"],
+  "fonts": {
+    "sans": "Urbanist",
+    "serif": "Fraunces",
+    "gotcha": "Urbanist weight names have NO space: SemiBold, ExtraBold. Fraunces has no static Medium Italic."
+  },
+  "reuse": "No design system assets to reuse: 8 community kits subscribed, search_design_system returned empty for components, variables and styles. Everything built from code tokens.",
+  "darkMode": "None. globals.css has no prefers-color-scheme block. Light mode only.",
+  "unvalidated": ["11:2 — Fondations wrapper: written, never screenshotted. Verify first on resume."],
+  "ecarts": [
+    "Card variant gold-soft resolves to bg-violet-soft, identical to violet-soft.",
+    "ProgressBar tone gold resolves to bg-violet, identical to tone violet.",
+    "globals.css says gold is wordmark-only, but EmptyState DefaultMark fills a circle with var(--color-gold).",
+    "Pill hardcodes 11 rgba() literals; tone violet uses rgba(107,78,168) which is not --color-violet (134,91,166).",
+    "MetricTile and QueryError use a literal rounded-[12px], between radius-sm (10) and radius-md (14).",
+    "Input's comment says gold focus ring; the ring is violet.",
+    "No spacing token layer: Tailwind's default 4px scale is inherited; /styleguide renders no spacing specimen.",
+    "Fraunces 500 italic has no static Figma instance; the file uses Fraunces Italic (400)."
+  ],
+  "completedSteps": [
+    "P0.a", "P0.b", "P0.c", "P0.d", "P0.e", "P0.f",
+    "P1.a", "P1.b", "P1.c", "P1.d", "P1.e", "P1.f", "P1.g", "P1.h"
+  ],
+  "remainingSteps": ["P2 components", "P3 screens", "P4 états", "P5 téléphone", "P6 report"]
+}

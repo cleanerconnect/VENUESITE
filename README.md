@@ -243,7 +243,9 @@ side by side, permission-denied included.
 |---|---|
 | `/styleguide` | What exists — components, tokens, states, and every screen with a link |
 | `docs/HANDOFF.md` | What is solid, what is open, what to build first |
-| `docs/PHASE4.md` | This phase's completion report |
+| `docs/PHASE4.md` | Handoff-completion report |
+| `docs/PHASE5.md` | Venue-dashboard completion report |
+| `docs/PHASE6.md` | The Figma export — what is in the file, and the plan limit that stopped it |
 | `docs/INTERFACE.md` | Layout, navigation, roles, naming, responsive, copy |
 | `docs/CONVERGENCE.md` | What was unified across the two workspaces, what is still duplicated |
 | `docs/APP_MAPPING.md` | Every element the consumer app shows → where a partner controls it |
