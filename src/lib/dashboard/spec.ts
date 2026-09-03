@@ -251,6 +251,14 @@ export interface EntityRow {
   keywords?: string;
   /** Opens in the detail drawer instead of navigating. */
   detail?: DetailSpec;
+  /**
+   * Buttons on the row itself, not behind the kebab.
+   *
+   * Door work is the reason this exists: Prévenir and Installer have to
+   * be reachable one-handed on a phone, and a menu that has to be opened
+   * first is one tap too many when there is a queue at the stand.
+   */
+  actions?: CtaAction[];
 }
 
 /** A filter tab. Counts are derived from the rows, never passed in. */
@@ -387,6 +395,87 @@ export interface GroupBlock extends BlockBase {
   children: Block[];
 }
 
+// ── Calendar ─────────────────────────────────────────────────
+
+/** One day cell. Everything it renders is a value, as everywhere else. */
+export interface CalendarCell {
+  date: string;
+  /** Booked load and what the day can take, for the fill bar. */
+  value: number;
+  capacity: number;
+  /** Short chips under the bar: a closure, an offer, an experience. */
+  markers?: Badge[];
+  /** Greys the cell and crosses the bar. */
+  closed?: boolean;
+  /** Rings the cell — today, or the day being edited. */
+  highlight?: boolean;
+  href?: string;
+  menu?: { id: string; label: string; action: Intent; destructive?: boolean }[];
+}
+
+/**
+ * Load across days, as a week strip or a month grid.
+ *
+ * Not a chart: the point is to click a day and act on it, which a series
+ * of bars cannot offer. Both views come from one cell list so the two
+ * cannot disagree about what a Tuesday holds.
+ */
+export interface CalendarBlock extends BlockBase {
+  type: "calendar";
+  heading: string;
+  subheading?: string;
+  /** Which view opens first. Both are always reachable. */
+  view?: "week" | "month";
+  unitLabel: string;
+  cells: CalendarCell[];
+  headingAction?: Action;
+  empty?: { title: string; body?: string; icon?: IconKey };
+}
+
+// ── Settings ─────────────────────────────────────────────────
+
+/**
+ * One editable setting. The control is named, never a component: a spec
+ * is JSON, so "this is a toggle" has to be a value like everything else.
+ *
+ * Every control dispatches one command with its new value in the
+ * payload, which keeps the surface of what a settings screen can do
+ * inside the same closed registry as every other action.
+ */
+export type SettingControl =
+  | { kind: "toggle"; value: boolean }
+  | { kind: "number"; value: number; min?: number; max?: number; step?: number; suffix?: string }
+  | { kind: "text"; value: string; placeholder?: string; multiline?: boolean }
+  | { kind: "select"; value: string; options: { value: string; label: string }[] }
+  | { kind: "time"; value: string }
+  | { kind: "date"; value: string }
+  /** Read-only, for a value another screen owns. */
+  | { kind: "readonly"; value: string; href?: string };
+
+export interface SettingRow {
+  id: string;
+  label: string;
+  /** One line under the label. Say what changes, not what the control is. */
+  hint?: string;
+  control: SettingControl;
+  /** Fired on change, with `{ value }` merged into the payload. */
+  command: string;
+  payload?: Record<string, string | number | boolean>;
+  badge?: Badge;
+  /** Roles allowed to change it. Others see the value, disabled. */
+  allow?: string[];
+}
+
+export interface SettingsBlock extends BlockBase {
+  type: "settings";
+  heading?: string;
+  subheading?: string;
+  rows: SettingRow[];
+  /** Shown above the rows when something is off, e.g. a paused list. */
+  banner?: { tone: SemanticTone; title: string; body?: string; action?: Action };
+  footerActions?: CtaAction[];
+}
+
 export type Block =
   | GreetingBlock
   | HeroBlock
@@ -397,6 +486,8 @@ export type Block =
   | FeedBlock
   | TableBlock
   | ChartBlock
+  | CalendarBlock
+  | SettingsBlock
   | SplitBlock
   | GroupBlock;
 

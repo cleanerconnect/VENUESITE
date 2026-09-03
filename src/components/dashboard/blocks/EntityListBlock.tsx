@@ -12,6 +12,7 @@ import { FilterTabs } from "@/components/ui/FilterTabs";
 import { COPY } from "@/lib/copy/fr";
 import { useDetailStore } from "@/lib/stores/detail";
 import {
+  ActionControl,
   ActionLink,
   Icon,
   MetricText,
@@ -275,6 +276,22 @@ function Row({ row }: { row: EntityRow }) {
         ) : (
           <div className="p-4">{inner}</div>
         )}
+
+        {row.actions?.length ? (
+          <div className="flex flex-wrap gap-2 px-4 pb-4 -mt-1">
+            {row.actions.map((cta, i) => (
+              <ActionControl
+                key={`${cta.action.label}-${i}`}
+                cta={cta}
+                size="sm"
+                // Full width on a phone: Prévenir and Installer are
+                // pressed one-handed at a host stand, and a 96px button
+                // beside a queue is a mis-tap waiting to happen.
+                className="flex-1 min-w-[8.5rem] md:flex-none justify-center"
+              />
+            ))}
+          </div>
+        ) : null}
 
         {row.menu?.length ? (
           <div className="absolute top-4 right-4">

@@ -13,16 +13,45 @@
 // edge middleware) can take it without dragging the data layer along.
 
 export const RESTAURANT_SLUGS = [
+  // 1. Aujourd'hui
   "",
   "reservations",
-  "services",
+  "calendrier",
+  // 2. En service
+  "liste-attente",
+  "check-in",
+  "briefing",
+  // 3. Clients
   "clients",
+  "segments",
+  // 4. Ma présence
+  "ma-fiche",
   "menu",
   "avis",
-  "analytique",
+  // 5. Croissance
   "visibilite",
+  "offres",
+  "experiences",
+  // 6. Vie nocturne — rendered only where the configuration enables it.
+  "guest-list",
+  "tables",
+  "promoteurs",
+  // 7. Paiements
+  "acomptes",
+  "annulations",
+  "lyfe-pay",
+  // 8. Pilotage
+  "performance",
+  "bilans",
+  "campagnes",
+  // 9. Établissement
   "disponibilites",
-  "versements",
+  "equipe",
+  "notifications",
+  // 10. Compte
+  "parametres",
+  "abonnement",
+  "support",
 ] as const;
 
 export type RestaurantSlug = (typeof RESTAURANT_SLUGS)[number];
@@ -35,11 +64,21 @@ export function restaurantHref(slug: RestaurantSlug): string {
 }
 
 /**
- * Settings is a form surface, not a spec screen, so it lives on its own
- * route rather than in the screen registry. The path is exported here so
- * the nav still has one source for restaurant links.
+ * The venue's own editing surface: identity, listing, photos, menu,
+ * staff. A form, not a spec screen, so it lives on its own route rather
+ * than in the screen registry. Ma fiche links into it section by
+ * section; the path is exported here so the nav has one source.
  */
 export const RESTAURANT_SETTINGS_PATH = `${RESTAURANT_BASE}/reglages`;
+
+/**
+ * Fiche client. A detail route under Clients rather than a slug of its
+ * own, because it is always opened for one guest — the spec counts it
+ * among the thirty screens, and this is where it lives.
+ */
+export function customerHref(customerId: string): string {
+  return `${RESTAURANT_BASE}/clients/${customerId}`;
+}
 
 export function isRestaurantSlug(value: string): value is RestaurantSlug {
   return (RESTAURANT_SLUGS as readonly string[]).includes(value);

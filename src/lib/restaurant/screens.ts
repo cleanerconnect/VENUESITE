@@ -69,16 +69,9 @@ import {
   restaurantHref,
 } from "./slugs";
 import { COUNT, MAD } from "@/lib/dashboard/formats";
-import { formatTimeFR } from "@/lib/utils/format";
-
-
-
-const hm = formatTimeFR;
-const dayLabel = (iso: string) =>
-  format(new Date(iso), "EEEE d MMMM", { locale: fr });
+import { dayLabel, hm, initialsOf, mobileTiles, money } from "./format";
 
 const covers = (n: number) => `${n} ${n > 1 ? "couverts" : "couvert"}`;
-const money = (n: number) => formatValue(n, MAD);
 
 // ── Dashboard ────────────────────────────────────────────────
 
@@ -358,21 +351,6 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
       { ...feedBlock, id: "activity-mobile", entries: data.activity.slice(0, 5).map(activityEntry) },
     ],
   };
-}
-
-/**
- * Phone bento: a vertical stack. Spans and sparklines are dropped because
- * neither survives a 390px column — a lane adaptation, applied to every
- * tile alike. Which tiles appear at all is the tiles' own call, via
- * `surface`.
- */
-function mobileTiles(block: Block): KpiTile[] {
-  if (block.type !== "kpi-grid") return [];
-  return block.tiles.map((t) => ({
-    ...t,
-    span: 1 as const,
-    sparkline: undefined,
-  }));
 }
 
 // ── Reservations ─────────────────────────────────────────────
@@ -1115,15 +1093,6 @@ function ratingDeltaPct(average: number, deltaPoints: number): number {
   const previous = average - deltaPoints;
   if (previous <= 0) return 0;
   return Number(((deltaPoints / previous) * 100).toFixed(1));
-}
-
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("");
 }
 
 // ── Registry ─────────────────────────────────────────────────

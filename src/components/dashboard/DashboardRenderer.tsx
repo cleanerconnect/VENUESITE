@@ -16,6 +16,8 @@ import { SlotGridBlock } from "./blocks/SlotGridBlock";
 import { FeedBlock } from "./blocks/FeedBlock";
 import { TableBlock } from "./blocks/TableBlock";
 import { ChartBlock } from "./blocks/ChartBlock";
+import { CalendarBlock } from "./blocks/CalendarBlock";
+import { SettingsBlock } from "./blocks/SettingsBlock";
 import { cn } from "@/lib/utils/cn";
 
 // The renderer.
@@ -133,6 +135,10 @@ function BlockView({
       return <TableBlock block={block} />;
     case "chart":
       return <ChartBlock block={block} />;
+    case "calendar":
+      return <CalendarBlock block={block} />;
+    case "settings":
+      return <SettingsBlock block={block} />;
     case "split":
       return <Split block={block} surface={surface} />;
     case "group":
