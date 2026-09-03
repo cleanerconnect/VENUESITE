@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useProfile } from "@/lib/auth/role";
-import { getAudiencesByProfileId } from "@/lib/mock/audiences";
+import { getAudiencesByProfileId } from "@/lib/data/static/audiences";
 import { LockedAudiences } from "@/components/audiences/LockedAudiences";
 import { AudiencesReadyView } from "@/components/audiences/AudiencesReadyView";
 

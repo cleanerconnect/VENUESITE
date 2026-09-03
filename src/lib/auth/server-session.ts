@@ -13,8 +13,7 @@ import "server-only";
 // and it never imports a venue constant.
 
 import { cookies } from "next/headers";
-import { one } from "@/lib/db/store";
-import { userCanAccessVenue, venuesForUser } from "@/lib/db/venue-store";
+import { directory } from "./directory";
 
 export type PortalRole = "owner" | "manager" | "staff";
 
@@ -25,6 +24,7 @@ export interface PortalSession {
   fullName: string;
   /** The venue this session is currently acting on. */
   venueId: string;
+  email: string;
   role: PortalRole;
   /** Every venue the user may act on — the switcher reads this. */
   venues: { id: string; name: string; shortName: string; initials: string; city: string; kind: string; role: string }[];
@@ -45,12 +45,21 @@ export interface SessionDriver {
 class DemoSessionDriver implements SessionDriver {
   async currentUserId(): Promise<string | null> {
     const jar = await cookies();
-    if (jar.get("lyfe.session.present")?.value !== "1") return null;
-    // The demo has one signed-in person. A real driver reads the subject
-    // from a verified token instead.
-    return process.env.LYFE_DEMO_USER_ID ?? "usr_yassine";
+    if (jar.get(PRESENCE_COOKIE)?.value !== "1") return null;
+
+    // Who signed in. The login screen writes this; it is an identifier,
+    // never a capability — every venue this user may open is resolved
+    // from the directory below, not from anything the cookie carries.
+    const claimed = jar.get(USER_COOKIE)?.value;
+    if (claimed && directory().findById(claimed)) return claimed;
+
+    return process.env.LYFE_DEMO_USER_ID ?? DEFAULT_USER_ID;
   }
 }
+
+export const PRESENCE_COOKIE = "lyfe.session.present";
+export const USER_COOKIE = "lyfe.user";
+export const DEFAULT_USER_ID = "usr_yassine";
 
 let driver: SessionDriver | null = null;
 
@@ -78,25 +87,26 @@ export async function resolveSession(): Promise<PortalSession | null> {
   const userId = await sessionDriver().currentUserId();
   if (!userId) return null;
 
-  const venues = venuesForUser(userId);
-  if (venues.length === 0) return null;
+  const account = directory().findById(userId);
+  const venues = account?.venues ?? [];
 
   const jar = await cookies();
   const requested = jar.get(COOKIE_VENUE)?.value;
   const venueId =
-    requested && userCanAccessVenue(userId, requested)
+    requested && directory().canAccessVenue(userId, requested)
       ? requested
-      : venues[0].id;
+      : (venues[0]?.id ?? "");
 
   const membership = venues.find((v) => v.id === venueId) ?? venues[0];
-  const fullName = staffName(userId) ?? userId;
+  const fullName = account?.fullName ?? userId;
 
   return {
     userId,
     firstName: fullName.split(" ")[0],
     fullName,
+    email: account?.email ?? "",
     venueId,
-    role: (membership.role as PortalRole) ?? "staff",
+    role: (membership?.role as PortalRole) ?? "staff",
     venues,
   };
 }
@@ -105,16 +115,10 @@ export async function resolveSession(): Promise<PortalSession | null> {
 export async function requireVenueAccess(venueId: string): Promise<PortalSession> {
   const session = await resolveSession();
   if (!session) throw new Error("not_authenticated");
-  if (!userCanAccessVenue(session.userId, venueId)) {
+  if (!directory().canAccessVenue(session.userId, venueId)) {
     throw new Error("venue_forbidden");
   }
   return session;
 }
 
 export const VENUE_COOKIE = COOKIE_VENUE;
-
-/** The name lives on the staff row, so it is read, not hardcoded. */
-function staffName(userId: string): string | null {
-  const r = one("SELECT full_name FROM staff WHERE user_id = ? LIMIT 1", userId);
-  return r ? String(r.full_name) : null;
-}

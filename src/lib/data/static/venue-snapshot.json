@@ -1,0 +1,1855 @@
+{
+  "capturedAt": "2026-09-03T09:10:30.852Z",
+  "users": [
+    {
+      "userId": "usr_imane",
+      "fullName": "Imane Ouali",
+      "email": "imane@darzellij.ma",
+      "venues": [
+        {
+          "id": "rst_dar_zellij",
+          "name": "Dar Zellij",
+          "shortName": "Dar Zellij",
+          "initials": "DZ",
+          "city": "Marrakech",
+          "kind": "restaurant",
+          "role": "staff"
+        }
+      ]
+    },
+    {
+      "userId": "usr_karim",
+      "fullName": "Karim Sefrioui",
+      "email": "karim@darzellij.ma",
+      "venues": [
+        {
+          "id": "rst_dar_zellij",
+          "name": "Dar Zellij",
+          "shortName": "Dar Zellij",
+          "initials": "DZ",
+          "city": "Marrakech",
+          "kind": "restaurant",
+          "role": "staff"
+        }
+      ]
+    },
+    {
+      "userId": "usr_rachid",
+      "fullName": "Rachid Amrani",
+      "email": "rachid@darzellij.ma",
+      "venues": [
+        {
+          "id": "rst_dar_zellij",
+          "name": "Dar Zellij",
+          "shortName": "Dar Zellij",
+          "initials": "DZ",
+          "city": "Marrakech",
+          "kind": "restaurant",
+          "role": "manager"
+        }
+      ]
+    },
+    {
+      "userId": "usr_yassine",
+      "fullName": "Yassine Alami",
+      "email": "yassine@darzellij.ma",
+      "venues": [
+        {
+          "id": "rst_dar_zellij",
+          "name": "Dar Zellij",
+          "shortName": "Dar Zellij",
+          "initials": "DZ",
+          "city": "Marrakech",
+          "kind": "restaurant",
+          "role": "owner"
+        }
+      ]
+    }
+  ],
+  "businessAccounts": {
+    "usr_imane": {
+      "businessId": "biz_dar_zellij",
+      "venueId": "rst_dar_zellij",
+      "ownerId": "usr_yassine",
+      "subscriptionTier": "annual",
+      "featuresEnabled": [
+        "bookings",
+        "availability",
+        "analytics",
+        "crm",
+        "reviews",
+        "visibility",
+        "team"
+      ]
+    },
+    "usr_karim": {
+      "businessId": "biz_dar_zellij",
+      "venueId": "rst_dar_zellij",
+      "ownerId": "usr_yassine",
+      "subscriptionTier": "annual",
+      "featuresEnabled": [
+        "bookings",
+        "availability",
+        "analytics",
+        "crm",
+        "reviews",
+        "visibility",
+        "team"
+      ]
+    },
+    "usr_rachid": {
+      "businessId": "biz_dar_zellij",
+      "venueId": "rst_dar_zellij",
+      "ownerId": "usr_yassine",
+      "subscriptionTier": "annual",
+      "featuresEnabled": [
+        "bookings",
+        "availability",
+        "analytics",
+        "crm",
+        "reviews",
+        "visibility",
+        "team"
+      ]
+    },
+    "usr_yassine": {
+      "businessId": "biz_dar_zellij",
+      "venueId": "rst_dar_zellij",
+      "ownerId": "usr_yassine",
+      "subscriptionTier": "annual",
+      "featuresEnabled": [
+        "bookings",
+        "availability",
+        "analytics",
+        "crm",
+        "reviews",
+        "visibility",
+        "team"
+      ]
+    }
+  },
+  "venues": {
+    "rst_dar_zellij": {
+      "overview": {
+        "restaurant": {
+          "id": "rst_dar_zellij",
+          "kind": "gastronomique",
+          "name": "Dar Zellij",
+          "description": "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
+          "address": "12 derb Sidi Ahmed Soussi, Médina",
+          "latitude": 31.6295,
+          "longitude": -7.9811,
+          "priceRange": 3,
+          "tags": [
+            "Marocain",
+            "Riad",
+            "Romantique",
+            "Vue sur la médina",
+            "Groupes"
+          ],
+          "features": [
+            "terrasse",
+            "climatisation",
+            "acces_pmr",
+            "wifi",
+            "vue",
+            "musique_live"
+          ],
+          "ambience": [
+            "Intimiste",
+            "Traditionnel",
+            "Cadre exceptionnel"
+          ],
+          "shortName": "Dar Zellij",
+          "initials": "DZ",
+          "city": "Marrakech",
+          "subline": "Restaurant · Marrakech",
+          "cuisine": "Marocaine contemporaine",
+          "capacity": 120,
+          "contactEmail": "reservations@darzellij.ma",
+          "contactPhone": "+212 524 38 26 00",
+          "website": "https://darzellij.ma",
+          "currency": "MAD",
+          "onboardingCompleted": true
+        },
+        "greeting": {
+          "firstName": "",
+          "salutation": "Bonjour",
+          "clause": "le service est complet.",
+          "subline": "104 couverts réservés, 6 en liste d'attente, 16 encore disponibles."
+        },
+        "currentService": {
+          "id": "svc_current",
+          "kind": "petit_dejeuner",
+          "label": "Petit-déjeuner",
+          "date": "2026-09-02",
+          "opensAt": "2026-09-02T09:19:37.732Z",
+          "closesAt": "2026-09-02T13:49:37.732Z",
+          "state": "peak",
+          "capacity": 120,
+          "bookedCovers": 104,
+          "arrivedCovers": 86,
+          "noShowCovers": 6,
+          "revenueMad": 63400,
+          "slotLoad": [
+            {
+              "at": "2026-09-02T09:19:37.732Z",
+              "covers": 10
+            },
+            {
+              "at": "2026-09-02T09:49:37.732Z",
+              "covers": 19
+            },
+            {
+              "at": "2026-09-02T10:19:37.732Z",
+              "covers": 28
+            },
+            {
+              "at": "2026-09-02T10:49:37.732Z",
+              "covers": 34
+            },
+            {
+              "at": "2026-09-02T11:19:37.732Z",
+              "covers": 32
+            },
+            {
+              "at": "2026-09-02T11:49:37.732Z",
+              "covers": 26
+            },
+            {
+              "at": "2026-09-02T12:19:37.732Z",
+              "covers": 20
+            },
+            {
+              "at": "2026-09-02T12:49:37.732Z",
+              "covers": 14
+            },
+            {
+              "at": "2026-09-02T13:19:37.732Z",
+              "covers": 9
+            },
+            {
+              "at": "2026-09-02T13:49:37.732Z",
+              "covers": 5
+            }
+          ]
+        },
+        "zones": [
+          {
+            "id": "z_patio",
+            "name": "Patio",
+            "capacity": 48,
+            "available": true
+          },
+          {
+            "id": "z_salle",
+            "name": "Grande salle",
+            "capacity": 44,
+            "available": true
+          },
+          {
+            "id": "z_terrasse",
+            "name": "Terrasse",
+            "capacity": 28,
+            "available": true
+          }
+        ],
+        "coversToday": {
+          "count": 86,
+          "deltaPctVsYesterday": 30.3,
+          "series24h": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            29,
+            62,
+            58,
+            34,
+            14,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "peakHourLabel": "Pic à 10h"
+        },
+        "averageTicket": {
+          "amountMad": 737,
+          "deltaPctVsLastWeek": 0
+        },
+        "occupancy": {
+          "pct": 40,
+          "deltaPctVsLastWeek": 2.9
+        },
+        "noShows": {
+          "count": 6,
+          "deltaPctVsLastWeek": 100,
+          "lostRevenueMad": 4422
+        },
+        "revenueWeek": {
+          "amountMad": 420090,
+          "deltaPctVsLastWeek": -11.8,
+          "series": [
+            {
+              "label": "ven.",
+              "value": 91388
+            },
+            {
+              "label": "sam.",
+              "value": 81807
+            },
+            {
+              "label": "dim.",
+              "value": 84755
+            },
+            {
+              "label": "lun.",
+              "value": 55275
+            },
+            {
+              "label": "mar.",
+              "value": 58223
+            },
+            {
+              "label": "mer.",
+              "value": 48642
+            }
+          ]
+        },
+        "rating": {
+          "average": 4.3,
+          "reviewCount": 4,
+          "deltaVsLastMonth": 4.3
+        },
+        "nextPayout": {
+          "amountMad": 291700,
+          "scheduledFor": "2026-09-05T10:59:37.732Z"
+        },
+        "upcomingReservations": [
+          {
+            "id": "res_001",
+            "serviceId": "svc_current",
+            "guestName": "Salma Bennani",
+            "guestPhone": "+212 661 20 44 18",
+            "partySize": 4,
+            "at": "2026-09-02T11:19:37.732Z",
+            "state": "confirmed",
+            "channel": "lyfe",
+            "zoneId": "z_patio",
+            "note": "Anniversaire, dessert avec bougie",
+            "visits": 6,
+            "vip": false,
+            "depositMad": 400,
+            "noShowRisk": 0.04
+          },
+          {
+            "id": "res_002",
+            "serviceId": "svc_current",
+            "guestName": "Groupe Karam",
+            "guestPhone": "+212 662 88 10 03",
+            "partySize": 6,
+            "at": "2026-09-02T11:34:37.732Z",
+            "state": "confirmed",
+            "channel": "phone",
+            "zoneId": "z_salle",
+            "note": "Sans gluten pour deux couverts",
+            "visits": 2,
+            "vip": false,
+            "noShowRisk": 0.11
+          },
+          {
+            "id": "res_003",
+            "serviceId": "svc_current",
+            "guestName": "Yasmine El Alaoui",
+            "guestPhone": "+212 663 41 77 92",
+            "partySize": 4,
+            "at": "2026-09-02T11:49:37.732Z",
+            "state": "confirmed",
+            "channel": "instagram",
+            "zoneId": "z_terrasse",
+            "visits": 1,
+            "vip": false,
+            "noShowRisk": 0.38
+          },
+          {
+            "id": "res_010",
+            "serviceId": "svc_current",
+            "guestName": "Nabil Cherkaoui",
+            "guestPhone": "+212 665 09 33 71",
+            "partySize": 2,
+            "at": "2026-09-02T12:19:37.732Z",
+            "state": "requested",
+            "channel": "lyfe",
+            "note": "Demande une table près de la fontaine",
+            "visits": 0,
+            "vip": false,
+            "noShowRisk": 0.22
+          },
+          {
+            "id": "res_011",
+            "serviceId": "svc_current",
+            "guestName": "Hind Tazi",
+            "guestPhone": "+212 660 15 62 40",
+            "partySize": 5,
+            "at": "2026-09-02T12:44:37.732Z",
+            "state": "confirmed",
+            "channel": "partner",
+            "zoneId": "z_salle",
+            "visits": 9,
+            "vip": true,
+            "depositMad": 500,
+            "noShowRisk": 0.03
+          }
+        ],
+        "waitlist": [
+          {
+            "id": "res_w1",
+            "serviceId": "svc_current",
+            "guestName": "Omar Idrissi",
+            "guestPhone": "+212 667 74 21 08",
+            "partySize": 2,
+            "at": "2026-09-02T11:14:37.732Z",
+            "state": "waitlisted",
+            "channel": "walk_in",
+            "visits": 0,
+            "vip": false
+          },
+          {
+            "id": "res_w2",
+            "serviceId": "svc_current",
+            "guestName": "Famille Berrada",
+            "guestPhone": "+212 668 30 90 55",
+            "partySize": 4,
+            "at": "2026-09-02T11:24:37.732Z",
+            "state": "waitlisted",
+            "channel": "walk_in",
+            "visits": 3,
+            "vip": false
+          }
+        ],
+        "activity": [
+          {
+            "id": "act_1",
+            "type": "guest_arrived",
+            "actor": "Salma Bennani",
+            "message": "est arrivée · 4 couverts",
+            "at": "2026-09-02T10:58:37.732Z",
+            "reservationId": "res_001",
+            "needsAttention": false
+          },
+          {
+            "id": "act_2",
+            "type": "reservation_created",
+            "actor": "Nabil Cherkaoui",
+            "message": "a demandé une table pour 2",
+            "at": "2026-09-02T10:55:37.732Z",
+            "reservationId": "res_010",
+            "needsAttention": false
+          },
+          {
+            "id": "act_3",
+            "type": "anomaly",
+            "actor": "LYFE",
+            "message": "détecte 3 annulations sur le même créneau",
+            "at": "2026-09-02T10:50:37.732Z",
+            "needsAttention": true
+          },
+          {
+            "id": "act_4",
+            "type": "guest_arrived",
+            "actor": "Hind Tazi",
+            "message": "est arrivée · 5 couverts",
+            "at": "2026-09-02T10:47:37.732Z",
+            "reservationId": "res_011",
+            "needsAttention": false
+          },
+          {
+            "id": "act_6",
+            "type": "waitlist_joined",
+            "actor": "Famille Berrada",
+            "message": "rejoint la liste d'attente · 4 couverts",
+            "at": "2026-09-02T10:36:37.732Z",
+            "reservationId": "res_w2",
+            "needsAttention": false
+          },
+          {
+            "id": "act_8",
+            "type": "no_show",
+            "actor": "Réservation précédente",
+            "message": "notée absente après 25 min · 3 couverts",
+            "at": "2026-09-02T10:19:37.732Z",
+            "needsAttention": true
+          },
+          {
+            "id": "act_9",
+            "type": "reservation_cancelled",
+            "actor": "Sofia Lahlou",
+            "message": "a annulé sa table de 2",
+            "at": "2026-09-02T10:12:37.732Z",
+            "needsAttention": false
+          },
+          {
+            "id": "act_7",
+            "type": "review_received",
+            "actor": "Leïla M.",
+            "message": "a laissé un avis 5 étoiles",
+            "at": "2026-09-02T07:59:37.732Z",
+            "needsAttention": false
+          },
+          {
+            "id": "act_10",
+            "type": "payment_settled",
+            "actor": "LYFE",
+            "message": "a clôturé le versement de la semaine",
+            "at": "2026-08-31T10:59:37.732Z",
+            "needsAttention": false
+          }
+        ],
+        "topItems": [
+          {
+            "id": "mi_pastilla",
+            "name": "Pastilla de pigeon",
+            "description": "Feuilleté croustillant, amandes et cannelle.",
+            "category": "entree",
+            "priceMad": 180,
+            "signature": true,
+            "visible": true,
+            "dietary": []
+          },
+          {
+            "id": "mi_tajine",
+            "name": "Tajine d'agneau aux pruneaux",
+            "description": "Cuit sept heures, amandes grillées.",
+            "category": "plat",
+            "priceMad": 260,
+            "signature": true,
+            "visible": true,
+            "dietary": []
+          },
+          {
+            "id": "mi_seabass",
+            "name": "Loup de mer chermoula",
+            "description": "Pêche du jour, marinade chermoula.",
+            "category": "plat",
+            "priceMad": 320,
+            "signature": false,
+            "visible": true,
+            "dietary": [
+              "sans_gluten"
+            ]
+          },
+          {
+            "id": "mi_couscous",
+            "name": "Couscous royal du vendredi",
+            "description": "Servi le vendredi uniquement.",
+            "category": "plat",
+            "priceMad": 240,
+            "signature": false,
+            "visible": true,
+            "dietary": []
+          },
+          {
+            "id": "mi_zaalouk",
+            "name": "Zaalouk d'aubergines",
+            "description": "Aubergines fumées, tomate, coriandre.",
+            "category": "entree",
+            "priceMad": 80,
+            "signature": false,
+            "visible": true,
+            "dietary": [
+              "vegan",
+              "vegetarien"
+            ]
+          },
+          {
+            "id": "mi_orange",
+            "name": "Salade d'orange à la cannelle",
+            "description": "Oranges de Marrakech, fleur d'oranger.",
+            "category": "dessert",
+            "priceMad": 90,
+            "signature": false,
+            "visible": true,
+            "dietary": [
+              "sans_gluten",
+              "vegetarien"
+            ]
+          },
+          {
+            "id": "mi_negroni",
+            "name": "Negroni safrané",
+            "description": "Safran de Taliouine, gin infusé.",
+            "category": "cocktail",
+            "priceMad": 140,
+            "signature": true,
+            "visible": true,
+            "dietary": []
+          }
+        ],
+        "reviews": [
+          {
+            "id": "rev_1",
+            "guestName": "Leïla M.",
+            "rating": 5,
+            "comment": "Le patio au coucher du soleil, rien à redire. Service attentif sans être pesant.",
+            "at": "2026-09-02T07:59:37.732Z",
+            "channel": "lyfe",
+            "tags": [
+              "cadre",
+              "service"
+            ],
+            "replied": true
+          },
+          {
+            "id": "rev_2",
+            "guestName": "Thomas R.",
+            "rating": 4,
+            "comment": "Cuisine excellente. Vingt minutes d'attente malgré la réservation à 21h.",
+            "at": "2026-09-02T03:59:37.732Z",
+            "channel": "google",
+            "tags": [
+              "attente",
+              "cuisine"
+            ],
+            "replied": false
+          },
+          {
+            "id": "rev_3",
+            "guestName": "Amina B.",
+            "rating": 5,
+            "comment": "La pastilla vaut le détour à elle seule.",
+            "at": "2026-09-01T09:59:37.732Z",
+            "channel": "lyfe",
+            "tags": [
+              "cuisine"
+            ],
+            "replied": false
+          },
+          {
+            "id": "rev_4",
+            "guestName": "Karim H.",
+            "rating": 3,
+            "comment": "Table en terrasse bruyante, on s'entendait à peine.",
+            "at": "2026-08-31T15:39:37.732Z",
+            "channel": "google",
+            "tags": [
+              "bruit",
+              "terrasse"
+            ],
+            "replied": false
+          }
+        ],
+        "services": [
+          {
+            "id": "svc_current",
+            "kind": "petit_dejeuner",
+            "label": "Petit-déjeuner",
+            "date": "2026-09-02",
+            "opensAt": "2026-09-02T09:19:37.732Z",
+            "closesAt": "2026-09-02T13:49:37.732Z",
+            "state": "peak",
+            "capacity": 120,
+            "bookedCovers": 104,
+            "arrivedCovers": 86,
+            "noShowCovers": 6,
+            "revenueMad": 63400,
+            "slotLoad": [
+              {
+                "at": "2026-09-02T09:19:37.732Z",
+                "covers": 10
+              },
+              {
+                "at": "2026-09-02T09:49:37.732Z",
+                "covers": 19
+              },
+              {
+                "at": "2026-09-02T10:19:37.732Z",
+                "covers": 28
+              },
+              {
+                "at": "2026-09-02T10:49:37.732Z",
+                "covers": 34
+              },
+              {
+                "at": "2026-09-02T11:19:37.732Z",
+                "covers": 32
+              },
+              {
+                "at": "2026-09-02T11:49:37.732Z",
+                "covers": 26
+              },
+              {
+                "at": "2026-09-02T12:19:37.732Z",
+                "covers": 20
+              },
+              {
+                "at": "2026-09-02T12:49:37.732Z",
+                "covers": 14
+              },
+              {
+                "at": "2026-09-02T13:19:37.732Z",
+                "covers": 9
+              },
+              {
+                "at": "2026-09-02T13:49:37.732Z",
+                "covers": 5
+              }
+            ]
+          }
+        ],
+        "payouts": [
+          {
+            "id": "pay_current",
+            "reference": "LYFE-DZ-PAY_CURRENT",
+            "amountMad": 291700,
+            "commissionMad": 17900,
+            "coversSettled": 612,
+            "periodLabel": "26 août – 2 septembre",
+            "scheduledFor": "2026-09-05T10:59:37.732Z",
+            "state": "scheduled"
+          },
+          {
+            "id": "pay_prev",
+            "reference": "LYFE-DZ-PAY_PREV",
+            "amountMad": 268400,
+            "commissionMad": 16500,
+            "coversSettled": 571,
+            "periodLabel": "19 août – 26 août",
+            "scheduledFor": "2026-08-31T10:59:37.732Z",
+            "paidAt": "2026-08-31T10:59:37.732Z",
+            "state": "paid"
+          },
+          {
+            "id": "pay_prev2",
+            "reference": "LYFE-DZ-PAY_PREV2",
+            "amountMad": 243100,
+            "commissionMad": 14900,
+            "coversSettled": 518,
+            "periodLabel": "12 août – 19 août",
+            "scheduledFor": "2026-08-24T10:59:37.732Z",
+            "paidAt": "2026-08-24T10:59:37.732Z",
+            "state": "paid"
+          }
+        ]
+      },
+      "profile": {
+        "id": "rst_dar_zellij",
+        "kind": "gastronomique",
+        "name": "Dar Zellij",
+        "description": "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
+        "address": "12 derb Sidi Ahmed Soussi, Médina",
+        "latitude": 31.6295,
+        "longitude": -7.9811,
+        "priceRange": 3,
+        "tags": [
+          "Marocain",
+          "Riad",
+          "Romantique",
+          "Vue sur la médina",
+          "Groupes"
+        ],
+        "features": [
+          "terrasse",
+          "climatisation",
+          "acces_pmr",
+          "wifi",
+          "vue",
+          "musique_live"
+        ],
+        "ambience": [
+          "Intimiste",
+          "Traditionnel",
+          "Cadre exceptionnel"
+        ],
+        "shortName": "Dar Zellij",
+        "initials": "DZ",
+        "city": "Marrakech",
+        "subline": "Restaurant · Marrakech",
+        "cuisine": "Marocaine contemporaine",
+        "capacity": 120,
+        "contactEmail": "reservations@darzellij.ma",
+        "contactPhone": "+212 524 38 26 00",
+        "website": "https://darzellij.ma",
+        "currency": "MAD",
+        "onboardingCompleted": true
+      },
+      "menuItems": [
+        {
+          "id": "mi_pastilla",
+          "name": "Pastilla de pigeon",
+          "description": "Feuilleté croustillant, amandes et cannelle.",
+          "category": "entree",
+          "priceMad": 180,
+          "signature": true,
+          "visible": true,
+          "dietary": []
+        },
+        {
+          "id": "mi_tajine",
+          "name": "Tajine d'agneau aux pruneaux",
+          "description": "Cuit sept heures, amandes grillées.",
+          "category": "plat",
+          "priceMad": 260,
+          "signature": true,
+          "visible": true,
+          "dietary": []
+        },
+        {
+          "id": "mi_seabass",
+          "name": "Loup de mer chermoula",
+          "description": "Pêche du jour, marinade chermoula.",
+          "category": "plat",
+          "priceMad": 320,
+          "signature": false,
+          "visible": true,
+          "dietary": [
+            "sans_gluten"
+          ]
+        },
+        {
+          "id": "mi_couscous",
+          "name": "Couscous royal du vendredi",
+          "description": "Servi le vendredi uniquement.",
+          "category": "plat",
+          "priceMad": 240,
+          "signature": false,
+          "visible": true,
+          "dietary": []
+        },
+        {
+          "id": "mi_zaalouk",
+          "name": "Zaalouk d'aubergines",
+          "description": "Aubergines fumées, tomate, coriandre.",
+          "category": "entree",
+          "priceMad": 80,
+          "signature": false,
+          "visible": true,
+          "dietary": [
+            "vegan",
+            "vegetarien"
+          ]
+        },
+        {
+          "id": "mi_orange",
+          "name": "Salade d'orange à la cannelle",
+          "description": "Oranges de Marrakech, fleur d'oranger.",
+          "category": "dessert",
+          "priceMad": 90,
+          "signature": false,
+          "visible": true,
+          "dietary": [
+            "sans_gluten",
+            "vegetarien"
+          ]
+        },
+        {
+          "id": "mi_negroni",
+          "name": "Negroni safrané",
+          "description": "Safran de Taliouine, gin infusé.",
+          "category": "cocktail",
+          "priceMad": 140,
+          "signature": true,
+          "visible": true,
+          "dietary": []
+        }
+      ],
+      "availability": {
+        "venueId": "rst_dar_zellij",
+        "slots": [
+          {
+            "id": "slot_1",
+            "weekday": 1,
+            "opensAt": "12:00",
+            "closesAt": "15:00",
+            "capacity": 60,
+            "enabled": true
+          },
+          {
+            "id": "slot_2",
+            "weekday": 1,
+            "opensAt": "19:00",
+            "closesAt": "23:30",
+            "capacity": 120,
+            "enabled": true
+          },
+          {
+            "id": "slot_3",
+            "weekday": 2,
+            "opensAt": "12:00",
+            "closesAt": "15:00",
+            "capacity": 60,
+            "enabled": true
+          },
+          {
+            "id": "slot_4",
+            "weekday": 2,
+            "opensAt": "19:00",
+            "closesAt": "23:30",
+            "capacity": 120,
+            "enabled": true
+          },
+          {
+            "id": "slot_5",
+            "weekday": 3,
+            "opensAt": "12:00",
+            "closesAt": "15:00",
+            "capacity": 60,
+            "enabled": true
+          },
+          {
+            "id": "slot_6",
+            "weekday": 3,
+            "opensAt": "19:00",
+            "closesAt": "23:30",
+            "capacity": 120,
+            "enabled": true
+          },
+          {
+            "id": "slot_7",
+            "weekday": 4,
+            "opensAt": "12:00",
+            "closesAt": "15:00",
+            "capacity": 60,
+            "enabled": true
+          },
+          {
+            "id": "slot_8",
+            "weekday": 4,
+            "opensAt": "19:00",
+            "closesAt": "23:30",
+            "capacity": 120,
+            "enabled": true
+          },
+          {
+            "id": "slot_9",
+            "weekday": 5,
+            "opensAt": "12:00",
+            "closesAt": "15:30",
+            "capacity": 72,
+            "enabled": true
+          },
+          {
+            "id": "slot_10",
+            "weekday": 5,
+            "opensAt": "19:00",
+            "closesAt": "00:30",
+            "capacity": 120,
+            "enabled": true
+          },
+          {
+            "id": "slot_11",
+            "weekday": 6,
+            "opensAt": "12:00",
+            "closesAt": "15:30",
+            "capacity": 72,
+            "enabled": true
+          },
+          {
+            "id": "slot_12",
+            "weekday": 6,
+            "opensAt": "19:00",
+            "closesAt": "00:30",
+            "capacity": 120,
+            "enabled": true
+          },
+          {
+            "id": "slot_13",
+            "weekday": 7,
+            "opensAt": "12:00",
+            "closesAt": "16:00",
+            "capacity": 92,
+            "enabled": true
+          },
+          {
+            "id": "slot_14",
+            "weekday": 7,
+            "opensAt": "19:00",
+            "closesAt": "23:00",
+            "capacity": 100,
+            "enabled": false
+          }
+        ],
+        "closures": [
+          {
+            "id": "cl_1",
+            "date": "2026-09-14",
+            "reason": "Privatisation"
+          }
+        ],
+        "updatedAt": "2026-09-02T10:59:37.732Z"
+      },
+      "customers": [
+        {
+          "id": "cus_8",
+          "fullName": "Leïla Mansouri",
+          "phone": "+212 664 51 12 87",
+          "email": "leila.m@gmail.com",
+          "firstSeenAt": "2026-03-19T10:59:37.732Z",
+          "lastVisitAt": "2026-08-29T10:59:37.732Z",
+          "visitCount": 14,
+          "averageSpendMad": 890,
+          "totalSpendMad": 12460,
+          "loyaltyTier": "nouveau",
+          "preferences": [
+            "Terrasse",
+            "Végétarienne"
+          ],
+          "noShowHistory": [],
+          "noShowRisk": 0,
+          "reviewIds": [
+            "rev_1"
+          ],
+          "segments": [
+            "returning",
+            "loyal"
+          ],
+          "optedOutOfMarketing": true
+        },
+        {
+          "id": "cus_9",
+          "fullName": "Thomas Renaud",
+          "phone": "+33 6 12 44 90 21",
+          "email": "t.renaud@free.fr",
+          "firstSeenAt": "2026-03-08T10:59:37.732Z",
+          "lastVisitAt": "2026-08-28T10:59:37.732Z",
+          "visitCount": 2,
+          "averageSpendMad": 1310,
+          "totalSpendMad": 2620,
+          "loyaltyTier": "nouveau",
+          "preferences": [],
+          "noShowHistory": [],
+          "noShowRisk": 0,
+          "reviewIds": [
+            "rev_2"
+          ],
+          "segments": [
+            "returning"
+          ],
+          "optedOutOfMarketing": false
+        },
+        {
+          "id": "cus_2",
+          "fullName": "Hind Tazi",
+          "phone": "+212 660 15 62 40",
+          "email": "h.tazi@outlook.com",
+          "firstSeenAt": "2026-05-24T10:59:37.732Z",
+          "lastVisitAt": "2026-08-24T10:59:37.732Z",
+          "visitCount": 9,
+          "averageSpendMad": 1120,
+          "totalSpendMad": 10080,
+          "loyaltyTier": "nouveau",
+          "preferences": [
+            "Allergie fruits de mer",
+            "Anniversaire en mai"
+          ],
+          "noShowHistory": [],
+          "noShowRisk": 0,
+          "reviewIds": [],
+          "segments": [
+            "returning",
+            "loyal"
+          ],
+          "optedOutOfMarketing": false
+        },
+        {
+          "id": "cus_11",
+          "fullName": "Amina Bouzid",
+          "phone": "+212 661 88 03 45",
+          "email": "amina.bouzid@gmail.com",
+          "firstSeenAt": "2026-02-14T10:59:37.732Z",
+          "lastVisitAt": "2026-08-17T10:59:37.732Z",
+          "visitCount": 11,
+          "averageSpendMad": 830,
+          "totalSpendMad": 9130,
+          "loyaltyTier": "nouveau",
+          "preferences": [
+            "Sans alcool"
+          ],
+          "noShowHistory": [],
+          "noShowRisk": 0,
+          "reviewIds": [],
+          "segments": [
+            "returning",
+            "loyal"
+          ],
+          "optedOutOfMarketing": false
+        },
+        {
+          "id": "cus_1",
+          "fullName": "Salma Bennani",
+          "phone": "+212 661 20 44 18",
+          "email": "salma.bennani@gmail.com",
+          "firstSeenAt": "2026-06-04T10:59:37.732Z",
+          "lastVisitAt": "2026-08-12T10:59:37.732Z",
+          "visitCount": 6,
+          "averageSpendMad": 780,
+          "totalSpendMad": 4680,
+          "loyaltyTier": "nouveau",
+          "preferences": [
+            "Sans porc",
+            "Table au patio"
+          ],
+          "noShowHistory": [],
+          "noShowRisk": 0,
+          "reviewIds": [],
+          "segments": [
+            "returning"
+          ],
+          "optedOutOfMarketing": true
+        },
+        {
+          "id": "cus_12",
+          "fullName": "Sofia Lahlou",
+          "phone": "+212 666 70 15 29",
+          "firstSeenAt": "2026-02-03T10:59:37.732Z",
+          "lastVisitAt": "2026-08-06T10:59:37.732Z",
+          "visitCount": 5,
+          "averageSpendMad": 760,
+          "totalSpendMad": 3800,
+          "loyaltyTier": "nouveau",
+          "preferences": [],
+          "noShowHistory": [
+            {
+              "bookingId": "res_hist_cus_12_0",
+              "at": "2026-08-02T10:59:37.732Z",
+              "partySize": 2
+            },
+            {
+              "bookingId": "res_hist_cus_12_1",
+              "at": "2026-07-13T10:59:37.732Z",
+              "partySize": 3
+            },
+            {
+              "bookingId": "res_hist_cus_12_2",
+              "at": "2026-06-23T10:59:37.732Z",
+              "partySize": 4
+            }
+          ],
+          "noShowRisk": 0.38,
+          "reviewIds": [],
+          "segments": [
+            "returning",
+            "at_risk"
+          ],
+          "optedOutOfMarketing": false
+        },
+        {
+          "id": "cus_7",
+          "fullName": "Famille Berrada",
+          "phone": "+212 668 30 90 55",
+          "firstSeenAt": "2026-03-30T10:59:37.732Z",
+          "lastVisitAt": "2026-07-31T10:59:37.732Z",
+          "visitCount": 3,
+          "averageSpendMad": 940,
+          "totalSpendMad": 2820,
+          "loyaltyTier": "nouveau",
+          "preferences": [
+            "Chaise haute"
+          ],
+          "noShowHistory": [],
+          "noShowRisk": 0,
+          "reviewIds": [],
+          "segments": [
+            "returning"
+          ],
+          "optedOutOfMarketing": false
+        },
+        {
+          "id": "cus_3",
+          "fullName": "Groupe Karam",
+          "phone": "+212 662 88 10 03",
+          "firstSeenAt": "2026-05-13T10:59:37.732Z",
+          "lastVisitAt": "2026-07-16T10:59:37.732Z",
+          "visitCount": 2,
+          "averageSpendMad": 1640,
+          "totalSpendMad": 3280,
+          "loyaltyTier": "nouveau",
+          "preferences": [
+            "Sans gluten (2 couverts)"
+          ],
+          "noShowHistory": [
+            {
+              "bookingId": "res_hist_cus_3_0",
+              "at": "2026-08-11T10:59:37.732Z",
+              "partySize": 2
+            }
+          ],
+          "noShowRisk": 0.33,
+          "reviewIds": [],
+          "segments": [
+            "returning",
+            "at_risk"
+          ],
+          "optedOutOfMarketing": false
+        },
+        {
+          "id": "cus_10",
+          "fullName": "Karim Hakimi",
+          "phone": "+212 669 22 41 06",
+          "firstSeenAt": "2026-02-25T10:59:37.732Z",
+          "lastVisitAt": "2026-07-04T10:59:37.732Z",
+          "visitCount": 4,
+          "averageSpendMad": 700,
+          "totalSpendMad": 2800,
+          "loyaltyTier": "nouveau",
+          "preferences": [
+            "Table calme"
+          ],
+          "noShowHistory": [
+            {
+              "bookingId": "res_hist_cus_10_0",
+              "at": "2026-08-04T10:59:37.732Z",
+              "partySize": 2
+            }
+          ],
+          "noShowRisk": 0.2,
+          "reviewIds": [
+            "rev_4"
+          ],
+          "segments": [
+            "returning",
+            "lapsed"
+          ],
+          "optedOutOfMarketing": false
+        },
+        {
+          "id": "cus_4",
+          "fullName": "Yasmine El Alaoui",
+          "phone": "+212 663 41 77 92",
+          "email": "yasmine.ea@gmail.com",
+          "firstSeenAt": "2026-05-02T10:59:37.732Z",
+          "lastVisitAt": "2026-06-20T10:59:37.732Z",
+          "visitCount": 1,
+          "averageSpendMad": 620,
+          "totalSpendMad": 620,
+          "loyaltyTier": "nouveau",
+          "preferences": [],
+          "noShowHistory": [
+            {
+              "bookingId": "res_hist_cus_4_0",
+              "at": "2026-08-10T10:59:37.732Z",
+              "partySize": 2
+            },
+            {
+              "bookingId": "res_hist_cus_4_1",
+              "at": "2026-07-21T10:59:37.732Z",
+              "partySize": 3
+            }
+          ],
+          "noShowRisk": 0.67,
+          "reviewIds": [],
+          "segments": [
+            "returning",
+            "at_risk",
+            "lapsed"
+          ],
+          "optedOutOfMarketing": false
+        },
+        {
+          "id": "cus_5",
+          "fullName": "Nabil Cherkaoui",
+          "phone": "+212 665 09 33 71",
+          "firstSeenAt": "2026-04-21T10:59:37.732Z",
+          "visitCount": 0,
+          "averageSpendMad": 0,
+          "totalSpendMad": 0,
+          "loyaltyTier": "nouveau",
+          "preferences": [
+            "Table près de la fontaine"
+          ],
+          "noShowHistory": [],
+          "noShowRisk": 0,
+          "reviewIds": [],
+          "segments": [
+            "new"
+          ],
+          "optedOutOfMarketing": false
+        },
+        {
+          "id": "cus_6",
+          "fullName": "Omar Idrissi",
+          "phone": "+212 667 74 21 08",
+          "firstSeenAt": "2026-04-10T10:59:37.732Z",
+          "visitCount": 0,
+          "averageSpendMad": 0,
+          "totalSpendMad": 0,
+          "loyaltyTier": "nouveau",
+          "preferences": [],
+          "noShowHistory": [],
+          "noShowRisk": 0,
+          "reviewIds": [],
+          "segments": [
+            "new"
+          ],
+          "optedOutOfMarketing": false
+        }
+      ],
+      "notifications": [
+        {
+          "id": "ntf_1",
+          "type": "booking_request",
+          "title": "Nouvelle demande de réservation",
+          "body": "Nabil Cherkaoui · 2 personnes · à confirmer",
+          "at": "2026-09-02T10:55:37.732Z",
+          "read": false,
+          "href": "/restaurant/reservations"
+        },
+        {
+          "id": "ntf_2",
+          "type": "cancellation",
+          "title": "Réservation annulée",
+          "body": "Sofia Lahlou a annulé sa table de 2",
+          "at": "2026-09-02T10:12:37.732Z",
+          "read": false,
+          "href": "/restaurant/reservations"
+        },
+        {
+          "id": "ntf_3",
+          "type": "review",
+          "title": "Nouvel avis · 5 étoiles",
+          "body": "Leïla M. — « Le patio au coucher du soleil, rien à redire. »",
+          "at": "2026-09-02T07:59:37.732Z",
+          "read": true,
+          "href": "/restaurant/avis"
+        }
+      ],
+      "notificationPreferences": {
+        "venueId": "rst_dar_zellij",
+        "newBooking": [
+          "push",
+          "email"
+        ],
+        "cancellation": [
+          "push"
+        ],
+        "review": [
+          "email"
+        ],
+        "dailySummary": [
+          "email"
+        ]
+      },
+      "staff": [
+        {
+          "id": "stf_2",
+          "userId": "usr_rachid",
+          "fullName": "Rachid Amrani",
+          "email": "rachid@darzellij.ma",
+          "role": "manager",
+          "lastActive": "2026-09-02T10:54:37.732Z",
+          "pending": false
+        },
+        {
+          "id": "stf_1",
+          "userId": "usr_yassine",
+          "fullName": "Yassine Alami",
+          "email": "yassine@darzellij.ma",
+          "role": "owner",
+          "lastActive": "2026-09-02T10:57:37.732Z",
+          "pending": false
+        },
+        {
+          "id": "stf_3",
+          "userId": "usr_imane",
+          "fullName": "Imane Ouali",
+          "email": "imane@darzellij.ma",
+          "role": "staff",
+          "lastActive": "2026-09-02T10:19:37.732Z",
+          "pending": false
+        },
+        {
+          "id": "stf_4",
+          "userId": "usr_karim",
+          "fullName": "Karim Sefrioui",
+          "email": "karim@darzellij.ma",
+          "role": "staff",
+          "lastActive": "2026-09-01T10:59:37.732Z",
+          "pending": false
+        }
+      ],
+      "photos": [],
+      "menuFiles": [],
+      "analytics": {
+        "7d": {
+          "venueId": "rst_dar_zellij",
+          "period": "7d",
+          "occupancyRate": 38,
+          "occupancyDeltaPct": -0.9,
+          "estimatedRevenueMad": 476102,
+          "revenueDeltaPct": -0.9,
+          "noShowRate": 3.6,
+          "noShowDeltaPct": 5.5,
+          "coversServed": 646,
+          "coversDeltaPct": -0.9,
+          "series": [
+            {
+              "label": "27 août",
+              "covers": 76,
+              "revenueMad": 56012,
+              "noShows": 3
+            },
+            {
+              "label": "28 août",
+              "covers": 124,
+              "revenueMad": 91388,
+              "noShows": 4
+            },
+            {
+              "label": "29 août",
+              "covers": 111,
+              "revenueMad": 81807,
+              "noShows": 4
+            },
+            {
+              "label": "30 août",
+              "covers": 115,
+              "revenueMad": 84755,
+              "noShows": 5
+            },
+            {
+              "label": "31 août",
+              "covers": 75,
+              "revenueMad": 55275,
+              "noShows": 1
+            },
+            {
+              "label": "1 sept.",
+              "covers": 79,
+              "revenueMad": 58223,
+              "noShows": 3
+            },
+            {
+              "label": "2 sept.",
+              "covers": 66,
+              "revenueMad": 48642,
+              "noShows": 3
+            }
+          ]
+        },
+        "30d": {
+          "venueId": "rst_dar_zellij",
+          "period": "30d",
+          "occupancyRate": 38,
+          "occupancyDeltaPct": -0.3,
+          "estimatedRevenueMad": 2008325,
+          "revenueDeltaPct": -0.3,
+          "noShowRate": 3.3,
+          "noShowDeltaPct": 0.3,
+          "coversServed": 2725,
+          "coversDeltaPct": -0.3,
+          "series": [
+            {
+              "label": "4 août",
+              "covers": 68,
+              "revenueMad": 50116,
+              "noShows": 1
+            },
+            {
+              "label": "5 août",
+              "covers": 72,
+              "revenueMad": 53064,
+              "noShows": 2
+            },
+            {
+              "label": "6 août",
+              "covers": 76,
+              "revenueMad": 56012,
+              "noShows": 3
+            },
+            {
+              "label": "7 août",
+              "covers": 124,
+              "revenueMad": 91388,
+              "noShows": 4
+            },
+            {
+              "label": "8 août",
+              "covers": 111,
+              "revenueMad": 81807,
+              "noShows": 4
+            },
+            {
+              "label": "9 août",
+              "covers": 115,
+              "revenueMad": 84755,
+              "noShows": 5
+            },
+            {
+              "label": "10 août",
+              "covers": 75,
+              "revenueMad": 55275,
+              "noShows": 1
+            },
+            {
+              "label": "11 août",
+              "covers": 79,
+              "revenueMad": 58223,
+              "noShows": 3
+            },
+            {
+              "label": "12 août",
+              "covers": 66,
+              "revenueMad": 48642,
+              "noShows": 3
+            },
+            {
+              "label": "13 août",
+              "covers": 70,
+              "revenueMad": 51590,
+              "noShows": 1
+            },
+            {
+              "label": "14 août",
+              "covers": 118,
+              "revenueMad": 86966,
+              "noShows": 4
+            },
+            {
+              "label": "15 août",
+              "covers": 122,
+              "revenueMad": 89914,
+              "noShows": 5
+            },
+            {
+              "label": "16 août",
+              "covers": 109,
+              "revenueMad": 80333,
+              "noShows": 3
+            },
+            {
+              "label": "17 août",
+              "covers": 70,
+              "revenueMad": 51590,
+              "noShows": 2
+            },
+            {
+              "label": "18 août",
+              "covers": 74,
+              "revenueMad": 54538,
+              "noShows": 3
+            },
+            {
+              "label": "19 août",
+              "covers": 78,
+              "revenueMad": 57486,
+              "noShows": 2
+            },
+            {
+              "label": "20 août",
+              "covers": 82,
+              "revenueMad": 60434,
+              "noShows": 3
+            },
+            {
+              "label": "21 août",
+              "covers": 112,
+              "revenueMad": 82544,
+              "noShows": 5
+            },
+            {
+              "label": "22 août",
+              "covers": 116,
+              "revenueMad": 85492,
+              "noShows": 3
+            },
+            {
+              "label": "23 août",
+              "covers": 121,
+              "revenueMad": 89177,
+              "noShows": 4
+            },
+            {
+              "label": "24 août",
+              "covers": 81,
+              "revenueMad": 59697,
+              "noShows": 4
+            },
+            {
+              "label": "25 août",
+              "covers": 68,
+              "revenueMad": 50116,
+              "noShows": 1
+            },
+            {
+              "label": "26 août",
+              "covers": 72,
+              "revenueMad": 53064,
+              "noShows": 2
+            },
+            {
+              "label": "27 août",
+              "covers": 76,
+              "revenueMad": 56012,
+              "noShows": 3
+            },
+            {
+              "label": "28 août",
+              "covers": 124,
+              "revenueMad": 91388,
+              "noShows": 4
+            },
+            {
+              "label": "29 août",
+              "covers": 111,
+              "revenueMad": 81807,
+              "noShows": 4
+            },
+            {
+              "label": "30 août",
+              "covers": 115,
+              "revenueMad": 84755,
+              "noShows": 5
+            },
+            {
+              "label": "31 août",
+              "covers": 75,
+              "revenueMad": 55275,
+              "noShows": 1
+            },
+            {
+              "label": "1 sept.",
+              "covers": 79,
+              "revenueMad": 58223,
+              "noShows": 3
+            },
+            {
+              "label": "2 sept.",
+              "covers": 66,
+              "revenueMad": 48642,
+              "noShows": 3
+            }
+          ]
+        },
+        "90d": {
+          "venueId": "rst_dar_zellij",
+          "period": "90d",
+          "occupancyRate": 38,
+          "occupancyDeltaPct": 4.3,
+          "estimatedRevenueMad": 6049296,
+          "revenueDeltaPct": 4.3,
+          "noShowRate": 3.3,
+          "noShowDeltaPct": 0.7,
+          "coversServed": 8208,
+          "coversDeltaPct": 4.3,
+          "series": [
+            {
+              "label": "5 juin",
+              "covers": 728,
+              "revenueMad": 536536,
+              "noShows": 23
+            },
+            {
+              "label": "13 juin",
+              "covers": 750,
+              "revenueMad": 552750,
+              "noShows": 25
+            },
+            {
+              "label": "21 juin",
+              "covers": 737,
+              "revenueMad": 543169,
+              "noShows": 25
+            },
+            {
+              "label": "29 juin",
+              "covers": 713,
+              "revenueMad": 525481,
+              "noShows": 22
+            },
+            {
+              "label": "7 juil.",
+              "covers": 697,
+              "revenueMad": 513689,
+              "noShows": 23
+            },
+            {
+              "label": "15 juil.",
+              "covers": 722,
+              "revenueMad": 532114,
+              "noShows": 25
+            },
+            {
+              "label": "23 juil.",
+              "covers": 707,
+              "revenueMad": 521059,
+              "noShows": 22
+            },
+            {
+              "label": "31 juil.",
+              "covers": 769,
+              "revenueMad": 566753,
+              "noShows": 26
+            },
+            {
+              "label": "8 août",
+              "covers": 756,
+              "revenueMad": 557172,
+              "noShows": 26
+            },
+            {
+              "label": "16 août",
+              "covers": 762,
+              "revenueMad": 561594,
+              "noShows": 25
+            },
+            {
+              "label": "24 août",
+              "covers": 722,
+              "revenueMad": 532114,
+              "noShows": 24
+            },
+            {
+              "label": "1 sept.",
+              "covers": 145,
+              "revenueMad": 106865,
+              "noShows": 6
+            }
+          ]
+        },
+        "12m": {
+          "venueId": "rst_dar_zellij",
+          "period": "12m",
+          "occupancyRate": 36,
+          "occupancyDeltaPct": 0,
+          "estimatedRevenueMad": 23065889,
+          "revenueDeltaPct": 0,
+          "noShowRate": 3.3,
+          "noShowDeltaPct": 0,
+          "coversServed": 31297,
+          "coversDeltaPct": 0,
+          "series": [
+            {
+              "label": "sept.",
+              "covers": 2445,
+              "revenueMad": 1801965,
+              "noShows": 81
+            },
+            {
+              "label": "oct.",
+              "covers": 2523,
+              "revenueMad": 1859451,
+              "noShows": 86
+            },
+            {
+              "label": "nov.",
+              "covers": 2484,
+              "revenueMad": 1830708,
+              "noShows": 82
+            },
+            {
+              "label": "déc.",
+              "covers": 2639,
+              "revenueMad": 1944943,
+              "noShows": 89
+            },
+            {
+              "label": "janv.",
+              "covers": 2560,
+              "revenueMad": 1886720,
+              "noShows": 86
+            },
+            {
+              "label": "févr.",
+              "covers": 2681,
+              "revenueMad": 1975897,
+              "noShows": 89
+            },
+            {
+              "label": "mars",
+              "covers": 2664,
+              "revenueMad": 1963368,
+              "noShows": 88
+            },
+            {
+              "label": "avr.",
+              "covers": 2701,
+              "revenueMad": 1990637,
+              "noShows": 90
+            },
+            {
+              "label": "mai",
+              "covers": 2801,
+              "revenueMad": 2064337,
+              "noShows": 91
+            },
+            {
+              "label": "juin",
+              "covers": 2736,
+              "revenueMad": 2016432,
+              "noShows": 89
+            },
+            {
+              "label": "juil.",
+              "covers": 2904,
+              "revenueMad": 2140248,
+              "noShows": 98
+            },
+            {
+              "label": "août",
+              "covers": 2159,
+              "revenueMad": 1591183,
+              "noShows": 72
+            }
+          ]
+        }
+      },
+      "visibility": {
+        "7d": {
+          "venueId": "rst_dar_zellij",
+          "period": "7d",
+          "impressions": 9737,
+          "impressionsDeltaPct": -5.9,
+          "listingViews": 1351,
+          "listingViewsDeltaPct": -6.2,
+          "conversionPct": 54,
+          "reach": 5453,
+          "boostActive": false
+        },
+        "30d": {
+          "venueId": "rst_dar_zellij",
+          "period": "30d",
+          "impressions": 43695,
+          "impressionsDeltaPct": -2,
+          "listingViews": 6075,
+          "listingViewsDeltaPct": -1.5,
+          "conversionPct": 50.8,
+          "reach": 24469,
+          "boostActive": false
+        },
+        "90d": {
+          "venueId": "rst_dar_zellij",
+          "period": "90d",
+          "impressions": 132585,
+          "impressionsDeltaPct": -0.4,
+          "listingViews": 18405,
+          "listingViewsDeltaPct": 0,
+          "conversionPct": 50.5,
+          "reach": 74248,
+          "boostActive": false
+        },
+        "12m": {
+          "venueId": "rst_dar_zellij",
+          "period": "12m",
+          "impressions": 539510,
+          "impressionsDeltaPct": 0,
+          "listingViews": 74530,
+          "listingViewsDeltaPct": 0,
+          "conversionPct": 47.9,
+          "reach": 302126,
+          "boostActive": false
+        }
+      }
+    }
+  }
+}

@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useScannerStore } from "@/lib/stores/scanner";
-import { getAllEvents } from "@/lib/mock/events";
+import { getAllEvents } from "@/lib/data/static/events";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";

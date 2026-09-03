@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { readSession, type Role } from "./session";
-import { getUser } from "@/lib/mock/users";
-import type { AppUser } from "@/lib/mock/users";
+import { getUser } from "@/lib/data/static/users";
+import type { AppUser } from "@/lib/data/static/users";
 import {
   DEFAULT_PROFILE_ID,
   PROFILES,
   getProfile,
-} from "@/lib/mock/profiles";
+} from "@/lib/data/static/profiles";
 import type { OrganizerProfile } from "@/lib/types/domain";
 
 // Subscribe to a custom "lyfe-session-changed" event so the demo role

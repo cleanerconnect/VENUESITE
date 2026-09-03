@@ -5,7 +5,7 @@ import {
   ShoppingBag,
   Wallet,
 } from "lucide-react";
-import { getOrganizerOverview } from "@/lib/mock/organizer";
+import { getOrganizerOverview } from "@/lib/data/static/organizer";
 import { Card } from "@/components/ui/Card";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { HeroTonight } from "@/components/cards/HeroTonight";

@@ -20,7 +20,7 @@ import {
   getCampaignHistory,
   getCampaigns,
   getPortfolioStats,
-} from "@/lib/mock/visibility";
+} from "@/lib/data/static/visibility";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
 import { PageHeader } from "@/components/ui/PageHeader";
 

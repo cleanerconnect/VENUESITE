@@ -16,8 +16,8 @@ import type { LyfeEvent } from "@/lib/types/domain";
 import { Pill, StatusPill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Button } from "@/components/ui/Button";
-import { hasBilan } from "@/lib/mock/bilan";
-import { getCampaigns } from "@/lib/mock/visibility";
+import { hasBilan } from "@/lib/data/static/bilan";
+import { getCampaigns } from "@/lib/data/static/visibility";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 
 // Mobile event card — replaces the desktop horizontal row with a full

@@ -14,7 +14,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
 import { useProfile } from "@/lib/auth/role";
 import { resetOnboarding } from "@/lib/auth/onboarding";
-import { getAudienceSegments } from "@/lib/mock/visibility";
+import { getAudienceSegments } from "@/lib/data/static/visibility";
 import type { OrganizerProfile } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
 import { PageHeader } from "@/components/ui/PageHeader";

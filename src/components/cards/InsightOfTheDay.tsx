@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { getInsightOfTheDay } from "@/lib/mock/insights";
+import { getInsightOfTheDay } from "@/lib/data/static/insights";
 
 // Reads from the shared insight engine (lib/mock/insights.ts) so this
 // card and the Analyses tab callouts stay coherent. Rotation is keyed

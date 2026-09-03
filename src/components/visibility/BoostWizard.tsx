@@ -25,7 +25,7 @@ import {
   getAudienceSegments,
   getBoostFormats,
   type BoostFormat,
-} from "@/lib/mock/visibility";
+} from "@/lib/data/static/visibility";
 import type { BoostType } from "@/lib/types/visibility";
 import { formatMAD } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";

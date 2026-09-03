@@ -26,7 +26,7 @@ import {
   BoostFormatIcon,
 } from "@/components/visibility/BoostFormatIcon";
 import { CampaignStatusPill } from "@/components/visibility/CampaignStatusPill";
-import { getCampaignById } from "@/lib/mock/visibility";
+import { getCampaignById } from "@/lib/data/static/visibility";
 import { formatMAD, formatRelativeFR } from "@/lib/utils/format";
 
 export default function CampaignPerformancePage() {

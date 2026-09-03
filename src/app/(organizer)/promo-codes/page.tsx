@@ -12,7 +12,7 @@ import { PromoCodeDetailDrawer } from "@/components/promoCodes/PromoCodeDetailDr
 import {
   getPromoCodes,
   getPromoCodesAggregate,
-} from "@/lib/mock/promoCodes";
+} from "@/lib/data/static/promoCodes";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
 import type { PromoCode } from "@/lib/types/promoCodes";
 import { FilterTabs } from "@/components/ui/FilterTabs";

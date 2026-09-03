@@ -13,7 +13,7 @@ import type {
   ServiceAnomaly,
   ServiceNudge,
 } from "./schemas";
-import { mockResponse, makeStream } from "@/lib/mock/assistant";
+import { mockResponse, makeStream } from "@/lib/data/static/assistant";
 
 export class MockAdvisor implements AiAdvisor {
   async serviceNudge(data: RestaurantOverview): Promise<ServiceNudge | null> {

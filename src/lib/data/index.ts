@@ -8,31 +8,44 @@ import "server-only";
 
 import type { RestaurantRepository } from "./repository";
 import { MockRestaurantRepository } from "./mock-repository";
+import { StaticRestaurantRepository } from "./static-repository";
 import { HttpRestaurantRepository } from "./http-repository";
+import { dataMode } from "./mode";
 
 let cached: RestaurantRepository | null = null;
 
 export function getRestaurantRepository(): RestaurantRepository {
   if (cached) return cached;
 
-  const baseUrl = process.env.LYFE_API_BASE_URL;
-  const token = process.env.LYFE_API_TOKEN;
-
-  // Falling back to the mock when the backend isn't configured keeps the
-  // demo runnable for design review and for anyone without credentials.
-  // It is deliberately silent in production only because the absence of
-  // the vars is itself the signal — see docs/INTEGRATION.md.
-  cached =
-    baseUrl && token
-      ? new HttpRestaurantRepository({ baseUrl, token })
-      : new MockRestaurantRepository();
+  // Three drivers, one rule — see `mode.ts`. Falling through to the
+  // static snapshot rather than failing is what lets a cold clone run
+  // `npm run dev` and walk every screen before it has a database.
+  switch (dataMode()) {
+    case "http":
+      cached = new HttpRestaurantRepository({
+        baseUrl: process.env.LYFE_API_BASE_URL!,
+        token: process.env.LYFE_API_TOKEN!,
+      });
+      break;
+    case "db":
+      cached = new MockRestaurantRepository();
+      break;
+    default:
+      cached = new StaticRestaurantRepository();
+  }
 
   return cached;
 }
 
+/** Test seam — lets a suite install a driver without touching callers. */
+export function setRestaurantRepository(next: RestaurantRepository | null) {
+  cached = next;
+}
+
 /** True when the app is talking to a real backend. Surfaced in /api/health. */
 export function isLiveBackend(): boolean {
-  return Boolean(process.env.LYFE_API_BASE_URL && process.env.LYFE_API_TOKEN);
+  return dataMode() === "http";
 }
 
 export * from "./repository";
+export { dataMode, dataModeReason } from "./mode";

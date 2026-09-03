@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Sparkles } from "lucide-react";
-import { getEventById } from "@/lib/mock/events";
+import { getEventById } from "@/lib/data/static/events";
 import { WizardLayout } from "@/components/wizard/WizardLayout";
 import { StepInfo } from "@/components/wizard/StepInfo";
 import { StepTiers, emptyTier } from "@/components/wizard/StepTiers";

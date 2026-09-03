@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ChevronRight, Plus, Printer, Search } from "lucide-react";
-import { getAllEvents } from "@/lib/mock/events";
-import { getBilanByEventId, hasBilan } from "@/lib/mock/bilan";
 import type { EventStatus, LyfeEvent } from "@/lib/types/domain";
 import { UpcomingEventRow } from "@/components/cards/UpcomingEventRow";
 import { MobileEventCard } from "@/components/cards/MobileEventCard";
@@ -19,6 +17,9 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useRole } from "@/lib/auth/role";
 import { FilterTabs } from "@/components/ui/FilterTabs";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton } from "@/components/ui/Skeleton";
 
 type Filter = "all" | EventStatus | "bilans";
 type Sort = "date_desc" | "date_asc" | "revenue" | "tickets";
@@ -44,16 +45,30 @@ export default function EventsPage() {
   const { toast } = useToast();
   const canCreate = role === "owner" || role === "admin";
 
-  // Pull-to-refresh — fakes a network round-trip and surfaces a toast
-  // confirming the freshness. The mock data is static so there's
-  // nothing to fetch; the affordance is what investors care about.
+  // Pull-to-refresh re-runs the query rather than faking a round trip,
+  // so it will do the right thing the moment a backend is behind it.
   const refresh = async () => {
-    await new Promise((r) => setTimeout(r, 700));
+    events.retry();
     toast({ tone: "success", title: "Liste rafraîchie" });
   };
   const pull = usePullToRefresh(refresh);
 
-  const all = useMemo(getAllEvents, []);
+  const events = useEventQuery((repo) => repo.listEvents(), []);
+  const all = useMemo(() => events.data ?? [], [events.data]);
+
+  // Which events carry a post-event report. A predicate over fixtures
+  // before; a repository read now, because whether a report exists is
+  // something the backend knows and the screen does not.
+  const bilanIdsQuery = useEventQuery((repo) => repo.listBilanEventIds(), []);
+  const hasBilan = useMemo(() => {
+    const ids = new Set(bilanIdsQuery.data ?? []);
+    return (e: LyfeEvent) => ids.has(e.id);
+  }, [bilanIdsQuery.data]);
+
+  const recentBilansQuery = useEventQuery(
+    (repo) => repo.getRecentBilans(3),
+    [],
+  );
 
   const counts = useMemo(() => {
     return FILTERS.reduce<Record<string, number>>((acc, f) => {
@@ -65,22 +80,8 @@ export default function EventsPage() {
     }, {});
   }, [all]);
 
-  // Most-recent settled events with a Bilan, capped at 3 — feeds the
-  // "Récents bilans" strip pinned above the filter tabs. Sorted by
-  // event end date so the freshest bilan reads first.
-  const recentBilans = useMemo(() => {
-    return all
-      .filter((e) => hasBilan(e))
-      .sort((a, b) => (a.endsAt < b.endsAt ? 1 : -1))
-      .slice(0, 3)
-      .map((e) => ({
-        event: e,
-        bilan: getBilanByEventId(e.id, all),
-      }))
-      .filter((r): r is { event: LyfeEvent; bilan: NonNullable<typeof r.bilan> } =>
-        Boolean(r.bilan),
-      );
-  }, [all]);
+  // The "Récents bilans" strip above the filter tabs.
+  const recentBilans = recentBilansQuery.data ?? [];
 
   const list = useMemo(() => {
     return all
@@ -183,7 +184,16 @@ export default function EventsPage() {
       />
 
       {/* === List === */}
-      {list.length === 0 ? (
+      {events.status !== "ready" ? (
+        // Loading and failed-load. The empty branch below stays separate
+        // because "you have no events" and "no event matches this
+        // filter" are different sentences and want different CTAs.
+        <QueryState
+          query={events}
+          label="Chargement de vos événements"
+          skeleton={<EntityListSkeleton rows={4} />}
+        />
+      ) : list.length === 0 ? (
         <EmptyState
           title={canCreate ? "Pas encore d'événement." : "Aucun événement à scanner"}
           description={

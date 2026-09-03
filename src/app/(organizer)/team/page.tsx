@@ -13,7 +13,7 @@ import {
   formatDateTimeFR,
   formatRelativeFR,
 } from "@/lib/utils/format";
-import { describeAuditAction, getAuditLog, getTeam } from "@/lib/mock/team";
+import { describeAuditAction, getAuditLog, getTeam } from "@/lib/data/static/team";
 import type { TeamMember, TeamRole } from "@/lib/types/domain";
 import { PageHeader } from "@/components/ui/PageHeader";
 

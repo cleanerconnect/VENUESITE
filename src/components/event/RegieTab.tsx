@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { useToast } from "@/components/ui/Toast";
-import { getRegieByEventId } from "@/lib/mock/regie";
+import { getRegieByEventId } from "@/lib/data/static/regie";
 import { formatRelativeFR } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import type { LyfeEvent } from "@/lib/types/domain";

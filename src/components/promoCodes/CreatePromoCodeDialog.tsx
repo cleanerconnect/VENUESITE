@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Pill } from "@/components/ui/Pill";
 import { useToast } from "@/components/ui/Toast";
-import { getAllEvents } from "@/lib/mock/events";
+import { getAllEvents } from "@/lib/data/static/events";
 import { cn } from "@/lib/utils/cn";
 import type { PromoCodeKind, PromoCodeScope } from "@/lib/types/promoCodes";
 

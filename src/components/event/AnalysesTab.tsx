@@ -10,7 +10,7 @@ import { PhasePerformanceCard } from "./PhasePerformanceCard";
 import { FunnelCard } from "./FunnelCard";
 import { ReviewsSummaryCard } from "./ReviewsSummaryCard";
 import { AnalysesSideRail } from "./AnalysesSideRail";
-import { getAnalysesByEventId } from "@/lib/mock/analyses";
+import { getAnalysesByEventId } from "@/lib/data/static/analyses";
 import { formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { CHART, seriesColor } from "@/lib/charts/theme";

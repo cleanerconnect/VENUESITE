@@ -8,8 +8,8 @@ import { Pill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { RevenueChart } from "./RevenueChart";
-import { getRevenueSeries } from "@/lib/mock/events";
-import { getCampaigns } from "@/lib/mock/visibility";
+import { getRevenueSeries } from "@/lib/data/static/events";
+import { getCampaigns } from "@/lib/data/static/visibility";
 import { formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 

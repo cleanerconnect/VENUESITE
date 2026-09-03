@@ -20,7 +20,7 @@ import {
 } from "@/components/visibility/BoostFormatIcon";
 import { BoostWizardLauncher } from "@/components/visibility/BoostWizard";
 import { CampaignStatusPill } from "@/components/visibility/CampaignStatusPill";
-import { getCampaigns } from "@/lib/mock/visibility";
+import { getCampaigns } from "@/lib/data/static/visibility";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 

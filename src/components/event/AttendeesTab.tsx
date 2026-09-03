@@ -5,7 +5,7 @@ import { Download, MessageSquare, Search } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
-import { getAttendees } from "@/lib/mock/events";
+import { getAttendees } from "@/lib/data/static/events";
 import { formatDateFR, formatRelativeFR } from "@/lib/utils/format";
 
 export function AttendeesTab() {

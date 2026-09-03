@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
-import { getEventById } from "@/lib/mock/events";
+import { getEventById } from "@/lib/data/static/events";
 import { useRole } from "@/lib/auth/role";
 import { formatDateFR } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";

@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { IssueCompsDialog } from "./IssueCompsDialog";
-import { getInvitationsByEventId } from "@/lib/mock/comps";
+import { getInvitationsByEventId } from "@/lib/data/static/comps";
 import {
   COMP_CATEGORY_LABEL,
   type CompAllocation,

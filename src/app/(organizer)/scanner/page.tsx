@@ -14,8 +14,8 @@ import {
   Sliders,
   X,
 } from "lucide-react";
-import { getAllEvents } from "@/lib/mock/events";
-import { getRegieByEventId } from "@/lib/mock/regie";
+import { getAllEvents } from "@/lib/data/static/events";
+import { getRegieByEventId } from "@/lib/data/static/regie";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
 

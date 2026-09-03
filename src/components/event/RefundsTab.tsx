@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
-import { getRefundRequests } from "@/lib/mock/events";
+import { getRefundRequests } from "@/lib/data/static/events";
 import {
   formatDateTimeFR,
   formatMAD,

@@ -7,8 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
 import {
   getAllSampleBuyers,
-} from "@/lib/mock/audiences";
-import { getInsightsForSurface } from "@/lib/mock/insights";
+} from "@/lib/data/static/audiences";
+import { getInsightsForSurface } from "@/lib/data/static/insights";
 import type {
   AudienceSegmentDetail,
   AudiencesData,

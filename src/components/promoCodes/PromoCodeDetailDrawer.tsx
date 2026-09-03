@@ -15,7 +15,7 @@ import { fr } from "date-fns/locale";
 import { Drawer } from "@/components/audiences/Drawer";
 import { Pill } from "@/components/ui/Pill";
 import { useToast } from "@/components/ui/Toast";
-import { getPromoCodeDetail } from "@/lib/mock/promoCodes";
+import { getPromoCodeDetail } from "@/lib/data/static/promoCodes";
 import { formatDateFR, formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 import type { PromoCode } from "@/lib/types/promoCodes";
 import { CHART, barCursor, seriesColor } from "@/lib/charts/theme";

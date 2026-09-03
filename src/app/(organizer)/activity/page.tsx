@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/Card";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { ActivityFeedItem } from "@/components/cards/ActivityFeedItem";
-import { getOrganizerOverview } from "@/lib/mock/organizer";
+import { getOrganizerOverview } from "@/lib/data/static/organizer";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 // Activity feed full-screen route. On desktop the feed lives in the

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "node db/seed.mjs",
-    "db:reset": "node db/seed.mjs --reset"
+    "db:reset": "node db/seed.mjs --reset",
+    "db:snapshot": "tsx db/snapshot.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",
@@ -42,6 +43,7 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "tailwindcss": "^4.0.0",
+    "tsx": "^4.23.13",
     "typescript": "5.5.3"
   },
   "overrides": {

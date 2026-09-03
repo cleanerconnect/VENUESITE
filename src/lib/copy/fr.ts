@@ -67,6 +67,8 @@ export const COPY = {
     body: "Une erreur est survenue en récupérant vos données. Réessayez dans un instant.",
     reference: "Référence",
     sessionExpired: "Session expirée. Reconnectez-vous.",
+    loadFailed: "Impossible de charger ces données",
+    deniedTitle: "Accès non autorisé",
     venueNotFound: "Lieu introuvable.",
     forbidden: "Votre rôle ne permet pas cette action.",
     /** Optimistic-concurrency loss on a shared record. */
@@ -77,6 +79,8 @@ export const COPY = {
   /** Nothing to show — distinct from something failing. */
   empty: {
     noResults: "Aucun résultat",
+    noEvents: "Aucun événement",
+    noEventsBody: "Vos événements apparaîtront ici dès le premier créé.",
     noResultsBody: "Essayez un autre filtre ou un autre mot-clé.",
     noMatches: "Rien sur ce filtre",
     nothingToShow: "Rien à afficher",

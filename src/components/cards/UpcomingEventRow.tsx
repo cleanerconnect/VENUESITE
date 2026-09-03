@@ -10,7 +10,7 @@ import { Pill, StatusPill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useToast } from "@/components/ui/Toast";
 import { CancelEventDialog } from "@/components/event/CancelEventDialog";
-import { getCampaigns } from "@/lib/mock/visibility";
+import { getCampaigns } from "@/lib/data/static/visibility";
 import { getEventActions, type EventActionId } from "@/lib/event/actions";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 import { useState } from "react";

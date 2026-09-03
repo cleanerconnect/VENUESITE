@@ -8,8 +8,8 @@ import { Pill } from "@/components/ui/Pill";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { BOOST_LABEL, BoostFormatIcon } from "@/components/visibility/BoostFormatIcon";
-import { getInvoices, getPayouts } from "@/lib/mock/finance";
-import { getCampaigns } from "@/lib/mock/visibility";
+import { getInvoices, getPayouts } from "@/lib/data/static/finance";
+import { getCampaigns } from "@/lib/data/static/visibility";
 import {
   formatDateFR,
   formatDateTimeFR,

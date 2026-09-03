@@ -5,7 +5,7 @@ import { ArrowRight, Lightbulb, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import {
   getInsightsForSurface,
-} from "@/lib/mock/insights";
+} from "@/lib/data/static/insights";
 import type {
   Insight,
   InsightSurface,
