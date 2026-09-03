@@ -27,6 +27,13 @@ DEPTH=full SHOTS=docs/phase7-reference node tools/verify/extract.mjs
                                                      # + 63 reference PNGs at 1440 and 390
 ```
 
+Those 63 captures are also browsable as a single page, grouped the way
+the sidebar groups them, at desktop and phone width:
+<https://claude.ai/code/artifact/c1cda4df-57bd-4384-97a1-49c040af01a8>.
+It is built from `docs/phase7-reference/` and adds nothing to it, so the
+built file is not committed — the captures are the artefact, the browser
+is a way of reading them.
+
 `extract.mjs` was extended for this phase to capture what a screen
 actually renders rather than its outline. Four capture bugs were found
 and fixed while comparing frames against the reference shots, and each
