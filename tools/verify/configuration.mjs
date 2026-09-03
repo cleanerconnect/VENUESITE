@@ -32,7 +32,18 @@ await page.waitForTimeout(2000);
 let fails = 0;
 
 async function inspect(venueId, label, expectNightlife, expectWord) {
-  await page.request.post(`${BASE}/api/session/venue`, { data: { venueId } });
+  // A refused switch is the failure this check exists to catch, and it
+  // is silent unless asserted: the page then renders the *other* venue
+  // perfectly well, and every assertion below quietly measures the
+  // wrong establishment.
+  const switched = await page.request.post(`${BASE}/api/session/venue`, {
+    data: { venueId },
+  });
+  if (!switched.ok()) {
+    console.log(`${label}\n  ✗ bascule refusée (${switched.status()})`);
+    fails += 1;
+    return;
+  }
   await page.goto(`${BASE}/restaurant`, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(900);
 

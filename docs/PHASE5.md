@@ -216,14 +216,23 @@ The three checks are committed under `tools/verify/`, so this is
 repeatable rather than a claim:
 
 ```bash
-npm run build && npx next start -p 3210      # in one terminal
 npm install --no-save playwright             # once
+npm run build && npx next start -p 3210      # in one terminal
+
 node tools/verify/walk.mjs                   # thirty screens, desktop
 W=390 H=844 node tools/verify/walk.mjs       # thirty screens, phone
 VENUE=bar_nomad_casa node tools/verify/walk.mjs
 node tools/verify/states.mjs                 # ?etat= on all thirty
 node tools/verify/configuration.mjs          # the Vie nocturne gate
 ```
+
+`BASE` points them at another port, which is how the cold-clone pass
+below was run: clone the branch somewhere else, `npm install`, build and
+start it with no `.data/` directory, and point the same three checks at
+it. Watch for one thing when doing this — one stale `next start` holding
+the port while a second fails to bind serves an old build whose chunks no
+longer exist, and the symptom (a login form that does nothing) looks
+nothing like the cause.
 
 They are deliberately not in `package.json`: they need a running server
 and a browser binary, and a check that pretends to be a unit test is a
@@ -238,16 +247,43 @@ check that gets skipped in CI and then deleted.
 | `?etat=` on all thirty routes | three states each, all forceable |
 | Configuration gate | Vie nocturne absent for the restaurant, present for the lounge; vocabulary follows |
 
+And then again on a genuinely cold clone — the branch checked out
+somewhere else, built and started with no `.data/` directory, so
+`/api/health` reports `"data":"static"`:
+
+| Cold-clone pass | Result |
+|---|---|
+| Restaurant · 1440×900 | 30/30 clean |
+| Lounge · 390×844 | 30/30 clean |
+| `?etat=` on all thirty routes | three states each, all forceable |
+| Configuration gate | as above |
+
 No horizontal overflow at phone width on any screen — the calendar grid
 and the wide tables scroll inside their own containers, which is the rule
 the page body must never break.
 
-Two real bugs were found this way and fixed rather than worked around:
-a date helper that threw on an ISO instant where it expected a calendar
-day, and `"use client"` on the demo-state module, which turned
-`parseDemoState` into a client reference a server component could not
-call. The second is worth naming because the symptom looked like a broken
-screen rather than a misplaced directive.
+Three real bugs were found this way and fixed rather than worked around.
+
+A date helper threw on an ISO instant where it expected a calendar day,
+so Abonnement crashed on its own invoice list.
+
+`demo-state.ts` was marked `"use client"`, which turned `parseDemoState`
+into a client reference a server component could not call. Worth naming
+because the symptom looked like a broken screen rather than a misplaced
+directive.
+
+And the third only the cold-clone pass could find: the venue-switch
+endpoint checked membership against the SQLite store rather than the
+directory. With no database that table is empty, so every switch was
+refused with a 403 and the second venue was unreachable — on exactly the
+setup an external team clones into. It is the same failure mode as the
+layout in Phase 4 and it took the same fix, which is an argument for
+running the cold pass every time rather than once.
+
+The check that missed it now asserts the switch succeeded. A refused
+switch is silent otherwise: the page renders the *other* venue perfectly
+well, and every assertion after it quietly measures the wrong
+establishment.
 
 ---
 
