@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
 import { VenueSettings } from "@/components/settings/VenueSettings";
+import { RestaurantSpecScreen } from "@/components/restaurant/RestaurantSpecScreen";
+import { buildPresenceScreen } from "@/lib/restaurant/presence";
 
 // Venue settings.
 //
@@ -25,7 +27,7 @@ export default async function MaFichePage() {
   const repo = getRestaurantRepository();
   const venueId = session.venueId;
 
-  const [profile, menu, availability, photos, menuFiles, staff] =
+  const [profile, menu, availability, photos, menuFiles, staff, overview, settings] =
     await Promise.all([
       repo.getVenueProfile(venueId),
       repo.listMenuItems(venueId),
@@ -33,12 +35,27 @@ export default async function MaFichePage() {
       repo.listAssets(venueId, "photo"),
       repo.listAssets(venueId, "menu_file"),
       repo.listStaff(venueId),
+      repo.getOverview(venueId),
+      repo.getVenueSettings(venueId),
     ]);
 
   if (!profile) redirect("/restaurant");
 
+  // Two halves, and the split is honest rather than arbitrary: the form
+  // owns what needs a file picker and a drag handle, the spec owns
+  // everything that is a value — zones, dress code, hours, the preview.
+  const presence = buildPresenceScreen({
+    profile,
+    zones: overview.zones,
+    availability,
+    settings,
+    configuration: settings.configuration,
+    photoCount: photos.length,
+  });
+
   return (
-    <VenueSettings
+    <div className="space-y-8">
+      <VenueSettings
       only={["identity", "listing", "media"]}
       title="Ma fiche"
       subtitle="Tout ce que l'application montre de l'établissement, modifiable ici. Miroir de la fiche, rien de plus."
@@ -74,6 +91,9 @@ export default async function MaFichePage() {
       photos={photos}
       menuFiles={menuFiles}
       staff={staff}
-    />
+      />
+
+      <RestaurantSpecScreen spec={presence} />
+    </div>
   );
 }

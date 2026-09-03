@@ -17,11 +17,25 @@ import type { VenueConfiguration } from "@/lib/types/venue-operations";
 
 export const hm = formatTimeFR;
 
-export const dayLabel = (iso: string) =>
-  format(new Date(iso), "EEEE d MMMM", { locale: fr });
+/** "vendredi 14 mars", from an instant or a bare calendar day. */
+export const dayLabel = (value: string) => {
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value);
+  return Number.isNaN(date.getTime()) ? "—" : format(date, "EEEE d MMMM", { locale: fr });
+};
 
-export const shortDay = (iso: string) =>
-  format(new Date(iso), "EEE d MMM", { locale: fr });
+/**
+ * "ven 14 mars", from either a full instant or a bare calendar day.
+ *
+ * Both shapes reach these builders — a night is `2026-03-14`, a payment
+ * is an ISO instant — and a helper that only took one of them meant
+ * every call site remembering which. An unparseable value renders as a
+ * dash rather than throwing: a broken date should not take the screen
+ * down with it.
+ */
+export const shortDay = (value: string) => {
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value);
+  return Number.isNaN(date.getTime()) ? "—" : format(date, "EEE d MMM", { locale: fr });
+};
 
 export const money = (n: number) => formatValue(n, MAD);
 

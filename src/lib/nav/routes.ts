@@ -9,11 +9,19 @@
 //
 //   built    finished against current scope
 //   partial  renders and is useful, but something named below is missing
+//   service  the portal side is finished; an external service is not
+//            connected, so the action is recorded rather than performed
+//
+// The third value earns its place. "Partial" used to cover two different
+// things — work this repo still owes, and work no amount of front-end
+// code can do because Payzone, Twilio or a review platform is not
+// wired — and conflating them told the incoming team to look for a bug
+// where there was a missing integration.
 //
 // There is no "planned" — a screen that does not exist does not get a
 // row here, and it does not get a nav entry either.
 
-export type RouteStatus = "built" | "partial";
+export type RouteStatus = "built" | "partial" | "service";
 
 export interface RouteEntry {
   path: string;
@@ -26,6 +34,8 @@ export interface RouteEntry {
   status: RouteStatus;
   /** What is missing, when status is `partial`. */
   gap?: string;
+  /** Which service is not connected, when status is `service`. */
+  dependsOn?: string;
 }
 
 export const ROUTES: RouteEntry[] = [
@@ -188,11 +198,18 @@ export const ROUTES: RouteEntry[] = [
   },
 
   // ── Venue workspace ──
+  //
+  // The target specification's thirty screens, in its ten groups and its
+  // order. Vie nocturne appears only where the establishment's
+  // configuration includes a lounge — Nomad Rooftop in the demo data,
+  // not Dar Zellij.
+
+  // 1. Aujourd'hui
   {
     path: "/restaurant",
-    label: "Vue d'ensemble",
+    label: "Accueil",
     purpose:
-      "Le service en cours : couverts, arrivées, suggestion, carnet du soir.",
+      "Ce qui se passe aujourd'hui : chiffres du jour, file d'attente à traiter, bande des quatre prochaines heures.",
     workspace: "venue",
     status: "built",
   },
@@ -200,76 +217,281 @@ export const ROUTES: RouteEntry[] = [
     path: "/restaurant/reservations",
     label: "Réservations",
     purpose:
-      "Le carnet : confirmer, refuser avec motif, marquer une arrivée ou une absence.",
+      "Le carnet d'une journée : accepter, refuser avec motif, modifier, marquer arrivé, absent, annuler.",
     workspace: "venue",
     status: "built",
   },
   {
-    path: "/restaurant/services",
-    label: "Services",
-    purpose: "Les services passés et à venir, avec leur charge par créneau.",
-    workspace: "venue",
-    status: "built",
-  },
-  {
-    path: "/restaurant/disponibilites",
-    label: "Disponibilités",
+    path: "/restaurant/calendrier",
+    label: "Calendrier",
     purpose:
-      "Ce qu'un client peut réserver : créneaux, capacités, fermetures exceptionnelles.",
+      "La charge par jour, en semaine ou en mois. Fermer une journée, forcer une capacité, repérer un service creux.",
+    workspace: "venue",
+    status: "built",
+  },
+
+  // 2. En service
+  {
+    path: "/restaurant/liste-attente",
+    label: "Liste d'attente",
+    purpose:
+      "La porte quand la salle est pleine. Prévenir, installer, retirer avec motif ; installer crée la réservation.",
+    workspace: "venue",
+    status: "built",
+  },
+  {
+    path: "/restaurant/check-in",
+    label: "Check-in",
+    purpose:
+      "Valider une arrivée : caméra, code saisi, recherche par nom, annulation dans les cinq minutes.",
+    workspace: "venue",
+    status: "built",
+  },
+  {
+    path: "/restaurant/briefing",
+    label: "Briefing",
+    purpose:
+      "Ce que l'équipe lit avant l'ouverture : VIP, allergies, occasions, grandes tables, acomptes en attente, notes de service.",
+    workspace: "venue",
+    status: "built",
+  },
+
+  // 3. Clients
+  {
+    path: "/restaurant/clients",
+    label: "Liste clients",
+    purpose:
+      "La base, alimentée par les réservations, les walk-ins et les installations depuis la liste d'attente.",
+    workspace: "venue",
+    status: "built",
+  },
+  {
+    path: "/restaurant/clients/cus_1",
+    label: "Fiche client",
+    purpose:
+      "Tout ce que le lieu sait d'un client : visites, risque d'absence sur douze mois, préférences, avis, messages, anonymisation.",
+    workspace: "venue",
+    status: "built",
+  },
+  {
+    path: "/restaurant/segments",
+    label: "Tags et segments",
+    purpose:
+      "Le vocabulaire de la base : étiquettes manuelles, règles automatiques et leurs seuils, segments enregistrés.",
+    workspace: "venue",
+    roles: "Propriétaire, Gérant",
+    status: "built",
+  },
+
+  // 4. Ma présence
+  {
+    path: "/restaurant/ma-fiche",
+    label: "Ma fiche",
+    purpose:
+      "Ce que l'application montre de l'établissement : identité, fiche, photos. Enregistré pour de vrai.",
     workspace: "venue",
     roles: "Propriétaire, Gérant",
     status: "built",
   },
   {
-    path: "/restaurant/clients",
-    label: "Clients",
-    purpose: "Habitués, préférences, historique d'absences.",
-    workspace: "venue",
-    status: "built",
-  },
-  {
     path: "/restaurant/menu",
-    label: "Carte",
-    purpose: "Les plats tels que l'application les affiche avant réservation.",
+    label: "Menu",
+    purpose: "La carte telle que l'application l'affiche. Ajouter, masquer, réordonner.",
     workspace: "venue",
-    status: "built",
+    roles: "Propriétaire, Gérant",
+    status: "service",
+    dependsOn:
+      "L'import assisté d'un PDF en articles structurés attend un service d'extraction. Le téléversement du PDF, lui, fonctionne : la carte fichier est publiée sur la fiche.",
   },
   {
     path: "/restaurant/avis",
     label: "Avis",
-    purpose: "Les avis clients et les thèmes qui reviennent.",
+    purpose:
+      "Les avis, le sondage après visite et la redirection des clients satisfaits vers Google ou Tripadvisor.",
     workspace: "venue",
-    status: "partial",
-    gap: "Répondre affiche une confirmation ; aucune plateforme d'avis n'est branchée.",
+    roles: "Propriétaire, Gérant",
+    status: "service",
+    dependsOn:
+      "Les réponses publiques et la redirection vers Google ou Tripadvisor attendent la connexion des plateformes. Le sondage, les liens et le seuil de redirection s'enregistrent.",
   },
-  {
-    path: "/restaurant/analytique",
-    label: "Analytique",
-    purpose: "Couverts, recette, absences, comparés à la période précédente.",
-    workspace: "venue",
-    status: "built",
-  },
+
+  // 5. Croissance
   {
     path: "/restaurant/visibilite",
     label: "Visibilité",
-    purpose: "Impressions et vues de la fiche dans l'application.",
-    workspace: "venue",
-    status: "built",
-  },
-  {
-    path: "/restaurant/versements",
-    label: "Versements",
-    purpose: "Versements LYFE, commission déduite, couverts réglés.",
-    workspace: "venue",
-    status: "built",
-  },
-  {
-    path: "/restaurant/reglages",
-    label: "Réglages du lieu",
     purpose:
-      "Identité, fiche applicative, carte, horaires, photos, équipe. Tout y est enregistré pour de vrai.",
+      "Impressions, ouvertures de fiche, conversion, et la liste honnête de ce qui pèse sur le classement.",
     workspace: "venue",
-    roles: "Propriétaire, Gérant (Équipe : accès refusé)",
+    roles: "Propriétaire, Gérant",
+    status: "built",
+  },
+  {
+    path: "/restaurant/offres",
+    label: "Offres",
+    purpose:
+      "Remplir un service creux sans toucher aux prix. Attribution comptée sur les offres appliquées.",
+    workspace: "venue",
+    roles: "Propriétaire, Gérant",
+    status: "built",
+  },
+  {
+    path: "/restaurant/experiences",
+    label: "Expériences",
+    purpose:
+      "Vendre autre chose qu'une table : soirée, atelier, brunch, avec billetterie et recette.",
+    workspace: "venue",
+    roles: "Propriétaire, Gérant",
+    status: "built",
+  },
+
+  // 6. Vie nocturne — configuration lounge uniquement
+  {
+    path: "/restaurant/guest-list",
+    label: "Guest list",
+    purpose:
+      "Les listes d'entrée par nuit, leurs tranches tarifaires et la vue porte à une validation par entrée.",
+    workspace: "venue",
+    roles: "Configuration Lounge",
+    status: "built",
+  },
+  {
+    path: "/restaurant/tables",
+    label: "Tables minimums",
+    purpose:
+      "Vendre une banquette avec un minimum de consommation : types, minimums par nuit, demandes, acomptes.",
+    workspace: "venue",
+    roles: "Configuration Lounge · Propriétaire, Gérant",
+    status: "built",
+  },
+  {
+    path: "/restaurant/promoteurs",
+    label: "Promoteurs",
+    purpose:
+      "Qui amène qui : entrées, tables, taux de présentation, lien de partage par promoteur.",
+    workspace: "venue",
+    roles: "Configuration Lounge · Propriétaire, Gérant",
+    status: "built",
+  },
+
+  // 7. Paiements
+  {
+    path: "/restaurant/acomptes",
+    label: "Acomptes",
+    purpose:
+      "Quand un client paie d'avance, et l'état de chaque acompte. Capture et remboursement sont idempotents.",
+    workspace: "venue",
+    roles: "Propriétaire",
+    status: "service",
+    dependsOn:
+      "Payzone n'est pas branché, et la spécification laisse ouvert le sens du flux : encaissement direct par l'établissement, ou collecte par LYFE puis reversement. Les deux chemins passent par la même clé d'idempotence, donc le choix ne change pas cet écran.",
+  },
+  {
+    path: "/restaurant/annulations",
+    label: "Annulations",
+    purpose:
+      "Les conditions montrées au client, et le journal de ce qui s'est passé, frais compris.",
+    workspace: "venue",
+    roles: "Propriétaire",
+    status: "built",
+  },
+  {
+    path: "/restaurant/lyfe-pay",
+    label: "Lyfe Pay",
+    purpose:
+      "Les transactions passées par LYFE, et la seule source légitime de « dépense » du tableau de bord.",
+    workspace: "venue",
+    roles: "Propriétaire",
+    status: "built",
+  },
+
+  // 8. Pilotage
+  {
+    path: "/restaurant/performance",
+    label: "Performance",
+    purpose:
+      "Les chiffres avec une période et une comparaison, plus le repérage des créneaux creux.",
+    workspace: "venue",
+    roles: "Propriétaire",
+    status: "built",
+  },
+  {
+    path: "/restaurant/bilans",
+    label: "Bilans",
+    purpose:
+      "Le mois en deux minutes : chiffres, meilleurs et pires services, trois recommandations tirées des données.",
+    workspace: "venue",
+    roles: "Propriétaire",
+    status: "service",
+    dependsOn:
+      "L'export PDF passe par l'impression du navigateur, qui rend correctement. Un rendu serveur attend un service de composition.",
+  },
+  {
+    path: "/restaurant/campagnes",
+    label: "Campagnes",
+    purpose:
+      "Écrire à ses clients dans les limites du consentement, avec le coût par destinataire avant l'envoi.",
+    workspace: "venue",
+    roles: "Propriétaire",
+    status: "service",
+    dependsOn:
+      "Aucune passerelle d'envoi n'est branchée. Les messages sont journalisés avec leur coût et leur destinataire, et la console dit explicitement qu'ils ne partent pas.",
+  },
+
+  // 9. Établissement
+  {
+    path: "/restaurant/disponibilites",
+    label: "Disponibilités",
+    purpose:
+      "Ce qui décide de ce que l'application propose : services, cadence, fenêtre de réservation, jours exceptionnels.",
+    workspace: "venue",
+    roles: "Propriétaire, Gérant",
+    status: "built",
+  },
+  {
+    path: "/restaurant/equipe",
+    label: "Équipe et rôles",
+    purpose:
+      "Qui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré.",
+    workspace: "venue",
+    roles: "Propriétaire, Gérant",
+    status: "built",
+  },
+  {
+    path: "/restaurant/notifications",
+    label: "Notifications",
+    purpose:
+      "Les alertes de l'équipe et les messages aux clients, avec leur canal, leur moment et leur journal de délivrance.",
+    workspace: "venue",
+    roles: "Propriétaire, Gérant",
+    status: "service",
+    dependsOn:
+      "Les canaux, les horaires et les gabarits s'enregistrent. L'expédition attend le compte Twilio ou Infobip de LYFE.",
+  },
+
+  // 10. Compte
+  {
+    path: "/restaurant/parametres",
+    label: "Paramètres",
+    purpose:
+      "Entité juridique, banque, type de configuration — l'interrupteur qui fait apparaître Vie nocturne —, langue, données, intégrations.",
+    workspace: "venue",
+    roles: "Propriétaire",
+    status: "built",
+  },
+  {
+    path: "/restaurant/abonnement",
+    label: "Abonnement",
+    purpose: "Le plan, son état, les factures et l'usage de la période.",
+    workspace: "venue",
+    roles: "Propriétaire",
+    status: "built",
+  },
+  {
+    path: "/restaurant/support",
+    label: "Support",
+    purpose:
+      "Guides, formulaire de contact, tickets et leur état, lien WhatsApp avec ses horaires.",
+    workspace: "venue",
     status: "built",
   },
 

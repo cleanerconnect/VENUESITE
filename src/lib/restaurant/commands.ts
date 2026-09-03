@@ -89,6 +89,8 @@ export const SERVER_COMMANDS = [
   "pacing.set",
   // Avis
   "survey.set",
+  // Ma fiche
+  "zone.setAvailable",
   // Paramètres
   "settings.set",
   // Support

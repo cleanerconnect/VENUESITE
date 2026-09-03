@@ -1581,3 +1581,27 @@ function slug(name: string): string {
     .replace(/^-|-$/g, "")
     .slice(0, 24);
 }
+
+// ── Zones ────────────────────────────────────────────────────
+
+/**
+ * Opens or closes a zone for booking.
+ *
+ * A zone is a booking preference, not a floor layout — the spec is
+ * explicit that physical table positions are out of scope. Closing the
+ * terrace when it rains has to take it out of the app immediately, which
+ * is why this lives on the write path rather than in a settings blob.
+ */
+export function setZoneAvailable(
+  venueId: string,
+  zoneId: string,
+  available: boolean,
+): void {
+  assertVenue(venueId);
+  run(
+    "UPDATE zones SET available = ? WHERE id = ? AND venue_id = ?",
+    available ? 1 : 0,
+    zoneId,
+    venueId,
+  );
+}

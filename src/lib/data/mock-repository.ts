@@ -308,4 +308,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
     opsWrite.openSupportTicketRow(venueId, input);
     return ops.supportTickets(venueId);
   }
+  async setZoneAvailable(venueId: string, zoneId: string, available: boolean) {
+    opsWrite.setZoneAvailable(venueId, zoneId, available);
+  }
 }

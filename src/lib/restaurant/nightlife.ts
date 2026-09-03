@@ -100,7 +100,7 @@ export function buildGuestListScreen(nightlife: Nightlife): ScreenSpec {
   const door: Block = {
     id: "door",
     type: "entity-list",
-    heading: active ? `${active.name} · ${shortDay(`${active.night}T12:00:00Z`)}` : "Porte",
+    heading: active ? `${active.name} · ${shortDay(active.night)}` : "Porte",
     headingAction: active
       ? {
           kind: "command",
@@ -279,7 +279,7 @@ function nightRow(list: GuestList): EntityRow {
     title: list.name,
     icon: "moon",
     meta: [
-      shortDay(`${list.night}T12:00:00Z`),
+      shortDay(list.night),
       `clôture ${hm(list.cutoffAt)}`,
       `${list.entries.length} entrées`,
     ].join(" · "),
@@ -507,7 +507,7 @@ function tableRow(table: TableReservation, hasSpendSource: boolean): EntityRow {
     meta: [
       table.tableTypeName,
       `${table.partySize} personnes`,
-      shortDay(`${table.night}T12:00:00Z`),
+      shortDay(table.night),
       `minimum ${money(table.minimumMad)}`,
       table.promoterName ? `via ${table.promoterName}` : null,
       reachedKnown ? `${money(table.reachedMad!)} consommés` : null,

@@ -213,7 +213,7 @@ export function buildAvailabilityScreen(
     },
     rows: (availability?.closures ?? []).map((closure) => ({
       id: closure.id,
-      title: shortDay(`${closure.date}T12:00:00Z`),
+      title: shortDay(closure.date),
       icon: "ban" as const,
       meta: closure.reason || "Fermeture exceptionnelle",
       badges: [{ label: "FERMÉ", tone: "muted" as const }],
@@ -841,7 +841,7 @@ export function buildSubscriptionScreen(subscription: Subscription): ScreenSpec 
       id: invoice.id,
       cells: {
         reference: { value: invoice.reference },
-        date: { value: shortDay(`${invoice.issuedOn}T12:00:00Z`) },
+        date: { value: shortDay(invoice.issuedOn) },
         amount: { value: invoice.amountMad },
         status: {
           value: invoice.status,

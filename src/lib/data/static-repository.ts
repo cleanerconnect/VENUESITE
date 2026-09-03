@@ -448,6 +448,14 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     return clone(supportTickets);
   }
 
+  async setZoneAvailable(venueId: string, zoneId: string, available: boolean) {
+    const current = await this.getOverview(venueId);
+    current.zones = current.zones.map((z) =>
+      z.id === zoneId ? { ...z, available } : z,
+    );
+    overlay.set(venueId, current);
+  }
+
   // ── Internals ──
 
   /** The Phase 5 bundles, snapshot or overlay. */

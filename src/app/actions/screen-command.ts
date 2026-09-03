@@ -730,6 +730,11 @@ export async function runScreenCommand(
         return done();
       }
 
+      // ── Ma fiche ──
+      case "zone.setAvailable":
+        await repo.setZoneAvailable(venueId, str(values, "id"), bool(values, "value"));
+        return done("Zone mise à jour. L'application en tient compte immédiatement.");
+
       // ── Paramètres ──
       case "settings.set": {
         const current = await repo.getVenueSettings(venueId);

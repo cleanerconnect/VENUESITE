@@ -428,7 +428,7 @@ function offerRow(offer: Offer, configuration: VenueConfiguration): EntityRow {
     meta: [
       offerValue(offer),
       weekdayLabel(offer.weekdays),
-      `du ${shortDay(`${offer.startsOn}T12:00:00Z`)} au ${shortDay(`${offer.endsOn}T12:00:00Z`)}`,
+      `du ${shortDay(offer.startsOn)} au ${shortDay(offer.endsOn)}`,
       offer.coverCap > 0
         ? `plafond ${coversIn(configuration, offer.coverCap)}`
         : "sans plafond",

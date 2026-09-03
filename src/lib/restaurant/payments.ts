@@ -605,7 +605,7 @@ export function buildLyfePayScreen(
     series: [...byDay.entries()]
       .sort(([a], [b]) => (a < b ? -1 : 1))
       .slice(-14)
-      .map(([day, value]) => ({ label: shortDay(`${day}T12:00:00Z`), value })),
+      .map(([day, value]) => ({ label: shortDay(day), value })),
   };
 
   const transactions: Block = {

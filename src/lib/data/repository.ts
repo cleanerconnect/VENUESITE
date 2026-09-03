@@ -481,4 +481,13 @@ export interface VenueOperationsRepository {
     venueId: string,
     input: { category: string; subject: string; body: string },
   ): Promise<SupportTicket[]>;
+  /**
+   * Opens or closes a zone for booking. A zone is a booking preference,
+   * never a floor layout — physical table positions are out of scope.
+   */
+  setZoneAvailable(
+    venueId: string,
+    zoneId: string,
+    available: boolean,
+  ): Promise<void>;
 }

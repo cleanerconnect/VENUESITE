@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -51,6 +51,36 @@ interface Redeemed {
   at: number;
 }
 
+/**
+ * Arrivals taken while the network was gone.
+ *
+ * A door with no signal is a door that still has a queue. The
+ * specification asks for check-ins to be queued locally and synced, and
+ * localStorage is the only store that survives the tab being killed by
+ * the phone mid-service.
+ */
+const QUEUE_KEY = "lyfe.checkin.queue";
+
+type QueuedArrival = { kind: "code" | "id"; value: string; at: number };
+
+function readQueue(): QueuedArrival[] {
+  try {
+    const raw = localStorage.getItem(QUEUE_KEY);
+    return raw ? (JSON.parse(raw) as QueuedArrival[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeQueue(items: QueuedArrival[]) {
+  try {
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(items));
+  } catch {
+    // A private window with storage blocked. The queue is a convenience,
+    // not a guarantee — the arrival is still on screen either way.
+  }
+}
+
 export function CheckInScreen({
   venueName,
   configuration,
@@ -68,6 +98,8 @@ export function CheckInScreen({
   const [cameraOn, setCameraOn] = useState(false);
   const [recent, setRecent] = useState<Redeemed[]>([]);
   const [arrived, setArrived] = useState<Set<string>>(new Set());
+  const [queued, setQueued] = useState<QueuedArrival[]>([]);
+  const [online, setOnline] = useState(true);
 
   const waiting = expected.filter(
     (g) => !arrived.has(g.id) && (g.state === "confirmed" || g.state === "requested"),
@@ -78,6 +110,53 @@ export function CheckInScreen({
     if (!needle) return waiting.slice(0, 8);
     return waiting.filter((g) => g.guestName.toLowerCase().includes(needle));
   }, [query, waiting]);
+
+  // Drains the queue whenever the connection comes back. Failures stay
+  // queued rather than being dropped: a lost arrival is a guest asked to
+  // check in twice, which is exactly what the door is trying to avoid.
+  const flush = useCallback(async () => {
+    const pendingItems = readQueue();
+    if (pendingItems.length === 0) return;
+    const left: QueuedArrival[] = [];
+    for (const item of pendingItems) {
+      const result =
+        item.kind === "code"
+          ? await checkInByCode(item.value).then((r) => r.ok).catch(() => false)
+          : await markGuestArrived(item.value).then((r) => r.ok).catch(() => false);
+      if (!result) left.push(item);
+    }
+    writeQueue(left);
+    setQueued(left);
+    if (left.length < pendingItems.length) {
+      toast({
+        tone: "success",
+        title: `${pendingItems.length - left.length} arrivée(s) synchronisée(s)`,
+      });
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    setQueued(readQueue());
+    setOnline(navigator.onLine);
+    const up = () => {
+      setOnline(true);
+      void flush();
+    };
+    const down = () => setOnline(false);
+    window.addEventListener("online", up);
+    window.addEventListener("offline", down);
+    if (navigator.onLine) void flush();
+    return () => {
+      window.removeEventListener("online", up);
+      window.removeEventListener("offline", down);
+    };
+  }, [flush]);
+
+  const enqueue = (item: QueuedArrival) => {
+    const next = [...readQueue(), item];
+    writeQueue(next);
+    setQueued(next);
+  };
 
   const succeed = (id: string, name: string, partySize: number) => {
     setArrived((s) => new Set(s).add(id));
@@ -103,7 +182,11 @@ export function CheckInScreen({
         result.partySize ?? 1,
       );
     } catch {
-      setError("L'enregistrement a échoué. Réessayez.");
+      // The network is the likeliest cause at a door. Queue it and let
+      // the guest through — the sync will confirm or surface it later.
+      enqueue({ kind: "code", value: raw.trim(), at: Date.now() });
+      succeed(raw.trim(), "Arrivée en attente de synchronisation", 1);
+      setOnline(false);
     } finally {
       setPending(false);
     }
@@ -111,8 +194,14 @@ export function CheckInScreen({
 
   const arriveByName = async (guest: ExpectedGuest) => {
     setPending(true);
-    const result = await markGuestArrived(guest.id);
+    const result = await markGuestArrived(guest.id).catch(() => null);
     setPending(false);
+    if (result === null) {
+      enqueue({ kind: "id", value: guest.id, at: Date.now() });
+      setOnline(false);
+      succeed(guest.id, guest.guestName, guest.partySize);
+      return;
+    }
     if (!result.ok) {
       setError(result.message ?? "L'enregistrement a échoué.");
       return;
@@ -142,6 +231,28 @@ export function CheckInScreen({
           {venueName} · {waiting.length} arrivées encore attendues
         </p>
       </header>
+
+      {!online || queued.length > 0 ? (
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-sm)] border border-line bg-canvas-2 p-3"
+        >
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-ink">
+              {online ? "Synchronisation en attente" : "Hors ligne"}
+            </p>
+            <p className="text-meta text-ink-mute mt-0.5">
+              {queued.length} arrivée(s) enregistrée(s) sur cet appareil.
+              {online
+                ? " La synchronisation reprend automatiquement."
+                : " Elles partiront dès le retour du réseau ; continuez à valider."}
+            </p>
+          </div>
+          <Button variant="secondary" size="sm" onClick={() => void flush()}>
+            Synchroniser maintenant
+          </Button>
+        </div>
+      ) : null}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-5 min-w-0">

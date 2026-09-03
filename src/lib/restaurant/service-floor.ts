@@ -574,7 +574,7 @@ export function buildBriefingScreen(
   return {
     slug: "briefing",
     title: "Briefing",
-    subtitle: `${briefing.serviceLabel} · ${dayLabel(`${briefing.date}T12:00:00Z`)}`,
+    subtitle: `${briefing.serviceLabel} · ${dayLabel(briefing.date)}`,
     blocks: [
       {
         id: "briefing-head",
@@ -735,7 +735,7 @@ export function buildCalendarScreen(
     },
     rows: quiet.map((day) => ({
       id: day.date,
-      title: shortDay(`${day.date}T12:00:00Z`),
+      title: shortDay(day.date),
       icon: "sunset" as const,
       meta: `${day.covers} / ${day.capacity} ${config.cover.many} · ${Math.round(day.fill * 100)} % de la salle`,
       progress: { value: day.covers, max: Math.max(1, day.capacity), tone: "ink" as const },

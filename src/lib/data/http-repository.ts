@@ -333,6 +333,12 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     );
   }
 
+  async setZoneAvailable(venueId: string, zoneId: string, available: boolean) {
+    await this.request<void>("PUT", this.scoped(`/zones/${zoneId}`, venueId), {
+      available,
+    });
+  }
+
   /**
    * The venue is a query parameter, not a path segment, and it is only
    * ever a hint: the service resolves scope from the token. A caller

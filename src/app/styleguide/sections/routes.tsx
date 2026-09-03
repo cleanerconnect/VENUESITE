@@ -56,13 +56,30 @@ export function RoutesSection() {
                             Manque : {r.gap}
                           </div>
                         ) : null}
+                        {r.dependsOn ? (
+                          <div className="text-meta text-ink-mute mt-1">
+                            Service à brancher : {r.dependsOn}
+                          </div>
+                        ) : null}
                       </td>
                       <td className="py-3 pr-4 text-ink-mute text-meta">
                         {r.roles ?? "Tous"}
                       </td>
                       <td className="py-3">
-                        <Pill tone={r.status === "built" ? "success" : "warning"}>
-                          {r.status === "built" ? "Complet" : "Partiel"}
+                        <Pill
+                          tone={
+                            r.status === "built"
+                              ? "success"
+                              : r.status === "service"
+                                ? "info"
+                                : "warning"
+                          }
+                        >
+                          {r.status === "built"
+                            ? "Complet"
+                            : r.status === "service"
+                              ? "Service à brancher"
+                              : "Partiel"}
                         </Pill>
                       </td>
                     </tr>

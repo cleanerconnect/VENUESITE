@@ -373,6 +373,173 @@ const BLOCKS: { type: string; note: string; blocks: Block[] }[] = [
     ],
   },
   {
+    type: "calendar",
+    note: "charge par jour, en semaine ou en mois — chaque cellule s'ouvre et s'agit",
+    blocks: [
+      {
+        id: "cal",
+        type: "calendar",
+        heading: "Charge par jour",
+        subheading:
+          "Couverts réservés sur la capacité du jour. Une barre au-delà de la capacité change de couleur plutôt que d'être tronquée.",
+        view: "week",
+        unitLabel: "couverts",
+        cells: Array.from({ length: 14 }, (_, i) => {
+          const date = new Date(NOW.getTime() + (i - 3) * 86_400_000)
+            .toISOString()
+            .slice(0, 10);
+          const covers = [42, 58, 71, 96, 128, 134, 88][i % 7];
+          return {
+            date,
+            value: i === 5 ? 0 : covers,
+            capacity: 120,
+            closed: i === 5,
+            highlight: i === 3,
+            markers:
+              i === 5
+                ? [{ label: "Privatisation", tone: "muted", icon: "ban" }]
+                : i === 4
+                  ? [{ label: "Offre", tone: "violet", icon: "tag" }]
+                  : undefined,
+            menu: [
+              { id: "open", label: "Ouvrir le carnet", action: { kind: "link", href: "#" } },
+              {
+                id: "close",
+                label: "Fermer la journée",
+                destructive: true,
+                action: { kind: "command", command: "noop" },
+              },
+            ],
+          };
+        }),
+      },
+    ],
+  },
+  {
+    type: "settings",
+    note: "réglages déclarés — chaque contrôle est une valeur, pas un composant",
+    blocks: [
+      {
+        id: "set",
+        type: "settings",
+        heading: "La liste en ligne",
+        subheading:
+          "Chaque ligne est optimiste et le dit : la valeur bouge tout de suite, « Enregistré » confirme.",
+        banner: {
+          tone: "warning",
+          title: "Inscriptions suspendues",
+          body: "Personne ne peut rejoindre la liste depuis l'application.",
+        },
+        rows: [
+          {
+            id: "s1",
+            label: "Accepter les inscriptions depuis l'app",
+            hint: "Coupez pendant un coup de feu ; les groupes sur place restent inscriptibles.",
+            control: { kind: "toggle", value: false },
+            command: "noop",
+          },
+          {
+            id: "s2",
+            label: "Taille maximale acceptée en ligne",
+            control: { kind: "number", value: 8, min: 1, max: 30 },
+            command: "noop",
+          },
+          {
+            id: "s3",
+            label: "Heure limite le jour même",
+            control: { kind: "time", value: "18:00" },
+            command: "noop",
+          },
+          {
+            id: "s4",
+            label: "Comparer à",
+            control: {
+              kind: "select",
+              value: "previous",
+              options: [
+                { value: "previous", label: "Période précédente" },
+                { value: "last_year", label: "Même période l'an dernier" },
+              ],
+            },
+            command: "noop",
+          },
+          {
+            id: "s5",
+            label: "Raison affichée en cas de pause",
+            control: { kind: "text", value: "Salle complète jusqu'à 22 h" },
+            command: "noop",
+          },
+          {
+            id: "s6",
+            label: "RIB",
+            hint: "Une valeur qu'un autre écran possède : lisible, pas modifiable ici.",
+            control: { kind: "readonly", value: "Téléverser depuis Ma fiche", href: "#" },
+            command: "noop",
+          },
+        ],
+        footerActions: [
+          {
+            action: { kind: "command", command: "noop", label: "Ajouter une règle", icon: "plus" },
+            variant: "secondary",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    type: "entity-list · actions de ligne",
+    note: "les verbes de la porte, sur la ligne et non derrière un menu",
+    blocks: [
+      {
+        id: "rowacts",
+        type: "entity-list",
+        heading: "À la porte",
+        rows: [
+          {
+            id: "r1",
+            title: "Omar Idrissi",
+            initials: "OI",
+            meta: "2 couverts · +212 667 74 21 08 · 12 min restantes sur 20 min",
+            badges: [
+              { label: "EN ATTENTE", tone: "warning" },
+              { label: "SUR PLACE", tone: "neutral" },
+            ],
+            progress: { value: 8, max: 20, tone: "violet" },
+            actions: [
+              {
+                action: {
+                  kind: "command",
+                  command: "noop",
+                  label: "Prévenir",
+                  icon: "message-square",
+                },
+                variant: "secondary",
+              },
+              {
+                action: {
+                  kind: "command",
+                  command: "noop",
+                  label: "Installer",
+                  icon: "user-check",
+                },
+                variant: "primary",
+              },
+            ],
+            menu: [
+              { id: "m1", label: "Modifier le délai", action: { kind: "command", command: "noop" } },
+              {
+                id: "m2",
+                label: "Retirer de la liste",
+                destructive: true,
+                action: { kind: "command", command: "noop" },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
     type: "split / group",
     note: "composition — colonne principale et rail, empilement titré",
     blocks: [

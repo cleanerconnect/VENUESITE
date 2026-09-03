@@ -265,7 +265,7 @@ export function buildPerformanceScreen(
     },
     rows: quiet.map((day) => ({
       id: day.date,
-      title: shortDay(`${day.date}T12:00:00Z`),
+      title: shortDay(day.date),
       icon: "sunset" as const,
       meta: `${day.covers} / ${day.capacity} ${vocabulary.cover.many} · ${Math.round(day.fill * 100)} %`,
       progress: { value: day.covers, max: Math.max(1, day.capacity), tone: "ink" as const },
