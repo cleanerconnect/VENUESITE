@@ -5,9 +5,9 @@ build. Written to be read before the code, not after.
 
 Phase 4 (handoff completion) is reported in `docs/PHASE4.md`; Phase 5
 (completing the venue dashboard) in `docs/PHASE5.md`; Phase 6 (the Figma
-export) in `docs/PHASE6.md` — which is **incomplete**, blocked on the
-Figma plan's twenty-tool-calls-per-month limit rather than on anything in
-this repository. Read its §6 before picking it up. The screen-by-screen
+export) in `docs/PHASE6.md`. The Figma file is
+`LYFE Portail Partenaire`; its §5 lists three defects found while
+building it that are still open in this repository. The screen-by-screen
 target the venue side is built against is `docs/TARGET_SPEC.md`, and it is
 the document to read first if you are deciding whether something belongs.
 

@@ -6,82 +6,39 @@
     "url": "https://www.figma.com/design/fztoNaEvTrZrWDaLy1MEWg",
     "editorType": "design"
   },
-  "blockedBy": {
-    "toolCalls": "Figma Starter = 20 MCP tool calls/month; use_figma is not exempt. Budget spent.",
-    "pages": "Figma Starter = 3 pages/file; the brief asked for 8.",
-    "unblock": "Professional plan with a Full or Dev seat -> 200 calls/day, unlimited pages."
-  },
   "pages": {
-    "A · 00 Lisez-moi + 01 Fondations + 02 Composants": "0:1",
-    "B · 03 Entrée + 04 Espace partenaire + 05 Espace organisateur": "3:2",
-    "C · 06 États + 07 Téléphone": "3:3"
-  },
-  "sections": {
-    "00 Lisez-moi": {
-      "id": "10:2",
-      "page": "0:1",
-      "state": "empty"
-    },
-    "01 Fondations": {
-      "id": "10:3",
-      "page": "0:1",
-      "state": "built",
-      "wrapper": "11:2"
-    },
-    "02 Composants": {
-      "id": "10:4",
-      "page": "0:1",
-      "state": "empty"
-    },
-    "03 Entrée": {
-      "state": "not created",
-      "page": "3:2"
-    },
-    "04 Espace partenaire": {
-      "state": "not created",
-      "page": "3:2"
-    },
-    "05 Espace organisateur": {
-      "state": "not created",
-      "page": "3:2"
-    },
-    "06 États": {
-      "state": "not created",
-      "page": "3:3"
-    },
-    "07 Téléphone": {
-      "state": "not created",
-      "page": "3:3"
-    }
+    "00 Lisez-moi": "14:11",
+    "01 Fondations": "14:12",
+    "02 Composants": "14:13",
+    "03 Entrée": "14:14",
+    "04 Espace partenaire": "14:15",
+    "05 Espace organisateur": "14:16",
+    "06 États": "14:17",
+    "07 Téléphone": "14:18"
   },
   "collections": {
     "Primitives": {
-      "id": "VariableCollectionId:4:2",
       "mode": "Valeur",
-      "count": 23
+      "count": 24
     },
     "Couleur": {
-      "id": "VariableCollectionId:5:2",
       "mode": "Clair",
-      "count": 42
+      "count": 62,
+      "note": "43 semantic + 19 opacite/* alpha variables"
     },
     "Espacement": {
-      "id": "VariableCollectionId:6:3",
       "mode": "Valeur",
       "count": 19
     },
     "Rayon": {
-      "id": "VariableCollectionId:6:23",
       "mode": "Valeur",
-      "count": 6
+      "count": 7
     },
     "Typographie": {
-      "id": "VariableCollectionId:7:2",
       "mode": "Valeur",
       "count": 14
     },
     "Mouvement": {
-      "id": "VariableCollectionId:7:17",
       "mode": "Valeur",
       "count": 5
     }
@@ -113,9 +70,7 @@
   },
   "reuse": "No design system assets to reuse: 8 community kits subscribed, search_design_system returned empty for components, variables and styles. Everything built from code tokens.",
   "darkMode": "None. globals.css has no prefers-color-scheme block. Light mode only.",
-  "unvalidated": [
-    "11:2 — Fondations wrapper: written, never screenshotted. Verify first on resume."
-  ],
+  "unvalidated": [],
   "ecarts": {
     "status": "fixed in code — nothing to reproduce in Figma; 00 Lisez-moi gets no Écarts constatés heading",
     "fixed": [
@@ -134,20 +89,13 @@
     "notFixable": "Fraunces weight 500 italic has no static Figma instance; the text style uses Italic (400) and says so in its description."
   },
   "completedSteps": [
-    "P0.a",
-    "P0.b",
-    "P0.c",
-    "P0.d",
-    "P0.e",
-    "P0.f",
-    "P1.a",
-    "P1.b",
-    "P1.c",
-    "P1.d",
-    "P1.e",
-    "P1.f",
-    "P1.g",
-    "P1.h"
+    "P0",
+    "P1 foundations",
+    "P2 components",
+    "P3 screens",
+    "P4 états",
+    "P5 téléphone",
+    "P6 report"
   ],
   "remainingSteps": [
     "P2 components",
@@ -166,5 +114,40 @@
     "lastRun": "all four pass: 30/30 venue at 1440x900, 19/19 event+shared at 1440x900, 3 states on 30 routes, configuration as specified",
     "trap": "A stale next start holding :3210 makes every check measure the old build. pkill -9 -f next-server and confirm the port is free before rebuilding."
   },
-  "figmaSeatAtLastWrite": "Starter / View — 20 tool calls per month, 3 pages per file"
+  "figmaSeatAtLastWrite": "Full on pro — 200 tool calls/day, unlimited pages",
+  "phase": "complete",
+  "totals": {
+    "variables": 131,
+    "textStyles": 13,
+    "effectStyles": 3,
+    "components": 29,
+    "variants": 175,
+    "frames": 62
+  },
+  "keyComponentIds": {
+    "sidebarRestaurant": "26:2",
+    "sidebarLounge": "26:121",
+    "sidebarEvents": "41:2",
+    "topbar": "26:254",
+    "bottomTabs": "46:2",
+    "pageHeaderNoAction": "22:150",
+    "pageHeaderAction": "22:143",
+    "metricTileSurface1": "22:2",
+    "cardSurfaceMd": "20:5",
+    "filterTabsCount": "23:2"
+  },
+  "figmaGotchas": [
+    "A use_figma script is transactional: a throw rolls back everything it did.",
+    "Paint opacity is lost when an instance inherits a variable-bound fill. Use an opacite/* variable instead.",
+    "Instances are structurally sealed: appendChild into one throws. Override text, do not inject children.",
+    "figma.currentPage cannot be removed; switch away before deleting a page.",
+    "Variable names reject '.', so Tailwind half-steps are espace/0-5 etc.",
+    "For a wrapped horizontal auto-layout, the width is the PRIMARY axis and must be FIXED."
+  ],
+  "openFindings": [
+    "src/lib/db/overview-store.ts:426 — the Accueil subtitle hardcodes 'couverts réservés' and never reads venue configuration, so Nomad Rooftop (lounge) says 'couverts' on its home screen while its own KPI tiles say 'personnes'.",
+    "src/lib/restaurant/screens.ts:173 — `${cover.many} arrivés` yields 'Personnes arrivés'; French agreement wants 'arrivées'.",
+    "src/lib/restaurant/screens.ts:620 — same shape yields 'Personnes réservés'; wants 'réservées'.",
+    "components/ui/Button.tsx — text sizes 13/14/15px are arbitrary values outside the type scale; 15px matches no token."
+  ]
 }

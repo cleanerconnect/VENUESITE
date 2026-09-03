@@ -1,0 +1,3481 @@
+{
+  "base": "http://localhost:3210",
+  "venue": "",
+  "viewport": {
+    "W": 1440,
+    "H": 900
+  },
+  "screens": {
+    "/restaurant": {
+      "label": "Accueil",
+      "purpose": "Ce qui se passe aujourd'hui : chiffres du jour, file d'attente à traiter, bande des quatre prochaines heures.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h2",
+          "text": "À traiter"
+        },
+        {
+          "level": "h2",
+          "text": "Petit-déjeuner"
+        },
+        {
+          "level": "h2",
+          "text": "Les quatre prochaines heures"
+        },
+        {
+          "level": "h2",
+          "text": "Charge du service"
+        },
+        {
+          "level": "h2",
+          "text": "Prochaines arrivées"
+        },
+        {
+          "level": "h2",
+          "text": "Activité du service"
+        },
+        {
+          "level": "h1",
+          "text": "Bon après-midi, Yassine. le service est complet."
+        },
+        {
+          "level": "h2",
+          "text": "Petit-déjeuner"
+        },
+        {
+          "level": "h2",
+          "text": "À traiter"
+        },
+        {
+          "level": "h2",
+          "text": "Les quatre prochaines heures"
+        },
+        {
+          "level": "h2",
+          "text": "Charge du service"
+        },
+        {
+          "level": "h2",
+          "text": "Prochaines arrivées"
+        },
+        {
+          "level": "h2",
+          "text": "Activité du service"
+        },
+        {
+          "level": "h2",
+          "text": "Recette de la semaine"
+        }
+      ],
+      "subtitle": "104 couverts réservés, 6 en liste d'attente, 16 encore disponibles.",
+      "tiles": [
+        {
+          "label": "Encaissé ce service",
+          "value": "63 400 MAD"
+        },
+        {
+          "label": "Couverts arrivés",
+          "value": "86"
+        },
+        {
+          "label": "Couverts disponibles",
+          "value": "16"
+        },
+        {
+          "label": "Couverts aujourd'hui",
+          "value": "66"
+        },
+        {
+          "label": "Ticket moyen",
+          "value": "737 MAD"
+        },
+        {
+          "label": "Taux d'occupation",
+          "value": "38 %"
+        },
+        {
+          "label": "Absences ce service",
+          "value": "3"
+        },
+        {
+          "label": "Note moyenne",
+          "value": "4,3 / 5"
+        }
+      ],
+      "pills": [
+        "6",
+        "1",
+        "3",
+        "À CONFIRMER",
+        "RISQUE ÉLEVÉ",
+        "ACOMPTE ÉCHOUÉ",
+        "AVIS SANS RÉPONSE",
+        "87 % engagé",
+        "CONFIRMÉE",
+        "Risque d'absence",
+        "Habitué",
+        "dans 3 jours",
+        "Versé le 06 sept."
+      ],
+      "buttons": [
+        "Tout6",
+        "Demandes1",
+        "Risque1",
+        "Acomptes1",
+        "Avis3",
+        "Accepter",
+        "Refuser",
+        "Demander une reconfirmation",
+        "Relancer",
+        "Ignorer",
+        "Nouvelle réservation",
+        "Ouvrir le carnet →",
+        "Liste d'attente",
+        "Briefing"
+      ],
+      "tables": []
+    },
+    "/restaurant/reservations": {
+      "label": "Réservations",
+      "purpose": "Le carnet d'une journée : accepter, refuser avec motif, modifier, marquer arrivé, absent, annuler.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Réservations"
+        },
+        {
+          "level": "h2",
+          "text": "Carnet du service"
+        },
+        {
+          "level": "h2",
+          "text": "Journée"
+        },
+        {
+          "level": "h2",
+          "text": "Journée"
+        },
+        {
+          "level": "h2",
+          "text": "Charge du service"
+        },
+        {
+          "level": "h2",
+          "text": "Carnet du service"
+        }
+      ],
+      "subtitle": "jeudi 3 septembre",
+      "tiles": [
+        {
+          "label": "Couverts réservés",
+          "value": "104"
+        },
+        {
+          "label": "Déjà arrivés",
+          "value": "86"
+        },
+        {
+          "label": "À confirmer",
+          "value": "1"
+        },
+        {
+          "label": "Risque d'absence",
+          "value": "1"
+        }
+      ],
+      "pills": [
+        "7",
+        "1",
+        "4",
+        "0",
+        "2",
+        "LISTE D'ATTENTE",
+        "CONFIRMÉE",
+        "ACOMPTE PAYE",
+        "Risque d'absence",
+        "À CONFIRMER",
+        "Habitué",
+        "ACOMPTE DEMANDE"
+      ],
+      "buttons": [
+        "Nouvelle réservation",
+        "Tous7",
+        "À confirmer1",
+        "Confirmées4",
+        "Arrivés0",
+        "Liste d'attente2",
+        "No-show0",
+        "Annulées0",
+        "À risque1",
+        "Walk-in",
+        "Exporter la journée",
+        "Imprimer"
+      ],
+      "tables": []
+    },
+    "/restaurant/calendrier": {
+      "label": "Calendrier",
+      "purpose": "La charge par jour, en semaine ou en mois. Fermer une journée, forcer une capacité, repérer un service creux.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Calendrier"
+        },
+        {
+          "level": "h2",
+          "text": "Charge par jour"
+        },
+        {
+          "level": "h2",
+          "text": "Services les plus creux"
+        }
+      ],
+      "subtitle": "Quatre semaines en arrière, deux mois en avant",
+      "tiles": [],
+      "pills": [
+        "Offre",
+        "Terrasse ouverte en entier",
+        "Équipe réduite",
+        "Privatisation",
+        "Expérience"
+      ],
+      "buttons": [
+        "Semaine",
+        "Mois",
+        "‹",
+        "›",
+        "Créer une offre"
+      ],
+      "tables": []
+    },
+    "/restaurant/liste-attente": {
+      "label": "Liste d'attente",
+      "purpose": "La porte quand la salle est pleine. Prévenir, installer, retirer avec motif ; installer crée la réservation.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Liste d'attente"
+        },
+        {
+          "level": "h2",
+          "text": "À la porte"
+        },
+        {
+          "level": "h2",
+          "text": "La liste en ligne"
+        },
+        {
+          "level": "h2",
+          "text": "À la porte"
+        },
+        {
+          "level": "h2",
+          "text": "La liste en ligne"
+        }
+      ],
+      "subtitle": "Espace restaurant · 0 min d'attente annoncée",
+      "tiles": [
+        {
+          "label": "Groupes en attente",
+          "value": "4"
+        },
+        {
+          "label": "Attente moyenne",
+          "value": "0 min"
+        },
+        {
+          "label": "Liste en ligne",
+          "value": "Ouverte"
+        }
+      ],
+      "pills": [
+        "4",
+        "6",
+        "1",
+        "2",
+        "PRÉVENU",
+        "SUR PLACE",
+        "EN RETARD",
+        "EN ATTENTE",
+        "APP"
+      ],
+      "buttons": [
+        "Ajouter",
+        "En cours4",
+        "Tout6",
+        "Prévenus1",
+        "Terminés2",
+        "Installer",
+        "Prévenir"
+      ],
+      "tables": []
+    },
+    "/restaurant/check-in": {
+      "label": "Check-in",
+      "purpose": "Valider une arrivée : caméra, code saisi, recherche par nom, annulation dans les cinq minutes.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Check-in"
+        },
+        {
+          "level": "h2",
+          "text": "Scanner le code"
+        },
+        {
+          "level": "h2",
+          "text": "Chercher par nom"
+        },
+        {
+          "level": "h2",
+          "text": "Trente dernières minutes"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune arrivée"
+        }
+      ],
+      "subtitle": "Dar Zellij · 5 arrivées encore attendues",
+      "tiles": [],
+      "pills": [
+        "Acompte 400 MAD",
+        "Habitué",
+        "Acompte 500 MAD"
+      ],
+      "buttons": [
+        "Allumer la caméra",
+        "Valider",
+        "Confirmer"
+      ],
+      "tables": []
+    },
+    "/restaurant/briefing": {
+      "label": "Briefing",
+      "purpose": "Ce que l'équipe lit avant l'ouverture : VIP, allergies, occasions, grandes tables, acomptes en attente, notes de service.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h2",
+          "text": "Notes de service"
+        },
+        {
+          "level": "h2",
+          "text": "VIP et habitués"
+        },
+        {
+          "level": "h2",
+          "text": "Allergies et régimes"
+        },
+        {
+          "level": "h2",
+          "text": "Anniversaires et occasions"
+        },
+        {
+          "level": "h2",
+          "text": "Grandes tables"
+        },
+        {
+          "level": "h2",
+          "text": "Première visite"
+        },
+        {
+          "level": "h2",
+          "text": "Historique d'absence"
+        },
+        {
+          "level": "h2",
+          "text": "Demandes particulières"
+        },
+        {
+          "level": "h2",
+          "text": "Acomptes en attente"
+        },
+        {
+          "level": "h1",
+          "text": "Avant l'ouverture, ce que l'équipe doit savoir"
+        },
+        {
+          "level": "h2",
+          "text": "Notes de service"
+        },
+        {
+          "level": "h2",
+          "text": "VIP et habitués"
+        },
+        {
+          "level": "h2",
+          "text": "Allergies et régimes"
+        },
+        {
+          "level": "h2",
+          "text": "Anniversaires et occasions"
+        },
+        {
+          "level": "h2",
+          "text": "Grandes tables"
+        },
+        {
+          "level": "h2",
+          "text": "Première visite"
+        },
+        {
+          "level": "h2",
+          "text": "Historique d'absence"
+        },
+        {
+          "level": "h2",
+          "text": "Demandes particulières"
+        },
+        {
+          "level": "h2",
+          "text": "Acomptes en attente"
+        }
+      ],
+      "subtitle": "5 réservations · 21 couverts",
+      "tiles": [
+        {
+          "label": "couverts",
+          "value": "21"
+        },
+        {
+          "label": "VIP et habitués",
+          "value": "2"
+        },
+        {
+          "label": "Allergies signalées",
+          "value": "3"
+        },
+        {
+          "label": "Acomptes en attente",
+          "value": "1"
+        }
+      ],
+      "pills": [
+        "VIP",
+        "HABITUÉ",
+        "ALLERGIE",
+        "ACOMPTE EN ATTENTE",
+        "1 ABSENCE",
+        "À RISQUE",
+        "INACTIF",
+        "2 ABSENCES",
+        "NOUVEAU"
+      ],
+      "buttons": [
+        "Imprimer",
+        "Envoyer au groupe WhatsApp",
+        "Ajouter une note de service"
+      ],
+      "tables": []
+    },
+    "/restaurant/clients": {
+      "label": "Liste clients",
+      "purpose": "La base, alimentée par les réservations, les walk-ins et les installations depuis la liste d'attente.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Clients"
+        },
+        {
+          "level": "h2",
+          "text": "Base clients"
+        },
+        {
+          "level": "h2",
+          "text": "Actions groupées"
+        }
+      ],
+      "subtitle": "Base alimentée automatiquement par les réservations — aucune saisie manuelle.",
+      "tiles": [
+        {
+          "label": "Clients connus",
+          "value": "12"
+        },
+        {
+          "label": "Clients fidèles",
+          "value": "3"
+        },
+        {
+          "label": "Chiffre cumulé",
+          "value": "16 960 MAD"
+        },
+        {
+          "label": "À risque d'absence",
+          "value": "3"
+        }
+      ],
+      "pills": [
+        "12",
+        "2",
+        "3",
+        "0",
+        "Nouveau",
+        "HABITUÉ",
+        "VIP",
+        "Sans démarchage",
+        "PRESSE",
+        "ALLERGIE",
+        "GROS PANIER",
+        "À RISQUE",
+        "Risque d'absence",
+        "INACTIF",
+        "Risque élevé",
+        "NOUVEAU"
+      ],
+      "buttons": [
+        "Exporter la sélection",
+        "Tous12",
+        "VIP2",
+        "Habitués3",
+        "Nouveaux2",
+        "À risque no-show3",
+        "Inactifs 90 jours2",
+        "Anniversaire ce mois0"
+      ],
+      "tables": []
+    },
+    "/restaurant/clients/cus_1": {
+      "label": "Fiche client",
+      "purpose": "Tout ce que le lieu sait d'un client : visites, risque d'absence sur douze mois, préférences, avis, messages, anonymisation.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Salma Bennani Habitué · VIP"
+        },
+        {
+          "level": "h2",
+          "text": "Contact et consentement"
+        },
+        {
+          "level": "h2",
+          "text": "Étiquettes"
+        },
+        {
+          "level": "h2",
+          "text": "Préférences et demandes"
+        },
+        {
+          "level": "h2",
+          "text": "Réservations à venir"
+        },
+        {
+          "level": "h3",
+          "text": "Rien de prévu"
+        },
+        {
+          "level": "h2",
+          "text": "Historique"
+        },
+        {
+          "level": "h2",
+          "text": "Avis laissés"
+        },
+        {
+          "level": "h3",
+          "text": "Aucun avis"
+        },
+        {
+          "level": "h2",
+          "text": "Journal des messages"
+        },
+        {
+          "level": "h1",
+          "text": "Salma Bennani Habitué · VIP"
+        },
+        {
+          "level": "h2",
+          "text": "Préférences et demandes"
+        },
+        {
+          "level": "h2",
+          "text": "Réservations à venir"
+        },
+        {
+          "level": "h3",
+          "text": "Rien de prévu"
+        },
+        {
+          "level": "h2",
+          "text": "Historique"
+        },
+        {
+          "level": "h2",
+          "text": "Contact et consentement"
+        },
+        {
+          "level": "h2",
+          "text": "Étiquettes"
+        },
+        {
+          "level": "h2",
+          "text": "Avis laissés"
+        },
+        {
+          "level": "h3",
+          "text": "Aucun avis"
+        },
+        {
+          "level": "h2",
+          "text": "Journal des messages"
+        }
+      ],
+      "subtitle": "Client depuis le ven. 5 juin · dernière visite le jeu. 13 août",
+      "tiles": [
+        {
+          "label": "Visites",
+          "value": "6"
+        },
+        {
+          "label": "Risque d'absence",
+          "value": "Aucun risque"
+        },
+        {
+          "label": "Palier fidélité",
+          "value": "Nouveau"
+        },
+        {
+          "label": "Total dépensé",
+          "value": "3 610 MAD"
+        }
+      ],
+      "pills": [
+        "SAGE",
+        "VIOLET",
+        "1",
+        "0",
+        "CONFIRMÉE"
+      ],
+      "buttons": [
+        "Créer une réservation",
+        "Appeler",
+        "Envoyer un message",
+        "Exporter la fiche",
+        "Anonymiser (droit à l'effacement)",
+        "Modifier les notes",
+        "Tout1",
+        "Absences0"
+      ],
+      "tables": []
+    },
+    "/restaurant/segments": {
+      "label": "Tags et segments",
+      "purpose": "Le vocabulaire de la base : étiquettes manuelles, règles automatiques et leurs seuils, segments enregistrés.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Tags et segments"
+        },
+        {
+          "level": "h2",
+          "text": "Étiquettes manuelles"
+        },
+        {
+          "level": "h2",
+          "text": "Étiquettes automatiques"
+        },
+        {
+          "level": "h2",
+          "text": "Ce que les règles ont posé"
+        },
+        {
+          "level": "h2",
+          "text": "Segments enregistrés"
+        }
+      ],
+      "subtitle": "Le vocabulaire de la base clients",
+      "tiles": [],
+      "pills": [
+        "VIOLET",
+        "ROSE",
+        "SKY",
+        "ACTIVE",
+        "SAGE",
+        "PEACH",
+        "SAND"
+      ],
+      "buttons": [
+        "Créer une étiquette",
+        "Créer un segment",
+        "Voir les clients",
+        "Créer une campagne"
+      ],
+      "tables": []
+    },
+    "/restaurant/ma-fiche": {
+      "label": "Ma fiche",
+      "purpose": "Ce que l'application montre de l'établissement : identité, fiche, photos. Enregistré pour de vrai.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Ma fiche"
+        },
+        {
+          "level": "h2",
+          "text": "Identité"
+        },
+        {
+          "level": "h2",
+          "text": "Adresse et contact"
+        },
+        {
+          "level": "h1",
+          "text": "Ma fiche"
+        },
+        {
+          "level": "h2",
+          "text": "Dar Zellij"
+        },
+        {
+          "level": "h2",
+          "text": "Zones réservables"
+        },
+        {
+          "level": "h2",
+          "text": "Tenue et accès"
+        },
+        {
+          "level": "h2",
+          "text": "Équipements affichés"
+        },
+        {
+          "level": "h2",
+          "text": "Horaires"
+        }
+      ],
+      "subtitle": "Tout ce que l'application montre de l'établissement, modifiable ici. Miroir de la fiche, rien de plus.",
+      "tiles": [
+        {
+          "label": "Photos",
+          "value": "0"
+        },
+        {
+          "label": "Mots-clés",
+          "value": "5"
+        },
+        {
+          "label": "Zones proposées",
+          "value": "3"
+        }
+      ],
+      "pills": [
+        "À COMPLÉTER",
+        "OUVERTE",
+        "OUVERT"
+      ],
+      "buttons": [
+        "Identité",
+        "Fiche",
+        "Photos",
+        "Restaurant",
+        "Bar",
+        "Enregistrer",
+        "Retirer de l'app"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Jour",
+            "Ouverture",
+            "État"
+          ],
+          "rows": [
+            [
+              "Lundi",
+              "12:00 – 15:00 · 19:00 – 23:30",
+              "OUVERT"
+            ],
+            [
+              "Mardi",
+              "12:00 – 15:00 · 19:00 – 23:30",
+              "OUVERT"
+            ],
+            [
+              "Mercredi",
+              "12:00 – 15:00 · 19:00 – 23:30",
+              "OUVERT"
+            ],
+            [
+              "Jeudi",
+              "12:00 – 15:00 · 19:00 – 23:30",
+              "OUVERT"
+            ],
+            [
+              "Vendredi",
+              "12:00 – 15:30 · 19:00 – 00:30",
+              "OUVERT"
+            ],
+            [
+              "Samedi",
+              "12:00 – 15:30 · 19:00 – 00:30",
+              "OUVERT"
+            ]
+          ]
+        }
+      ]
+    },
+    "/restaurant/menu": {
+      "label": "Menu",
+      "purpose": "La carte telle que l'application l'affiche. Ajouter, masquer, réordonner.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "L'import assisté d'un PDF en articles structurés attend un service d'extraction. Le téléversement du PDF, lui, fonctionne : la carte fichier est publiée sur la fiche.",
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Menu"
+        },
+        {
+          "level": "h2",
+          "text": "Carte"
+        }
+      ],
+      "subtitle": "La carte telle que l'application l'affiche. Ni coût matière ni stock : ce n'est pas un outil de cuisine.",
+      "tiles": [],
+      "pills": [
+        "Signature"
+      ],
+      "buttons": [
+        "Loup de mer chermoulaPlat320 MAD",
+        "Zaalouk d'auberginesEntrée80 MAD"
+      ],
+      "tables": []
+    },
+    "/restaurant/avis": {
+      "label": "Avis",
+      "purpose": "Les avis, le sondage après visite et la redirection des clients satisfaits vers Google ou Tripadvisor.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "Les réponses publiques et la redirection vers Google ou Tripadvisor attendent la connexion des plateformes. Le sondage, les liens et le seuil de redirection s'enregistrent.",
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Avis"
+        },
+        {
+          "level": "h2",
+          "text": "Sondage après visite"
+        },
+        {
+          "level": "h2",
+          "text": "Derniers avis"
+        }
+      ],
+      "subtitle": "4 avis · note moyenne 4,3 / 5",
+      "tiles": [
+        {
+          "label": "Note moyenne",
+          "value": "4,3 / 5"
+        },
+        {
+          "label": "Avis reçus",
+          "value": "4"
+        },
+        {
+          "label": "Sans réponse",
+          "value": "3"
+        }
+      ],
+      "pills": [
+        "5 / 5",
+        "4 / 5",
+        "Sans réponse",
+        "3 / 5"
+      ],
+      "buttons": [],
+      "tables": []
+    },
+    "/restaurant/visibilite": {
+      "label": "Visibilité",
+      "purpose": "Impressions, ouvertures de fiche, conversion, et la liste honnête de ce qui pèse sur le classement.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Visibilité"
+        },
+        {
+          "level": "h2",
+          "text": "Mettre votre établissement en avant"
+        },
+        {
+          "level": "h2",
+          "text": "Ce qui pèse sur le classement"
+        }
+      ],
+      "subtitle": "30 derniers jours",
+      "tiles": [
+        {
+          "label": "Impressions",
+          "value": "45 285"
+        },
+        {
+          "label": "Ouvertures de fiche",
+          "value": "6 295"
+        },
+        {
+          "label": "Portée",
+          "value": "25 360"
+        },
+        {
+          "label": "Impressions dans le fil",
+          "value": "45 285"
+        },
+        {
+          "label": "Ouvertures de la fiche",
+          "value": "6 295"
+        },
+        {
+          "label": "Ouverture → réservation",
+          "value": "51,0 %"
+        }
+      ],
+      "pills": [
+        "À FAIRE",
+        "FAIT"
+      ],
+      "buttons": [
+        "Corriger",
+        "Créer un boost"
+      ],
+      "tables": []
+    },
+    "/restaurant/offres": {
+      "label": "Offres",
+      "purpose": "Remplir un service creux sans toucher aux prix. Attribution comptée sur les offres appliquées.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Offres"
+        },
+        {
+          "level": "h2",
+          "text": "Offres en cours et à venir"
+        },
+        {
+          "level": "h2",
+          "text": "Brouillons et archives"
+        },
+        {
+          "level": "h2",
+          "text": "Offres en cours et à venir"
+        },
+        {
+          "level": "h2",
+          "text": "Brouillons et archives"
+        }
+      ],
+      "subtitle": "Remplir un service creux sans toucher aux prix",
+      "tiles": [
+        {
+          "label": "Offres actives",
+          "value": "2"
+        },
+        {
+          "label": "Réservations attribuées",
+          "value": "9"
+        },
+        {
+          "label": "Couverts attribués",
+          "value": "30"
+        }
+      ],
+      "pills": [
+        "3",
+        "2",
+        "1",
+        "0",
+        "PLANIFIÉE",
+        "ACTIVE",
+        "ARCHIVÉE"
+      ],
+      "buttons": [
+        "Créer une offre",
+        "Toutes3",
+        "Actives2",
+        "Planifiées1",
+        "En pause0"
+      ],
+      "tables": []
+    },
+    "/restaurant/experiences": {
+      "label": "Expériences",
+      "purpose": "Vendre autre chose qu'une table : soirée, atelier, brunch, avec billetterie et recette.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Expériences"
+        },
+        {
+          "level": "h2",
+          "text": "À venir"
+        },
+        {
+          "level": "h2",
+          "text": "Terminées"
+        }
+      ],
+      "subtitle": "Vendre autre chose qu'une table",
+      "tiles": [
+        {
+          "label": "Expériences publiées",
+          "value": "2"
+        },
+        {
+          "label": "Places vendues",
+          "value": "74"
+        },
+        {
+          "label": "Recette billetterie",
+          "value": "32 650 MAD"
+        }
+      ],
+      "pills": [
+        "2",
+        "0",
+        "PUBLIÉE",
+        "TERMINÉE"
+      ],
+      "buttons": [
+        "Créer une expérience",
+        "Toutes2",
+        "Publiées2",
+        "Brouillons0"
+      ],
+      "tables": []
+    },
+    "/restaurant/guest-list": {
+      "label": "Guest list",
+      "purpose": "Les listes d'entrée par nuit, leurs tranches tarifaires et la vue porte à une validation par entrée.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Configuration Lounge",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Guest list"
+        },
+        {
+          "level": "h2",
+          "text": "Porte"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune liste ouverte"
+        },
+        {
+          "level": "h2",
+          "text": "Toutes les nuits"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune nuit"
+        },
+        {
+          "level": "h2",
+          "text": "Porte"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune liste ouverte"
+        },
+        {
+          "level": "h2",
+          "text": "Toutes les nuits"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune nuit"
+        }
+      ],
+      "subtitle": "Aucune liste ouverte",
+      "tiles": [
+        {
+          "label": "Personnes attendues",
+          "value": "0"
+        },
+        {
+          "label": "Entrées validées",
+          "value": "0"
+        },
+        {
+          "label": "Capacité de la liste",
+          "value": "0"
+        }
+      ],
+      "pills": [
+        "0"
+      ],
+      "buttons": [
+        "Tous0",
+        "À valider0",
+        "Entrés0",
+        "Promoteurs0",
+        "Ouvrir une liste"
+      ],
+      "tables": []
+    },
+    "/restaurant/tables": {
+      "label": "Tables minimums",
+      "purpose": "Vendre une banquette avec un minimum de consommation : types, minimums par nuit, demandes, acomptes.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Configuration Lounge · Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Tables minimums"
+        },
+        {
+          "level": "h2",
+          "text": "Demandes depuis l'application"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune demande"
+        },
+        {
+          "level": "h2",
+          "text": "Tables confirmées"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune table confirmée"
+        },
+        {
+          "level": "h2",
+          "text": "Types de table"
+        },
+        {
+          "level": "h3",
+          "text": "Aucun type de table"
+        },
+        {
+          "level": "h2",
+          "text": "Minimums par type de nuit"
+        },
+        {
+          "level": "h2",
+          "text": "Nuits passées"
+        },
+        {
+          "level": "h3",
+          "text": "Aucun historique"
+        },
+        {
+          "level": "h2",
+          "text": "Demandes depuis l'application"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune demande"
+        },
+        {
+          "level": "h2",
+          "text": "Tables confirmées"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune table confirmée"
+        },
+        {
+          "level": "h2",
+          "text": "Types de table"
+        },
+        {
+          "level": "h3",
+          "text": "Aucun type de table"
+        },
+        {
+          "level": "h2",
+          "text": "Minimums par type de nuit"
+        },
+        {
+          "level": "h2",
+          "text": "Nuits passées"
+        },
+        {
+          "level": "h3",
+          "text": "Aucun historique"
+        }
+      ],
+      "subtitle": "Vendre une banquette avec un minimum de consommation",
+      "tiles": [
+        {
+          "label": "Demandes à traiter",
+          "value": "0"
+        },
+        {
+          "label": "Tables vendues ce soir",
+          "value": "0"
+        },
+        {
+          "label": "Minimums engagés",
+          "value": "0 MAD"
+        }
+      ],
+      "pills": [],
+      "buttons": [
+        "Ajouter un type",
+        "Modifier les minimums"
+      ],
+      "tables": []
+    },
+    "/restaurant/promoteurs": {
+      "label": "Promoteurs",
+      "purpose": "Qui amène qui : entrées, tables, taux de présentation, lien de partage par promoteur.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Configuration Lounge · Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Promoteurs"
+        },
+        {
+          "level": "h2",
+          "text": "Annuaire"
+        },
+        {
+          "level": "h3",
+          "text": "Aucun promoteur"
+        }
+      ],
+      "subtitle": "Qui amène qui, et ce que ça donne à la porte",
+      "tiles": [
+        {
+          "label": "Promoteurs actifs",
+          "value": "0"
+        },
+        {
+          "label": "Personnes apportées",
+          "value": "0"
+        },
+        {
+          "label": "Taux de présentation",
+          "value": "0 %"
+        }
+      ],
+      "pills": [],
+      "buttons": [
+        "Ajouter un promoteur"
+      ],
+      "tables": []
+    },
+    "/restaurant/acomptes": {
+      "label": "Acomptes",
+      "purpose": "Quand un client paie d'avance, et l'état de chaque acompte. Capture et remboursement sont idempotents.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "Payzone n'est pas branché, et la spécification laisse ouvert le sens du flux : encaissement direct par l'établissement, ou collecte par LYFE puis reversement. Les deux chemins passent par la même clé d'idempotence, donc le choix ne change pas cet écran.",
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Acomptes"
+        },
+        {
+          "level": "h2",
+          "text": "Registre des acomptes"
+        },
+        {
+          "level": "h2",
+          "text": "Quand un client paie d'avance"
+        },
+        {
+          "level": "h2",
+          "text": "Registre des acomptes"
+        },
+        {
+          "level": "h2",
+          "text": "Quand un client paie d'avance"
+        }
+      ],
+      "subtitle": "Ce qu'un client paie d'avance, et ce qu'il en advient",
+      "tiles": [
+        {
+          "label": "Acomptes en attente",
+          "value": "2"
+        },
+        {
+          "label": "Montants détenus",
+          "value": "400 MAD"
+        },
+        {
+          "label": "Paiements échoués",
+          "value": "1"
+        }
+      ],
+      "pills": [
+        "6",
+        "2",
+        "1",
+        "3",
+        "DEMANDÉ",
+        "PAYÉ",
+        "ÉCHOUÉ",
+        "LIBÉRÉ",
+        "CAPTURÉ",
+        "REMBOURSÉ",
+        "V2"
+      ],
+      "buttons": [
+        "Tous6",
+        "À régler2",
+        "Payés1",
+        "Soldés3",
+        "Relancer",
+        "Ajouter une règle"
+      ],
+      "tables": []
+    },
+    "/restaurant/annulations": {
+      "label": "Annulations",
+      "purpose": "Les conditions montrées au client, et le journal de ce qui s'est passé, frais compris.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Annulations"
+        },
+        {
+          "level": "h2",
+          "text": "Conditions d'annulation"
+        },
+        {
+          "level": "h2",
+          "text": "Journal"
+        }
+      ],
+      "subtitle": "Les conditions, et ce qui s'est réellement passé",
+      "tiles": [
+        {
+          "label": "Annulations et absences",
+          "value": "4"
+        },
+        {
+          "label": "Frais appliqués",
+          "value": "400 MAD"
+        },
+        {
+          "label": "Litiges ouverts",
+          "value": "1"
+        }
+      ],
+      "pills": [
+        "4",
+        "2",
+        "1",
+        "ABSENCE",
+        "ANNULATION",
+        "FRAIS ANNULÉS",
+        "LITIGE"
+      ],
+      "buttons": [
+        "Tout4",
+        "Annulations2",
+        "Absences2",
+        "Litiges1"
+      ],
+      "tables": []
+    },
+    "/restaurant/lyfe-pay": {
+      "label": "Lyfe Pay",
+      "purpose": "Les transactions passées par LYFE, et la seule source légitime de « dépense » du tableau de bord.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Lyfe Pay"
+        },
+        {
+          "level": "h2",
+          "text": "Transactions"
+        },
+        {
+          "level": "h2",
+          "text": "Reversements"
+        },
+        {
+          "level": "h2",
+          "text": "Encaissements par jour"
+        },
+        {
+          "level": "h2",
+          "text": "Transactions"
+        },
+        {
+          "level": "h2",
+          "text": "Reversements"
+        }
+      ],
+      "subtitle": "La seule source de dépense du tableau de bord",
+      "tiles": [
+        {
+          "label": "Encaissé",
+          "value": "42 915 MAD"
+        },
+        {
+          "label": "Commissions",
+          "value": "1 717 MAD"
+        },
+        {
+          "label": "Net à reverser",
+          "value": "41 198 MAD"
+        },
+        {
+          "label": "Ticket moyen",
+          "value": "975 MAD"
+        }
+      ],
+      "pills": [
+        "46",
+        "16",
+        "15",
+        "2",
+        "RÉUSSIE",
+        "REMBOURSÉE",
+        "ÉCHOUÉE",
+        "PROGRAMMÉ",
+        "VERSÉ"
+      ],
+      "buttons": [
+        "Toutes46",
+        "Portefeuille16",
+        "Carte15",
+        "TPE15",
+        "Incidents2"
+      ],
+      "tables": []
+    },
+    "/restaurant/performance": {
+      "label": "Performance",
+      "purpose": "Les chiffres avec une période et une comparaison, plus le repérage des créneaux creux.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Performance"
+        },
+        {
+          "level": "h2",
+          "text": "Période et comparaison"
+        },
+        {
+          "level": "h2",
+          "text": "Couverts servis"
+        },
+        {
+          "level": "h2",
+          "text": "Charge par jour de semaine"
+        },
+        {
+          "level": "h2",
+          "text": "Absences"
+        },
+        {
+          "level": "h2",
+          "text": "Encaissements"
+        },
+        {
+          "level": "h2",
+          "text": "Créneaux creux à venir"
+        }
+      ],
+      "subtitle": "30 derniers jours · période précédente",
+      "tiles": [
+        {
+          "label": "Taux d'occupation",
+          "value": "38 %"
+        },
+        {
+          "label": "Couverts servis",
+          "value": "2 805"
+        },
+        {
+          "label": "Taux d'absence",
+          "value": "3,0 %"
+        },
+        {
+          "label": "Taux d'annulation",
+          "value": "0,0 %"
+        },
+        {
+          "label": "Taille moyenne des groupes",
+          "value": "3,0"
+        },
+        {
+          "label": "Encaissé",
+          "value": "42 915 MAD"
+        },
+        {
+          "label": "Ticket moyen",
+          "value": "975 MAD"
+        }
+      ],
+      "pills": [],
+      "buttons": [
+        "Exporter les données",
+        "Enregistrer cette vue",
+        "Créer une offre"
+      ],
+      "tables": []
+    },
+    "/restaurant/bilans": {
+      "label": "Bilans",
+      "purpose": "Le mois en deux minutes : chiffres, meilleurs et pires services, trois recommandations tirées des données.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "L'export PDF passe par l'impression du navigateur, qui rend correctement. Un rendu serveur attend un service de composition.",
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Ce mois-ci, en deux minutes"
+        },
+        {
+          "level": "h2",
+          "text": "Recommandations"
+        },
+        {
+          "level": "h2",
+          "text": "Meilleurs services"
+        },
+        {
+          "level": "h2",
+          "text": "Services les plus creux"
+        },
+        {
+          "level": "h2",
+          "text": "Envoi automatique"
+        }
+      ],
+      "subtitle": "Généré à partir des mêmes chiffres que Performance.",
+      "tiles": [
+        {
+          "label": "Couverts",
+          "value": "2 805"
+        },
+        {
+          "label": "Occupation",
+          "value": "38 %"
+        },
+        {
+          "label": "Absences",
+          "value": "3,0 %"
+        },
+        {
+          "label": "Encaissé",
+          "value": "42 915 MAD"
+        }
+      ],
+      "pills": [],
+      "buttons": [
+        "Générer maintenant",
+        "Télécharger en PDF",
+        "Planifier l'envoi",
+        "Partager un lien"
+      ],
+      "tables": []
+    },
+    "/restaurant/campagnes": {
+      "label": "Campagnes",
+      "purpose": "Écrire à ses clients dans les limites du consentement, avec le coût par destinataire avant l'envoi.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "Aucune passerelle d'envoi n'est branchée. Les messages sont journalisés avec leur coût et leur destinataire, et la console dit explicitement qu'ils ne partent pas.",
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Campagnes"
+        },
+        {
+          "level": "h2",
+          "text": "Campagnes"
+        },
+        {
+          "level": "h2",
+          "text": "Automatisations"
+        },
+        {
+          "level": "h2",
+          "text": "Consentement"
+        },
+        {
+          "level": "h2",
+          "text": "Liste noire"
+        },
+        {
+          "level": "h2",
+          "text": "Journal des envois"
+        },
+        {
+          "level": "h2",
+          "text": "Campagnes"
+        },
+        {
+          "level": "h2",
+          "text": "Automatisations"
+        },
+        {
+          "level": "h2",
+          "text": "Consentement"
+        },
+        {
+          "level": "h2",
+          "text": "Liste noire"
+        },
+        {
+          "level": "h2",
+          "text": "Journal des envois"
+        }
+      ],
+      "subtitle": "Écrire à ses clients, dans les limites du consentement",
+      "tiles": [
+        {
+          "label": "Clients contactables",
+          "value": "10"
+        },
+        {
+          "label": "Messages délivrés",
+          "value": "655"
+        },
+        {
+          "label": "Taux d'ouverture",
+          "value": "59 %"
+        },
+        {
+          "label": "Réservations attribuées",
+          "value": "46"
+        }
+      ],
+      "pills": [
+        "3",
+        "2",
+        "1",
+        "0",
+        "PROGRAMMÉE",
+        "ENVOYÉE",
+        "AUTOMATIQUE",
+        "EN PAUSE",
+        "OK",
+        "REFUS",
+        "BLOQUÉ",
+        "6",
+        "SMS",
+        "DELIVRE",
+        "WHATSAPP",
+        "LU"
+      ],
+      "buttons": [
+        "Créer une campagne",
+        "Toutes3",
+        "Envoyées2",
+        "Programmées1",
+        "Brouillons0",
+        "Ajouter à la liste noire",
+        "Tout6",
+        "Échecs1"
+      ],
+      "tables": [
+        {
+          "head": [
+            "État",
+            "Clients",
+            "Ce que cela veut dire"
+          ],
+          "rows": [
+            [
+              "OK",
+              "10",
+              "Peuvent recevoir des campagnes."
+            ],
+            [
+              "REFUS",
+              "2",
+              "Exclus de toute campagne, quel que soit le segment."
+            ],
+            [
+              "BLOQUÉ",
+              "1",
+              "Adresses à ne jamais recontacter, même sur demande du lieu."
+            ]
+          ]
+        },
+        {
+          "head": [
+            "État",
+            "Clients",
+            "Ce que cela veut dire"
+          ],
+          "rows": [
+            [
+              "OK",
+              "10",
+              "Peuvent recevoir des campagnes."
+            ],
+            [
+              "REFUS",
+              "2",
+              "Exclus de toute campagne, quel que soit le segment."
+            ],
+            [
+              "BLOQUÉ",
+              "1",
+              "Adresses à ne jamais recontacter, même sur demande du lieu."
+            ]
+          ]
+        }
+      ]
+    },
+    "/restaurant/disponibilites": {
+      "label": "Disponibilités",
+      "purpose": "Ce qui décide de ce que l'application propose : services, cadence, fenêtre de réservation, jours exceptionnels.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Disponibilités"
+        },
+        {
+          "level": "h2",
+          "text": "Réservation en ligne"
+        },
+        {
+          "level": "h2",
+          "text": "Services"
+        },
+        {
+          "level": "h2",
+          "text": "Cadence et fenêtre de réservation"
+        },
+        {
+          "level": "h2",
+          "text": "Jours exceptionnels"
+        }
+      ],
+      "subtitle": "Ce qui décide de ce que l'application propose",
+      "tiles": [],
+      "pills": [
+        "ACTIF",
+        "V1",
+        "FERMÉ"
+      ],
+      "buttons": [
+        "Ajouter un service",
+        "Fermer une journée"
+      ],
+      "tables": []
+    },
+    "/restaurant/equipe": {
+      "label": "Équipe et rôles",
+      "purpose": "Qui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Équipe et rôles"
+        },
+        {
+          "level": "h2",
+          "text": "Équipe"
+        },
+        {
+          "level": "h2",
+          "text": "Inviter un membre"
+        }
+      ],
+      "subtitle": "Qui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Propriétaire",
+        "Manager",
+        "Équipe",
+        "Retirer",
+        "Inviter"
+      ],
+      "tables": []
+    },
+    "/restaurant/notifications": {
+      "label": "Notifications",
+      "purpose": "Les alertes de l'équipe et les messages aux clients, avec leur canal, leur moment et leur journal de délivrance.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "Les canaux, les horaires et les gabarits s'enregistrent. L'expédition attend le compte Twilio ou Infobip de LYFE.",
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Notifications"
+        },
+        {
+          "level": "h2",
+          "text": "Alertes de l'équipe"
+        },
+        {
+          "level": "h2",
+          "text": "Messages aux clients"
+        },
+        {
+          "level": "h2",
+          "text": "Journal de délivrance"
+        }
+      ],
+      "subtitle": "Qui reçoit quoi, et par quel canal",
+      "tiles": [],
+      "pills": [
+        "IMMÉDIAT",
+        "J-1 À 18:00",
+        "H-3",
+        "H-4",
+        "H+3",
+        "6",
+        "1",
+        "SMS",
+        "DELIVRE",
+        "WHATSAPP",
+        "LU",
+        "ÉCHEC",
+        "EMAIL",
+        "PUSH",
+        "ENVOYE"
+      ],
+      "buttons": [
+        "Envoyer un test",
+        "Tout6",
+        "Échecs1"
+      ],
+      "tables": []
+    },
+    "/restaurant/parametres": {
+      "label": "Paramètres",
+      "purpose": "Entité juridique, banque, type de configuration — l'interrupteur qui fait apparaître Vie nocturne —, langue, données, intégrations.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Paramètres"
+        },
+        {
+          "level": "h2",
+          "text": "Type de configuration"
+        },
+        {
+          "level": "h2",
+          "text": "Entité juridique"
+        },
+        {
+          "level": "h2",
+          "text": "Coordonnées bancaires"
+        },
+        {
+          "level": "h2",
+          "text": "Langue et fuseau"
+        },
+        {
+          "level": "h2",
+          "text": "Données et vie privée"
+        },
+        {
+          "level": "h2",
+          "text": "Intégrations"
+        }
+      ],
+      "subtitle": "La configuration administrative de l'établissement",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Exporter toutes les données"
+      ],
+      "tables": []
+    },
+    "/restaurant/abonnement": {
+      "label": "Abonnement",
+      "purpose": "Le plan, son état, les factures et l'usage de la période.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Abonnement"
+        },
+        {
+          "level": "h2",
+          "text": "Factures"
+        }
+      ],
+      "subtitle": "La relation commerciale avec LYFE",
+      "tiles": [
+        {
+          "label": "Abonnement",
+          "value": "ACTIF"
+        },
+        {
+          "label": "Montant annuel",
+          "value": "14 400 MAD"
+        },
+        {
+          "label": "Moyen de paiement",
+          "value": "Carte •••• 4417"
+        },
+        {
+          "label": "Réservations",
+          "value": "14"
+        },
+        {
+          "label": "Clients au fichier",
+          "value": "12"
+        },
+        {
+          "label": "Messages envoyés",
+          "value": "6"
+        },
+        {
+          "label": "Campagnes",
+          "value": "6"
+        }
+      ],
+      "pills": [
+        "ACTIF",
+        "PAYÉE"
+      ],
+      "buttons": [
+        "Moyen de paiementCarte •••• 4417",
+        "Demander un contact commercial"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Référence",
+            "Émise le",
+            "Montant",
+            "État"
+          ],
+          "rows": [
+            [
+              "LYFE-2026-0182",
+              "dim. 19 oct.",
+              "14 400 MAD",
+              "PAYÉE"
+            ],
+            [
+              "LYFE-2025-0611",
+              "sam. 19 oct.",
+              "12 000 MAD",
+              "PAYÉE"
+            ]
+          ]
+        }
+      ]
+    },
+    "/restaurant/support": {
+      "label": "Support",
+      "purpose": "Guides, formulaire de contact, tickets et leur état, lien WhatsApp avec ses horaires.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Support"
+        },
+        {
+          "level": "h2",
+          "text": "Guides"
+        },
+        {
+          "level": "h2",
+          "text": "Vos demandes"
+        }
+      ],
+      "subtitle": "De l'aide sans quitter le portail",
+      "tiles": [],
+      "pills": [
+        "2",
+        "1",
+        "EN COURS",
+        "RÉSOLU"
+      ],
+      "buttons": [
+        "Ouvrir un ticket",
+        "Toutes2",
+        "En cours1",
+        "Résolues1"
+      ],
+      "tables": []
+    },
+    "/styleguide": {
+      "label": "Styleguide",
+      "purpose": "Chaque composant dans chacun de ses états, plus cet index. Aucune session requise.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "shared",
+      "headings": [
+        {
+          "level": "h2",
+          "text": "Tokens"
+        },
+        {
+          "level": "h2",
+          "text": "Contrôles"
+        },
+        {
+          "level": "h2",
+          "text": "Surfaces"
+        },
+        {
+          "level": "h1",
+          "text": "Versements"
+        },
+        {
+          "level": "h1",
+          "text": "Jazzablanca 2026"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune réservation pour ce service"
+        },
+        {
+          "level": "h2",
+          "text": "Blocs d'écran"
+        },
+        {
+          "level": "h1",
+          "text": "Bonsoir Yassine, le service est complet."
+        },
+        {
+          "level": "h2",
+          "text": "Service en cours"
+        },
+        {
+          "level": "h2",
+          "text": "Carnet du service"
+        },
+        {
+          "level": "h2",
+          "text": "Charge du service"
+        },
+        {
+          "level": "h2",
+          "text": "Activité"
+        },
+        {
+          "level": "h2",
+          "text": "Versements"
+        },
+        {
+          "level": "h2",
+          "text": "Recette de la semaine"
+        },
+        {
+          "level": "h2",
+          "text": "Charge par jour"
+        },
+        {
+          "level": "h2",
+          "text": "La liste en ligne"
+        },
+        {
+          "level": "h2",
+          "text": "À la porte"
+        },
+        {
+          "level": "h2",
+          "text": "Colonne principale"
+        },
+        {
+          "level": "h2",
+          "text": "Couverts"
+        },
+        {
+          "level": "h2",
+          "text": "États"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune réservation pour ce service"
+        },
+        {
+          "level": "h2",
+          "text": "Accès non autorisé"
+        },
+        {
+          "level": "h2",
+          "text": "Vocabulaire"
+        },
+        {
+          "level": "h2",
+          "text": "Écrans"
+        }
+      ],
+      "subtitle": "L'argent de vos billets, sur votre compte.",
+      "tiles": [
+        {
+          "label": "Couverts ce soir",
+          "value": "128"
+        },
+        {
+          "label": "Note moyenne",
+          "value": "5"
+        },
+        {
+          "label": "Absences",
+          "value": "6"
+        },
+        {
+          "label": "Encaissé ce service",
+          "value": "63 400 MAD"
+        },
+        {
+          "label": "Couverts arrivés",
+          "value": "86"
+        },
+        {
+          "label": "Couverts disponibles",
+          "value": "16"
+        },
+        {
+          "label": "Couverts aujourd'hui",
+          "value": "128"
+        },
+        {
+          "label": "Ticket moyen",
+          "value": "486 MAD"
+        },
+        {
+          "label": "Prochain versement",
+          "value": "184 300 MAD"
+        }
+      ],
+      "pills": [
+        "rooftop",
+        "brunch",
+        "un",
+        "deux",
+        "live",
+        "pending",
+        "draft",
+        "past",
+        "rejected",
+        "info",
+        "violet",
+        "success",
+        "warning",
+        "danger",
+        "neutral",
+        "En vente"
+      ],
+      "buttons": [
+        "primary",
+        "secondary",
+        "destructive",
+        "ghost",
+        "ink",
+        "Petit",
+        "Moyen",
+        "Grand",
+        "Icône à gauche",
+        "Icône à droite",
+        "Désactivé",
+        "Supprimer",
+        "Pleine largeur",
+        "Terrasse"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Référence",
+            "Période",
+            "Couverts",
+            "Montant",
+            "État"
+          ],
+          "rows": [
+            [
+              "LYF-2026-24",
+              "9 – 15 juin",
+              "412",
+              "184 300 MAD",
+              "VERSÉ"
+            ],
+            [
+              "LYF-2026-25",
+              "16 – 22 juin",
+              "388",
+              "171 900 MAD",
+              "PROGRAMMÉ"
+            ]
+          ]
+        },
+        {
+          "head": [
+            "Configuration",
+            "Une place",
+            "Un sitting",
+            "Sans réservation",
+            "Vie nocturne"
+          ],
+          "rows": [
+            [
+              "Restaurant",
+              "couverts",
+              "services",
+              "Walk-in",
+              "Absente"
+            ],
+            [
+              "Lounge",
+              "personnes",
+              "créneaux",
+              "Entrée porte",
+              "Visible"
+            ],
+            [
+              "Restaurant et lounge",
+              "couverts",
+              "services",
+              "Walk-in",
+              "Visible"
+            ]
+          ]
+        }
+      ]
+    },
+    "/dashboard": {
+      "label": "Vue d'ensemble",
+      "purpose": "L'état de l'organisation : événement en cours, ventes du jour, prochain versement, activité.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h3",
+          "text": "Aujourd'hui"
+        },
+        {
+          "level": "h2",
+          "text": "Prochains événements"
+        },
+        {
+          "level": "h3",
+          "text": "Robbie Williams, Soirée d'ouverture"
+        },
+        {
+          "level": "h3",
+          "text": "Rilès, Pass Semaine"
+        },
+        {
+          "level": "h3",
+          "text": "Jorja Smith, Week-End 2"
+        },
+        {
+          "level": "h1",
+          "text": "Bonsoir, Yassine. La 19e édition se prépare bien."
+        },
+        {
+          "level": "h2",
+          "text": "Jazzablanca 2026, Anfa Park"
+        },
+        {
+          "level": "h2",
+          "text": "Événements à venir"
+        },
+        {
+          "level": "h2",
+          "text": "Activité récente"
+        }
+      ],
+      "subtitle": "Phase 2 active sur 4 pass. 3 demandes de remboursement en attente.",
+      "tiles": [
+        {
+          "label": "Billets vendus aujourd'hui",
+          "value": "861"
+        },
+        {
+          "label": "Revenu cette semaine",
+          "value": "412 800"
+        },
+        {
+          "label": "Prochain versement",
+          "value": "184 500"
+        },
+        {
+          "label": "Événements à venir",
+          "value": "2"
+        }
+      ],
+      "pills": [
+        "3",
+        "2",
+        "1",
+        "+22.4 %",
+        "EN VENTE",
+        "EN MODÉRATION",
+        "Confiance moyenne · ±4 %",
+        "dans 0 jour",
+        "Boost actif"
+      ],
+      "buttons": [
+        "Lancer le boost",
+        "Voir le segment",
+        "Voir le tunnel",
+        "Lancer le boost →",
+        "Ignorer"
+      ],
+      "tables": []
+    },
+    "/events": {
+      "label": "Mes événements",
+      "purpose": "Tous les événements, filtrés par état du cycle de vie.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Mes événements"
+        },
+        {
+          "level": "h2",
+          "text": "Récents bilans"
+        },
+        {
+          "level": "h3",
+          "text": "Diana Krall, Jazzablanca 2024"
+        },
+        {
+          "level": "h3",
+          "text": "Jazzablanca, édition 2025"
+        },
+        {
+          "level": "h3",
+          "text": "Pré-vente fidèles 2024, Jazzablanca"
+        },
+        {
+          "level": "h3",
+          "text": "Diana Krall, Jazzablanca 2024"
+        },
+        {
+          "level": "h3",
+          "text": "Jazzablanca, édition 2025"
+        },
+        {
+          "level": "h3",
+          "text": "Pré-vente fidèles 2024, Jazzablanca"
+        },
+        {
+          "level": "h3",
+          "text": "Lounge Latino, brouillon"
+        },
+        {
+          "level": "h3",
+          "text": "After-party VIP, Anfa Beach Club"
+        },
+        {
+          "level": "h3",
+          "text": "Jorja Smith, Week-End 2"
+        },
+        {
+          "level": "h3",
+          "text": "Rilès, Pass Semaine"
+        },
+        {
+          "level": "h3",
+          "text": "Robbie Williams, Soirée d'ouverture"
+        },
+        {
+          "level": "h3",
+          "text": "Brunch Jazz Anfa, annulé"
+        },
+        {
+          "level": "h3",
+          "text": "Diana Krall, Jazzablanca 2024"
+        },
+        {
+          "level": "h3",
+          "text": "Jazzablanca, édition 2025"
+        },
+        {
+          "level": "h3",
+          "text": "Pré-vente fidèles 2024, Jazzablanca"
+        }
+      ],
+      "subtitle": "Ce que vous organisez, passés, en cours, à venir.",
+      "tiles": [],
+      "pills": [
+        "9",
+        "2",
+        "0",
+        "1",
+        "3",
+        "BROUILLON",
+        "REFUSÉ",
+        "EN MODÉRATION",
+        "EN VENTE",
+        "Boost",
+        "ANNULÉ",
+        "TERMINÉ",
+        "VERSÉ",
+        "Boost actif"
+      ],
+      "buttons": [
+        "Créer un événement",
+        "PDF",
+        "Tous9",
+        "En vente2",
+        "En cours0",
+        "En modération1",
+        "Brouillons1",
+        "Bilans3",
+        "Passés1",
+        "Versés2",
+        "Annulés1",
+        "Refusés1",
+        "Voir",
+        "Modifier"
+      ],
+      "tables": []
+    },
+    "/events/new": {
+      "label": "Créer un événement",
+      "purpose": "Assistant en cinq étapes : info, média, tarifs, remboursement, vérification.",
+      "status": "partial",
+      "gap": "La soumission affiche une confirmation ; rien n'est persisté.",
+      "dependsOn": null,
+      "roles": "Propriétaire, Administrateur",
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h2",
+          "text": "Décrivez votre événement."
+        }
+      ],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "buttons": [
+        "1InfosInfos",
+        "2TarifsTarifs",
+        "3RemboursementsRefunds",
+        "4MédiasMédias",
+        "5RécapitulatifRécap",
+        "×",
+        "Retour",
+        "Continuer"
+      ],
+      "tables": []
+    },
+    "/events/evt_jzb_robbie": {
+      "label": "Détail d'un événement",
+      "purpose": "Ventes, analyses, participants, invitations, remboursements, régie, promotion, bilan.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Robbie Williams, Soirée d'ouverture"
+        },
+        {
+          "level": "h3",
+          "text": "Détail par tarif"
+        },
+        {
+          "level": "h3",
+          "text": "Chiffre d'affaires"
+        }
+      ],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [
+        "EN VENTE",
+        "CONCERT",
+        "ALL",
+        "8420",
+        "1 active"
+      ],
+      "buttons": [
+        "Ventes",
+        "Analyses",
+        "Participants8420",
+        "Invitations",
+        "Remboursements",
+        "Régie",
+        "Promouvoir",
+        "Exporter CSV"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Tarif",
+            "Prix",
+            "Vendu",
+            "Restant",
+            "Revenu",
+            "Conv."
+          ],
+          "rows": [
+            [
+              "Pass Jour · Early Bird",
+              "380 MAD",
+              "1500",
+              "0",
+              "570 000 MAD",
+              "0.8 %"
+            ],
+            [
+              "Pass Jour · General",
+              "590 MAD",
+              "5400",
+              "3100",
+              "3 186 000 MAD",
+              "2.9 %"
+            ],
+            [
+              "Carré Or",
+              "1 200 MAD",
+              "1520",
+              "480",
+              "1 824 000 MAD",
+              "0.8 %"
+            ]
+          ]
+        }
+      ]
+    },
+    "/events/evt_jzb_robbie/edit": {
+      "label": "Édition d'un événement",
+      "purpose": "Corriger un événement, notamment après un refus de modération.",
+      "status": "partial",
+      "gap": "Comme la création : la soumission n'est pas persistée.",
+      "dependsOn": null,
+      "roles": "Propriétaire, Administrateur",
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Robbie Williams, Soirée d'ouverture"
+        }
+      ],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Annuler",
+        "Enregistrer"
+      ],
+      "tables": []
+    },
+    "/bilans": {
+      "label": "Bilans",
+      "purpose": "Les rapports post-événement, prêts à partager ou imprimer.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Bilans"
+        },
+        {
+          "level": "h2",
+          "text": "Aucun bilan pour le moment."
+        }
+      ],
+      "subtitle": "Vos rapports post-événement, prêts à partager.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/audiences": {
+      "label": "Audiences",
+      "purpose": "Qui achète : segments, cohortes, géographie, comparaison au marché.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Vos audiences se constituent."
+        }
+      ],
+      "subtitle": "Vos audiences se débloquent à partir de 100 réservations confirmées. Vous êtes à 23 / 100.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/audiences/details": {
+      "label": "Audiences · détail",
+      "purpose": "La version complète des panneaux que le mobile résume.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Vos audiences se constituent."
+        }
+      ],
+      "subtitle": "Vos audiences se débloquent à partir de 100 réservations confirmées. Vous êtes à 23 / 100.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/visibilite": {
+      "label": "Visibilité",
+      "purpose": "Campagnes de mise en avant, budget, ROAS.",
+      "status": "partial",
+      "gap": "Lancer un boost ouvre l'assistant mais ne crée pas de campagne.",
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Visibilité"
+        },
+        {
+          "level": "h2",
+          "text": "Campagnes actives"
+        },
+        {
+          "level": "h2",
+          "text": "Audiences sauvegardées"
+        },
+        {
+          "level": "h2",
+          "text": "Historique des campagnes"
+        }
+      ],
+      "subtitle": "Vos campagnes de mise en avant et vos partenaires affiliés. Le ROAS est la métrique qui compte.",
+      "tiles": [],
+      "pills": [
+        "EN COURS",
+        "TERMINÉ"
+      ],
+      "buttons": [
+        "Lancer un boost",
+        "+ Nouvelle audience",
+        "Exporter CSV"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Campagne",
+            "Format",
+            "Audience",
+            "Restant",
+            "Dépensé",
+            "Billets",
+            "ROAS",
+            "Statut",
+            ""
+          ],
+          "rows": [
+            [
+              "Splash de bienvenue, Robbie WilliamsRobbie Williams, Soirée d'ouverture",
+              "Splash de bienvenue",
+              "18 400",
+              "1 jour",
+              "8 000 MAD",
+              "312",
+              "11,4×",
+              "EN COURS",
+              ""
+            ],
+            [
+              "Carte mise en avant, RilèsRilès, Pass Semaine",
+              "Carte mise en avant",
+              "6 240",
+              "4 jours",
+              "1 800 MAD",
+              "38",
+              "2,1×",
+              "EN COURS",
+              ""
+            ],
+            [
+              "Notification ciblée, Jorja SmithJorja Smith, Week-End 2",
+              "Notification ciblée",
+              "14 000",
+              "—",
+              "6 200 MAD",
+              "184",
+              "7,8×",
+              "TERMINÉ",
+              ""
+            ]
+          ]
+        },
+        {
+          "head": [
+            "Campagne",
+            "Événement",
+            "Terminée",
+            "Dépense",
+            "Billets",
+            "ROAS"
+          ],
+          "rows": [
+            [
+              "Notification ciblée, Jorja Smith",
+              "Jorja Smith, Week-End 2",
+              "24/04/2026",
+              "6 200 MAD",
+              "184",
+              "7,8×"
+            ],
+            [
+              "En tête de liste, Pré-vente fidèles",
+              "Jazzablanca 2026, Pré-vente",
+              "30/04/2025",
+              "8 200 MAD",
+              "248",
+              "6,4×"
+            ],
+            [
+              "Splash de bienvenue, Early Bird",
+              "Jazzablanca 2026, Early Bird",
+              "13/09/2022",
+              "13 500 MAD",
+              "612",
+              "9,2×"
+            ],
+            [
+              "Pop-up géolocalisé Anfa",
+              "Diana Krall, Jazzablanca 2024",
+              "26/04/1980",
+              "4 800 MAD",
+              "96",
+              "4,1×"
+            ]
+          ]
+        }
+      ]
+    },
+    "/promo-codes": {
+      "label": "Codes promo",
+      "purpose": "Réductions ciblées et suivi des utilisations.",
+      "status": "partial",
+      "gap": "La création affiche le code sans le persister.",
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Codes promo"
+        }
+      ],
+      "subtitle": "Réductions ciblées, partenariats, et tracking de redemptions.",
+      "tiles": [],
+      "pills": [
+        "6",
+        "5",
+        "0",
+        "1",
+        "−15 %",
+        "Actif",
+        "−10 %",
+        "−50 %",
+        "Comp",
+        "−20 %",
+        "Épuisé"
+      ],
+      "buttons": [
+        "Tous6",
+        "Actifs5",
+        "Expirés0",
+        "Épuisés1",
+        "Créer un code",
+        "ETUDIANTS_CASA",
+        "INFLUENCER_SOUKAINA",
+        "ROYALAIRMAROC25",
+        "VIP_PARTNERS",
+        "PRESSE2026",
+        "EARLYJAZZ"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Code",
+            "Réduction",
+            "Périmètre",
+            "Validité",
+            "Redemptions",
+            "Revenu",
+            "Statut",
+            ""
+          ],
+          "rows": [
+            [
+              "ETUDIANTS_CASA−15 % · Robbie Williams · Tous tarifs",
+              "−15 %1 max / user",
+              "Robbie Williams · Tous tarifs",
+              "10/04/2026→ 01/07/2026",
+              "89 / 500",
+              "47 300 MAD",
+              "Actif",
+              ""
+            ],
+            [
+              "INFLUENCER_SOUKAINA−10 % · Carré Or",
+              "−10 %1 max / user",
+              "Carré Or",
+              "28/03/2026→ 24/06/2026",
+              "23 / 50",
+              "138 000 MAD",
+              "Actif",
+              ""
+            ],
+            [
+              "ROYALAIRMAROC25−15 % · Pass 10 jours · Carré Or",
+              "−15 %2 max / user",
+              "Pass 10 jours · Carré Or",
+              "16/03/2026→ 01/06/2026",
+              "47 / 200",
+              "423 000 MAD",
+              "Actif",
+              ""
+            ],
+            [
+              "VIP_PARTNERS−50 % · Carré Or · Internes",
+              "−50 %1 max / user",
+              "Carré Or · Internes",
+              "06/03/2026→ 01/07/2026",
+              "12 / 30",
+              "36 000 MAD",
+              "Actif",
+              ""
+            ],
+            [
+              "PRESSE2026Comp · Pass Jour · General · Comp presse",
+              "Comp1 max / user",
+              "Pass Jour · General · Comp presse",
+              "24/02/2026→ 15/05/2026",
+              "67 / 80",
+              "—",
+              "Actif",
+              ""
+            ],
+            [
+              "EARLYJAZZ−20 % · Tous les événements · Phase 1",
+              "−20 %Illimité par user",
+              "Tous les événements · Phase 1",
+              "26/12/2025→ 24/02/2026",
+              "1247 / 1500",
+              "1 205 400 MAD",
+              "Épuisé",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "/scanner": {
+      "label": "Scanner",
+      "purpose": "Contrôle des billets à l'entrée, plein écran sombre, pensé pour une main.",
+      "status": "partial",
+      "gap": "La caméra n'est pas branchée ; les scans sont simulés.",
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [
+        "Live"
+      ],
+      "buttons": [
+        "Valider",
+        "Standard",
+        "Express",
+        "Sortie",
+        "Statistiques"
+      ],
+      "tables": []
+    },
+    "/settlements": {
+      "label": "Versements",
+      "purpose": "Prochain versement, historique, factures, dépenses de boost.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Versements"
+        },
+        {
+          "level": "h2",
+          "text": "Dépenses boost"
+        },
+        {
+          "level": "h2",
+          "text": "Historique des versements"
+        },
+        {
+          "level": "h2",
+          "text": "Factures de commission LYFE"
+        }
+      ],
+      "subtitle": "L'argent de vos billets, sur votre compte. J+3 après la fin de chaque événement.",
+      "tiles": [],
+      "pills": [
+        "dans 0 jour",
+        "PROGRAMMÉ",
+        "DÉDUIT",
+        "VERSÉ"
+      ],
+      "buttons": [
+        "Pré-relevé",
+        "Exporter CSV",
+        "Synthèse annuelle"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Date",
+            "Montant",
+            "Référence",
+            "Billets",
+            "Statut",
+            "Relevé"
+          ],
+          "rows": [
+            [
+              "28/03/2026",
+              "1 240 000 MAD",
+              "LYFE-PAY-2026-03-29-001",
+              "3280",
+              "VERSÉ",
+              "PDF"
+            ],
+            [
+              "26/02/2026",
+              "728 400 MAD",
+              "LYFE-PAY-2026-02-26-001",
+              "1880",
+              "VERSÉ",
+              "PDF"
+            ],
+            [
+              "19/07/2025",
+              "4 320 000 MAD",
+              "LYFE-PAY-2024-07-15-001",
+              "9000",
+              "VERSÉ",
+              "PDF"
+            ]
+          ]
+        }
+      ]
+    },
+    "/activity": {
+      "label": "Activité",
+      "purpose": "Le flux complet, promu en écran sur mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Activité récente"
+        }
+      ],
+      "subtitle": "Tout ce qui se passe sur vos événements, en temps réel.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/team": {
+      "label": "Équipe",
+      "purpose": "Qui a accès, à quel rôle, et le journal d'audit.",
+      "status": "partial",
+      "gap": "Les invitations vivent dans l'état local, pas dans un backend.",
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Équipe"
+        },
+        {
+          "level": "h2",
+          "text": "Membres actifs"
+        },
+        {
+          "level": "h2",
+          "text": "Invitations en attente"
+        },
+        {
+          "level": "h2",
+          "text": "Journal d'audit"
+        }
+      ],
+      "subtitle": "Qui peut accéder à votre espace organisateur.",
+      "tiles": [],
+      "pills": [
+        "PROPRIÉTAIRE",
+        "ADMINISTRATEUR",
+        "SCANNER"
+      ],
+      "buttons": [
+        "Inviter un membre",
+        "Renvoyer",
+        "Annuler"
+      ],
+      "tables": []
+    },
+    "/settings": {
+      "label": "Réglages",
+      "purpose": "Profil de l'organisation, versements, préférences.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Réglages"
+        },
+        {
+          "level": "h2",
+          "text": "Profil organisateur"
+        }
+      ],
+      "subtitle": "Profil, coordonnées de versement, préférences.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Profil",
+        "Détails du lieu",
+        "Coordonnées de versement",
+        "Notifications",
+        "Préférences de boost",
+        "Langue",
+        "API",
+        "Zone dangereuse",
+        "Enregistrer"
+      ],
+      "tables": []
+    },
+    "/onboarding": {
+      "label": "Onboarding",
+      "purpose": "Quatre étapes : bienvenue, profil, banque, équipe.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Bienvenue chez LYFE."
+        }
+      ],
+      "subtitle": "Configurons votre espace en 5 minutes pour que vous puissiez créer votre premier événement.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Commencer"
+      ],
+      "tables": []
+    },
+    "/plus": {
+      "label": "Plus",
+      "purpose": "Le menu de débordement du mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "shared",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Plus"
+        }
+      ],
+      "subtitle": "Tous vos outils LYFE, en un endroit.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Se déconnecter"
+      ],
+      "tables": []
+    },
+    "/more": {
+      "label": "Plus (compte)",
+      "purpose": "Équipe, réglages et déconnexion sur mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "shared",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Plus"
+        }
+      ],
+      "subtitle": "Équipe, réglages, et déconnexion.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Se déconnecter"
+      ],
+      "tables": []
+    },
+    "/login": {
+      "label": "Connexion",
+      "purpose": "Le seul point d'entrée. Résout le compte vers son espace ; propose de choisir le lieu quand il y en a plusieurs.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Le système d'exploitation de vos soirées."
+        },
+        {
+          "level": "h2",
+          "text": "Connectez-vous"
+        }
+      ],
+      "subtitle": "Billetterie, réservations, audience, paiements et analyses — sur la même plateforme. Pour les festivals, les salles, les restaurants et les bars au Maroc.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Se connecter"
+      ],
+      "tables": []
+    },
+    "/splash": {
+      "label": "Splash",
+      "purpose": "Écran de lancement de l'application mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "headings": [],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/contact": {
+      "label": "Demander une démo",
+      "purpose": "Formulaire public pour un partenaire sans accès.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Parlons de votre événement."
+        }
+      ],
+      "subtitle": "LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures avec une démo personnalisée.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    }
+  },
+  "nav": {
+    "groups": [
+      {
+        "label": "Aujourd'hui",
+        "items": [
+          {
+            "label": "Accueil",
+            "href": "/restaurant"
+          },
+          {
+            "label": "Réservations",
+            "href": "/restaurant/reservations"
+          },
+          {
+            "label": "Calendrier",
+            "href": "/restaurant/calendrier"
+          }
+        ]
+      },
+      {
+        "label": "En service",
+        "items": [
+          {
+            "label": "Liste d'attente",
+            "href": "/restaurant/liste-attente"
+          },
+          {
+            "label": "Check-in",
+            "href": "/restaurant/check-in"
+          },
+          {
+            "label": "Briefing",
+            "href": "/restaurant/briefing"
+          }
+        ]
+      },
+      {
+        "label": "Clients",
+        "items": [
+          {
+            "label": "Liste clients",
+            "href": "/restaurant/clients"
+          },
+          {
+            "label": "Tags et segments",
+            "href": "/restaurant/segments"
+          }
+        ]
+      },
+      {
+        "label": "Ma présence",
+        "items": [
+          {
+            "label": "Ma fiche",
+            "href": "/restaurant/ma-fiche"
+          },
+          {
+            "label": "Menu",
+            "href": "/restaurant/menu"
+          },
+          {
+            "label": "Avis",
+            "href": "/restaurant/avis"
+          }
+        ]
+      },
+      {
+        "label": "Croissance",
+        "items": [
+          {
+            "label": "Visibilité",
+            "href": "/restaurant/visibilite"
+          },
+          {
+            "label": "Offres",
+            "href": "/restaurant/offres"
+          },
+          {
+            "label": "Expériences",
+            "href": "/restaurant/experiences"
+          }
+        ]
+      },
+      {
+        "label": "Paiements",
+        "items": [
+          {
+            "label": "Acomptes",
+            "href": "/restaurant/acomptes"
+          },
+          {
+            "label": "Annulations",
+            "href": "/restaurant/annulations"
+          },
+          {
+            "label": "Lyfe Pay",
+            "href": "/restaurant/lyfe-pay"
+          }
+        ]
+      },
+      {
+        "label": "Pilotage",
+        "items": [
+          {
+            "label": "Performance",
+            "href": "/restaurant/performance"
+          },
+          {
+            "label": "Bilans",
+            "href": "/restaurant/bilans"
+          },
+          {
+            "label": "Campagnes",
+            "href": "/restaurant/campagnes"
+          }
+        ]
+      },
+      {
+        "label": "Établissement",
+        "items": [
+          {
+            "label": "Disponibilités",
+            "href": "/restaurant/disponibilites"
+          },
+          {
+            "label": "Équipe et rôles",
+            "href": "/restaurant/equipe"
+          },
+          {
+            "label": "Notifications",
+            "href": "/restaurant/notifications"
+          }
+        ]
+      },
+      {
+        "label": "Compte",
+        "items": [
+          {
+            "label": "Paramètres",
+            "href": "/restaurant/parametres"
+          },
+          {
+            "label": "Abonnement",
+            "href": "/restaurant/abonnement"
+          },
+          {
+            "label": "Support",
+            "href": "/restaurant/support"
+          }
+        ]
+      }
+    ]
+  }
+}

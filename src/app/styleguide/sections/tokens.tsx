@@ -9,7 +9,14 @@ import { Specimen } from "../Shell";
 const COLOR_GROUPS: { label: string; tokens: string[] }[] = [
   {
     label: "Encre et texte",
-    tokens: ["ink", "ink-soft", "ink-mute", "on-ink", "on-ink-mute"],
+    tokens: [
+      "ink",
+      "ink-soft",
+      "ink-mute",
+      "on-ink",
+      "on-ink-mute",
+      "on-ink-cool",
+    ],
   },
   {
     label: "Accent",

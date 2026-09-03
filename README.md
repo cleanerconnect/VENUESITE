@@ -258,7 +258,7 @@ side by side, permission-denied included.
 | `docs/HANDOFF.md` | What is solid, what is open, what to build first |
 | `docs/PHASE4.md` | Handoff-completion report |
 | `docs/PHASE5.md` | Venue-dashboard completion report |
-| `docs/PHASE6.md` | The Figma export — what is in the file, and the plan limit that stopped it |
+| `docs/PHASE6.md` | The Figma export — the file, its variables, components and frames |
 | `docs/INTERFACE.md` | Layout, navigation, roles, naming, responsive, copy |
 | `docs/CONVERGENCE.md` | What was unified across the two workspaces, what is still duplicated |
 | `docs/APP_MAPPING.md` | Every element the consumer app shows → where a partner controls it |

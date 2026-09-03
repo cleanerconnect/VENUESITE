@@ -8,408 +8,325 @@ The Figma file that goes into the handover next to the running portal and
 File key `fztoNaEvTrZrWDaLy1MEWg`. A new design file; the existing mobile
 file was not touched.
 
-**Status — incomplete, blocked on the Figma plan.** Foundations are built
-and correct. The component library, the screen frames, the state frames
-and the phone frames are not. §1 says exactly why, §5 is the remaining
-plan, and §6 is what it costs to finish.
+**Status — complete.** Eight pages, 131 variables, 29 components,
+175 variants, 62 frames. Everything was read from the running portal on
+`:3210` and from the code, never from memory or an earlier phase report.
 
 ---
 
-## 1. The two limits that stopped this
-
-Both are properties of the Figma account, not of the work.
-
-### Twenty MCP tool calls per month
-
-The account (`hamid.fennice@gmail.com`, plan `Abdelhamid Fenniche's team`)
-is on **Figma Starter**. From Figma's own `rate-limits-access.md`,
-served by the MCP server:
-
-> Starter — up to 20/month.
-
-Only three tools are exempt: `add_code_connect_map`, `create_new_file`,
-`whoami`. **`use_figma` is not exempt**, and `use_figma` is the only tool
-that can write a variable, a component or a frame. Reading the file back
-(`get_screenshot`, `get_metadata`) also counts.
-
-Twenty calls bought Phase 0 and Phase 1. The call that would have
-verified the Fondations page visually was the one refused, so **the
-foundations are structurally confirmed by their return values but have
-not been seen**. That is the one piece of unvalidated work in the file
-and it should be eyeballed before anything is built on top of it.
-
-The `figma-generate-library` skill, which governs this kind of build,
-states the shape of the job plainly:
-
-> **This is NEVER a one-shot task.** Building a design system requires
-> 20–100+ `use_figma` calls across multiple phases.
-
-Thirty venue screens, sixteen event screens, three entry screens, a
-component library of twenty-five components with variant sets, four
-state compositions and seven phone frames is at the top of that range,
-not the bottom. A month's budget is one afternoon of it.
-
-### Three pages per file
-
-```
-Error: in createPage: The Starter plan only comes with 3 pages.
-```
-
-The brief asked for eight pages. The eight divisions are therefore
-delivered as **Figma Sections**, under the brief's exact names, three
-pages carrying them:
-
-| Page | Sections it carries |
-|---|---|
-| `A · 00 Lisez-moi + 01 Fondations + 02 Composants` | `00 Lisez-moi`, `01 Fondations`, `02 Composants` |
-| `B · 03 Entrée + 04 Espace partenaire + 05 Espace organisateur` | `03 Entrée`, `04 Espace partenaire`, `05 Espace organisateur` |
-| `C · 06 États + 07 Téléphone` | `06 États`, `07 Téléphone` |
-
-Section names are searchable and appear in the layers panel, so "find a
-screen from its route path" still works. On a Professional plan each
-section becomes a page with one script — the sections are already named
-for their destination pages, so it is a move, not a rebuild.
-
----
-
-## 2. What is in the file
-
-### Variables — 6 collections, 109 variables
+## 1. Variables — 6 collections, 131 variables
 
 Read from `src/app/globals.css`, which is what `/styleguide#tokens`
-renders. Light mode only: the code defines no dark mode, and there is no
-`prefers-color-scheme` block anywhere in `globals.css`.
+renders. **Light mode only**: the code defines no dark mode, and there is
+no `prefers-color-scheme` block anywhere in `globals.css`. Inventing one
+here would have invented a product decision.
 
 | Collection | Mode | Count | Notes |
 |---|---|---|---|
-| `Primitives` | Valeur | 23 | Raw hex. `scopes = []`, so they never appear in a picker. |
-| `Couleur` | Clair | 42 | Aliased to `Primitives`. Code syntax `var(--color-…)`. |
-| `Espacement` | Valeur | 19 | Tailwind steps the code actually uses. |
-| `Rayon` | Valeur | 6 | `var(--radius-…)`. |
+| `Primitives` | Valeur | 24 | Raw hex. `scopes = []`, so they never appear in a picker. |
+| `Couleur` | Clair | 62 | 43 semantic, aliased to `Primitives`; 19 `opacite/*` — see below. |
+| `Espacement` | Valeur | 19 | The Tailwind steps the code actually uses. |
+| `Rayon` | Valeur | 7 | Includes `rayon/chip`, added when the code gained `--radius-chip`. |
 | `Typographie` | Valeur | 14 | 12 sizes + 2 families. |
 | `Mouvement` | Valeur | 5 | 4 durations + the one curve. |
 
 Every variable carries an explicit `scopes` array — none is left at
 `ALL_SCOPES` — and every one carries WEB code syntax.
 
-Three deliberate departures, each for a reason in the platform rather
-than in the code:
+### The `opacite/*` variables, and why they exist
 
-- **The five `tint-*` colours hold raw values, not aliases.** They are
-  alpha variants of `violet` and `danger`, and a Figma alias carries the
-  whole colour including its alpha, so there is nothing to alias to.
-  Same for `chart-cursor` and `chart-reference`.
+A tint in this codebase is *a token at an opacity*: `bg-violet/12`,
+`bg-ink/[0.04]`. The obvious Figma expression is a variable-bound fill
+with a paint opacity — and it renders correctly on a main component but
+**silently reverts to full opacity in every instance of it**. Confirmed
+by reading back: the main reports `opacity: 0.04`, an instance of it
+reports `1`, with no override recorded on the instance.
+
+So each needed tint is a variable whose own value carries the alpha, and
+its code syntax is exactly what Tailwind v4 emits:
+
+```
+opacite/violet-12  →  color-mix(in oklab, var(--color-violet) 12%, transparent)
+opacite/ink-4      →  color-mix(in oklab, var(--color-ink) 4%, transparent)
+```
+
+This is the same compromise `--color-tint-*` already makes in
+`globals.css`, for the same reason: an alpha variant cannot alias a
+solid token, because a Figma alias carries the whole colour including its
+alpha. Nineteen of them cover `Pill`'s eleven tones, the nav active row,
+the inactive filter pill, the `Switch` rail, the `Toast` badges, the
+`MetricTile` icon chip and the translucent topbar.
+
+Two other deliberate departures:
+
 - **Elevation is three effect styles, not variables.** Figma variables
-  are `COLOR | FLOAT | STRING | BOOLEAN`; there is no shadow type. The
-  brief listed elevation among the variables, and this is the closest
-  faithful expression.
+  are `COLOR | FLOAT | STRING | BOOLEAN`; there is no shadow type.
 - **`Mouvement` variables have empty scopes.** No Figma property binds a
   duration, so they are documentation. Scoping them anywhere would put
   milliseconds in a corner-radius picker.
 
-Two naming notes for whoever extends this:
-
-- Figma rejects `.` in a variable name, so Tailwind's half-steps read
-  `espace/0-5`, `espace/1-5`, `espace/2-5`, `espace/3-5`. Each one's
-  description carries its real class (`gap-1.5`, `p-1.5`, …).
-- The eight type-scale steps are literal sizes inside utility classes,
-  not CSS custom properties. Their code syntax is therefore the class
-  (`.text-h1`), not a `var()` that does not exist. The four metric steps
-  do have real properties and use `var(--text-metric-md)`.
+Two naming notes: Figma rejects `.` in a variable name, so Tailwind's
+half-steps read `espace/0-5`, `espace/1-5`, `espace/2-5`, `espace/3-5`,
+each with its real class in the description. And the eight type-scale
+steps are literal sizes inside utility classes rather than custom
+properties, so their code syntax is the class (`.text-h1`), not a
+`var()` that does not exist; the four metric steps do have real
+properties and use `var(--text-metric-md)`.
 
 ### Styles — 16
 
-Named exactly as the utility classes in `globals.css`, so a designer can
-grep either direction.
-
-`text-display` · `text-h1` · `text-h2` · `text-h3` · `text-body` ·
-`text-mono` · `text-meta` · `text-eyebrow` · `text-metric-xl` ·
-`text-metric-lg` · `text-metric-md` · `text-metric-sm` ·
-`font-serif-italic`
-
-`shadow-soft` · `shadow-lift` · `shadow-deep`
-
-### `01 Fondations`
-
-One specimen block per scale, in the order `/styleguide#tokens` shows
-them, every swatch fill **bound to its variable** rather than filled
-with a literal:
-
-Encre et texte (5) · Accent (7) · Surfaces (4) · Teintes de carte (5) ·
-Sémantique (4) · Traits (3) · Data visualisation (12) · Hors styleguide
-(2) · Échelle typographique (8) · Échelle des chiffres (4 + the serif
-line) · Rayons (6) · Ombres (3) · Espacement (19) · Mouvement (4).
-
-The colour groups mirror the styleguide's own grouping. Two blocks go
-beyond it, and say so on the canvas: **Data visualisation** includes
-`chart-track`, `chart-cursor` and `chart-reference`, and **Hors
-styleguide** holds `sand` and `sky` — all five are declared in
-`globals.css` and used by the Analyses and Bilan donuts, but the
-styleguide's swatch groups omit them. The code wins.
-
-**Espacement** exists only in Figma. `/styleguide` renders no spacing
-specimen because the portal has no spacing tokens to render — see
-Écart 7.
+Named exactly as the utility classes, so a designer can grep either
+direction: `text-display` `text-h1` `text-h2` `text-h3` `text-body`
+`text-mono` `text-meta` `text-eyebrow` `text-metric-xl` `text-metric-lg`
+`text-metric-md` `text-metric-sm` `font-serif-italic` ·
+`shadow-soft` `shadow-lift` `shadow-deep`
 
 ---
 
-## 3. Écarts constatés — all fixed in the code
+## 2. Components — 29 components, 175 variants
 
-**These no longer exist to reproduce.** They were found by reading the
-code against the documents while building the Figma foundations, and the
-instruction that followed was to fix them at the source rather than
-mirror them into the design file. So `00 Lisez-moi` gets no "Écarts
-constatés" heading: there is nothing to list.
+One per file in `components/ui`, `components/forms`, `components/motion`
+and `components/data`, named exactly as the file. Variant axes are the
+code's props, not an invention.
 
-What follows is the record of what was wrong and what was done, because
-the fixes changed public component APIs and the next person needs to know
-why a variant name vanished. Commit: see `git log` for
-"Make the no-literals rule true".
+| Component | Variants | Axes, from the props |
+|---|---:|---|
+| `Button` | 30 | `variant` ×5, `size` ×3, `state` Default·Disabled |
+| `Card` | 36 | `variant` ×9, `size` ×4 |
+| `Pill` | 22 | `tone` ×11, `dot` bool |
+| `MetricTile` | 18 | `variant` ×9, `span` 1·2 |
+| `ProgressBar` | 9 | `tone` ×3, `size` ×3 |
+| `Input` | 8 | `state` Default·Focus·Filled·Error, `hint` bool |
+| `SaveBar` | 5 | `state` ×5 (`SaveState`) |
+| `Field` `PageHeader` `SideSheet` `Switch` `Textarea` | 4 each | see each description |
+| `Chrome / Sidebar` | 3 | `configuration` restaurant·lounge·événements |
+| `Skeleton` `Toast` | 3 each | `shape` ×3 / `tone` ×3 |
+| `Dialog` `EmptyState` `FilterTabs` `Select` | 2 each | |
+| `AnimatedNumber` `ChartTooltip` `ChipInput` `ChipSelect` `Chrome / BottomTabs` `Chrome / Topbar` `LivePulse` `PermissionDenied` `QueryError` `Tabs` | 1 each | |
 
-| Was | Now |
+**No literal values, verified rather than asserted.** An audit of every
+`SOLID` fill in the file: `04 Espace partenaire` has **3,164 bound fills
+and 0 unbound**; `02 Composants` has 810 bound and exactly **4** unbound
+— `WhatsApp`, `Instagram`, `Facebook`, `X`, in the frame labelled
+*Exception · couleurs de marque tierces*, carrying the code's own comment
+verbatim:
+
+> Third-party brand colours, deliberately literal. These are not design
+> tokens and must not be themed — WhatsApp green is WhatsApp green.
+
+Four decisions worth knowing:
+
+- **`hover` is not a variant.** It is a CSS pseudo-state, not a prop, so
+  `Button`'s matrix stops at 30 (`variant × size × Default|Disabled`) and
+  hover lives in a separate non-component reference row, *Button ·
+  survol*, showing the paint the code gives each variant on hover. Adding
+  it as an axis would have made 45 variants and misdescribed the API.
+- **`Card` ships 36 variants**, over the 30 the `figma-generate-library`
+  skill recommends. Splitting one `variant` prop across two component
+  sets would have misrepresented the API; 36 is not an explosion.
+- **`glow`** is a boolean on `Card`, not a variant — 72 variants for one
+  gradient is not worth it. It gets a reference frame, *Card · glow*.
+- **Three exports have no visual form** and are documented rather than
+  drawn, in the note *Sans forme visuelle*: `Stagger` and `StaggerItem`
+  (they pass Motion variants and paint nothing) and `QueryState` (a
+  dispatcher — its composition is what `06 États` shows). The composed
+  skeletons from `Skeleton.tsx` — `PageHeaderSkeleton`,
+  `MetricTileSkeleton`, `KpiGridSkeleton`, `EntityListSkeleton`,
+  `ChartSkeleton`, `FormSkeleton` — are likewise shown assembled on
+  `06 États` rather than duplicated as components.
+
+The three `Chrome / *` components are not in `components/ui`; they come
+from `components/organizer/` (`Sidebar.tsx`, `Topbar.tsx`,
+`BottomTabs.tsx`) and every screen frame is built from instances of them.
+
+---
+
+## 3. Frames — 62, by page
+
+Eight real pages, in the brief's order. Frame name is the route path then
+the French title, so a designer finds any screen by searching its path.
+
+| Page | Frames |
 |---|---|
-| `Card` variant `gold-soft` painting `bg-violet-soft` | Variant removed; two call sites in `settings/page.tsx` say `violet-soft` |
-| `ProgressBar` tone `gold` painting `bg-violet` | Tone removed; six call sites say `violet` |
-| `Pill`'s eleven tones as hand-written `rgba()`, tone `violet` = `rgba(107,78,168)` | Token classes (`bg-violet/12 text-violet-deep`); the stray violet is gone |
-| Twenty-six inline `rounded-[12px]` | `--radius-chip: 12px` and `rounded-chip` everywhere |
-| `EmptyState` `DefaultMark` filled with `--color-gold` | `--color-violet` |
-| `Input`'s "gold focus ring" comment | Says violet, and points at the one `*:focus-visible` rule |
-| No spacing token layer | `--spacing: 4px` declared, with the scale documented and a specimen at `/styleguide#tokens` |
-| Four gold hero glows the token comment denied existed | Kept — they are deliberate — but written as `color-mix(… var(--color-gold) …)` and the comment now describes them |
+| `00 Lisez-moi` | 1 — what the file is, how it maps to the repo, the naming rules, links to `/styleguide` and `docs/TARGET_SPEC.md` |
+| `01 Fondations` | 1 board, 14 specimen blocks |
+| `02 Composants` | 29 components + 3 reference frames |
+| `03 Entrée` | 3 |
+| `04 Espace partenaire` | 30 + 1 annotated delta, in 10 sections |
+| `05 Espace organisateur` | 16, in 2 sections |
+| `06 États` | 4 |
+| `07 Téléphone` | 9 |
 
-Two of these were larger than the audit first recorded, and the fix went
-wider than the écart:
+**`03 Entrée`** — `/login`, `/splash`, `/contact`. Built without the
+shell, because the code puts them outside it.
 
-- The rgba sweep was **thirty-three literals across twenty-one files**,
-  not eleven in `Pill`. Everything that was a token-at-an-opacity written
-  by hand is now `color-mix(in oklab, var(--color-…) N%, transparent)`,
-  which is exactly what Tailwind emits for `/N` and works in the
-  gradients and box-shadows where a utility class cannot reach. One new
-  token was needed: `--color-on-ink-cool` (`#dce8f2`), a pale blue used
-  for the secondary glow on a dark hero that matched nothing in the
-  palette.
-- `CapacityRing` keeps `strokeOpacity` rather than a mixed colour, because
-  an SVG presentation attribute is the one place `color-mix` support is
-  not worth relying on.
+**`04 Espace partenaire`** — the thirty screens, wrapped in ten Figma
+sections named for the ten nav groups of `src/lib/nav/workspaces.ts`, in
+its order: Aujourd'hui, En service, Clients, Ma présence, Croissance, Vie
+nocturne, Paiements, Pilotage, Établissement, Compte.
 
-The eighth item from the original audit is **not** a code defect and
-stands: `Fraunces` at weight 500 italic has no static Figma instance
-(`.font-serif-italic` asks for 500; Figma offers `Italic` at 400 and
-`SemiBold Italic` at 600). A browser interpolates the variable font,
-Figma cannot. The text style uses `Italic` and its description says so.
+The six rows whose index status is `service` carry a margin note with the
+`dependsOn` text **verbatim from `src/lib/nav/routes.ts`**:
+`/restaurant/menu`, `/restaurant/avis`, `/restaurant/acomptes`,
+`/restaurant/bilans`, `/restaurant/campagnes`,
+`/restaurant/notifications`.
 
-### A ninth thing, found while fixing
+**Lounge is a delta, not a second set.** Restaurant is the base. Only the
+three Vie nocturne screens are drawn in the lounge configuration (marked
+`[lounge]`, with the ten-group sidebar), plus one annotated frame —
+*Configuration lounge · le delta, et rien de plus* — covering the group
+that appears, the vocabulary swap and the two extra Ma fiche fields.
+Thirty screens are not duplicated.
 
-`src/lib/nav/routes.ts` pointed at `/events/evt_jazz_2026` and
-`/events/evt_jazz_2026/edit`. **No dataset contains that id** — every
-seeded event is `evt_jzb_*` — so both rows were 404s wearing an HTTP 200,
-in the one file whose whole purpose is to be the truthful answer to "what
-screens exist". They now point at `evt_jzb_robbie`, the on-sale headline
-event.
+**`05 Espace organisateur`** — the sixteen event screens in two sections,
+Organisation and Compte. The six `partial` rows carry their `gap` text
+verbatim, in a differently-coloured note: `partial` is work this repo
+owes, `service` is an integration nobody has connected, and conflating
+them is what the third status value exists to prevent.
 
-This survived two phases because `tools/verify/walk.mjs` only ever
-covered the thirty venue screens. `tools/verify/events.mjs` now walks the
-nineteen event and shared routes, reads its list from `routes.ts` rather
-than repeating it, and treats a 200 whose first heading is `404` as a
-failure — which is the specific shape this bug had.
+**`06 États`** — four compositions, not four frames per screen. Loading
+shows `Skeleton` assembled into `PageHeaderSkeleton`,
+`MetricTileSkeleton` ×4 and `EntityListSkeleton` ×5 rows; empty shows
+`EmptyState`; error shows `QueryError` at both sizes; denied shows
+`PermissionDenied`. Each carries a `?etat=` note, and the denied frame
+says plainly that it is *not* a `?etat=` — it comes from the role, not
+the data.
 
-### The original audit, for the record
-
-Reproduced below as it was written, before any of it was fixed.
-
-1. **`Card` variant `gold-soft` is `bg-violet-soft`.** Identical in
-   appearance to the `violet-soft` variant. Two names, one surface.
-   `src/components/ui/Card.tsx`
-2. **`ProgressBar` tone `gold` is `bg-violet`.** Identical to tone
-   `violet`. `src/components/ui/ProgressBar.tsx`
-3. **Gold is not only in the wordmark.** `globals.css` says "Gold lives
-   only inside the wordmark SVG now", but `EmptyState`'s `DefaultMark`
-   fills its inner circle with `var(--color-gold)`.
-   `src/components/ui/EmptyState.tsx`
-4. **`Pill` hardcodes eleven `rgba()` literals** instead of reading
-   tokens, and tone `violet` uses `rgba(107,78,168,0.12)` — which is not
-   `--color-violet` (`134,91,166`). It is the only place that colour
-   appears. `src/components/ui/Pill.tsx`
-5. **A literal `rounded-[12px]`** in `MetricTile`'s icon chip and
-   `QueryError`'s icon chip, between `radius-sm` (10px) and `radius-md`
-   (14px). Both bypass the radius scale.
-6. **`Input`'s comment says "gold focus ring".** The ring is violet —
-   `globals.css` `*:focus-visible` uses `rgba(134,91,166,0.42)`. Stale
-   comment, correct code.
-7. **There is no spacing token layer.** `globals.css` declares colour,
-   radius, shadow, font, metric sizes and motion, but no spacing. The
-   portal inherits Tailwind v4's default 4px scale, and the styleguide
-   renders no spacing specimen, so this is the one scale in the Figma
-   file with no counterpart on `/styleguide`.
-8. **`Fraunces` at weight 500 italic has no static Figma instance.**
-   `.font-serif-italic` asks for `font-weight: 500` + italic; Figma
-   offers `Italic` (400) and `SemiBold Italic` (600). The text style uses
-   `Italic` and its description says so. A browser interpolates the
-   variable font; Figma cannot.
-
-Items 1–5 all contradict `README.md`'s rule "No hex literals. A new
-colour is a token in `globals.css` and a role name." Per the brief the
-code wins and the document is wrong — none of them was changed.
+**`07 Téléphone`** — the spec's seven phone-first screens at 390
+(Accueil, Réservations, Liste d'attente, Check-in, Briefing, Guest list,
+Tables minimums), each with the bottom tab bar and the raised *Arrivées*
+centre tab, which carries a command rather than an `href` because a host
+checking a guest in should not lose their place.
 
 ---
 
 ## 4. What could not be represented, and why
 
-Nothing was blocked by the portal. Everything below is the plan limit.
+Three of the 52 rows in the route index have no 1440 frame, each for a
+stated reason rather than an omission:
 
-| Brief item | State |
+| Row | Why |
 |---|---|
-| `02 Composants` — the component library | Section exists, empty |
-| `03 Entrée` — 3 frames | Not started |
-| `04 Espace partenaire` — 30 frames | Not started |
-| `05 Espace organisateur` — 16 frames | Not started |
-| `06 États` — 4 compositions | Not started |
-| `07 Téléphone` — 7 frames at 390 | Not started |
-| `00 Lisez-moi` | Section exists, empty. Its content is §1–§3 of this file. |
-| Eight pages | Three pages + eight named sections (§1) |
+| `/styleguide` | It *is* the design system. `01 Fondations` and `02 Composants` are its Figma expression; a frame of it would be a screenshot of what the file already is. Noted in `00 Lisez-moi`. |
+| `/plus` | Mobile overflow only — `docs/INTERFACE.md` puts it below `md`. It has no desktop form, so it is on `07 Téléphone` at 390. |
+| `/more` | Same. |
 
-Two routes in the index have no natural home among the brief's eight
-sections, and a decision is owed either way:
+Two fidelity limits, both in Figma rather than the portal:
 
-- **`/styleguide`** is the design system itself. `01 Fondations` and
-  `02 Composants` *are* its Figma expression, so a frame of it would be
-  a screenshot of the thing the file already is. Recommend a note in
-  `00 Lisez-moi` rather than a frame.
-- **`/plus` and `/more`** are the phone overflow sheets — per
-  `docs/INTERFACE.md` they only exist below `md`. They belong on
-  `07 Téléphone` at 390, not among the 1440 desktop frames, even though
-  the brief's phone list does not name them.
+- **`Fraunces` at weight 500 italic has no static Figma instance.**
+  `.font-serif-italic` asks for 500; Figma offers `Italic` (400) and
+  `SemiBold Italic` (600). A browser interpolates the variable font,
+  Figma cannot. The text style uses `Italic` and its description says so.
+  This is the single reserve recorded in `00 Lisez-moi`.
+- **Section bodies are titled containers, not populated tables.** Each
+  screen's blocks are real `Card` instances carrying the section's real
+  heading at its real height, but the rows, charts and table cells inside
+  them are not redrawn cell by cell. Instances are structurally sealed in
+  Figma — you cannot append into one — so populating them would have
+  meant abandoning library instances for detached copies, which the brief
+  forbids and which would rot the moment a component changed.
 
 ---
 
-## 5. The remaining plan
+## 5. Écarts constatés
 
-Ordered, with the counts each step owes, so it can be picked up cold.
-Task IDs continue the `P{phase}.{step}` scheme already used.
+### Fixed in the code before this file was built
 
-**P2 — `02 Composants`.** One component per file in
-`src/components/ui` (18), `forms` (3 files → 4 components: `ChipSelect`,
-`ChipInput`, `Field`, `SaveBar`), `motion` (3), `data` (1 file → 3
-components: `QueryState`, `QueryError`, `PermissionDenied`). Variant
-properties taken from the props, not invented:
+Eight were found while reading the code against the documents during the
+foundations pass, and fixed at the source rather than mirrored here — see
+`git log` for "Make the no-literals rule true". Briefly: `Card`'s
+`gold-soft` and `ProgressBar`'s `gold` both painted another variant's
+colour and are gone; `Pill`'s eleven `rgba()` tones are token classes and
+its stray `rgba(107,78,168)` violet is gone; twenty-six inline
+`rounded-[12px]` became `--radius-chip`; `EmptyState` stops drawing a
+gold circle; `--spacing` is now a declared token with a specimen; and two
+comments that were lying (`Input`'s "gold focus ring", `globals.css`'s
+"gold lives only inside the wordmark") now match the code. The sweep went
+wider than the audit: 33 rgba literals across 21 files, and one new token
+(`--color-on-ink-cool`) for a hero glow that matched nothing.
 
-| Component | Variant properties from code |
-|---|---|
-| `Button` | `variant` primary·secondary·destructive·ghost·ink × `size` sm·md·lg, booleans `iconLeft` `iconRight` `fullWidth` `disabled` |
-| `Card` | `variant` ×10 (surface, ink, sand, sky, sage, rose, peach, gold-soft, violet-soft, canvas-2) × `size` sm·md·lg·hero, boolean `glow` |
-| `Pill` | `tone` ×11 (live, pending, draft, past, rejected, info, violet, success, warning, danger, neutral), boolean `dot` |
-| `MetricTile` | `variant` = CardVariant, `span` 1·2, booleans `icon` `meta` `footer` |
-| `Input` | booleans `prefix` `suffix`, state default·focus·error, boolean `hint` |
-| `Textarea` | state default·error, booleans `hint` `count` |
-| `Select` | booleans `label` `hint` |
-| `Switch` | `checked` × `disabled`, booleans `label` `description` |
-| `ProgressBar` | `tone` gold·violet·ink·success × `size` xs·sm·md |
-| `Skeleton` | `shape` line·card·circle |
-| `Toast` | `tone` success·info·danger |
-| `EmptyState` | booleans `description` `cta` `illustration` |
-| `PageHeader` | booleans `subtitle` `badge` `eyebrow` `action` |
-| `FilterTabs` / `Tabs` | boolean `count` per tab, selected state |
-| `SideSheet` | `titleStyle` plain·editorial, booleans `description` `headerExtra` `footer` |
-| `Dialog` | `size` md·lg, booleans `description` `footer` |
+A ninth was found in the same pass: `routes.ts` pointed at
+`/events/evt_jazz_2026`, an id no dataset contains, so both event-detail
+rows were 404s wearing an HTTP 200. Fixed to `evt_jzb_robbie`, and
+`tools/verify/events.mjs` now walks the event side so it cannot recur.
 
-Cap the matrix per the skill's rule: `Card` at 10 × 4 is 40
-combinations, over the 30 ceiling — split `size` into a separate
-padding-only property or drop `hero` to a boolean. `Pill` at 11 × 2 = 22
-is fine.
+### Found during this phase, reproduced as-is, still open
 
-Icons are `lucide-react`. Import each SVG with
-`figma.createNodeFromSvg` from the package source and expose one
-`INSTANCE_SWAP` property — never a variant per icon.
+Three more surfaced while extracting the lounge configuration — after the
+fixes above. The brief says to reproduce rather than improve, so the
+frames show them as they are, and they are annotated on the lounge delta
+frame where a designer will meet them. **None is fixed in the code.**
 
-The **third-party brand colours stay literal**, as a labelled exception,
-matching the code's own comment at
-`src/components/event/PromoteTab.tsx:402`:
+1. **The Accueil subtitle ignores the configuration.**
+   `src/lib/db/overview-store.ts:426` hardcodes
+   `"${bookedCovers} couverts réservés, …"` and never reads
+   `venue_settings.configuration`. Nomad Rooftop, a lounge, therefore
+   says "38 couverts réservés" on its home screen while its own KPI tiles
+   say "Personnes". Visible on `/restaurant` in the lounge configuration.
+2. **French agreement is wrong in the feminine plural.**
+   `src/lib/restaurant/screens.ts:173` and `:620` concatenate a masculine
+   participle after `vocabulary.cover.many`, yielding "Personnes arrivés"
+   and "Personnes réservés" where French wants "arrivées" and
+   "réservées". Visible on the Accueil and Réservations tiles in the
+   lounge configuration.
+3. **`Button` sizes its text off-scale.** `components/ui/Button.tsx`
+   writes `text-[13px]`, `text-[14px]` and `text-[15px]` as arbitrary
+   values; 15px matches no step in the type scale. The Figma `Button`
+   reproduces all three and its description says so. This is a font-size
+   literal, so it is the one place the README's rule is still aspirational
+   rather than true.
 
-> Third-party brand colours, deliberately literal. These are not design
-> tokens and must not be themed — WhatsApp green is WhatsApp green.
-
-WhatsApp `#25D366` · Instagram `#E1306C` · Facebook `#1877F2` ·
-X `#0F0F0F`.
-
-**P3 — screens, 1440 wide, from the running portal.** Group by the ten
-venue nav groups in `src/lib/nav/workspaces.ts` and the two event ones.
-Frame name = route path + French title, e.g.
-`/restaurant/liste-attente · Liste d'attente`.
-
-The six venue rows whose status is `service` need a margin note with the
-`dependsOn` text **verbatim from `src/lib/nav/routes.ts`** — do not
-paraphrase: `/restaurant/menu`, `/restaurant/avis`,
-`/restaurant/acomptes`, `/restaurant/bilans`, `/restaurant/campagnes`,
-`/restaurant/notifications`. Six event rows are `partial` and carry a
-`gap` string instead: `/events/new`,
-`/events/evt_jazz_2026/edit`, `/visibilite`, `/promo-codes`, `/scanner`,
-`/team`.
-
-**Lounge is a delta, not a second set.** Restaurant is the base. Add
-only the three Vie nocturne screens (`/restaurant/guest-list`,
-`/restaurant/tables`, `/restaurant/promoteurs`) plus one annotated frame
-for the vocabulary swap (couverts→personnes, service→créneau) and the
-extra Ma fiche fields. Thirty screens are not duplicated.
-
-**P4 — `06 États`.** Four compositions, not four frames per screen, each
-showing how the shared components compose: `Skeleton` family for
-loading, `EmptyState` for empty, `QueryError` for error,
-`PermissionDenied` for denied. Note `?etat=chargement|vide|erreur` on
-the section.
-
-**P5 — `07 Téléphone`.** 390 wide: Accueil, Réservations, Liste
-d'attente, Check-in, Briefing, Guest list, Tables minimums — plus the
-bottom tab bar and the raised check-in tab. `/plus` and `/more` per §4.
-
-**P6 — completion report.** Frame inventory by section with route paths;
-this file becomes that report.
+The first two are one fix each and both are in the vocabulary seam that
+`configFor()` exists to own. The third is a decision — either 15px joins
+the scale as a token, or `size=lg` drops to 14px.
 
 ---
 
-## 6. What it costs to finish
+## 6. Confirmations the brief asked for
 
-| | Now | Needed |
-|---|---|---|
-| Plan | Starter | Professional or above |
-| Seat | View | **Full or Dev** |
-| Tool calls | 20 / month | 200 / day |
-| Pages per file | 3 | unlimited |
+**Can a designer opening the file cold find any screen from its route
+path?** Yes. Every frame is named `‹route path› · ‹French title›`, so
+`/restaurant/liste-attente` finds *Liste d'attente* by search. All 30
+partner screens sit in sections named for the same ten nav groups the
+sidebar shows, in the same order, so the file can also be navigated the
+way the product is. The three rows with no desktop frame are listed in §4
+with where they went instead.
 
-A Full or Dev seat on Professional is the smallest change that unblocks
-everything: 200 calls a day makes the remaining ~120 calls a single
-session, and unlimited pages turns the eight sections into the eight
-pages the brief asked for.
-
-Note that a View seat on **Organization or Enterprise** is *worse* than
-Starter for this purpose — six calls a month. The seat matters more than
-the plan.
-
-Nothing else is blocking. The portal is complete and running, the token
-layer is read and expressed, the component inventory and every variant
-property is enumerated in §5, and the state ledger below survives a
-cold start.
+**Can any component in the file be traced to a file in the repo by
+name?** Yes. Every component is named exactly as its source file —
+`Button` → `components/ui/Button.tsx`, `QueryError` →
+`components/data/QueryState.tsx`, `Chrome / Sidebar` →
+`components/organizer/Sidebar.tsx` — and each carries a description
+naming the file and explaining what its axes mean. Variant properties use
+the code's prop names (`variant`, `size`, `tone`, `shape`, `state`).
+Text styles and effect styles are named after their utility classes.
+Variables use the token name without the `--color-` prefix, and every one
+carries the exact CSS it stands for as its code syntax.
 
 ---
 
-## 7. Resuming
+## 7. How this was produced
+
+Read from the running portal, not from memory. `tools/verify/extract.mjs`
+walks every route in `src/lib/nav/routes.ts` in a real browser, in both
+configurations, and dumps each screen's real headings, KPI labels and
+values, filter facets and actions to `docs/phase6-screens.json`. Every
+piece of French copy in the file comes from there, verbatim. Re-run it
+after changing a screen and the copy to update is in the diff.
+
+```bash
+node tools/verify/extract.mjs                                   # restaurant
+VENUE=bar_nomad_casa OUT=lounge.json node tools/verify/extract.mjs   # lounge
+```
 
 State ledger: `docs/phase6-figma-state.json` — file key, page and section
-IDs, collection IDs, the `Écarts constatés` list, and which `P{n}.{step}`
-IDs are done.
+ids, collection ids, and the open findings from §5.
 
-Order of operations, per the brief and non-negotiable: load the Figma
-skills `figma-create-new-file`, `figma-use`, `figma-generate-library`,
-`figma-generate-design` **before any Figma write**.
+Two Figma behaviours cost real time and are worth knowing before
+extending this file:
 
-Then, before building on it, spend one call on
-`get_screenshot` of node `11:2` — the Fondations wrapper — because it is
-the only thing in the file that was written but never seen.
-
-Two rules that shaped every decision above and should keep shaping them:
-
-> Read from the running portal and the code, never from memory or from
-> earlier phase reports. If a component or screen differs from what a
-> document says, the code wins and the document is wrong.
-
-> Every frame uses library instances and variables. If you find yourself
-> drawing a rectangle with a hex fill, stop and find the component.
+- **A `use_figma` script is all-or-nothing.** A throw rolls back
+  everything the script did, including work before the failing line.
+- **Paint opacity does not survive instance inheritance** when the fill
+  is bound to a variable. Use an `opacite/*` variable, never a paint
+  opacity, for anything that will be instanced.
