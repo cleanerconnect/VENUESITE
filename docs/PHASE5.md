@@ -162,8 +162,10 @@ Resolved once, in the workspace layout, and published to the chrome —
 the sidebar, the mobile drawer and the Plus sheet all read the same
 value rather than each guessing.
 
-To see both: **Dar Zellij** is `restaurant`, **Nomad Rooftop** is
-`lounge`. Switch between them in the top bar.
+To see both: sign in as `yassine@darzellij.ma` (password `demo`, as
+everywhere) and switch venues in the top bar. **Dar Zellij** is
+`restaurant`; **Nomad Rooftop** is `lounge`. The sidebar gains a group,
+the counts change word, and nothing else moves.
 
 ---
 
@@ -229,15 +231,16 @@ check that gets skipped in CI and then deleted.
 
 | Pass | Result |
 |---|---|
-| Dar Zellij (restaurant) · 1440×900 | 29/29 clean |
-| Dar Zellij (restaurant) · 390×844 | 29/29 clean |
-| Nomad Rooftop (lounge) · 1440×900 | 29/29 clean |
-| Nomad Rooftop (lounge) · 390×844 | 29/29 clean |
+| Dar Zellij (restaurant) · 1440×900 | 30/30 clean |
+| Dar Zellij (restaurant) · 390×844 | 30/30 clean |
+| Nomad Rooftop (lounge) · 1440×900 | 30/30 clean |
+| Nomad Rooftop (lounge) · 390×844 | 30/30 clean |
+| `?etat=` on all thirty routes | three states each, all forceable |
+| Configuration gate | Vie nocturne absent for the restaurant, present for the lounge; vocabulary follows |
 
-(Twenty-nine routes; Fiche client is walked separately, as it takes an
-id.) No horizontal overflow at phone width on any screen — the calendar
-grid and the wide tables scroll inside their own containers, which is the
-rule the page body must never break.
+No horizontal overflow at phone width on any screen — the calendar grid
+and the wide tables scroll inside their own containers, which is the rule
+the page body must never break.
 
 Two real bugs were found this way and fixed rather than worked around:
 a date helper that threw on an ISO instant where it expected a calendar
