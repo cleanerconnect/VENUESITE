@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Download, Lock, Megaphone, Zap } from "lucide-react";
+import { ArrowRight, Download, Megaphone } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
@@ -152,7 +152,6 @@ export default function SettlementsPage() {
       </Card>
 
       {/* === Pre-event payout advance — signaled capability === */}
-      <PayoutAdvanceCard />
 
       {/* === Boost spend, deducted from upcoming settlements === */}
       <BoostSpendCard />
@@ -266,51 +265,6 @@ export default function SettlementsPage() {
         </ul>
       </Card>
     </div>
-  );
-}
-
-// Signaled capability — pre-event payout advance. Disabled CTA, lock
-// icon, violet-soft tint. The card is intentionally calm so it signals
-// the capability to demo viewers without competing with the live data
-// above it.
-function PayoutAdvanceCard() {
-  return (
-    <Card variant="violet-soft" size="md">
-      <div className="grid lg:grid-cols-[1fr_auto] gap-5 items-center">
-        <div className="flex items-start gap-3">
-          <span
-            aria-hidden
-            className="h-10 w-10 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
-          >
-            <Zap size={18} strokeWidth={1.7} className="text-violet-deep" />
-          </span>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-eyebrow text-violet-deep">
-                Avance sur ventes confirmées
-              </span>
-              <Pill tone="neutral">
-                <Lock size={11} strokeWidth={2} className="-ml-0.5" />
-                Bientôt disponible
-              </Pill>
-            </div>
-            <p className="text-[14px] text-ink mt-2 leading-relaxed">
-              Recevez jusqu&apos;à 70 % de vos ventes confirmées 30 jours
-              avant l&apos;événement. Frais transparents, remboursement
-              automatique sur le versement post-événement.
-            </p>
-          </div>
-        </div>
-        <Button
-          variant="secondary"
-          size="md"
-          iconLeft={<Lock size={13} strokeWidth={1.9} />}
-          disabled
-        >
-          Demander une avance
-        </Button>
-      </div>
-    </Card>
   );
 }
 

@@ -90,13 +90,12 @@ const EVENT_WORKSPACE: Workspace = {
   caption: "organisateur",
   home: "/dashboard",
   switcherLabel: "Espace organisateur",
-  matches: ["/dashboard", "/events", "/bilans", "/support", "/audiences", "/visibilite", "/promo-codes", "/settlements", "/team", "/settings", "/scanner", "/activity", "/plus", "/more", "/onboarding"],
+  matches: ["/dashboard", "/events", "/bilans", "/audiences", "/visibilite", "/promo-codes", "/settlements", "/team", "/settings", "/scanner", "/activity", "/plus", "/more", "/onboarding"],
   groups: [
     [
       { label: "Vue d'ensemble", href: "/dashboard", icon: "layout" },
       { label: "Mes événements", href: "/events", icon: "ticket" },
       { label: "Bilans", href: "/bilans", icon: "file", allow: ["owner", "admin"] },
-      { label: "Support", href: "/support", icon: "message", allow: ["owner", "admin"] },
       { label: "Audiences", href: "/audiences", icon: "sparkles", allow: ["owner", "admin"] },
       { label: "Visibilité", href: "/visibilite", icon: "megaphone", allow: ["owner", "admin"] },
       { label: "Codes promo", href: "/promo-codes", icon: "tag", allow: ["owner", "admin"] },
@@ -122,7 +121,6 @@ const EVENT_WORKSPACE: Workspace = {
     { label: "Équipe", href: "/team", icon: "users" },
     { label: "Réglages", href: "/settings", icon: "settings" },
     { label: "Activité", href: "/activity", icon: "clock" },
-    { label: "Support", href: "/support", icon: "message" },
   ],
   tabs: [
     { label: "Aperçu", href: "/dashboard", icon: "layout" },

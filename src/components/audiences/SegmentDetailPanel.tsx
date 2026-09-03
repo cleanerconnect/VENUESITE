@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, Megaphone, MessageCircle, Sparkles } from "lucide-react";
+import { Megaphone, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Drawer } from "./Drawer";
 import type {
@@ -40,26 +40,6 @@ export function SegmentDetailPanel({
             >
               Lancer un boost vers ce segment
             </Button>
-            <button
-              type="button"
-              disabled
-              className="w-full flex items-center justify-center gap-2 h-11 rounded-[var(--radius-md)] bg-canvas-2 text-ink-mute font-semibold text-[13.5px] border border-line-soft cursor-not-allowed"
-              aria-label="Envoyer un message — Bientôt disponible"
-            >
-              <Lock size={13} strokeWidth={1.9} />
-              Envoyer un message
-              <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-ink-mute ml-1">
-                Bientôt
-              </span>
-            </button>
-            <p className="text-meta text-ink-mute text-center leading-relaxed">
-              <MessageCircle
-                size={11}
-                strokeWidth={1.9}
-                className="inline-block -mt-0.5 mr-1"
-              />
-              Email ou SMS direct vers ce segment via Twilio.
-            </p>
           </div>
         ) : null
       }

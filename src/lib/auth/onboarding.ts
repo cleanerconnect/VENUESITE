@@ -34,7 +34,6 @@ export interface OnboardingDraft {
   lastStep: number;
   profile?: Partial<OnboardingDraftProfile>;
   banking?: Partial<OnboardingDraftBanking>;
-  payzoneSkipped?: boolean;
   invites?: OnboardingDraftInvite[];
 }
 

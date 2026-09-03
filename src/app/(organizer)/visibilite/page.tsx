@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Download, Lock, MoreHorizontal, Plus, Sparkles, Users } from "lucide-react";
+import { ChevronRight, Download, MoreHorizontal, Plus, Users } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
-import { Tabs } from "@/components/ui/Tabs";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -78,26 +77,14 @@ export default function VisibilitePage() {
         }
       />
 
-      <Tabs
-        tabs={[
-          {
-            id: "boosts",
-            label: "Boosts",
-            content: (
-              <BoostsPane
-                stats={stats}
-                campaigns={campaigns}
-                segments={segments}
-                history={history}
-              />
-            ),
-          },
-          {
-            id: "affilies",
-            label: "Affiliés",
-            content: <AffiliesPane />,
-          },
-        ]}
+      {/* One pane, so no tab strip. The affiliate programme is not
+          something LYFE ships, and a tab that only ever showed a
+          "bientôt disponible" panel taught partners to ignore tabs. */}
+      <BoostsPane
+        stats={stats}
+        campaigns={campaigns}
+        segments={segments}
+        history={history}
       />
     </div>
   );
@@ -392,118 +379,6 @@ const AFFILIATES_PREVIEW = [
   { handle: "@karim.event", sales: 31, commission: 372 },
   { handle: "@anfa.lifestyle", sales: 18, commission: 216 },
 ];
-
-function AffiliesPane() {
-  return (
-    <div className="space-y-5">
-      <Card variant="violet-soft" size="lg" className="text-center !p-10">
-        <span
-          aria-hidden
-          className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-canvas/60 mb-5"
-        >
-          <Sparkles size={22} strokeWidth={1.6} className="text-violet-deep" />
-        </span>
-        <div className="flex items-center justify-center gap-2 flex-wrap mb-3">
-          <Pill tone="neutral">
-            <Lock size={11} strokeWidth={2} className="-ml-0.5" />
-            Bientôt disponible
-          </Pill>
-        </div>
-        <h2
-          className="text-ink"
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontWeight: 600,
-            fontSize: "clamp(28px, 4vw, 40px)",
-            lineHeight: 1.05,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Attribution affiliés et promoteurs.
-        </h2>
-        <p className="text-body text-ink-soft mt-4 max-w-xl mx-auto leading-relaxed">
-          Liens de tracking par partenaire, règles de commission par
-          tarif, et payout automatique sur vos versements LYFE — sans
-          jongler avec un outil tiers.
-        </p>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FeatureBlock
-          title="Liens trackés"
-          body="Un lien unique par affilié, avec attribution last-click sur 30 jours. Génération en lot pour les campagnes presse ou influenceurs."
-        />
-        <FeatureBlock
-          title="Règles de commission"
-          body="Pourcentage ou flat MAD, applicables par tarif ou par événement. Plafonds par affilié, exclusions des comps et boosts payants."
-        />
-        <FeatureBlock
-          title="Payout automatique"
-          body="Les commissions tombent sur vos versements existants — pas d'outil séparé, pas d'export comptable manuel. Intégration RIB Maroc."
-        />
-      </div>
-
-      {/* Grayed-out table preview */}
-      <Card variant="surface" size="md" className="!p-0">
-        <div className="px-6 pt-6 pb-4 border-b border-line-soft flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h3 className="text-h3 text-ink-mute">Aperçu</h3>
-            <p className="text-meta text-ink-mute mt-1">
-              Données fictives — illustration de ce que vous verrez ici
-            </p>
-          </div>
-          <Pill tone="neutral">Désactivé</Pill>
-        </div>
-        <div className="overflow-x-auto scroll-thin opacity-60 select-none">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="text-eyebrow text-ink-mute text-left border-b border-line-soft">
-                <th className="px-4 py-3 font-semibold">Affilié</th>
-                <th className="px-4 py-3 font-semibold text-right">Ventes attribuées</th>
-                <th className="px-4 py-3 font-semibold text-right">Commission</th>
-                <th className="px-4 py-3 font-semibold">Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {AFFILIATES_PREVIEW.map((row) => (
-                <tr
-                  key={row.handle}
-                  className="border-b border-line-soft last:border-0"
-                >
-                  <td className="px-4 py-3.5">
-                    <span className="font-mono font-semibold text-ink-soft num">
-                      {row.handle}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-right num font-bold text-ink-soft">
-                    {row.sales}
-                  </td>
-                  <td className="px-4 py-3.5 text-right num font-bold text-ink-soft">
-                    {row.commission} MAD
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <Pill tone="neutral">Désactivé</Pill>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function FeatureBlock({ title, body }: { title: string; body: string }) {
-  return (
-    <Card variant="surface" size="md">
-      <h3 className="text-[15px] font-semibold text-ink leading-tight">
-        {title}
-      </h3>
-      <p className="text-meta text-ink-soft mt-2 leading-relaxed">{body}</p>
-    </Card>
-  );
-}
 
 function PortfolioStat({
   label,

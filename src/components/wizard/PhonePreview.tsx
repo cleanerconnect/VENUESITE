@@ -152,16 +152,19 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
 
           {/* Sticky bottom CTA */}
           <div className="border-t border-line-soft px-4 py-3 bg-canvas">
-            <button
+            {/* A picture of the app's CTA, not a control. Rendered as a
+                div so it never takes focus — a disabled button here read
+                to a screen reader as a broken button on this page. */}
+            <div
+              aria-hidden
               className="w-full h-11 rounded-full bg-violet text-canvas text-[13px] font-bold flex items-center justify-center gap-2 num"
-              disabled
             >
               {lowestTier
                 ? `Réserver, à partir de ${formatMAD(
                     computeCustomerPrice(lowestTier.faceValueMad).customerPaysMad,
                   )}`
                 : "Réserver"}
-            </button>
+            </div>
           </div>
         </div>
       </motion.div>

@@ -23,6 +23,7 @@ import { MobileTodayCard } from "@/components/cards/MobileTodayCard";
 import { MobileSalesPulseCard } from "@/components/cards/MobileSalesPulseCard";
 import { MobileUpcomingEventsRow } from "@/components/cards/MobileUpcomingEventsRow";
 import { OnboardingBanner } from "@/components/cards/OnboardingBanner";
+import { resolveSession } from "@/lib/auth/server-session";
 
 // `daysToPayout` and the live-event window depend on Date.now(); without
 // this, Next prerenders the page at build time and freezes both values
@@ -34,6 +35,9 @@ const NOW = new Date("2026-04-25T19:30:00+01:00").getTime();
 export default async function DashboardPage() {
   // Server component: the repository is awaited here and the payload
   // passed down, so nothing below this line knows where data comes from.
+  // The greeting names whoever is signed in. It used to read a name off
+  // the dataset, so the dashboard said "Bonsoir, Mido" to everyone.
+  const session = await resolveSession();
   const repo = getEventRepository();
   const [data, insight, activeBoosts] = await Promise.all([
     repo.getOverview(),
@@ -128,7 +132,7 @@ export default async function DashboardPage() {
                       className="text-h1 text-ink mt-2 leading-[1.05] max-w-md"
                       style={{ fontFamily: "var(--font-sans)" }}
                     >
-                      Bonsoir, {data.organizer.firstName}.{" "}
+                      Bonsoir, {session?.firstName ?? data.organizer.firstName}.{" "}
                       <span
                         className="font-serif-italic text-violet-deep"
                         style={{ fontFamily: "var(--font-serif)" }}
