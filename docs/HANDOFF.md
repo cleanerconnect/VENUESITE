@@ -5,9 +5,11 @@ build. Written to be read before the code, not after.
 
 Phase 4 (handoff completion) is reported in `docs/PHASE4.md`; Phase 5
 (completing the venue dashboard) in `docs/PHASE5.md`; Phase 6 (the Figma
-export) in `docs/PHASE6.md`. The Figma file is
-`LYFE Portail Partenaire`; its §5 lists three defects found while
-building it that are still open in this repository. The screen-by-screen
+export) in `docs/PHASE6.md`; Phase 7 (the worked example — one venue,
+every screen, populated from the seed) in `docs/PHASE7.md`. The Figma
+file is `LYFE Portail Partenaire`; PHASE6 §5 lists three defects found
+while building it, and PHASE7 §6 six observations made while populating
+it — four of them defects still open in this repository. The screen-by-screen
 target the venue side is built against is `docs/TARGET_SPEC.md`, and it is
 the document to read first if you are deciding whether something belongs.
 
@@ -48,7 +50,17 @@ node tools/verify/walk.mjs            # the 30 venue screens (W/H/VENUE overrida
 node tools/verify/events.mjs          # the 19 event + shared routes
 node tools/verify/states.mjs          # ?etat= forceable on all 30 venue routes
 node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
+node tools/verify/extract.mjs         # dumps what every route actually renders
 ```
+
+`extract.mjs` is the odd one out: it asserts nothing, it *records*. At
+its default depth it writes the route outline; at `DEPTH=full` it writes
+every table cell, list row, metric, chart geometry and form value, with
+`SHOTS=` capturing reference PNGs alongside. That file is what the Figma
+export is built from, which is why Phase 7 found four content-losing bugs
+in it — a screen that reads as prose in the JSON is a screen the
+extractor is not seeing properly, and it is worth checking before
+trusting the output.
 
 One trap worth knowing, because it has now cost time twice: if a stale
 `next start` still holds `:3210`, the new one fails to bind with
@@ -194,6 +206,17 @@ Eight things that will rot quietly if nobody defends them.
    not exist, and two variants painting a second variant's colour.
    `grep -rn 'rgba([0-9]' src` now returns one hit — a comment recording
    the stray value. Two hits means it has started rotting again.
+
+   Colour holds; radius is only half done, and the sentence above should
+   not be read as claiming otherwise.
+   `grep -rno 'rounded-\[[0-9]\+px\]' src` returns 26 hits across 19
+   files — `10px` ×17, `6px` ×4, `14px` ×3, `34px` and `44px` once each.
+   Phase 6 removed the `rounded-[12px]` because `--radius-chip` matched
+   them exactly; these are sizes the scale has no name for. Phase 7 hit
+   one of them head-on: the avatar chip's `rounded-[14px]` has no token,
+   so the Figma avatars bind `rayon/chip` and sit 2px rounder than the
+   portal. Either give the remaining five values names, or accept them —
+   but do not add a sixth.
 3. **A domain state is a term.** Add it to the union, add it to the map
    in `vocabulary.ts` (label + tone + icon), and it appears in the
    styleguide automatically. The compiler enforces the pairing.

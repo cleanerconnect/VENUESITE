@@ -184,6 +184,16 @@ Five rules that will rot quietly if nobody defends them:
    `rounded-[var(--radius-lg)]` is *not* a literal: arbitrary-value syntax
    wrapping a token is how Tailwind reaches a custom property, and it is
    fine.
+
+   Colour holds. **Radius does not, yet.**
+   `grep -rno 'rounded-\[[0-9]\+px\]' src` still returns 26 hits across
+   19 files — `10px` seventeen times, `6px` four, `14px` three (the
+   avatar chip in `EntityListBlock.tsx`), `34px` and `44px` once each.
+   The Phase 6 sweep took out the twenty-six `rounded-[12px]` because a
+   token matched them exactly; the rest are sizes the scale has no name
+   for, and inventing five tokens to cover five one-off values would be
+   worse than leaving them visible. Adding a *new* inline radius is still
+   the thing not to do.
 3. **A domain state is a term**: add it to the union *and* to the map in
    `vocabulary.ts` (label + tone + icon). The compiler enforces the pair,
    and it appears in the styleguide automatically.
@@ -259,6 +269,7 @@ side by side, permission-denied included.
 | `docs/PHASE4.md` | Handoff-completion report |
 | `docs/PHASE5.md` | Venue-dashboard completion report |
 | `docs/PHASE6.md` | The Figma export — the file, its variables, components and frames |
+| `docs/PHASE7.md` | The worked example — one venue, every screen, populated from the seed |
 | `docs/INTERFACE.md` | Layout, navigation, roles, naming, responsive, copy |
 | `docs/CONVERGENCE.md` | What was unified across the two workspaces, what is still duplicated |
 | `docs/APP_MAPPING.md` | Every element the consumer app shows → where a partner controls it |

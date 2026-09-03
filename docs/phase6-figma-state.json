@@ -14,7 +14,8 @@
     "04 Espace partenaire": "14:15",
     "05 Espace organisateur": "14:16",
     "06 États": "14:17",
-    "07 Téléphone": "14:18"
+    "07 Téléphone": "14:18",
+    "08 Exemple complet · Dar Zellij": "53:2"
   },
   "collections": {
     "Primitives": {
@@ -149,5 +150,39 @@
     "src/lib/restaurant/screens.ts:173 — `${cover.many} arrivés` yields 'Personnes arrivés'; French agreement wants 'arrivées'.",
     "src/lib/restaurant/screens.ts:620 — same shape yields 'Personnes réservés'; wants 'réservées'.",
     "components/ui/Button.tsx — text sizes 13/14/15px are arbitrary values outside the type scale; 15px matches no token."
-  ]
+  ],
+  "phase7": {
+    "page": "08 Exemple complet · Dar Zellij",
+    "pageId": "53:2",
+    "sections": [
+      "Entrée",
+      "1 · Aujourd'hui",
+      "2 · En service",
+      "3 · Clients",
+      "4 · Ma présence",
+      "5 · Croissance",
+      "6 · Vie nocturne",
+      "7 · Paiements",
+      "8 · Pilotage",
+      "9 · Établissement",
+      "10 · Compte",
+      "Téléphone"
+    ],
+    "frames": 44,
+    "marginNotes": 7,
+    "source": "docs/phase7-dar-zellij.json (DEPTH=full) + docs/phase7-reference/*.png",
+    "audit": {
+      "fillsBound": 6013,
+      "fillsUnbound": 0,
+      "strokesUnbound": 12,
+      "radiiUnbound": 12,
+      "note": "the twelve unbound strokes and radii are the Figma Sections' own chrome, exactly as on page 04"
+    },
+    "gotchas": [
+      "Sections keep child coordinates RELATIVE: appendChild preserves x/y, so absolute position shifts by the section origin. Reset x/y after reparenting.",
+      "eval and new Function both work in the plugin sandbox — a long renderer can be parked in a TEXT node once and re-run from later calls instead of being re-sent.",
+      "figma.createNodeFromSvg imports recharts path geometry; the imported wrapper frame carries a white fill that must be cleared or the no-literals audit fails.",
+      "Applying a text style then setting fontName clears textStyleId — the Fraunces italic clause in the Accueil title is the one node on the page without a style."
+    ]
+  }
 }
