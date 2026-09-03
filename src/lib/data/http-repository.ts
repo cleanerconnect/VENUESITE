@@ -34,6 +34,28 @@ import {
 import type { MenuItem, RestaurantProfile } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
+import type {
+  ConfigurationAction,
+  GrowthAction,
+  GuestGraphAction,
+  MarketingAction,
+  MoneyAction,
+  NightlifeAction,
+  ServiceConfiguration,
+  ServiceFloorAction,
+} from "./repository";
+import type {
+  Growth,
+  GuestGraph,
+  Marketing,
+  MoneyDesk,
+  Nightlife,
+  ServiceFloor,
+  Subscription,
+  SupportTicket,
+  SurveyConfig,
+  VenueSettings,
+} from "@/lib/types/venue-operations";
 
 export interface HttpRepositoryConfig {
   baseUrl: string;
@@ -213,6 +235,111 @@ export class HttpRestaurantRepository implements RestaurantRepository {
       `/api/business/venues/${prefs.venueId}/notification-preferences`,
       prefs,
     );
+  }
+
+  // ── Phase 5 — the rest of the venue perimeter ──
+  //
+  // One GET per bundle and one POST per surface, because an action is
+  // already JSON: forty verbs travel through seven endpoints instead of
+  // forty routes to write, secure and version. The action's `kind` is
+  // what the service switches on, exactly as the local drivers do.
+
+  getServiceFloor(venueId: string) {
+    return this.request<ServiceFloor>("GET", this.scoped("/service-floor", venueId));
+  }
+  getGuestGraph(venueId: string) {
+    return this.request<GuestGraph>("GET", this.scoped("/guests/graph", venueId));
+  }
+  getGrowth(venueId: string) {
+    return this.request<Growth>("GET", this.scoped("/growth", venueId));
+  }
+  getNightlife(venueId: string) {
+    return this.request<Nightlife>("GET", this.scoped("/nightlife", venueId));
+  }
+  getMoneyDesk(venueId: string) {
+    return this.request<MoneyDesk>("GET", this.scoped("/payments", venueId));
+  }
+  getMarketing(venueId: string) {
+    return this.request<Marketing>("GET", this.scoped("/marketing", venueId));
+  }
+  getServiceConfiguration(venueId: string) {
+    return this.request<ServiceConfiguration>(
+      "GET",
+      this.scoped("/services/configuration", venueId),
+    );
+  }
+  getSurveyConfig(venueId: string) {
+    return this.request<SurveyConfig>("GET", this.scoped("/reviews/survey", venueId));
+  }
+  getVenueSettings(venueId: string) {
+    return this.request<VenueSettings>("GET", this.scoped("/settings", venueId));
+  }
+  getSubscription(venueId: string) {
+    return this.request<Subscription>("GET", this.scoped("/subscription", venueId));
+  }
+  listSupportTickets(venueId: string) {
+    return this.request<SupportTicket[]>("GET", this.scoped("/support/tickets", venueId));
+  }
+  getSpendByCustomer(venueId: string) {
+    return this.request<Record<string, number>>(
+      "GET",
+      this.scoped("/payments/spend-by-customer", venueId),
+    );
+  }
+
+  runServiceFloorAction(venueId: string, action: ServiceFloorAction) {
+    return this.request<ServiceFloor>("POST", this.scoped("/service-floor", venueId), action);
+  }
+  runGuestGraphAction(venueId: string, action: GuestGraphAction) {
+    return this.request<GuestGraph>("POST", this.scoped("/guests/graph", venueId), action);
+  }
+  runGrowthAction(venueId: string, action: GrowthAction) {
+    return this.request<Growth>("POST", this.scoped("/growth", venueId), action);
+  }
+  runNightlifeAction(venueId: string, action: NightlifeAction) {
+    return this.request<Nightlife>("POST", this.scoped("/nightlife", venueId), action);
+  }
+  runMoneyAction(venueId: string, action: MoneyAction) {
+    return this.request<MoneyDesk>("POST", this.scoped("/payments", venueId), action);
+  }
+  runMarketingAction(venueId: string, action: MarketingAction) {
+    return this.request<Marketing>("POST", this.scoped("/marketing", venueId), action);
+  }
+  runConfigurationAction(venueId: string, action: ConfigurationAction) {
+    return this.request<ServiceConfiguration>(
+      "POST",
+      this.scoped("/services/configuration", venueId),
+      action,
+    );
+  }
+  saveSurveyConfig(venueId: string, config: SurveyConfig) {
+    return this.request<SurveyConfig>(
+      "PUT",
+      this.scoped("/reviews/survey", venueId),
+      config,
+    );
+  }
+  saveVenueSettings(venueId: string, settings: VenueSettings) {
+    return this.request<VenueSettings>("PUT", this.scoped("/settings", venueId), settings);
+  }
+  openSupportTicket(
+    venueId: string,
+    input: { category: string; subject: string; body: string },
+  ) {
+    return this.request<SupportTicket[]>(
+      "POST",
+      this.scoped("/support/tickets", venueId),
+      input,
+    );
+  }
+
+  /**
+   * The venue is a query parameter, not a path segment, and it is only
+   * ever a hint: the service resolves scope from the token. A caller
+   * that sent someone else's id would be refused, not served.
+   */
+  private scoped(path: string, venueId: string) {
+    return `/api/business${path}?venue_id=${encodeURIComponent(venueId)}`;
   }
 
   private async request<T>(

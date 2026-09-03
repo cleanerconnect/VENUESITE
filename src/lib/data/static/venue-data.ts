@@ -23,6 +23,42 @@ import type {
 import type { MenuItem, RestaurantOverview, RestaurantProfile } from "@/lib/types/restaurant";
 import type { VenueAsset } from "@/lib/assets/types";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
+import type {
+  Growth,
+  GuestGraph,
+  Marketing,
+  MoneyDesk,
+  Nightlife,
+  ServiceFloor,
+  Subscription,
+  SupportTicket,
+  SurveyConfig,
+  VenueSettings,
+} from "@/lib/types/venue-operations";
+import type { ServiceConfiguration } from "@/lib/data/repository";
+
+/**
+ * The Phase 5 bundles, exactly as the operations store returns them.
+ *
+ * Rebased differently from the rest of the payload: these carry plain
+ * calendar dates — a night, an offer window, a briefing day — and a
+ * calendar frozen on the day the snapshot was taken is a calendar that
+ * shows tonight's guest list four months ago.
+ */
+export interface OperationsBundle {
+  serviceFloor: ServiceFloor;
+  guestGraph: GuestGraph;
+  growth: Growth;
+  nightlife: Nightlife;
+  moneyDesk: MoneyDesk;
+  marketing: Marketing;
+  serviceConfiguration: ServiceConfiguration;
+  surveyConfig: SurveyConfig;
+  settings: VenueSettings;
+  subscription: Subscription;
+  supportTickets: SupportTicket[];
+  spendByCustomer: Record<string, number>;
+}
 
 export interface DirectoryUser {
   userId: string;
@@ -52,6 +88,7 @@ interface VenueBundle {
   menuFiles: VenueAsset[];
   analytics: Record<string, VenueAnalytics>;
   visibility: Record<string, VisibilityMetrics>;
+  operations: OperationsBundle;
 }
 
 interface Snapshot {
@@ -68,6 +105,9 @@ const RAW = snapshot as unknown as Snapshot;
 // weekday, an analytics bucket) are deliberately excluded: shifting
 // those would misalign them from the day boundaries they index.
 const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+
+/** A bare calendar day. Shifted only inside the operations bundle. */
+const CALENDAR_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 function rebase<T>(value: T, offsetMs: number): T {
   if (typeof value === "string") {
@@ -87,6 +127,40 @@ function rebase<T>(value: T, offsetMs: number): T {
 }
 
 /**
+ * The same shift, plus whole-day movement for bare calendar dates.
+ *
+ * Applied only to the operations bundle. Everywhere else a bare date is
+ * a bucket key — an analytics day, an availability weekday — and moving
+ * it would misalign it from the boundary it indexes. Here it is a night,
+ * an offer window or a service date, and not moving it is what makes a
+ * six-month-old snapshot show an empty diary.
+ */
+function rebaseWithDays<T>(value: T, offsetMs: number, offsetDays: number): T {
+  if (typeof value === "string") {
+    if (ISO_INSTANT.test(value)) {
+      return new Date(Date.parse(value) + offsetMs).toISOString() as unknown as T;
+    }
+    if (CALENDAR_DAY.test(value)) {
+      const shifted = new Date(`${value}T12:00:00Z`);
+      shifted.setUTCDate(shifted.getUTCDate() + offsetDays);
+      return shifted.toISOString().slice(0, 10) as unknown as T;
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => rebaseWithDays(v, offsetMs, offsetDays)) as unknown as T;
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) {
+      out[k] = rebaseWithDays(v, offsetMs, offsetDays);
+    }
+    return out as unknown as T;
+  }
+  return value;
+}
+
+/**
  * Rebased once per process rather than per request. A long-running dev
  * server drifts by however long it has been up, which is invisible at
  * the scale the screens show and costs nothing to keep exact.
@@ -96,11 +170,19 @@ let cached: Snapshot | null = null;
 function data(): Snapshot {
   if (cached) return cached;
   const offset = Date.now() - Date.parse(RAW.capturedAt);
+  const dayOffset = Math.round(offset / 86_400_000);
+  const venues: Record<string, VenueBundle> = {};
+  for (const [id, bundle] of Object.entries(RAW.venues)) {
+    venues[id] = {
+      ...rebase(bundle, offset),
+      operations: rebaseWithDays(bundle.operations, offset, dayOffset),
+    };
+  }
   cached = {
     ...RAW,
     users: RAW.users,
     businessAccounts: RAW.businessAccounts,
-    venues: rebase(RAW.venues, offset),
+    venues,
   };
   return cached;
 }
@@ -131,4 +213,9 @@ export function staticVenue(venueId: string): VenueBundle | null {
 
 export function staticVenueIds(): string[] {
   return Object.keys(data().venues);
+}
+
+/** The Phase 5 bundles for one venue. */
+export function staticOperations(venueId: string): OperationsBundle | null {
+  return data().venues[venueId]?.operations ?? null;
 }

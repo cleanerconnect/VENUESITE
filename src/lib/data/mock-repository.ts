@@ -37,6 +37,21 @@ import type {
   ReviewReplyInput,
 } from "./repository";
 
+import * as ops from "@/lib/db/operations-store";
+import * as opsWrite from "@/lib/db/operations-write-store";
+import { outboundGateway } from "@/lib/integrations";
+import type {
+  ConfigurationAction,
+  GrowthAction,
+  GuestGraphAction,
+  MarketingAction,
+  MoneyAction,
+  NightlifeAction,
+  ServiceConfiguration,
+  ServiceFloorAction,
+} from "./repository";
+import type { SurveyConfig, VenueSettings } from "@/lib/types/venue-operations";
+
 export class MockRestaurantRepository implements RestaurantRepository {
   async getOverview(venueId: string): Promise<RestaurantOverview> {
     const data = overviewFromStore(venueId, "");
@@ -199,5 +214,98 @@ export class MockRestaurantRepository implements RestaurantRepository {
 
   async updateNotificationPreferences(prefs: NotificationPreferences) {
     return store.setNotificationPreferences(prefs);
+  }
+
+  // ── Phase 5 — the rest of the venue perimeter ──
+  //
+  // Reads come straight from the operations store; writes go through the
+  // write store and then re-read, so what the caller reconciles against
+  // is the database's answer rather than the client's guess at it.
+
+  async getServiceFloor(venueId: string) {
+    return ops.serviceFloor(venueId);
+  }
+  async getGuestGraph(venueId: string) {
+    return ops.guestGraph(venueId);
+  }
+  async getGrowth(venueId: string) {
+    return ops.growth(venueId);
+  }
+  async getNightlife(venueId: string) {
+    return ops.nightlife(venueId);
+  }
+  async getMoneyDesk(venueId: string) {
+    return ops.moneyDesk(venueId);
+  }
+  async getMarketing(venueId: string) {
+    return ops.marketing(venueId);
+  }
+  async getServiceConfiguration(venueId: string): Promise<ServiceConfiguration> {
+    return {
+      services: ops.serviceDefinitions(venueId),
+      pacing: ops.pacingRules(venueId),
+    };
+  }
+  async getSurveyConfig(venueId: string) {
+    return ops.surveyConfig(venueId);
+  }
+  async getVenueSettings(venueId: string) {
+    return ops.venueSettings(venueId);
+  }
+  async getSubscription(venueId: string) {
+    return ops.subscription(venueId);
+  }
+  async listSupportTickets(venueId: string) {
+    return ops.supportTickets(venueId);
+  }
+  async getSpendByCustomer(venueId: string) {
+    return ops.spendByCustomer(venueId);
+  }
+
+  async runServiceFloorAction(venueId: string, action: ServiceFloorAction) {
+    await opsWrite.applyServiceFloorAction(venueId, action, outboundGateway());
+    return ops.serviceFloor(venueId);
+  }
+  async runGuestGraphAction(venueId: string, action: GuestGraphAction) {
+    opsWrite.applyGuestGraphAction(venueId, action);
+    return ops.guestGraph(venueId);
+  }
+  async runGrowthAction(venueId: string, action: GrowthAction) {
+    await opsWrite.applyGrowthAction(venueId, action, outboundGateway());
+    return ops.growth(venueId);
+  }
+  async runNightlifeAction(venueId: string, action: NightlifeAction) {
+    await opsWrite.applyNightlifeAction(venueId, action, outboundGateway());
+    return ops.nightlife(venueId);
+  }
+  async runMoneyAction(venueId: string, action: MoneyAction) {
+    await opsWrite.applyMoneyAction(venueId, action, outboundGateway());
+    return ops.moneyDesk(venueId);
+  }
+  async runMarketingAction(venueId: string, action: MarketingAction) {
+    await opsWrite.applyMarketingAction(venueId, action, outboundGateway());
+    return ops.marketing(venueId);
+  }
+  async runConfigurationAction(venueId: string, action: ConfigurationAction) {
+    opsWrite.applyConfigurationAction(venueId, action);
+    return {
+      services: ops.serviceDefinitions(venueId),
+      pacing: ops.pacingRules(venueId),
+    };
+  }
+  async saveSurveyConfig(venueId: string, config: SurveyConfig) {
+    opsWrite.saveSurveyConfigRow(venueId, config);
+    return ops.surveyConfig(venueId);
+  }
+  async saveVenueSettings(venueId: string, settings: VenueSettings) {
+    opsWrite.saveVenueSettingsRow(venueId, settings);
+    return ops.venueSettings(venueId);
+  }
+  async openSupportTicket(
+    venueId: string,
+    input: { category: string; subject: string; body: string },
+  ) {
+    opsWrite.openSupportTicketRow(venueId, input);
+    return ops.supportTickets(venueId);
   }
 }

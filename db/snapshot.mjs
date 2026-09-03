@@ -33,6 +33,7 @@ const overview = await import("../src/lib/db/overview-store.ts");
 const venue = await import("../src/lib/db/venue-store.ts");
 const write = await import("../src/lib/db/venue-write-store.ts");
 const assets = await import("../src/lib/db/asset-store.ts");
+const ops = await import("../src/lib/db/operations-store.ts");
 const { all } = await import("../src/lib/db/store.ts");
 
 const PERIODS = ["7d", "30d", "90d", "12m"];
@@ -73,6 +74,26 @@ for (const id of venueIds) {
     visibility: Object.fromEntries(
       PERIODS.map((p) => [p, overview.visibility(id, p)]),
     ),
+    // The Phase 5 bundles. Captured through the same store functions the
+    // SQLite path reads with, for the same reason as everything above:
+    // the snapshot is that path's payload, so the shapes cannot drift.
+    operations: {
+      serviceFloor: ops.serviceFloor(id),
+      guestGraph: ops.guestGraph(id),
+      growth: ops.growth(id),
+      nightlife: ops.nightlife(id),
+      moneyDesk: ops.moneyDesk(id),
+      marketing: ops.marketing(id),
+      serviceConfiguration: {
+        services: ops.serviceDefinitions(id),
+        pacing: ops.pacingRules(id),
+      },
+      surveyConfig: ops.surveyConfig(id),
+      settings: ops.venueSettings(id),
+      subscription: ops.subscription(id),
+      supportTickets: ops.supportTickets(id),
+      spendByCustomer: ops.spendByCustomer(id),
+    },
   };
 }
 

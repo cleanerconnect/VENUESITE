@@ -25,12 +25,28 @@ import {
 } from "./repository";
 import {
   staticBusinessAccount,
+  staticOperations,
   staticVenue,
+  type OperationsBundle,
 } from "./static/venue-data";
+import * as reduce from "./static-operations";
+import { outboundGateway } from "@/lib/integrations";
+import { emitGuestEvent } from "@/lib/integrations/outbound";
+import type {
+  ConfigurationAction,
+  GrowthAction,
+  GuestGraphAction,
+  MarketingAction,
+  MoneyAction,
+  NightlifeAction,
+  ServiceFloorAction,
+} from "./repository";
+import type { SurveyConfig, VenueSettings } from "@/lib/types/venue-operations";
 import type { RestaurantOverview, Reservation } from "@/lib/types/restaurant";
 import type { AssetKind } from "@/lib/assets/types";
 import type {
   CheckInResult,
+  Customer,
   NotificationPreferences,
   VenueAvailability,
 } from "@/lib/types/business";
@@ -39,6 +55,14 @@ import type {
 const overlay = new Map<string, RestaurantOverview>();
 const availabilityOverlay = new Map<string, VenueAvailability>();
 const prefsOverlay = new Map<string, NotificationPreferences>();
+/** The Phase 5 bundles, per venue, once anything has been written to them. */
+const operationsOverlay = new Map<string, OperationsBundle>();
+/**
+ * The guest base, once the door has added to it. Kept beside the
+ * overview overlay rather than inside it because customers are a bundle
+ * of their own — the overview carries a service, not a CRM.
+ */
+const customersOverlay = new Map<string, Customer[]>();
 const readNotifications = new Set<string>();
 
 export class StaticRestaurantRepository implements RestaurantRepository {
@@ -192,14 +216,11 @@ export class StaticRestaurantRepository implements RestaurantRepository {
   // ── Customers ──
 
   async listCustomers(venueId: string) {
-    return clone(this.bundle(venueId).customers);
+    return clone(this.customers(venueId));
   }
 
   async getCustomer(venueId: string, customerId: string) {
-    return (
-      clone(this.bundle(venueId).customers.find((c) => c.id === customerId)) ??
-      null
-    );
+    return clone(this.customers(venueId).find((c) => c.id === customerId)) ?? null;
   }
 
   // ── Notifications ──
@@ -225,7 +246,284 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     return clone(prefs);
   }
 
+  // ── Phase 5 — the rest of the venue perimeter ──
+  //
+  // Reads come from the snapshot, overlaid with anything written this
+  // process. Writes go through the reducers in `static-operations.ts`,
+  // which apply the same action the SQL path applies — so a reviewer
+  // pressing Installer with no database sees the same thing happen.
+
+  async getServiceFloor(venueId: string) {
+    return clone(this.operations(venueId).serviceFloor);
+  }
+  async getGuestGraph(venueId: string) {
+    return clone(this.operations(venueId).guestGraph);
+  }
+  async getGrowth(venueId: string) {
+    return clone(this.operations(venueId).growth);
+  }
+  async getNightlife(venueId: string) {
+    return clone(this.operations(venueId).nightlife);
+  }
+  async getMoneyDesk(venueId: string) {
+    return clone(this.operations(venueId).moneyDesk);
+  }
+  async getMarketing(venueId: string) {
+    return clone(this.operations(venueId).marketing);
+  }
+  async getServiceConfiguration(venueId: string) {
+    return clone(this.operations(venueId).serviceConfiguration);
+  }
+  async getSurveyConfig(venueId: string) {
+    return clone(this.operations(venueId).surveyConfig);
+  }
+  async getVenueSettings(venueId: string) {
+    return clone(this.operations(venueId).settings);
+  }
+  async getSubscription(venueId: string) {
+    return clone(this.operations(venueId).subscription);
+  }
+  async listSupportTickets(venueId: string) {
+    return clone(this.operations(venueId).supportTickets);
+  }
+  async getSpendByCustomer(venueId: string) {
+    return clone(this.operations(venueId).spendByCustomer);
+  }
+
+  async runServiceFloorAction(venueId: string, action: ServiceFloorAction) {
+    const bundle = this.operations(venueId);
+    const result = reduce.applyServiceFloor(bundle.serviceFloor, action);
+    let marketing = bundle.marketing;
+
+    if (result.guestEvent) {
+      marketing = await reduce.emitAndLog(
+        outboundGateway(),
+        venueId,
+        marketing,
+        result.guestEvent,
+        result.eventProperties,
+      );
+    }
+    // Seating a walk-in has to leave a guest behind, or the CRM is blind
+    // to a visit that plainly happened.
+    if (result.createdCustomer) {
+      this.addCustomer(venueId, result.createdCustomer);
+    }
+
+    this.writeOperations(venueId, {
+      ...bundle,
+      serviceFloor: result.floor,
+      marketing,
+    });
+    return clone(result.floor);
+  }
+
+  async runGuestGraphAction(venueId: string, action: GuestGraphAction) {
+    const bundle = this.operations(venueId);
+    const guestGraph = reduce.applyGuestGraph(bundle.guestGraph, action);
+    this.writeOperations(venueId, { ...bundle, guestGraph });
+    return clone(guestGraph);
+  }
+
+  async runGrowthAction(venueId: string, action: GrowthAction) {
+    const bundle = this.operations(venueId);
+    const result = reduce.applyGrowth(bundle.growth, action);
+    let marketing = bundle.marketing;
+    for (const { event, properties } of result.guestEvents ?? []) {
+      marketing = await reduce.emitAndLog(
+        outboundGateway(),
+        venueId,
+        marketing,
+        event,
+        properties,
+      );
+    }
+    this.writeOperations(venueId, { ...bundle, growth: result.growth, marketing });
+    return clone(result.growth);
+  }
+
+  async runNightlifeAction(venueId: string, action: NightlifeAction) {
+    const bundle = this.operations(venueId);
+    const result = reduce.applyNightlife(bundle.nightlife, action);
+    let marketing = bundle.marketing;
+    if (result.guestEvent) {
+      marketing = await reduce.emitAndLog(
+        outboundGateway(),
+        venueId,
+        marketing,
+        result.guestEvent,
+        result.eventProperties,
+      );
+    }
+    if (result.createdCustomer) this.addCustomer(venueId, result.createdCustomer);
+
+    this.writeOperations(venueId, {
+      ...bundle,
+      nightlife: result.nightlife,
+      marketing,
+      moneyDesk: result.createdDeposit
+        ? {
+            ...bundle.moneyDesk,
+            deposits: [result.createdDeposit, ...bundle.moneyDesk.deposits],
+          }
+        : bundle.moneyDesk,
+    });
+    return clone(result.nightlife);
+  }
+
+  async runMoneyAction(venueId: string, action: MoneyAction) {
+    const bundle = this.operations(venueId);
+    const result = reduce.applyMoney(bundle.moneyDesk, action);
+    let marketing = bundle.marketing;
+    if (result.guestEvent) {
+      marketing = await reduce.emitAndLog(
+        outboundGateway(),
+        venueId,
+        marketing,
+        result.guestEvent,
+        result.eventProperties,
+      );
+    }
+    this.writeOperations(venueId, { ...bundle, moneyDesk: result.money, marketing });
+    return clone(result.money);
+  }
+
+  async runMarketingAction(venueId: string, action: MarketingAction) {
+    const bundle = this.operations(venueId);
+    const result = reduce.applyMarketing(bundle.marketing, action);
+    let marketing = result.marketing;
+    if (result.guestEvent) {
+      await emitGuestEvent(
+        outboundGateway(),
+        { venueId, ...result.guestEvent },
+        result.eventProperties,
+      );
+    }
+    this.writeOperations(venueId, { ...bundle, marketing });
+    return clone(marketing);
+  }
+
+  async runConfigurationAction(venueId: string, action: ConfigurationAction) {
+    const bundle = this.operations(venueId);
+    const serviceConfiguration = reduce.applyConfiguration(
+      bundle.serviceConfiguration,
+      action,
+    );
+    this.writeOperations(venueId, { ...bundle, serviceConfiguration });
+    return clone(serviceConfiguration);
+  }
+
+  async saveSurveyConfig(venueId: string, config: SurveyConfig) {
+    const bundle = this.operations(venueId);
+    this.writeOperations(venueId, { ...bundle, surveyConfig: config });
+    return clone(config);
+  }
+
+  async saveVenueSettings(venueId: string, settings: VenueSettings) {
+    const bundle = this.operations(venueId);
+    this.writeOperations(venueId, { ...bundle, settings });
+    return clone(settings);
+  }
+
+  async openSupportTicket(
+    venueId: string,
+    input: { category: string; subject: string; body: string },
+  ) {
+    const bundle = this.operations(venueId);
+    const at = new Date().toISOString();
+    const supportTickets = [
+      {
+        id: `sup_${Date.now().toString(36)}`,
+        reference: `SUP-${5000 + bundle.supportTickets.length}`,
+        category: input.category,
+        subject: input.subject.trim(),
+        body: input.body.trim(),
+        status: "ouvert" as const,
+        createdAt: at,
+        updatedAt: at,
+      },
+      ...bundle.supportTickets,
+    ];
+    this.writeOperations(venueId, { ...bundle, supportTickets });
+    return clone(supportTickets);
+  }
+
   // ── Internals ──
+
+  /** The Phase 5 bundles, snapshot or overlay. */
+  private operations(venueId: string): OperationsBundle {
+    const held = operationsOverlay.get(venueId);
+    if (held) return held;
+    const found = staticOperations(venueId);
+    if (!found) {
+      throw new RepositoryError(
+        `Aucun lieu ${venueId} dans le jeu de données statique.`,
+        404,
+        "venue_not_found",
+      );
+    }
+    return found;
+  }
+
+  private writeOperations(venueId: string, next: OperationsBundle) {
+    operationsOverlay.set(venueId, next);
+  }
+
+  /**
+   * Adds a guest the door just met.
+   *
+   * Both waitlist seating and guest-list check-in land here, because the
+   * spec requires both to leave a customer record. Matched on phone
+   * within the venue, so a regular walk-in stays one guest rather than
+   * becoming a new row every Friday.
+   */
+  private addCustomer(venueId: string, guest: { name: string; phone: string }) {
+    const current = this.customers(venueId);
+    const at = new Date().toISOString();
+    const existing = guest.phone
+      ? current.find((c) => c.phone === guest.phone)
+      : undefined;
+
+    customersOverlay.set(
+      venueId,
+      existing
+        ? current.map((c) =>
+            c.id === existing.id
+              ? { ...c, visitCount: c.visitCount + 1, lastVisitAt: at }
+              : c,
+          )
+        : [
+            {
+              id: `cus_${Date.now().toString(36)}`,
+              fullName: guest.name,
+              phone: guest.phone,
+              firstSeenAt: at,
+              lastVisitAt: at,
+              visitCount: 1,
+              // No transaction source for a guest met at the door, so
+              // no spend. Zero here means "nothing known", and every
+              // spend tile keys off the transaction bundle, not this.
+              averageSpendMad: 0,
+              totalSpendMad: 0,
+              // Read from the loyalty service, never derived here. A
+              // guest met at the door starts on the entry tier.
+              loyaltyTier: "nouveau",
+              preferences: [],
+              noShowHistory: [],
+              noShowRisk: 0,
+              reviewIds: [],
+              segments: ["new"],
+              optedOutOfMarketing: false,
+            },
+            ...current,
+          ],
+    );
+  }
+
+  /** The guest base: snapshot, or the overlay once the door has written. */
+  private customers(venueId: string): Customer[] {
+    return customersOverlay.get(venueId) ?? this.bundle(venueId).customers;
+  }
 
   private bundle(venueId: string) {
     const found = staticVenue(venueId);
