@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as RadixDialog from "@radix-ui/react-dialog";
 import {
+  ArrowLeftRight,
   Building2,
   CalendarDays,
   Check,
@@ -38,6 +39,8 @@ import {
 import { PROFILES } from "@/lib/auth/static/profiles";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
 import { cn } from "@/lib/utils/cn";
+import { signOut } from "@/app/actions/auth";
+import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 
 const PORTAL_ROLE_LABEL: Record<string, string> = {
   owner: "Propriétaire",
@@ -63,8 +66,11 @@ export function Sidebar({
   const user = useUser();
 
   const handleLogout = () => {
+    // Clears the client mirror and the server cookies. Clearing only the
+    // mirror left the server still signed in, so the next navigation
+    // walked straight back into the portal.
     clearSession();
-    router.push("/splash");
+    void signOut().then(() => router.replace("/login"));
   };
 
   const handleSwitchRole = (next: Role) => {
@@ -218,6 +224,10 @@ function SidebarBody({
     subline: profile?.subline ?? "",
   };
 
+  // Read from context rather than props: the mobile drawer renders
+  // this same body without going through <Sidebar>.
+  const workspaces = useWorkspaceAccess();
+
   return (
     <>
       {/* Brand, real wordmark, no accompanying "LYFE" text label.
@@ -230,11 +240,23 @@ function SidebarBody({
         </div>
       </div>
 
-      {/* Venue switcher when the session holds venues; otherwise the
-          workspace switcher, which is what the event workspace uses. */}
+      {/* Venue switcher on the venue side, organisation switcher on the
+          event side. Either way, a link to the other workspace appears
+          only when the account holds it. */}
       <div className="px-4 mb-3">
         {venues.length > 0 && workspace.id === "restaurant" ? (
-          <VenueSwitcher venues={venues} activeVenueId={activeVenueId} />
+          <>
+            <VenueSwitcher venues={venues} activeVenueId={activeVenueId} />
+            {workspaces.event ? (
+              <Link
+                href={WORKSPACES[0].home}
+                className="mt-2 flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-meta font-semibold text-ink-mute hover:text-ink hover:bg-ink/[0.04] transition-colors"
+              >
+                <ArrowLeftRight size={13} strokeWidth={2} />
+                Espace événements
+              </Link>
+            ) : null}
+          </>
         ) : (
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
@@ -263,7 +285,9 @@ function SidebarBody({
                 sideOffset={6}
                 className="min-w-[228px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
               >
-                {WORKSPACES.map((w) => (
+                {WORKSPACES.filter((w) =>
+                  w.id === "restaurant" ? workspaces.venue : workspaces.event,
+                ).map((w) => (
                   <DropdownMenu.Item key={w.id} asChild>
                     <Link
                       href={w.home}

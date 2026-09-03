@@ -14,6 +14,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { directory } from "./directory";
+import { isKnownAccount } from "./accounts";
 
 export type PortalRole = "owner" | "manager" | "staff";
 
@@ -49,9 +50,14 @@ class DemoSessionDriver implements SessionDriver {
 
     // Who signed in. The login screen writes this; it is an identifier,
     // never a capability — every venue this user may open is resolved
-    // from the directory below, not from anything the cookie carries.
+    // from the directory, not from anything the cookie carries.
+    //
+    // Validated against the account list rather than the venue
+    // directory: an account that holds no venue is still a real account,
+    // and falling back to the default user for it would silently sign
+    // someone in as a different person.
     const claimed = jar.get(USER_COOKIE)?.value;
-    if (claimed && directory().findById(claimed)) return claimed;
+    if (claimed && isKnownAccount(claimed)) return claimed;
 
     return process.env.LYFE_DEMO_USER_ID ?? DEFAULT_USER_ID;
   }

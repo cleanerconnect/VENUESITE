@@ -30,6 +30,7 @@ import {
 import { PROFILES } from "@/lib/auth/static/profiles";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
 import { cn } from "@/lib/utils/cn";
+import { signOut } from "@/app/actions/auth";
 
 // Single source of truth for the mobile secondary nav. Used by both
 // the /plus full-route screen and the hamburger MobileSidebarDrawer
@@ -73,9 +74,12 @@ export function MobilePlusMenu({
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const handleLogout = () => {
+    // Clears the client mirror and the server cookies. Clearing only the
+    // mirror left the server still signed in, so the next navigation
+    // walked straight back into the portal.
     clearSession();
     closeDrawer(false);
-    router.push("/splash");
+    void signOut().then(() => router.replace("/login"));
   };
 
   // Product rows come from the active workspace; help and logout are

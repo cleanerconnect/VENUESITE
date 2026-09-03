@@ -4,14 +4,22 @@ import { BottomTabs } from "@/components/organizer/BottomTabs";
 import { ScannerModal } from "@/components/organizer/ScannerModal";
 import { CheckInSheet } from "@/components/restaurant/CheckInSheet";
 import { AssistantFAB } from "@/components/organizer/Assistant";
-import { SessionGuard } from "@/components/auth/SessionGuard";
+import { SessionSync } from "@/components/auth/SessionSync";
+import { WorkspaceAccessProvider } from "@/lib/auth/workspace-access";
 import { resolveSession } from "@/lib/auth/server-session";
+import { resolveAccount } from "@/lib/auth/accounts";
+import { redirect } from "next/navigation";
 
 // Shell, sticky sidebar (desktop), top app bar, mobile bottom tabs.
-// ScannerModal and AssistantFAB live here so they're persistent across
-// every route. Keyboard shortcuts (⌘+Shift+S, ⌘+J) are wired in Topbar.
-// SessionGuard is the front door — it redirects to /login if no valid
-// session exists in localStorage.
+// ScannerModal, CheckInSheet and AssistantFAB live here so they're
+// persistent across every route. Keyboard shortcuts (⌘+Shift+S, ⌘+J)
+// are wired in Topbar.
+//
+// The gate is server-side: the middleware bounces a request with no
+// session cookie, and this layout redirects if the cookie resolves to
+// nothing. There used to be a third gate reading localStorage, which
+// could disagree with the other two — a client could be signed out
+// while the server considered it signed in.
 export default async function OrganizerLayout({
   children,
 }: {
@@ -20,16 +28,30 @@ export default async function OrganizerLayout({
   // Resolved server-side so the shell knows which venue is active and
   // which others this account holds, without the client asking.
   const session = await resolveSession();
+  if (!session) redirect("/login?expired=1");
+
+  const account = resolveAccount(session.userId);
+
+  const access = {
+    event: (account?.organizations.length ?? 0) > 0,
+    venue: session.venues.length > 0,
+  };
 
   return (
-    <SessionGuard>
+    <WorkspaceAccessProvider value={access}>
+      <SessionSync
+        userId={session.userId}
+        email={session.email}
+        organizerId={account?.organizations[0]?.id ?? ""}
+        role={session.role === "owner" ? "owner" : session.role === "manager" ? "admin" : "scanner"}
+      />
       <div className="min-h-screen flex">
         <div className="no-print contents">
           <Sidebar
-            venues={session?.venues ?? []}
-            activeVenueId={session?.venueId ?? ""}
-            viewerName={session?.fullName ?? ""}
-            viewerRole={session?.role}
+            venues={session.venues}
+            activeVenueId={session.venueId}
+            viewerName={session.fullName}
+            viewerRole={session.role}
           />
           <MobileSidebarDrawer />
         </div>
@@ -50,6 +72,6 @@ export default async function OrganizerLayout({
           <AssistantFAB />
         </div>
       </div>
-    </SessionGuard>
+    </WorkspaceAccessProvider>
   );
 }

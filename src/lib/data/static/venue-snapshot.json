@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-03T09:10:30.852Z",
+  "capturedAt": "2026-09-03T09:47:54.452Z",
   "users": [
     {
       "userId": "usr_imane",
@@ -46,6 +46,31 @@
           "city": "Marrakech",
           "kind": "restaurant",
           "role": "manager"
+        },
+        {
+          "id": "bar_nomad_casa",
+          "name": "Nomad Rooftop",
+          "shortName": "Nomad",
+          "initials": "NR",
+          "city": "Casablanca",
+          "kind": "drinks",
+          "role": "manager"
+        }
+      ]
+    },
+    {
+      "userId": "usr_sofia",
+      "fullName": "Sofia Bennis",
+      "email": "sofia@nomadrooftop.ma",
+      "venues": [
+        {
+          "id": "bar_nomad_casa",
+          "name": "Nomad Rooftop",
+          "shortName": "Nomad",
+          "initials": "NR",
+          "city": "Casablanca",
+          "kind": "drinks",
+          "role": "manager"
         }
       ]
     },
@@ -61,6 +86,15 @@
           "initials": "DZ",
           "city": "Marrakech",
           "kind": "restaurant",
+          "role": "owner"
+        },
+        {
+          "id": "bar_nomad_casa",
+          "name": "Nomad Rooftop",
+          "shortName": "Nomad",
+          "initials": "NR",
+          "city": "Casablanca",
+          "kind": "drinks",
           "role": "owner"
         }
       ]
@@ -109,6 +143,19 @@
         "crm",
         "reviews",
         "visibility",
+        "team"
+      ]
+    },
+    "usr_sofia": {
+      "businessId": "biz_nomad",
+      "venueId": "bar_nomad_casa",
+      "ownerId": "usr_yassine",
+      "subscriptionTier": "annual",
+      "featuresEnabled": [
+        "bookings",
+        "availability",
+        "analytics",
+        "reviews",
         "team"
       ]
     },
@@ -182,9 +229,9 @@
           "id": "svc_current",
           "kind": "petit_dejeuner",
           "label": "Petit-déjeuner",
-          "date": "2026-09-02",
-          "opensAt": "2026-09-02T09:19:37.732Z",
-          "closesAt": "2026-09-02T13:49:37.732Z",
+          "date": "2026-09-03",
+          "opensAt": "2026-09-03T08:07:52.737Z",
+          "closesAt": "2026-09-03T12:37:52.737Z",
           "state": "peak",
           "capacity": 120,
           "bookedCovers": 104,
@@ -193,43 +240,43 @@
           "revenueMad": 63400,
           "slotLoad": [
             {
-              "at": "2026-09-02T09:19:37.732Z",
+              "at": "2026-09-03T08:07:52.737Z",
               "covers": 10
             },
             {
-              "at": "2026-09-02T09:49:37.732Z",
+              "at": "2026-09-03T08:37:52.737Z",
               "covers": 19
             },
             {
-              "at": "2026-09-02T10:19:37.732Z",
+              "at": "2026-09-03T09:07:52.737Z",
               "covers": 28
             },
             {
-              "at": "2026-09-02T10:49:37.732Z",
+              "at": "2026-09-03T09:37:52.737Z",
               "covers": 34
             },
             {
-              "at": "2026-09-02T11:19:37.732Z",
+              "at": "2026-09-03T10:07:52.737Z",
               "covers": 32
             },
             {
-              "at": "2026-09-02T11:49:37.732Z",
+              "at": "2026-09-03T10:37:52.737Z",
               "covers": 26
             },
             {
-              "at": "2026-09-02T12:19:37.732Z",
+              "at": "2026-09-03T11:07:52.737Z",
               "covers": 20
             },
             {
-              "at": "2026-09-02T12:49:37.732Z",
+              "at": "2026-09-03T11:37:52.737Z",
               "covers": 14
             },
             {
-              "at": "2026-09-02T13:19:37.732Z",
+              "at": "2026-09-03T12:07:52.737Z",
               "covers": 9
             },
             {
-              "at": "2026-09-02T13:49:37.732Z",
+              "at": "2026-09-03T12:37:52.737Z",
               "covers": 5
             }
           ]
@@ -255,10 +302,9 @@
           }
         ],
         "coversToday": {
-          "count": 86,
-          "deltaPctVsYesterday": 30.3,
+          "count": 66,
+          "deltaPctVsYesterday": -16.5,
           "series24h": [
-            0,
             0,
             0,
             0,
@@ -281,49 +327,54 @@
             0,
             0,
             0,
+            0,
             0
           ],
-          "peakHourLabel": "Pic à 10h"
+          "peakHourLabel": "Pic à 09h"
         },
         "averageTicket": {
           "amountMad": 737,
           "deltaPctVsLastWeek": 0
         },
         "occupancy": {
-          "pct": 40,
-          "deltaPctVsLastWeek": 2.9
+          "pct": 38,
+          "deltaPctVsLastWeek": -0.8
         },
         "noShows": {
-          "count": 6,
-          "deltaPctVsLastWeek": 100,
-          "lostRevenueMad": 4422
+          "count": 3,
+          "deltaPctVsLastWeek": 0,
+          "lostRevenueMad": 2211
         },
         "revenueWeek": {
-          "amountMad": 420090,
-          "deltaPctVsLastWeek": -11.8,
+          "amountMad": 476102,
+          "deltaPctVsLastWeek": -0.8,
           "series": [
             {
               "label": "ven.",
-              "value": 91388
+              "value": 88440
             },
             {
               "label": "sam.",
-              "value": 81807
+              "value": 91388
             },
             {
               "label": "dim.",
-              "value": 84755
+              "value": 81807
             },
             {
               "label": "lun.",
-              "value": 55275
+              "value": 52327
             },
             {
               "label": "mar.",
-              "value": 58223
+              "value": 55275
             },
             {
               "label": "mer.",
+              "value": 58223
+            },
+            {
+              "label": "jeu.",
               "value": 48642
             }
           ]
@@ -335,7 +386,7 @@
         },
         "nextPayout": {
           "amountMad": 291700,
-          "scheduledFor": "2026-09-05T10:59:37.732Z"
+          "scheduledFor": "2026-09-06T09:47:52.737Z"
         },
         "upcomingReservations": [
           {
@@ -344,7 +395,7 @@
             "guestName": "Salma Bennani",
             "guestPhone": "+212 661 20 44 18",
             "partySize": 4,
-            "at": "2026-09-02T11:19:37.732Z",
+            "at": "2026-09-03T10:07:52.737Z",
             "state": "confirmed",
             "channel": "lyfe",
             "zoneId": "z_patio",
@@ -360,7 +411,7 @@
             "guestName": "Groupe Karam",
             "guestPhone": "+212 662 88 10 03",
             "partySize": 6,
-            "at": "2026-09-02T11:34:37.732Z",
+            "at": "2026-09-03T10:22:52.737Z",
             "state": "confirmed",
             "channel": "phone",
             "zoneId": "z_salle",
@@ -375,7 +426,7 @@
             "guestName": "Yasmine El Alaoui",
             "guestPhone": "+212 663 41 77 92",
             "partySize": 4,
-            "at": "2026-09-02T11:49:37.732Z",
+            "at": "2026-09-03T10:37:52.737Z",
             "state": "confirmed",
             "channel": "instagram",
             "zoneId": "z_terrasse",
@@ -389,7 +440,7 @@
             "guestName": "Nabil Cherkaoui",
             "guestPhone": "+212 665 09 33 71",
             "partySize": 2,
-            "at": "2026-09-02T12:19:37.732Z",
+            "at": "2026-09-03T11:07:52.737Z",
             "state": "requested",
             "channel": "lyfe",
             "note": "Demande une table près de la fontaine",
@@ -403,7 +454,7 @@
             "guestName": "Hind Tazi",
             "guestPhone": "+212 660 15 62 40",
             "partySize": 5,
-            "at": "2026-09-02T12:44:37.732Z",
+            "at": "2026-09-03T11:32:52.737Z",
             "state": "confirmed",
             "channel": "partner",
             "zoneId": "z_salle",
@@ -420,7 +471,7 @@
             "guestName": "Omar Idrissi",
             "guestPhone": "+212 667 74 21 08",
             "partySize": 2,
-            "at": "2026-09-02T11:14:37.732Z",
+            "at": "2026-09-03T10:02:52.737Z",
             "state": "waitlisted",
             "channel": "walk_in",
             "visits": 0,
@@ -432,7 +483,7 @@
             "guestName": "Famille Berrada",
             "guestPhone": "+212 668 30 90 55",
             "partySize": 4,
-            "at": "2026-09-02T11:24:37.732Z",
+            "at": "2026-09-03T10:12:52.737Z",
             "state": "waitlisted",
             "channel": "walk_in",
             "visits": 3,
@@ -445,7 +496,7 @@
             "type": "guest_arrived",
             "actor": "Salma Bennani",
             "message": "est arrivée · 4 couverts",
-            "at": "2026-09-02T10:58:37.732Z",
+            "at": "2026-09-03T09:46:52.737Z",
             "reservationId": "res_001",
             "needsAttention": false
           },
@@ -454,7 +505,7 @@
             "type": "reservation_created",
             "actor": "Nabil Cherkaoui",
             "message": "a demandé une table pour 2",
-            "at": "2026-09-02T10:55:37.732Z",
+            "at": "2026-09-03T09:43:52.737Z",
             "reservationId": "res_010",
             "needsAttention": false
           },
@@ -463,7 +514,7 @@
             "type": "anomaly",
             "actor": "LYFE",
             "message": "détecte 3 annulations sur le même créneau",
-            "at": "2026-09-02T10:50:37.732Z",
+            "at": "2026-09-03T09:38:52.737Z",
             "needsAttention": true
           },
           {
@@ -471,7 +522,7 @@
             "type": "guest_arrived",
             "actor": "Hind Tazi",
             "message": "est arrivée · 5 couverts",
-            "at": "2026-09-02T10:47:37.732Z",
+            "at": "2026-09-03T09:35:52.737Z",
             "reservationId": "res_011",
             "needsAttention": false
           },
@@ -480,7 +531,7 @@
             "type": "waitlist_joined",
             "actor": "Famille Berrada",
             "message": "rejoint la liste d'attente · 4 couverts",
-            "at": "2026-09-02T10:36:37.732Z",
+            "at": "2026-09-03T09:24:52.737Z",
             "reservationId": "res_w2",
             "needsAttention": false
           },
@@ -489,7 +540,7 @@
             "type": "no_show",
             "actor": "Réservation précédente",
             "message": "notée absente après 25 min · 3 couverts",
-            "at": "2026-09-02T10:19:37.732Z",
+            "at": "2026-09-03T09:07:52.737Z",
             "needsAttention": true
           },
           {
@@ -497,7 +548,7 @@
             "type": "reservation_cancelled",
             "actor": "Sofia Lahlou",
             "message": "a annulé sa table de 2",
-            "at": "2026-09-02T10:12:37.732Z",
+            "at": "2026-09-03T09:00:52.737Z",
             "needsAttention": false
           },
           {
@@ -505,7 +556,7 @@
             "type": "review_received",
             "actor": "Leïla M.",
             "message": "a laissé un avis 5 étoiles",
-            "at": "2026-09-02T07:59:37.732Z",
+            "at": "2026-09-03T06:47:52.737Z",
             "needsAttention": false
           },
           {
@@ -513,7 +564,7 @@
             "type": "payment_settled",
             "actor": "LYFE",
             "message": "a clôturé le versement de la semaine",
-            "at": "2026-08-31T10:59:37.732Z",
+            "at": "2026-09-01T09:47:52.737Z",
             "needsAttention": false
           }
         ],
@@ -603,7 +654,7 @@
             "guestName": "Leïla M.",
             "rating": 5,
             "comment": "Le patio au coucher du soleil, rien à redire. Service attentif sans être pesant.",
-            "at": "2026-09-02T07:59:37.732Z",
+            "at": "2026-09-03T06:47:52.737Z",
             "channel": "lyfe",
             "tags": [
               "cadre",
@@ -616,7 +667,7 @@
             "guestName": "Thomas R.",
             "rating": 4,
             "comment": "Cuisine excellente. Vingt minutes d'attente malgré la réservation à 21h.",
-            "at": "2026-09-02T03:59:37.732Z",
+            "at": "2026-09-03T02:47:52.737Z",
             "channel": "google",
             "tags": [
               "attente",
@@ -629,7 +680,7 @@
             "guestName": "Amina B.",
             "rating": 5,
             "comment": "La pastilla vaut le détour à elle seule.",
-            "at": "2026-09-01T09:59:37.732Z",
+            "at": "2026-09-02T08:47:52.737Z",
             "channel": "lyfe",
             "tags": [
               "cuisine"
@@ -641,7 +692,7 @@
             "guestName": "Karim H.",
             "rating": 3,
             "comment": "Table en terrasse bruyante, on s'entendait à peine.",
-            "at": "2026-08-31T15:39:37.732Z",
+            "at": "2026-09-01T14:27:52.737Z",
             "channel": "google",
             "tags": [
               "bruit",
@@ -655,9 +706,9 @@
             "id": "svc_current",
             "kind": "petit_dejeuner",
             "label": "Petit-déjeuner",
-            "date": "2026-09-02",
-            "opensAt": "2026-09-02T09:19:37.732Z",
-            "closesAt": "2026-09-02T13:49:37.732Z",
+            "date": "2026-09-03",
+            "opensAt": "2026-09-03T08:07:52.737Z",
+            "closesAt": "2026-09-03T12:37:52.737Z",
             "state": "peak",
             "capacity": 120,
             "bookedCovers": 104,
@@ -666,43 +717,43 @@
             "revenueMad": 63400,
             "slotLoad": [
               {
-                "at": "2026-09-02T09:19:37.732Z",
+                "at": "2026-09-03T08:07:52.737Z",
                 "covers": 10
               },
               {
-                "at": "2026-09-02T09:49:37.732Z",
+                "at": "2026-09-03T08:37:52.737Z",
                 "covers": 19
               },
               {
-                "at": "2026-09-02T10:19:37.732Z",
+                "at": "2026-09-03T09:07:52.737Z",
                 "covers": 28
               },
               {
-                "at": "2026-09-02T10:49:37.732Z",
+                "at": "2026-09-03T09:37:52.737Z",
                 "covers": 34
               },
               {
-                "at": "2026-09-02T11:19:37.732Z",
+                "at": "2026-09-03T10:07:52.737Z",
                 "covers": 32
               },
               {
-                "at": "2026-09-02T11:49:37.732Z",
+                "at": "2026-09-03T10:37:52.737Z",
                 "covers": 26
               },
               {
-                "at": "2026-09-02T12:19:37.732Z",
+                "at": "2026-09-03T11:07:52.737Z",
                 "covers": 20
               },
               {
-                "at": "2026-09-02T12:49:37.732Z",
+                "at": "2026-09-03T11:37:52.737Z",
                 "covers": 14
               },
               {
-                "at": "2026-09-02T13:19:37.732Z",
+                "at": "2026-09-03T12:07:52.737Z",
                 "covers": 9
               },
               {
-                "at": "2026-09-02T13:49:37.732Z",
+                "at": "2026-09-03T12:37:52.737Z",
                 "covers": 5
               }
             ]
@@ -715,8 +766,8 @@
             "amountMad": 291700,
             "commissionMad": 17900,
             "coversSettled": 612,
-            "periodLabel": "26 août – 2 septembre",
-            "scheduledFor": "2026-09-05T10:59:37.732Z",
+            "periodLabel": "27 août – 3 septembre",
+            "scheduledFor": "2026-09-06T09:47:52.737Z",
             "state": "scheduled"
           },
           {
@@ -725,9 +776,9 @@
             "amountMad": 268400,
             "commissionMad": 16500,
             "coversSettled": 571,
-            "periodLabel": "19 août – 26 août",
-            "scheduledFor": "2026-08-31T10:59:37.732Z",
-            "paidAt": "2026-08-31T10:59:37.732Z",
+            "periodLabel": "20 août – 27 août",
+            "scheduledFor": "2026-09-01T09:47:52.737Z",
+            "paidAt": "2026-09-01T09:47:52.737Z",
             "state": "paid"
           },
           {
@@ -736,9 +787,9 @@
             "amountMad": 243100,
             "commissionMad": 14900,
             "coversSettled": 518,
-            "periodLabel": "12 août – 19 août",
-            "scheduledFor": "2026-08-24T10:59:37.732Z",
-            "paidAt": "2026-08-24T10:59:37.732Z",
+            "periodLabel": "13 août – 20 août",
+            "scheduledFor": "2026-08-25T09:47:52.737Z",
+            "paidAt": "2026-08-25T09:47:52.737Z",
             "state": "paid"
           }
         ]
@@ -983,11 +1034,11 @@
         "closures": [
           {
             "id": "cl_1",
-            "date": "2026-09-14",
+            "date": "2026-09-15",
             "reason": "Privatisation"
           }
         ],
-        "updatedAt": "2026-09-02T10:59:37.732Z"
+        "updatedAt": "2026-09-03T09:47:52.737Z"
       },
       "customers": [
         {
@@ -995,8 +1046,8 @@
           "fullName": "Leïla Mansouri",
           "phone": "+212 664 51 12 87",
           "email": "leila.m@gmail.com",
-          "firstSeenAt": "2026-03-19T10:59:37.732Z",
-          "lastVisitAt": "2026-08-29T10:59:37.732Z",
+          "firstSeenAt": "2026-03-20T09:47:52.737Z",
+          "lastVisitAt": "2026-08-30T09:47:52.737Z",
           "visitCount": 14,
           "averageSpendMad": 890,
           "totalSpendMad": 12460,
@@ -1021,8 +1072,8 @@
           "fullName": "Thomas Renaud",
           "phone": "+33 6 12 44 90 21",
           "email": "t.renaud@free.fr",
-          "firstSeenAt": "2026-03-08T10:59:37.732Z",
-          "lastVisitAt": "2026-08-28T10:59:37.732Z",
+          "firstSeenAt": "2026-03-09T09:47:52.737Z",
+          "lastVisitAt": "2026-08-29T09:47:52.737Z",
           "visitCount": 2,
           "averageSpendMad": 1310,
           "totalSpendMad": 2620,
@@ -1043,8 +1094,8 @@
           "fullName": "Hind Tazi",
           "phone": "+212 660 15 62 40",
           "email": "h.tazi@outlook.com",
-          "firstSeenAt": "2026-05-24T10:59:37.732Z",
-          "lastVisitAt": "2026-08-24T10:59:37.732Z",
+          "firstSeenAt": "2026-05-25T09:47:52.737Z",
+          "lastVisitAt": "2026-08-25T09:47:52.737Z",
           "visitCount": 9,
           "averageSpendMad": 1120,
           "totalSpendMad": 10080,
@@ -1067,8 +1118,8 @@
           "fullName": "Amina Bouzid",
           "phone": "+212 661 88 03 45",
           "email": "amina.bouzid@gmail.com",
-          "firstSeenAt": "2026-02-14T10:59:37.732Z",
-          "lastVisitAt": "2026-08-17T10:59:37.732Z",
+          "firstSeenAt": "2026-02-15T09:47:52.737Z",
+          "lastVisitAt": "2026-08-18T09:47:52.737Z",
           "visitCount": 11,
           "averageSpendMad": 830,
           "totalSpendMad": 9130,
@@ -1090,8 +1141,8 @@
           "fullName": "Salma Bennani",
           "phone": "+212 661 20 44 18",
           "email": "salma.bennani@gmail.com",
-          "firstSeenAt": "2026-06-04T10:59:37.732Z",
-          "lastVisitAt": "2026-08-12T10:59:37.732Z",
+          "firstSeenAt": "2026-06-05T09:47:52.737Z",
+          "lastVisitAt": "2026-08-13T09:47:52.737Z",
           "visitCount": 6,
           "averageSpendMad": 780,
           "totalSpendMad": 4680,
@@ -1112,8 +1163,8 @@
           "id": "cus_12",
           "fullName": "Sofia Lahlou",
           "phone": "+212 666 70 15 29",
-          "firstSeenAt": "2026-02-03T10:59:37.732Z",
-          "lastVisitAt": "2026-08-06T10:59:37.732Z",
+          "firstSeenAt": "2026-02-04T09:47:52.737Z",
+          "lastVisitAt": "2026-08-07T09:47:52.737Z",
           "visitCount": 5,
           "averageSpendMad": 760,
           "totalSpendMad": 3800,
@@ -1122,17 +1173,17 @@
           "noShowHistory": [
             {
               "bookingId": "res_hist_cus_12_0",
-              "at": "2026-08-02T10:59:37.732Z",
+              "at": "2026-08-03T09:47:52.737Z",
               "partySize": 2
             },
             {
               "bookingId": "res_hist_cus_12_1",
-              "at": "2026-07-13T10:59:37.732Z",
+              "at": "2026-07-14T09:47:52.737Z",
               "partySize": 3
             },
             {
               "bookingId": "res_hist_cus_12_2",
-              "at": "2026-06-23T10:59:37.732Z",
+              "at": "2026-06-24T09:47:52.737Z",
               "partySize": 4
             }
           ],
@@ -1148,8 +1199,8 @@
           "id": "cus_7",
           "fullName": "Famille Berrada",
           "phone": "+212 668 30 90 55",
-          "firstSeenAt": "2026-03-30T10:59:37.732Z",
-          "lastVisitAt": "2026-07-31T10:59:37.732Z",
+          "firstSeenAt": "2026-03-31T09:47:52.737Z",
+          "lastVisitAt": "2026-08-01T09:47:52.737Z",
           "visitCount": 3,
           "averageSpendMad": 940,
           "totalSpendMad": 2820,
@@ -1169,8 +1220,8 @@
           "id": "cus_3",
           "fullName": "Groupe Karam",
           "phone": "+212 662 88 10 03",
-          "firstSeenAt": "2026-05-13T10:59:37.732Z",
-          "lastVisitAt": "2026-07-16T10:59:37.732Z",
+          "firstSeenAt": "2026-05-14T09:47:52.737Z",
+          "lastVisitAt": "2026-07-17T09:47:52.737Z",
           "visitCount": 2,
           "averageSpendMad": 1640,
           "totalSpendMad": 3280,
@@ -1181,7 +1232,7 @@
           "noShowHistory": [
             {
               "bookingId": "res_hist_cus_3_0",
-              "at": "2026-08-11T10:59:37.732Z",
+              "at": "2026-08-12T09:47:52.737Z",
               "partySize": 2
             }
           ],
@@ -1197,8 +1248,8 @@
           "id": "cus_10",
           "fullName": "Karim Hakimi",
           "phone": "+212 669 22 41 06",
-          "firstSeenAt": "2026-02-25T10:59:37.732Z",
-          "lastVisitAt": "2026-07-04T10:59:37.732Z",
+          "firstSeenAt": "2026-02-26T09:47:52.737Z",
+          "lastVisitAt": "2026-07-05T09:47:52.737Z",
           "visitCount": 4,
           "averageSpendMad": 700,
           "totalSpendMad": 2800,
@@ -1209,7 +1260,7 @@
           "noShowHistory": [
             {
               "bookingId": "res_hist_cus_10_0",
-              "at": "2026-08-04T10:59:37.732Z",
+              "at": "2026-08-05T09:47:52.737Z",
               "partySize": 2
             }
           ],
@@ -1228,8 +1279,8 @@
           "fullName": "Yasmine El Alaoui",
           "phone": "+212 663 41 77 92",
           "email": "yasmine.ea@gmail.com",
-          "firstSeenAt": "2026-05-02T10:59:37.732Z",
-          "lastVisitAt": "2026-06-20T10:59:37.732Z",
+          "firstSeenAt": "2026-05-03T09:47:52.737Z",
+          "lastVisitAt": "2026-06-21T09:47:52.737Z",
           "visitCount": 1,
           "averageSpendMad": 620,
           "totalSpendMad": 620,
@@ -1238,12 +1289,12 @@
           "noShowHistory": [
             {
               "bookingId": "res_hist_cus_4_0",
-              "at": "2026-08-10T10:59:37.732Z",
+              "at": "2026-08-11T09:47:52.737Z",
               "partySize": 2
             },
             {
               "bookingId": "res_hist_cus_4_1",
-              "at": "2026-07-21T10:59:37.732Z",
+              "at": "2026-07-22T09:47:52.737Z",
               "partySize": 3
             }
           ],
@@ -1260,7 +1311,7 @@
           "id": "cus_5",
           "fullName": "Nabil Cherkaoui",
           "phone": "+212 665 09 33 71",
-          "firstSeenAt": "2026-04-21T10:59:37.732Z",
+          "firstSeenAt": "2026-04-22T09:47:52.737Z",
           "visitCount": 0,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -1280,7 +1331,7 @@
           "id": "cus_6",
           "fullName": "Omar Idrissi",
           "phone": "+212 667 74 21 08",
-          "firstSeenAt": "2026-04-10T10:59:37.732Z",
+          "firstSeenAt": "2026-04-11T09:47:52.737Z",
           "visitCount": 0,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -1301,7 +1352,7 @@
           "type": "booking_request",
           "title": "Nouvelle demande de réservation",
           "body": "Nabil Cherkaoui · 2 personnes · à confirmer",
-          "at": "2026-09-02T10:55:37.732Z",
+          "at": "2026-09-03T09:43:52.737Z",
           "read": false,
           "href": "/restaurant/reservations"
         },
@@ -1310,7 +1361,7 @@
           "type": "cancellation",
           "title": "Réservation annulée",
           "body": "Sofia Lahlou a annulé sa table de 2",
-          "at": "2026-09-02T10:12:37.732Z",
+          "at": "2026-09-03T09:00:52.737Z",
           "read": false,
           "href": "/restaurant/reservations"
         },
@@ -1319,7 +1370,7 @@
           "type": "review",
           "title": "Nouvel avis · 5 étoiles",
           "body": "Leïla M. — « Le patio au coucher du soleil, rien à redire. »",
-          "at": "2026-09-02T07:59:37.732Z",
+          "at": "2026-09-03T06:47:52.737Z",
           "read": true,
           "href": "/restaurant/avis"
         }
@@ -1347,7 +1398,7 @@
           "fullName": "Rachid Amrani",
           "email": "rachid@darzellij.ma",
           "role": "manager",
-          "lastActive": "2026-09-02T10:54:37.732Z",
+          "lastActive": "2026-09-03T09:42:52.737Z",
           "pending": false
         },
         {
@@ -1356,7 +1407,7 @@
           "fullName": "Yassine Alami",
           "email": "yassine@darzellij.ma",
           "role": "owner",
-          "lastActive": "2026-09-02T10:57:37.732Z",
+          "lastActive": "2026-09-03T09:45:52.737Z",
           "pending": false
         },
         {
@@ -1365,7 +1416,7 @@
           "fullName": "Imane Ouali",
           "email": "imane@darzellij.ma",
           "role": "staff",
-          "lastActive": "2026-09-02T10:19:37.732Z",
+          "lastActive": "2026-09-03T09:07:52.737Z",
           "pending": false
         },
         {
@@ -1374,7 +1425,7 @@
           "fullName": "Karim Sefrioui",
           "email": "karim@darzellij.ma",
           "role": "staff",
-          "lastActive": "2026-09-01T10:59:37.732Z",
+          "lastActive": "2026-09-02T09:47:52.737Z",
           "pending": false
         }
       ],
@@ -1384,53 +1435,59 @@
         "7d": {
           "venueId": "rst_dar_zellij",
           "period": "7d",
-          "occupancyRate": 38,
-          "occupancyDeltaPct": -0.9,
-          "estimatedRevenueMad": 476102,
-          "revenueDeltaPct": -0.9,
-          "noShowRate": 3.6,
-          "noShowDeltaPct": 5.5,
-          "coversServed": 646,
-          "coversDeltaPct": -0.9,
+          "occupancyRate": 37,
+          "occupancyDeltaPct": -4.4,
+          "estimatedRevenueMad": 529166,
+          "revenueDeltaPct": 9.3,
+          "noShowRate": 3.5,
+          "noShowDeltaPct": 4,
+          "coversServed": 718,
+          "coversDeltaPct": 9.3,
           "series": [
             {
               "label": "27 août",
-              "covers": 76,
-              "revenueMad": 56012,
-              "noShows": 3
+              "covers": 72,
+              "revenueMad": 53064,
+              "noShows": 2
             },
             {
               "label": "28 août",
+              "covers": 120,
+              "revenueMad": 88440,
+              "noShows": 5
+            },
+            {
+              "label": "29 août",
               "covers": 124,
               "revenueMad": 91388,
               "noShows": 4
             },
             {
-              "label": "29 août",
+              "label": "30 août",
               "covers": 111,
               "revenueMad": 81807,
               "noShows": 4
             },
             {
-              "label": "30 août",
-              "covers": 115,
-              "revenueMad": 84755,
-              "noShows": 5
+              "label": "31 août",
+              "covers": 71,
+              "revenueMad": 52327,
+              "noShows": 3
             },
             {
-              "label": "31 août",
+              "label": "1 sept.",
               "covers": 75,
               "revenueMad": 55275,
               "noShows": 1
             },
             {
-              "label": "1 sept.",
+              "label": "2 sept.",
               "covers": 79,
               "revenueMad": 58223,
               "noShows": 3
             },
             {
-              "label": "2 sept.",
+              "label": "3 sept.",
               "covers": 66,
               "revenueMad": 48642,
               "noShows": 3
@@ -1441,190 +1498,196 @@
           "venueId": "rst_dar_zellij",
           "period": "30d",
           "occupancyRate": 38,
-          "occupancyDeltaPct": -0.3,
-          "estimatedRevenueMad": 2008325,
-          "revenueDeltaPct": -0.3,
-          "noShowRate": 3.3,
-          "noShowDeltaPct": 0.3,
-          "coversServed": 2725,
-          "coversDeltaPct": -0.3,
+          "occupancyDeltaPct": -0.6,
+          "estimatedRevenueMad": 2067285,
+          "revenueDeltaPct": 2.7,
+          "noShowRate": 3.4,
+          "noShowDeltaPct": 2.8,
+          "coversServed": 2805,
+          "coversDeltaPct": 2.7,
           "series": [
             {
               "label": "4 août",
-              "covers": 68,
-              "revenueMad": 50116,
-              "noShows": 1
-            },
-            {
-              "label": "5 août",
-              "covers": 72,
-              "revenueMad": 53064,
-              "noShows": 2
-            },
-            {
-              "label": "6 août",
-              "covers": 76,
-              "revenueMad": 56012,
-              "noShows": 3
-            },
-            {
-              "label": "7 août",
-              "covers": 124,
-              "revenueMad": 91388,
-              "noShows": 4
-            },
-            {
-              "label": "8 août",
-              "covers": 111,
-              "revenueMad": 81807,
-              "noShows": 4
-            },
-            {
-              "label": "9 août",
-              "covers": 115,
-              "revenueMad": 84755,
-              "noShows": 5
-            },
-            {
-              "label": "10 août",
-              "covers": 75,
-              "revenueMad": 55275,
-              "noShows": 1
-            },
-            {
-              "label": "11 août",
-              "covers": 79,
-              "revenueMad": 58223,
-              "noShows": 3
-            },
-            {
-              "label": "12 août",
-              "covers": 66,
-              "revenueMad": 48642,
-              "noShows": 3
-            },
-            {
-              "label": "13 août",
-              "covers": 70,
-              "revenueMad": 51590,
-              "noShows": 1
-            },
-            {
-              "label": "14 août",
-              "covers": 118,
-              "revenueMad": 86966,
-              "noShows": 4
-            },
-            {
-              "label": "15 août",
-              "covers": 122,
-              "revenueMad": 89914,
-              "noShows": 5
-            },
-            {
-              "label": "16 août",
-              "covers": 109,
-              "revenueMad": 80333,
-              "noShows": 3
-            },
-            {
-              "label": "17 août",
-              "covers": 70,
-              "revenueMad": 51590,
-              "noShows": 2
-            },
-            {
-              "label": "18 août",
-              "covers": 74,
-              "revenueMad": 54538,
-              "noShows": 3
-            },
-            {
-              "label": "19 août",
-              "covers": 78,
-              "revenueMad": 57486,
-              "noShows": 2
-            },
-            {
-              "label": "20 août",
-              "covers": 82,
-              "revenueMad": 60434,
-              "noShows": 3
-            },
-            {
-              "label": "21 août",
-              "covers": 112,
-              "revenueMad": 82544,
-              "noShows": 5
-            },
-            {
-              "label": "22 août",
-              "covers": 116,
-              "revenueMad": 85492,
-              "noShows": 3
-            },
-            {
-              "label": "23 août",
-              "covers": 121,
-              "revenueMad": 89177,
-              "noShows": 4
-            },
-            {
-              "label": "24 août",
               "covers": 81,
               "revenueMad": 59697,
               "noShows": 4
             },
             {
-              "label": "25 août",
+              "label": "5 août",
               "covers": 68,
               "revenueMad": 50116,
               "noShows": 1
             },
             {
-              "label": "26 août",
+              "label": "6 août",
               "covers": 72,
               "revenueMad": 53064,
               "noShows": 2
             },
             {
-              "label": "27 août",
-              "covers": 76,
-              "revenueMad": 56012,
-              "noShows": 3
+              "label": "7 août",
+              "covers": 120,
+              "revenueMad": 88440,
+              "noShows": 5
             },
             {
-              "label": "28 août",
+              "label": "8 août",
               "covers": 124,
               "revenueMad": 91388,
               "noShows": 4
             },
             {
-              "label": "29 août",
+              "label": "9 août",
               "covers": 111,
               "revenueMad": 81807,
               "noShows": 4
             },
             {
-              "label": "30 août",
-              "covers": 115,
-              "revenueMad": 84755,
-              "noShows": 5
+              "label": "10 août",
+              "covers": 71,
+              "revenueMad": 52327,
+              "noShows": 3
             },
             {
-              "label": "31 août",
+              "label": "11 août",
               "covers": 75,
               "revenueMad": 55275,
               "noShows": 1
             },
             {
-              "label": "1 sept.",
+              "label": "12 août",
               "covers": 79,
               "revenueMad": 58223,
               "noShows": 3
             },
             {
+              "label": "13 août",
+              "covers": 66,
+              "revenueMad": 48642,
+              "noShows": 3
+            },
+            {
+              "label": "14 août",
+              "covers": 114,
+              "revenueMad": 84018,
+              "noShows": 3
+            },
+            {
+              "label": "15 août",
+              "covers": 118,
+              "revenueMad": 86966,
+              "noShows": 4
+            },
+            {
+              "label": "16 août",
+              "covers": 122,
+              "revenueMad": 89914,
+              "noShows": 5
+            },
+            {
+              "label": "17 août",
+              "covers": 65,
+              "revenueMad": 47905,
+              "noShows": 1
+            },
+            {
+              "label": "18 août",
+              "covers": 70,
+              "revenueMad": 51590,
+              "noShows": 2
+            },
+            {
+              "label": "19 août",
+              "covers": 74,
+              "revenueMad": 54538,
+              "noShows": 3
+            },
+            {
+              "label": "20 août",
+              "covers": 78,
+              "revenueMad": 57486,
+              "noShows": 2
+            },
+            {
+              "label": "21 août",
+              "covers": 125,
+              "revenueMad": 92125,
+              "noShows": 5
+            },
+            {
+              "label": "22 août",
+              "covers": 112,
+              "revenueMad": 82544,
+              "noShows": 5
+            },
+            {
+              "label": "23 août",
+              "covers": 116,
+              "revenueMad": 85492,
+              "noShows": 3
+            },
+            {
+              "label": "24 août",
+              "covers": 77,
+              "revenueMad": 56749,
+              "noShows": 2
+            },
+            {
+              "label": "25 août",
+              "covers": 81,
+              "revenueMad": 59697,
+              "noShows": 4
+            },
+            {
+              "label": "26 août",
+              "covers": 68,
+              "revenueMad": 50116,
+              "noShows": 1
+            },
+            {
+              "label": "27 août",
+              "covers": 72,
+              "revenueMad": 53064,
+              "noShows": 2
+            },
+            {
+              "label": "28 août",
+              "covers": 120,
+              "revenueMad": 88440,
+              "noShows": 5
+            },
+            {
+              "label": "29 août",
+              "covers": 124,
+              "revenueMad": 91388,
+              "noShows": 4
+            },
+            {
+              "label": "30 août",
+              "covers": 111,
+              "revenueMad": 81807,
+              "noShows": 4
+            },
+            {
+              "label": "31 août",
+              "covers": 71,
+              "revenueMad": 52327,
+              "noShows": 3
+            },
+            {
+              "label": "1 sept.",
+              "covers": 75,
+              "revenueMad": 55275,
+              "noShows": 1
+            },
+            {
               "label": "2 sept.",
+              "covers": 79,
+              "revenueMad": 58223,
+              "noShows": 3
+            },
+            {
+              "label": "3 sept.",
               "covers": 66,
               "revenueMad": 48642,
               "noShows": 3
@@ -1635,85 +1698,85 @@
           "venueId": "rst_dar_zellij",
           "period": "90d",
           "occupancyRate": 38,
-          "occupancyDeltaPct": 4.3,
-          "estimatedRevenueMad": 6049296,
-          "revenueDeltaPct": 4.3,
+          "occupancyDeltaPct": 4.2,
+          "estimatedRevenueMad": 6106045,
+          "revenueDeltaPct": 5.3,
           "noShowRate": 3.3,
-          "noShowDeltaPct": 0.7,
-          "coversServed": 8208,
-          "coversDeltaPct": 4.3,
+          "noShowDeltaPct": 1.2,
+          "coversServed": 8285,
+          "coversDeltaPct": 5.3,
           "series": [
             {
               "label": "5 juin",
-              "covers": 728,
-              "revenueMad": 536536,
-              "noShows": 23
+              "covers": 730,
+              "revenueMad": 538010,
+              "noShows": 24
             },
             {
               "label": "13 juin",
-              "covers": 750,
-              "revenueMad": 552750,
-              "noShows": 25
+              "covers": 752,
+              "revenueMad": 554224,
+              "noShows": 26
             },
             {
               "label": "21 juin",
-              "covers": 737,
-              "revenueMad": 543169,
-              "noShows": 25
+              "covers": 739,
+              "revenueMad": 544643,
+              "noShows": 24
             },
             {
               "label": "29 juin",
-              "covers": 713,
-              "revenueMad": 525481,
-              "noShows": 22
-            },
-            {
-              "label": "7 juil.",
-              "covers": 697,
-              "revenueMad": 513689,
+              "covers": 715,
+              "revenueMad": 526955,
               "noShows": 23
             },
             {
+              "label": "7 juil.",
+              "covers": 699,
+              "revenueMad": 515163,
+              "noShows": 24
+            },
+            {
               "label": "15 juil.",
-              "covers": 722,
-              "revenueMad": 532114,
-              "noShows": 25
+              "covers": 723,
+              "revenueMad": 532851,
+              "noShows": 23
             },
             {
               "label": "23 juil.",
-              "covers": 707,
-              "revenueMad": 521059,
-              "noShows": 22
+              "covers": 709,
+              "revenueMad": 522533,
+              "noShows": 23
             },
             {
               "label": "31 juil.",
-              "covers": 769,
-              "revenueMad": 566753,
+              "covers": 754,
+              "revenueMad": 555698,
               "noShows": 26
             },
             {
               "label": "8 août",
-              "covers": 756,
-              "revenueMad": 557172,
-              "noShows": 26
+              "covers": 758,
+              "revenueMad": 558646,
+              "noShows": 25
             },
             {
               "label": "16 août",
               "covers": 762,
               "revenueMad": 561594,
-              "noShows": 25
+              "noShows": 26
             },
             {
               "label": "24 août",
-              "covers": 722,
-              "revenueMad": 532114,
-              "noShows": 24
+              "covers": 724,
+              "revenueMad": 533588,
+              "noShows": 25
             },
             {
               "label": "1 sept.",
-              "covers": 145,
-              "revenueMad": 106865,
-              "noShows": 6
+              "covers": 220,
+              "revenueMad": 162140,
+              "noShows": 7
             }
           ]
         },
@@ -1722,83 +1785,83 @@
           "period": "12m",
           "occupancyRate": 36,
           "occupancyDeltaPct": 0,
-          "estimatedRevenueMad": 23065889,
+          "estimatedRevenueMad": 23065152,
           "revenueDeltaPct": 0,
           "noShowRate": 3.3,
           "noShowDeltaPct": 0,
-          "coversServed": 31297,
+          "coversServed": 31296,
           "coversDeltaPct": 0,
           "series": [
             {
               "label": "sept.",
-              "covers": 2445,
-              "revenueMad": 1801965,
-              "noShows": 81
+              "covers": 2483,
+              "revenueMad": 1829971,
+              "noShows": 83
             },
             {
               "label": "oct.",
-              "covers": 2523,
-              "revenueMad": 1859451,
-              "noShows": 86
+              "covers": 2485,
+              "revenueMad": 1831445,
+              "noShows": 84
             },
             {
               "label": "nov.",
-              "covers": 2484,
-              "revenueMad": 1830708,
-              "noShows": 82
+              "covers": 2523,
+              "revenueMad": 1859451,
+              "noShows": 84
             },
             {
               "label": "déc.",
-              "covers": 2639,
-              "revenueMad": 1944943,
-              "noShows": 89
+              "covers": 2601,
+              "revenueMad": 1916937,
+              "noShows": 88
             },
             {
               "label": "janv.",
-              "covers": 2560,
-              "revenueMad": 1886720,
+              "covers": 2559,
+              "revenueMad": 1885983,
               "noShows": 86
             },
             {
               "label": "févr.",
-              "covers": 2681,
-              "revenueMad": 1975897,
-              "noShows": 89
-            },
-            {
-              "label": "mars",
-              "covers": 2664,
-              "revenueMad": 1963368,
-              "noShows": 88
-            },
-            {
-              "label": "avr.",
-              "covers": 2701,
-              "revenueMad": 1990637,
-              "noShows": 90
-            },
-            {
-              "label": "mai",
-              "covers": 2801,
-              "revenueMad": 2064337,
+              "covers": 2721,
+              "revenueMad": 2005377,
               "noShows": 91
             },
             {
+              "label": "mars",
+              "covers": 2622,
+              "revenueMad": 1932414,
+              "noShows": 86
+            },
+            {
+              "label": "avr.",
+              "covers": 2744,
+              "revenueMad": 2022328,
+              "noShows": 91
+            },
+            {
+              "label": "mai",
+              "covers": 2759,
+              "revenueMad": 2033383,
+              "noShows": 90
+            },
+            {
               "label": "juin",
-              "covers": 2736,
-              "revenueMad": 2016432,
-              "noShows": 89
+              "covers": 2780,
+              "revenueMad": 2048860,
+              "noShows": 92
             },
             {
               "label": "juil.",
-              "covers": 2904,
-              "revenueMad": 2140248,
-              "noShows": 98
+              "covers": 2861,
+              "revenueMad": 2108557,
+              "noShows": 96
             },
             {
               "label": "août",
-              "covers": 2159,
-              "revenueMad": 1591183,
+              "covers": 2158,
+              "revenueMad": 1590446,
               "noShows": 72
             }
           ]
@@ -1808,34 +1871,34 @@
         "7d": {
           "venueId": "rst_dar_zellij",
           "period": "7d",
-          "impressions": 9737,
-          "impressionsDeltaPct": -5.9,
-          "listingViews": 1351,
-          "listingViewsDeltaPct": -6.2,
-          "conversionPct": 54,
-          "reach": 5453,
+          "impressions": 11276,
+          "impressionsDeltaPct": 10.5,
+          "listingViews": 1588,
+          "listingViewsDeltaPct": 11.3,
+          "conversionPct": 51.3,
+          "reach": 6315,
           "boostActive": false
         },
         "30d": {
           "venueId": "rst_dar_zellij",
           "period": "30d",
-          "impressions": 43695,
-          "impressionsDeltaPct": -2,
-          "listingViews": 6075,
-          "listingViewsDeltaPct": -1.5,
-          "conversionPct": 50.8,
-          "reach": 24469,
+          "impressions": 45285,
+          "impressionsDeltaPct": 1.8,
+          "listingViews": 6295,
+          "listingViewsDeltaPct": 2.6,
+          "conversionPct": 50.5,
+          "reach": 25360,
           "boostActive": false
         },
         "90d": {
           "venueId": "rst_dar_zellij",
           "period": "90d",
-          "impressions": 132585,
-          "impressionsDeltaPct": -0.4,
-          "listingViews": 18405,
-          "listingViewsDeltaPct": 0,
+          "impressions": 133995,
+          "impressionsDeltaPct": 0.6,
+          "listingViews": 18565,
+          "listingViewsDeltaPct": 0.9,
           "conversionPct": 50.5,
-          "reach": 74248,
+          "reach": 75037,
           "boostActive": false
         },
         "12m": {
@@ -1847,6 +1910,1057 @@
           "listingViewsDeltaPct": 0,
           "conversionPct": 47.9,
           "reach": 302126,
+          "boostActive": false
+        }
+      }
+    },
+    "bar_nomad_casa": {
+      "overview": {
+        "restaurant": {
+          "id": "bar_nomad_casa",
+          "kind": "gastronomique",
+          "name": "Nomad Rooftop",
+          "description": "Bar à cocktails sur les toits, vue sur le port. Ouvert du mercredi au dimanche, DJ le week-end.",
+          "address": "18 boulevard d'Anfa, Gauthier",
+          "latitude": 33.5899,
+          "longitude": -7.6328,
+          "priceRange": 3,
+          "tags": [
+            "Cocktails",
+            "Rooftop",
+            "Vue mer",
+            "DJ",
+            "Afterwork"
+          ],
+          "features": [
+            "terrasse",
+            "vue",
+            "musique_live",
+            "climatisation"
+          ],
+          "ambience": [
+            "Festif",
+            "Coucher de soleil"
+          ],
+          "shortName": "Nomad",
+          "initials": "NR",
+          "city": "Casablanca",
+          "subline": "Bar · Casablanca",
+          "cuisine": "Bar à cocktails",
+          "capacity": 70,
+          "contactEmail": "reservations@nomadrooftop.ma",
+          "contactPhone": "+212 522 47 11 90",
+          "website": "https://nomadrooftop.ma",
+          "currency": "MAD",
+          "onboardingCompleted": true
+        },
+        "greeting": {
+          "firstName": "",
+          "salutation": "Bonjour",
+          "clause": "le service est lancé.",
+          "subline": "38 couverts réservés, 3 en liste d'attente, 32 encore disponibles."
+        },
+        "currentService": {
+          "id": "svc_nomad_current",
+          "kind": "petit_dejeuner",
+          "label": "Petit-déjeuner",
+          "date": "2026-09-03",
+          "opensAt": "2026-09-03T09:07:52.737Z",
+          "closesAt": "2026-09-03T14:07:52.737Z",
+          "state": "open",
+          "capacity": 70,
+          "bookedCovers": 38,
+          "arrivedCovers": 22,
+          "noShowCovers": 2,
+          "revenueMad": 14800,
+          "slotLoad": [
+            {
+              "at": "2026-09-03T09:07:52.737Z",
+              "covers": 4
+            },
+            {
+              "at": "2026-09-03T09:37:52.737Z",
+              "covers": 8
+            },
+            {
+              "at": "2026-09-03T10:07:52.737Z",
+              "covers": 13
+            },
+            {
+              "at": "2026-09-03T10:37:52.737Z",
+              "covers": 14
+            },
+            {
+              "at": "2026-09-03T11:07:52.737Z",
+              "covers": 11
+            },
+            {
+              "at": "2026-09-03T11:37:52.737Z",
+              "covers": 7
+            }
+          ]
+        },
+        "zones": [
+          {
+            "id": "z_n_bar",
+            "name": "Bar",
+            "capacity": 24,
+            "available": true
+          },
+          {
+            "id": "z_n_toit",
+            "name": "Terrasse toit",
+            "capacity": 46,
+            "available": true
+          }
+        ],
+        "coversToday": {
+          "count": 28,
+          "deltaPctVsYesterday": -12.5,
+          "series24h": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            12,
+            27,
+            18,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "peakHourLabel": "Pic à 10h"
+        },
+        "averageTicket": {
+          "amountMad": 412,
+          "deltaPctVsLastWeek": 0
+        },
+        "occupancy": {
+          "pct": 26,
+          "deltaPctVsLastWeek": -18.6
+        },
+        "noShows": {
+          "count": 1,
+          "deltaPctVsLastWeek": 0,
+          "lostRevenueMad": 412
+        },
+        "revenueWeek": {
+          "amountMad": 106296,
+          "deltaPctVsLastWeek": -18.6,
+          "series": [
+            {
+              "label": "ven.",
+              "value": 17304
+            },
+            {
+              "label": "sam.",
+              "value": 16480
+            },
+            {
+              "label": "dim.",
+              "value": 17304
+            },
+            {
+              "label": "lun.",
+              "value": 16068
+            },
+            {
+              "label": "mar.",
+              "value": 14420
+            },
+            {
+              "label": "mer.",
+              "value": 13184
+            },
+            {
+              "label": "jeu.",
+              "value": 11536
+            }
+          ]
+        },
+        "rating": {
+          "average": 4.5,
+          "reviewCount": 2,
+          "deltaVsLastMonth": 4.5
+        },
+        "nextPayout": {
+          "amountMad": 41200,
+          "scheduledFor": "2026-09-05T09:47:52.737Z"
+        },
+        "upcomingReservations": [
+          {
+            "id": "res_n1",
+            "serviceId": "svc_nomad_current",
+            "guestName": "Leïla Fassi",
+            "guestPhone": "+212 661 55 20 11",
+            "partySize": 4,
+            "at": "2026-09-03T10:12:52.737Z",
+            "state": "confirmed",
+            "channel": "lyfe",
+            "zoneId": "z_n_toit",
+            "note": "Table près du bord",
+            "visits": 0,
+            "vip": false,
+            "noShowRisk": 0.06
+          },
+          {
+            "id": "res_n2",
+            "serviceId": "svc_nomad_current",
+            "guestName": "Anas Berrada",
+            "guestPhone": "+212 662 31 88 40",
+            "partySize": 2,
+            "at": "2026-09-03T10:42:52.737Z",
+            "state": "requested",
+            "channel": "lyfe",
+            "visits": 0,
+            "vip": false,
+            "noShowRisk": 0.19
+          },
+          {
+            "id": "res_n3",
+            "serviceId": "svc_nomad_current",
+            "guestName": "Groupe Anfa",
+            "guestPhone": "+212 663 12 74 05",
+            "partySize": 8,
+            "at": "2026-09-03T11:17:52.737Z",
+            "state": "confirmed",
+            "channel": "partner",
+            "zoneId": "z_n_bar",
+            "note": "Anniversaire",
+            "visits": 0,
+            "vip": false,
+            "noShowRisk": 0.08
+          }
+        ],
+        "waitlist": [
+          {
+            "id": "res_nw1",
+            "serviceId": "svc_nomad_current",
+            "guestName": "Youssef Alaoui",
+            "guestPhone": "+212 664 90 33 27",
+            "partySize": 3,
+            "at": "2026-09-03T09:57:52.737Z",
+            "state": "waitlisted",
+            "channel": "walk_in",
+            "visits": 0,
+            "vip": false
+          }
+        ],
+        "activity": [
+          {
+            "id": "act_n1",
+            "type": "guest_arrived",
+            "actor": "Leïla Fassi",
+            "message": "est arrivée · 4 couverts",
+            "at": "2026-09-03T09:41:52.737Z",
+            "reservationId": "res_n1",
+            "needsAttention": false
+          },
+          {
+            "id": "act_n2",
+            "type": "waitlist_joined",
+            "actor": "Youssef Alaoui",
+            "message": "rejoint la liste d'attente · 3 couverts",
+            "at": "2026-09-03T09:33:52.737Z",
+            "reservationId": "res_nw1",
+            "needsAttention": false
+          },
+          {
+            "id": "act_n3",
+            "type": "review_received",
+            "actor": "Meryem T.",
+            "message": "a laissé un avis 5 étoiles",
+            "at": "2026-08-31T09:47:52.737Z",
+            "needsAttention": false
+          }
+        ],
+        "topItems": [
+          {
+            "id": "mi_n1",
+            "name": "Negroni du Nomad",
+            "description": "Campari infusé au safran, vermouth maison.",
+            "category": "cocktail",
+            "priceMad": 140,
+            "signature": true,
+            "visible": true,
+            "dietary": []
+          },
+          {
+            "id": "mi_n2",
+            "name": "Spritz Atlas",
+            "description": "Vermouth blanc, verveine, agrumes.",
+            "category": "cocktail",
+            "priceMad": 120,
+            "signature": false,
+            "visible": true,
+            "dietary": []
+          },
+          {
+            "id": "mi_n3",
+            "name": "Planche mezze",
+            "description": "Houmous, zaalouk, olives, pain maison.",
+            "category": "entree",
+            "priceMad": 160,
+            "signature": false,
+            "visible": true,
+            "dietary": [
+              "vegetarien"
+            ]
+          },
+          {
+            "id": "mi_n4",
+            "name": "Thé glacé menthe",
+            "description": "Sans alcool, menthe fraîche.",
+            "category": "boisson",
+            "priceMad": 60,
+            "signature": false,
+            "visible": true,
+            "dietary": [
+              "vegan"
+            ]
+          }
+        ],
+        "reviews": [
+          {
+            "id": "rv_n1",
+            "guestName": "Meryem T.",
+            "rating": 5,
+            "comment": "Vue imbattable au coucher du soleil, cocktails créatifs.",
+            "at": "2026-08-31T09:47:52.737Z",
+            "channel": "lyfe",
+            "tags": [],
+            "replied": false
+          },
+          {
+            "id": "rv_n2",
+            "guestName": "Otmane K.",
+            "rating": 4,
+            "comment": "Très bonne ambiance le samedi, un peu bruyant.",
+            "at": "2026-08-23T09:47:52.737Z",
+            "channel": "google",
+            "tags": [],
+            "replied": false
+          }
+        ],
+        "services": [
+          {
+            "id": "svc_nomad_current",
+            "kind": "petit_dejeuner",
+            "label": "Petit-déjeuner",
+            "date": "2026-09-03",
+            "opensAt": "2026-09-03T09:07:52.737Z",
+            "closesAt": "2026-09-03T14:07:52.737Z",
+            "state": "open",
+            "capacity": 70,
+            "bookedCovers": 38,
+            "arrivedCovers": 22,
+            "noShowCovers": 2,
+            "revenueMad": 14800,
+            "slotLoad": [
+              {
+                "at": "2026-09-03T09:07:52.737Z",
+                "covers": 4
+              },
+              {
+                "at": "2026-09-03T09:37:52.737Z",
+                "covers": 8
+              },
+              {
+                "at": "2026-09-03T10:07:52.737Z",
+                "covers": 13
+              },
+              {
+                "at": "2026-09-03T10:37:52.737Z",
+                "covers": 14
+              },
+              {
+                "at": "2026-09-03T11:07:52.737Z",
+                "covers": 11
+              },
+              {
+                "at": "2026-09-03T11:37:52.737Z",
+                "covers": 7
+              }
+            ]
+          }
+        ],
+        "payouts": [
+          {
+            "id": "pay_n1",
+            "reference": "LYF-NOMAD-24",
+            "amountMad": 41200,
+            "commissionMad": 3100,
+            "coversSettled": 168,
+            "periodLabel": "25 août – 31 août",
+            "scheduledFor": "2026-09-05T09:47:52.737Z",
+            "state": "scheduled"
+          }
+        ]
+      },
+      "profile": {
+        "id": "bar_nomad_casa",
+        "kind": "gastronomique",
+        "name": "Nomad Rooftop",
+        "description": "Bar à cocktails sur les toits, vue sur le port. Ouvert du mercredi au dimanche, DJ le week-end.",
+        "address": "18 boulevard d'Anfa, Gauthier",
+        "latitude": 33.5899,
+        "longitude": -7.6328,
+        "priceRange": 3,
+        "tags": [
+          "Cocktails",
+          "Rooftop",
+          "Vue mer",
+          "DJ",
+          "Afterwork"
+        ],
+        "features": [
+          "terrasse",
+          "vue",
+          "musique_live",
+          "climatisation"
+        ],
+        "ambience": [
+          "Festif",
+          "Coucher de soleil"
+        ],
+        "shortName": "Nomad",
+        "initials": "NR",
+        "city": "Casablanca",
+        "subline": "Bar · Casablanca",
+        "cuisine": "Bar à cocktails",
+        "capacity": 70,
+        "contactEmail": "reservations@nomadrooftop.ma",
+        "contactPhone": "+212 522 47 11 90",
+        "website": "https://nomadrooftop.ma",
+        "currency": "MAD",
+        "onboardingCompleted": true
+      },
+      "menuItems": [
+        {
+          "id": "mi_n1",
+          "name": "Negroni du Nomad",
+          "description": "Campari infusé au safran, vermouth maison.",
+          "category": "cocktail",
+          "priceMad": 140,
+          "signature": true,
+          "visible": true,
+          "dietary": []
+        },
+        {
+          "id": "mi_n2",
+          "name": "Spritz Atlas",
+          "description": "Vermouth blanc, verveine, agrumes.",
+          "category": "cocktail",
+          "priceMad": 120,
+          "signature": false,
+          "visible": true,
+          "dietary": []
+        },
+        {
+          "id": "mi_n3",
+          "name": "Planche mezze",
+          "description": "Houmous, zaalouk, olives, pain maison.",
+          "category": "entree",
+          "priceMad": 160,
+          "signature": false,
+          "visible": true,
+          "dietary": [
+            "vegetarien"
+          ]
+        },
+        {
+          "id": "mi_n4",
+          "name": "Thé glacé menthe",
+          "description": "Sans alcool, menthe fraîche.",
+          "category": "boisson",
+          "priceMad": 60,
+          "signature": false,
+          "visible": true,
+          "dietary": [
+            "vegan"
+          ]
+        }
+      ],
+      "availability": {
+        "venueId": "bar_nomad_casa",
+        "slots": [
+          {
+            "id": "av_n_0",
+            "weekday": 3,
+            "opensAt": "18:00",
+            "closesAt": "01:00",
+            "capacity": 70,
+            "enabled": true
+          },
+          {
+            "id": "av_n_1",
+            "weekday": 4,
+            "opensAt": "18:00",
+            "closesAt": "01:00",
+            "capacity": 70,
+            "enabled": true
+          },
+          {
+            "id": "av_n_2",
+            "weekday": 5,
+            "opensAt": "18:00",
+            "closesAt": "02:00",
+            "capacity": 70,
+            "enabled": true
+          },
+          {
+            "id": "av_n_3",
+            "weekday": 6,
+            "opensAt": "18:00",
+            "closesAt": "02:00",
+            "capacity": 70,
+            "enabled": true
+          },
+          {
+            "id": "av_n_4",
+            "weekday": 7,
+            "opensAt": "18:00",
+            "closesAt": "01:00",
+            "capacity": 70,
+            "enabled": true
+          }
+        ],
+        "closures": [],
+        "updatedAt": "2026-09-03T09:47:52.737Z"
+      },
+      "customers": [],
+      "notifications": [],
+      "notificationPreferences": {
+        "venueId": "bar_nomad_casa",
+        "newBooking": [],
+        "cancellation": [],
+        "review": [],
+        "dailySummary": []
+      },
+      "staff": [
+        {
+          "id": "stf_n3",
+          "userId": "usr_rachid",
+          "fullName": "Rachid Amrani",
+          "email": "rachid@darzellij.ma",
+          "role": "manager",
+          "lastActive": "2026-09-03T09:17:52.737Z",
+          "pending": false
+        },
+        {
+          "id": "stf_n2",
+          "userId": "usr_sofia",
+          "fullName": "Sofia Bennis",
+          "email": "sofia@nomadrooftop.ma",
+          "role": "manager",
+          "lastActive": "2026-09-03T09:29:52.737Z",
+          "pending": false
+        },
+        {
+          "id": "stf_n1",
+          "userId": "usr_yassine",
+          "fullName": "Yassine Alami",
+          "email": "yassine@darzellij.ma",
+          "role": "owner",
+          "lastActive": "2026-09-03T09:45:52.737Z",
+          "pending": false
+        }
+      ],
+      "photos": [],
+      "menuFiles": [],
+      "analytics": {
+        "7d": {
+          "venueId": "bar_nomad_casa",
+          "period": "7d",
+          "occupancyRate": 27,
+          "occupancyDeltaPct": -16.1,
+          "estimatedRevenueMad": 124836,
+          "revenueDeltaPct": -4.1,
+          "noShowRate": 2.3,
+          "noShowDeltaPct": 21.7,
+          "coversServed": 303,
+          "coversDeltaPct": -4.1,
+          "series": [
+            {
+              "label": "27 août",
+              "covers": 45,
+              "revenueMad": 18540,
+              "noShows": 1
+            },
+            {
+              "label": "28 août",
+              "covers": 42,
+              "revenueMad": 17304,
+              "noShows": 2
+            },
+            {
+              "label": "29 août",
+              "covers": 40,
+              "revenueMad": 16480,
+              "noShows": 0
+            },
+            {
+              "label": "30 août",
+              "covers": 42,
+              "revenueMad": 17304,
+              "noShows": 1
+            },
+            {
+              "label": "31 août",
+              "covers": 39,
+              "revenueMad": 16068,
+              "noShows": 2
+            },
+            {
+              "label": "1 sept.",
+              "covers": 35,
+              "revenueMad": 14420,
+              "noShows": 0
+            },
+            {
+              "label": "2 sept.",
+              "covers": 32,
+              "revenueMad": 13184,
+              "noShows": 0
+            },
+            {
+              "label": "3 sept.",
+              "covers": 28,
+              "revenueMad": 11536,
+              "noShows": 1
+            }
+          ]
+        },
+        "30d": {
+          "venueId": "bar_nomad_casa",
+          "period": "30d",
+          "occupancyRate": 23,
+          "occupancyDeltaPct": -5.3,
+          "estimatedRevenueMad": 407880,
+          "revenueDeltaPct": -2.2,
+          "noShowRate": 2,
+          "noShowDeltaPct": 7.6,
+          "coversServed": 990,
+          "coversDeltaPct": -2.2,
+          "series": [
+            {
+              "label": "4 août",
+              "covers": 13,
+              "revenueMad": 5356,
+              "noShows": 1
+            },
+            {
+              "label": "5 août",
+              "covers": 16,
+              "revenueMad": 6592,
+              "noShows": 0
+            },
+            {
+              "label": "6 août",
+              "covers": 15,
+              "revenueMad": 6180,
+              "noShows": 0
+            },
+            {
+              "label": "7 août",
+              "covers": 14,
+              "revenueMad": 5768,
+              "noShows": 1
+            },
+            {
+              "label": "8 août",
+              "covers": 14,
+              "revenueMad": 5768,
+              "noShows": 0
+            },
+            {
+              "label": "9 août",
+              "covers": 14,
+              "revenueMad": 5768,
+              "noShows": 0
+            },
+            {
+              "label": "10 août",
+              "covers": 20,
+              "revenueMad": 8240,
+              "noShows": 1
+            },
+            {
+              "label": "11 août",
+              "covers": 21,
+              "revenueMad": 8652,
+              "noShows": 0
+            },
+            {
+              "label": "12 août",
+              "covers": 22,
+              "revenueMad": 9064,
+              "noShows": 0
+            },
+            {
+              "label": "13 août",
+              "covers": 23,
+              "revenueMad": 9476,
+              "noShows": 1
+            },
+            {
+              "label": "14 août",
+              "covers": 25,
+              "revenueMad": 10300,
+              "noShows": 0
+            },
+            {
+              "label": "15 août",
+              "covers": 32,
+              "revenueMad": 13184,
+              "noShows": 0
+            },
+            {
+              "label": "16 août",
+              "covers": 33,
+              "revenueMad": 13596,
+              "noShows": 1
+            },
+            {
+              "label": "17 août",
+              "covers": 35,
+              "revenueMad": 14420,
+              "noShows": 0
+            },
+            {
+              "label": "18 août",
+              "covers": 36,
+              "revenueMad": 14832,
+              "noShows": 0
+            },
+            {
+              "label": "19 août",
+              "covers": 38,
+              "revenueMad": 15656,
+              "noShows": 2
+            },
+            {
+              "label": "20 août",
+              "covers": 44,
+              "revenueMad": 18128,
+              "noShows": 0
+            },
+            {
+              "label": "21 août",
+              "covers": 44,
+              "revenueMad": 18128,
+              "noShows": 1
+            },
+            {
+              "label": "22 août",
+              "covers": 45,
+              "revenueMad": 18540,
+              "noShows": 2
+            },
+            {
+              "label": "23 août",
+              "covers": 44,
+              "revenueMad": 18128,
+              "noShows": 0
+            },
+            {
+              "label": "24 août",
+              "covers": 44,
+              "revenueMad": 18128,
+              "noShows": 1
+            },
+            {
+              "label": "25 août",
+              "covers": 48,
+              "revenueMad": 19776,
+              "noShows": 2
+            },
+            {
+              "label": "26 août",
+              "covers": 47,
+              "revenueMad": 19364,
+              "noShows": 0
+            },
+            {
+              "label": "27 août",
+              "covers": 45,
+              "revenueMad": 18540,
+              "noShows": 1
+            },
+            {
+              "label": "28 août",
+              "covers": 42,
+              "revenueMad": 17304,
+              "noShows": 2
+            },
+            {
+              "label": "29 août",
+              "covers": 40,
+              "revenueMad": 16480,
+              "noShows": 0
+            },
+            {
+              "label": "30 août",
+              "covers": 42,
+              "revenueMad": 17304,
+              "noShows": 1
+            },
+            {
+              "label": "31 août",
+              "covers": 39,
+              "revenueMad": 16068,
+              "noShows": 2
+            },
+            {
+              "label": "1 sept.",
+              "covers": 35,
+              "revenueMad": 14420,
+              "noShows": 0
+            },
+            {
+              "label": "2 sept.",
+              "covers": 32,
+              "revenueMad": 13184,
+              "noShows": 0
+            },
+            {
+              "label": "3 sept.",
+              "covers": 28,
+              "revenueMad": 11536,
+              "noShows": 1
+            }
+          ]
+        },
+        "90d": {
+          "venueId": "bar_nomad_casa",
+          "period": "90d",
+          "occupancyRate": 23,
+          "occupancyDeltaPct": 10.3,
+          "estimatedRevenueMad": 1195624,
+          "revenueDeltaPct": 11.5,
+          "noShowRate": 2,
+          "noShowDeltaPct": 13.1,
+          "coversServed": 2902,
+          "coversDeltaPct": 11.5,
+          "series": [
+            {
+              "label": "5 juin",
+              "covers": 355,
+              "revenueMad": 146260,
+              "noShows": 8
+            },
+            {
+              "label": "13 juin",
+              "covers": 296,
+              "revenueMad": 121952,
+              "noShows": 7
+            },
+            {
+              "label": "21 juin",
+              "covers": 155,
+              "revenueMad": 63860,
+              "noShows": 2
+            },
+            {
+              "label": "29 juin",
+              "covers": 139,
+              "revenueMad": 57268,
+              "noShows": 3
+            },
+            {
+              "label": "7 juil.",
+              "covers": 280,
+              "revenueMad": 115360,
+              "noShows": 6
+            },
+            {
+              "label": "15 juil.",
+              "covers": 359,
+              "revenueMad": 147908,
+              "noShows": 7
+            },
+            {
+              "label": "23 juil.",
+              "covers": 253,
+              "revenueMad": 104236,
+              "noShows": 4
+            },
+            {
+              "label": "31 juil.",
+              "covers": 133,
+              "revenueMad": 54796,
+              "noShows": 3
+            },
+            {
+              "label": "8 août",
+              "covers": 171,
+              "revenueMad": 70452,
+              "noShows": 2
+            },
+            {
+              "label": "16 août",
+              "covers": 319,
+              "revenueMad": 131428,
+              "noShows": 6
+            },
+            {
+              "label": "24 août",
+              "covers": 347,
+              "revenueMad": 142964,
+              "noShows": 9
+            },
+            {
+              "label": "1 sept.",
+              "covers": 95,
+              "revenueMad": 39140,
+              "noShows": 1
+            }
+          ]
+        },
+        "12m": {
+          "venueId": "bar_nomad_casa",
+          "period": "12m",
+          "occupancyRate": 22,
+          "occupancyDeltaPct": 0,
+          "estimatedRevenueMad": 4571552,
+          "revenueDeltaPct": 0,
+          "noShowRate": 1.9,
+          "noShowDeltaPct": 0,
+          "coversServed": 11096,
+          "coversDeltaPct": 0,
+          "series": [
+            {
+              "label": "sept.",
+              "covers": 1034,
+              "revenueMad": 426008,
+              "noShows": 18
+            },
+            {
+              "label": "oct.",
+              "covers": 973,
+              "revenueMad": 400876,
+              "noShows": 19
+            },
+            {
+              "label": "nov.",
+              "covers": 863,
+              "revenueMad": 355556,
+              "noShows": 15
+            },
+            {
+              "label": "déc.",
+              "covers": 830,
+              "revenueMad": 341960,
+              "noShows": 14
+            },
+            {
+              "label": "janv.",
+              "covers": 907,
+              "revenueMad": 373684,
+              "noShows": 19
+            },
+            {
+              "label": "févr.",
+              "covers": 1013,
+              "revenueMad": 417356,
+              "noShows": 18
+            },
+            {
+              "label": "mars",
+              "covers": 1022,
+              "revenueMad": 421064,
+              "noShows": 19
+            },
+            {
+              "label": "avr.",
+              "covers": 932,
+              "revenueMad": 383984,
+              "noShows": 20
+            },
+            {
+              "label": "mai",
+              "covers": 837,
+              "revenueMad": 344844,
+              "noShows": 12
+            },
+            {
+              "label": "juin",
+              "covers": 846,
+              "revenueMad": 348552,
+              "noShows": 16
+            },
+            {
+              "label": "juil.",
+              "covers": 955,
+              "revenueMad": 393460,
+              "noShows": 20
+            },
+            {
+              "label": "août",
+              "covers": 884,
+              "revenueMad": 364208,
+              "noShows": 17
+            }
+          ]
+        }
+      },
+      "visibility": {
+        "7d": {
+          "venueId": "bar_nomad_casa",
+          "period": "7d",
+          "impressions": 6724,
+          "impressionsDeltaPct": 6.5,
+          "listingViews": 956,
+          "listingViewsDeltaPct": 13.3,
+          "conversionPct": 36.7,
+          "reach": 3765,
+          "boostActive": false
+        },
+        "30d": {
+          "venueId": "bar_nomad_casa",
+          "period": "30d",
+          "impressions": 27235,
+          "impressionsDeltaPct": 2.3,
+          "listingViews": 3800,
+          "listingViewsDeltaPct": 0.9,
+          "conversionPct": 30.9,
+          "reach": 15252,
+          "boostActive": false
+        },
+        "90d": {
+          "venueId": "bar_nomad_casa",
+          "period": "90d",
+          "impressions": 80925,
+          "impressionsDeltaPct": 1.1,
+          "listingViews": 11270,
+          "listingViewsDeltaPct": 0.3,
+          "conversionPct": 30.6,
+          "reach": 45318,
+          "boostActive": false
+        },
+        "12m": {
+          "venueId": "bar_nomad_casa",
+          "period": "12m",
+          "impressions": 324330,
+          "impressionsDeltaPct": 0,
+          "listingViews": 45365,
+          "listingViewsDeltaPct": 0,
+          "conversionPct": 29.3,
+          "reach": 181625,
           "boostActive": false
         }
       }

@@ -358,6 +358,190 @@ for (let i = 0; i < 365; i += 1) {
   }),
 );
 
+// ── Second venue ─────────────────────────────────────────────
+//
+// A bar, owned by the same person as the restaurant. It exists so three
+// things stop being theoretical: the venue switcher has somewhere to
+// switch to, the login flow's multiple-venues state has real accounts
+// behind it, and venue scoping can be demonstrated with two venues
+// rather than asserted against one.
+//
+// Deliberately lighter than Dar Zellij — enough rows for every screen to
+// render honestly, not a second full dataset.
+const VENUE2 = "bar_nomad_casa";
+
+insert("venues", {
+  id: VENUE2,
+  kind: "drinks",
+  name: "Nomad Rooftop",
+  short_name: "Nomad",
+  initials: "NR",
+  description:
+    "Bar à cocktails sur les toits, vue sur le port. Ouvert du mercredi au dimanche, DJ le week-end.",
+  category: "Bar à cocktails",
+  address: "18 boulevard d'Anfa, Gauthier",
+  city: "Casablanca",
+  latitude: 33.5899,
+  longitude: -7.6328,
+  contact_email: "reservations@nomadrooftop.ma",
+  contact_phone: "+212 522 47 11 90",
+  website: "https://nomadrooftop.ma",
+  currency: "MAD",
+  capacity: 70,
+  price_range: 3,
+  onboarding_completed: 1,
+  created_at: daysAgo(180),
+  updated_at: iso(now),
+});
+
+insert("business_accounts", {
+  business_id: "biz_nomad",
+  venue_id: VENUE2,
+  owner_id: OWNER,
+  subscription_tier: "annual",
+  features_enabled: JSON.stringify([
+    "bookings", "availability", "analytics", "reviews", "team",
+  ]),
+  created_at: daysAgo(180),
+});
+
+[
+  ["tag", ["Cocktails", "Rooftop", "Vue mer", "DJ", "Afterwork"]],
+  ["feature", ["terrasse", "vue", "musique_live", "climatisation"]],
+  ["ambience", ["Festif", "Coucher de soleil"]],
+].forEach(([kind, values]) =>
+  values.forEach((value, i) =>
+    insert("venue_tags", { venue_id: VENUE2, kind, value, position: i }),
+  ),
+);
+
+[
+  ["stf_n1", OWNER, "Yassine Alami", "yassine@darzellij.ma", "owner", 2],
+  ["stf_n2", "usr_sofia", "Sofia Bennis", "sofia@nomadrooftop.ma", "manager", 18],
+  // Rachid manages both venues and holds no event organisation, which
+  // makes his the account that lands on the venue chooser at login.
+  ["stf_n3", "usr_rachid", "Rachid Amrani", "rachid@darzellij.ma", "manager", 30],
+].forEach(([id, user, name, email, role, mins]) =>
+  insert("staff", {
+    id, venue_id: VENUE2, user_id: user, full_name: name, email,
+    role, last_active: minutesAgo(mins), pending: 0, created_at: daysAgo(150),
+  }),
+);
+
+[
+  ["z_n_bar", "Bar", 24, 0],
+  ["z_n_toit", "Terrasse toit", 46, 1],
+].forEach(([id, name, capacity, position]) =>
+  insert("zones", { id, venue_id: VENUE2, name, capacity, available: 1, position }),
+);
+
+// Wednesday to Sunday, evenings only — a bar, not a restaurant.
+// Weekdays are 1-7 (Monday-Sunday), matching the schema's constraint.
+[3, 4, 5, 6, 7].forEach((weekday, i) =>
+  insert("availability_slots", {
+    id: `av_n_${i}`, venue_id: VENUE2, weekday,
+    opens_at: "18:00", closes_at: weekday === 5 || weekday === 6 ? "02:00" : "01:00",
+    capacity: 70, enabled: 1, version: 1, updated_at: iso(now),
+  }),
+);
+
+const SERVICE2 = "svc_nomad_current";
+const opens2 = new Date(now.getTime() - 40 * 60_000);
+const closes2 = new Date(now.getTime() + 260 * 60_000);
+const [kind2, label2] = serviceKindFor(opens2);
+insert("services", {
+  id: SERVICE2, venue_id: VENUE2, kind: kind2, label: label2,
+  date: day(opens2), opens_at: iso(opens2), closes_at: iso(closes2),
+  state: "open", capacity: 70, booked_covers: 38, arrived_covers: 22,
+  no_show_covers: 2, revenue_cents: mad(14_800),
+});
+[0.3, 0.6, 0.9, 1, 0.8, 0.5].forEach((f, i) =>
+  insert("service_slot_load", {
+    service_id: SERVICE2,
+    at: iso(new Date(opens2.getTime() + i * 30 * 60_000)),
+    covers: Math.round(14 * f),
+  }),
+);
+
+[
+  ["res_n1", "Leïla Fassi", "+212 661 55 20 11", 4, 25, "confirmed", "lyfe", "z_n_toit", "Table près du bord", 0.06],
+  ["res_n2", "Anas Berrada", "+212 662 31 88 40", 2, 55, "requested", "lyfe", null, null, 0.19],
+  ["res_n3", "Groupe Anfa", "+212 663 12 74 05", 8, 90, "confirmed", "partner", "z_n_bar", "Anniversaire", 0.08],
+  ["res_nw1", "Youssef Alaoui", "+212 664 90 33 27", 3, 10, "waitlisted", "walk_in", null, null, null],
+].forEach(([id, name, phone, size, inMin, state, channel, zone, note, risk]) => {
+  insert("reservations", {
+    id, venue_id: VENUE2, service_id: SERVICE2, customer_id: null,
+    guest_name: name, guest_phone: phone, party_size: size,
+    at: minutesAhead(inMin), state, channel, zone_id: zone,
+    note, deposit_cents: null, no_show_risk: risk,
+    qr_code: `LYFE-${id.toUpperCase()}`, checked_in_at: null,
+    created_at: daysAgo(2), updated_at: minutesAgo(20),
+  });
+  insert("reservation_status_history", {
+    id: `sh_${id}_1`, reservation_id: id, from_state: null,
+    to_state: state, actor: "user", actor_id: null,
+    reason_code: null, note: null, at: daysAgo(2),
+  });
+});
+
+[
+  ["mi_n1", "Negroni du Nomad", "Campari infusé au safran, vermouth maison.", "cocktail", 140, 1, 0],
+  ["mi_n2", "Spritz Atlas", "Vermouth blanc, verveine, agrumes.", "cocktail", 120, 0, 1],
+  ["mi_n3", "Planche mezze", "Houmous, zaalouk, olives, pain maison.", "entree", 160, 0, 2],
+  ["mi_n4", "Thé glacé menthe", "Sans alcool, menthe fraîche.", "boisson", 60, 0, 3],
+].forEach(([id, name, description, category, price, signature, position]) =>
+  insert("menu_items", {
+    id, venue_id: VENUE2, name, description, category,
+    price_cents: mad(price), signature, visible: 1, position,
+  }),
+);
+insert("menu_item_dietary", { item_id: "mi_n4", tag: "vegan" });
+insert("menu_item_dietary", { item_id: "mi_n3", tag: "vegetarien" });
+
+[
+  ["rv_n1", "Meryem T.", 5, "Vue imbattable au coucher du soleil, cocktails créatifs.", "lyfe", 3],
+  ["rv_n2", "Otmane K.", 4, "Très bonne ambiance le samedi, un peu bruyant.", "google", 11],
+].forEach(([id, name, rating, comment, channel, days]) =>
+  insert("reviews", {
+    id, venue_id: VENUE2, guest_name: name, rating, comment,
+    channel, at: daysAgo(days),
+  }),
+);
+
+insert("payouts", {
+  id: "pay_n1", venue_id: VENUE2, reference: "LYF-NOMAD-24",
+  amount_cents: mad(41_200), commission_cents: mad(3_100),
+  covers_settled: 168,
+  period_start: daysAgo(9), period_end: daysAgo(3),
+  scheduled_for: daysAhead(2), paid_at: null, state: "scheduled",
+});
+
+for (let i = 0; i < 365; i += 1) {
+  const covers = Math.round(28 + 16 * Math.sin(i / 6) + (i % 5));
+  insert("analytics_daily", {
+    venue_id: VENUE2, date: day(new Date(now.getTime() - i * 86_400_000)),
+    covers_served: Math.max(0, covers),
+    revenue_cents: mad(Math.max(0, covers) * 412),
+    no_shows: Math.max(0, Math.round(covers * 0.04) - (i % 3)),
+    bookings_made: Math.max(0, covers + 6),
+    bookings_refused: i % 7,
+    capacity: 140,
+    impressions: 760 + ((i * 23) % 260),
+    listing_views: 95 + ((i * 7) % 60),
+  });
+}
+
+[
+  ["act_n1", "guest_arrived", "Leïla Fassi", "est arrivée · 4 couverts", "res_n1", 0, 6],
+  ["act_n2", "waitlist_joined", "Youssef Alaoui", "rejoint la liste d'attente · 3 couverts", "res_nw1", 0, 14],
+  ["act_n3", "review_received", "Meryem T.", "a laissé un avis 5 étoiles", null, 0, 4320],
+].forEach(([id, type, actor, message, res, attention, mins]) =>
+  insert("activity", {
+    id, venue_id: VENUE2, type, actor, message,
+    reservation_id: res, needs_attention: attention, at: minutesAgo(mins),
+  }),
+);
+
 const count = (t) => db.prepare(`SELECT COUNT(*) c FROM ${t}`).get().c;
 console.log(`seeded ${dbPath}`);
 for (const t of ["venues","business_accounts","staff","zones","venue_tags","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_items","menu_item_dietary","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity"]) {
