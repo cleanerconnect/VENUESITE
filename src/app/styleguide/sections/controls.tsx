@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Switch } from "@/components/ui/Switch";
 import { ChipInput, ChipSelect } from "@/components/forms/ChipSelect";
+import { Field } from "@/components/forms/Field";
 import { SaveBar } from "@/components/forms/SaveBar";
 import type { SaveState } from "@/lib/forms/useOptimisticForm";
 import { Row, Specimen } from "../Shell";
@@ -148,6 +149,30 @@ export function ControlsSection() {
             onChange={() => {}}
             error="8 mots-clés au maximum."
           />
+        </div>
+      </Specimen>
+
+      <Specimen
+        name="Field"
+        note="l'erreur passe par aria-describedby, pas seulement par la couleur"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field label="Champ libre" hint="Avec une aide">
+            {(props) => (
+              <input
+                {...props}
+                className="w-full h-11 px-3.5 border border-line rounded-[var(--radius-sm)] bg-surface text-[14px] outline-none focus:border-ink"
+              />
+            )}
+          </Field>
+          <Field label="En erreur" error="Ce champ est obligatoire." required>
+            {(props) => (
+              <input
+                {...props}
+                className="w-full h-11 px-3.5 border border-danger/60 rounded-[var(--radius-sm)] bg-surface text-[14px] outline-none"
+              />
+            )}
+          </Field>
         </div>
       </Specimen>
 

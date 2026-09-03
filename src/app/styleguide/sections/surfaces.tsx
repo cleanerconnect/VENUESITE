@@ -13,6 +13,12 @@ import { FilterTabs } from "@/components/ui/FilterTabs";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { MetricTile } from "@/components/ui/MetricTile";
 import { StatTile } from "@/components/cards/StatTile";
+import { Sparkline } from "@/components/cards/Sparkline";
+import { CapacityRing } from "@/components/cards/CapacityRing";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
+import { LivePulse } from "@/components/motion/LivePulse";
+import { ChartTooltip } from "@/components/ui/ChartTooltip";
+import { CHART, seriesColor } from "@/lib/charts/theme";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import {
@@ -246,6 +252,64 @@ export function SurfacesSection() {
           tuile il s&apos;agit. Voir <code className="text-[12px]">kpi-grid</code>
           dans « Blocs d&apos;écran ».
         </p>
+      </Specimen>
+
+      <Specimen
+        name="Mouvement et chiffres"
+        note="AnimatedNumber, LivePulse, Stagger, CapacityRing, Sparkline"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div className="space-y-4">
+            <div>
+              <code className="text-[11px] text-ink-mute">AnimatedNumber</code>
+              <div className="text-metric-lg text-ink num mt-1">
+                <AnimatedNumber value={63400} />
+              </div>
+            </div>
+            <div>
+              <code className="text-[11px] text-ink-mute">LivePulse</code>
+              <div className="mt-1">
+                <LivePulse label="LIVE" />
+              </div>
+            </div>
+            <div>
+              <code className="text-[11px] text-ink-mute">Sparkline</code>
+              <div className="mt-1">
+                <Sparkline data={[12, 18, 24, 30, 22, 34, 40, 36]} />
+              </div>
+            </div>
+          </div>
+          <div>
+            <code className="text-[11px] text-ink-mute">CapacityRing</code>
+            <div className="mt-2 flex justify-center">
+              <CapacityRing
+                progress={0.72}
+                topLabel="Arrivés"
+                centerLabel="72 %"
+                bottomLabel="86 / 120"
+              />
+            </div>
+          </div>
+        </div>
+      </Specimen>
+
+      <Specimen
+        name="ChartTooltip"
+        note="une seule infobulle pour les six graphiques"
+      >
+        <div className="flex flex-wrap gap-4">
+          <ChartTooltip
+            heading="12 JUIN 2026"
+            rows={[{ value: "63 400 MAD" }]}
+          />
+          <ChartTooltip
+            heading="Jour 14"
+            rows={[
+              { label: "Réel", value: "62,4 %", color: seriesColor(0) },
+              { label: "Projection", value: "58,1 %", color: CHART.projection },
+            ]}
+          />
+        </div>
       </Specimen>
 
       <Specimen name="Skeleton" note="chargement — calqué sur la forme réelle">

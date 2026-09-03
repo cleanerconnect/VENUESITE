@@ -6,6 +6,8 @@ import { ControlsSection } from "./sections/controls";
 import { SurfacesSection } from "./sections/surfaces";
 import { BlocksSection } from "./sections/blocks";
 import { VocabularySection } from "./sections/vocabulary";
+import { StatesSection } from "./sections/states";
+import { RoutesSection } from "./sections/routes";
 
 // The styleguide.
 //
@@ -49,11 +51,25 @@ const SECTIONS: SectionDef[] = [
     content: <BlocksSection />,
   },
   {
+    id: "states",
+    title: "États",
+    blurb:
+      "Ce qu'un écran montre quand ses données ne sont pas là : chargement, vide, échec, accès refusé. Chaque route peut être forcée dans l'un d'eux depuis son URL.",
+    content: <StatesSection />,
+  },
+  {
     id: "vocabulary",
     title: "Vocabulaire",
     blurb:
       "Les termes du domaine — libellé, ton et icône — générés depuis les mêmes tables que l'application lit.",
     content: <VocabularySection />,
+  },
+  {
+    id: "routes",
+    title: "Écrans",
+    blurb:
+      "Tous les écrans du portail, avec un lien vers chacun, ce qu'il sert, qui peut l'ouvrir et ce qui lui manque encore.",
+    content: <RoutesSection />,
   },
 ];
 
