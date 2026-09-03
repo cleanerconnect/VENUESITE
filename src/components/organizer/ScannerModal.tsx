@@ -13,12 +13,13 @@ import {
   X,
 } from "lucide-react";
 import { useScannerStore } from "@/lib/stores/scanner";
-import { getAllEvents } from "@/lib/data/static/events";
+import type { LyfeEvent } from "@/lib/types/domain";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { useToast } from "@/components/ui/Toast";
 import { formatDateTimeFR, formatRelativeFR } from "@/lib/utils/format";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 // Global scanner, opens from the topbar pill, the bottom-tab raised FAB,
 // and ⌘+Shift+S. Two screens inside: event picker (if multi-live), then
@@ -42,7 +43,8 @@ export function ScannerModal() {
     cameraAvailable,
     setCameraAvailable,
   } = useScannerStore();
-  const liveEvents = getAllEvents().filter(
+  const eventsQuery = useEventQuery((repo) => repo.listEvents(), []);
+  const liveEvents = (eventsQuery.data ?? []).filter(
     (e) => e.status.state === "on_sale" || e.status.state === "live",
   );
   const selected = liveEvents.find((e) => e.id === selectedEventId);
@@ -176,7 +178,7 @@ function EventPicker({
   liveEvents,
   onPick,
 }: {
-  liveEvents: ReturnType<typeof getAllEvents>;
+  liveEvents: LyfeEvent[];
   onPick: (id: string, total: number) => void;
 }) {
   return (

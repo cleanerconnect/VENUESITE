@@ -8,12 +8,13 @@ import { ArrowRight, FileText, Printer, ScanLine } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { useProfile } from "@/lib/auth/role";
-import { getAllEvents } from "@/lib/data/static/events";
-import { getBilanByEventId, hasBilan } from "@/lib/data/static/bilan";
 import type { BilanData } from "@/lib/types/analytics";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton } from "@/components/ui/Skeleton";
 
 interface Row {
   event: LyfeEvent;
@@ -27,16 +28,19 @@ export default function BilansPage() {
   // compared the profile id against a literal, which meant a second
   // account showed an empty screen for a reason nothing in the data
   // expressed. Ownership is now a field on the event.
-  const rows = useMemo<Row[]>(() => {
-    const all = getAllEvents().filter(
-      (e) => !profile || e.organizerId === profile.id,
-    );
-    return all
-      .filter((e) => hasBilan(e))
-      .sort((a, b) => (a.endsAt < b.endsAt ? 1 : -1))
-      .map((e) => ({ event: e, bilan: getBilanByEventId(e.id, all) }))
-      .filter((r): r is Row => Boolean(r.bilan));
-  }, [profile]);
+  // Every report the repository holds, then narrowed to this profile.
+  const bilansQuery = useEventQuery(
+    (repo) => repo.getRecentBilans(Number.MAX_SAFE_INTEGER),
+    [],
+  );
+
+  const rows = useMemo<Row[]>(
+    () =>
+      (bilansQuery.data ?? []).filter(
+        (r) => !profile || r.event.organizerId === profile.id,
+      ) as Row[],
+    [bilansQuery.data, profile],
+  );
 
   const aggregate = useMemo(() => {
     if (rows.length === 0) return null;
@@ -63,7 +67,13 @@ export default function BilansPage() {
         subtitle="Vos rapports post-événement, prêts à partager."
       />
 
-      {rows.length === 0 ? (
+      {bilansQuery.status !== "ready" ? (
+        <QueryState
+          query={bilansQuery}
+          label="Chargement de vos bilans"
+          skeleton={<EntityListSkeleton rows={3} />}
+        />
+      ) : rows.length === 0 ? (
         <EmptyBilans />
       ) : (
         <>

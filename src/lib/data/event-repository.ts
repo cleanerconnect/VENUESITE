@@ -31,17 +31,12 @@ import type {
 } from "@/lib/types/analytics";
 import type { RegieData } from "@/lib/types/regie";
 import type {
-  Campaign,
   AudienceSegment,
+  BoostFormat,
+  Campaign,
+  CampaignHistoryRow,
   PortfolioStats,
 } from "@/lib/types/visibility";
-// These two still live beside the dataset that produces them. Moving
-// them into `lib/types` is a tidy-up the external team can make; leaving
-// them here keeps this commit to one concern.
-import type {
-  CampaignHistoryRow,
-  BoostFormat,
-} from "@/lib/data/static/visibility";
 import type {
   PromoCode,
   PromoCodeDetail,
@@ -51,7 +46,6 @@ import type { InvitationsData } from "@/lib/types/comps";
 import type {
   AuditEntry,
   Invoice,
-  OrganizerProfile,
   OverviewData,
   Payout,
   TeamMember,
@@ -68,6 +62,8 @@ export interface EventRepository {
 
   // ── Per-event detail ──
   getAnalyses(eventId: string): Promise<AnalysesData | null>;
+  /** Ids of events with a full analyses pack. Drives the detail tabs. */
+  listAnalysesEventIds(): Promise<string[]>;
   getBilan(eventId: string): Promise<BilanData | null>;
   /** Ids of the events that have a post-event report. Drives filters. */
   listBilanEventIds(): Promise<string[]>;
@@ -78,12 +74,11 @@ export interface EventRepository {
 
   // ── Organisation ──
   getOverview(): Promise<OverviewData>;
-  getProfile(profileId: string): Promise<OrganizerProfile | null>;
-  listProfiles(): Promise<OrganizerProfile[]>;
 
   // ── Audiences ──
   getAudiences(profileId: string): Promise<AudiencesData>;
   getBuyer(buyerId: string): Promise<BuyerProfile | null>;
+  listSampleBuyers(): Promise<BuyerProfile[]>;
 
   // ── Visibility ──
   listCampaigns(): Promise<Campaign[]>;
@@ -92,6 +87,11 @@ export interface EventRepository {
   getPortfolioStats(): Promise<PortfolioStats>;
   getCampaignHistory(): Promise<CampaignHistoryRow[]>;
   listBoostFormats(): Promise<BoostFormat[]>;
+  /**
+   * Active paid campaigns per event id. One read for a whole list, so a
+   * row does not have to fetch its own badge — rows take facts as props.
+   */
+  countActiveBoostsByEvent(): Promise<Record<string, number>>;
 
   // ── Promo codes ──
   listPromoCodes(): Promise<PromoCode[]>;
@@ -108,7 +108,7 @@ export interface EventRepository {
 
   // ── Insights ──
   getInsightOfTheDay(): Promise<Insight>;
-  getInsightsForSurface(surface: InsightSurface): Promise<Insight[]>;
+  getInsightsForSurface(surface: InsightSurface, eventId?: string): Promise<Insight[]>;
 }
 
 /** Thrown for anything the caller could act on. Mirrors RepositoryError. */

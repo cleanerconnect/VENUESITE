@@ -7,6 +7,7 @@ import type {
   Campaign,
   PortfolioStats,
 } from "@/lib/types/visibility";
+import type { BoostFormat, CampaignHistoryRow } from "@/lib/types/visibility";
 
 const NOW = new Date("2026-04-25T19:30:00+01:00").getTime();
 const offsetH = (h: number) => new Date(NOW - h * 3600_000).toISOString();
@@ -417,15 +418,6 @@ export function getPortfolioStats(): PortfolioStats {
 }
 
 // Past campaigns history table (CSV-exportable in the real product).
-export interface CampaignHistoryRow {
-  id: string;
-  name: string;
-  eventName: string;
-  finishedAt: string;
-  spentMad: number;
-  ticketsAttributed: number;
-  finalRoas: number;
-}
 
 export function getCampaignHistory(): CampaignHistoryRow[] {
   return [
@@ -471,13 +463,6 @@ export function getCampaignHistory(): CampaignHistoryRow[] {
 // Format catalog used by the boost creation wizard (Step 1) and rendered
 // as little cards on the portfolio "Lancer un boost" CTA. Pricing is the
 // transparent rate card from the brief.
-export interface BoostFormat {
-  type: import("@/lib/types/visibility").BoostType;
-  label: string;
-  tagline: string;
-  pricing: string;
-  reachLabel: string;
-}
 
 export function getBoostFormats(): BoostFormat[] {
   return [

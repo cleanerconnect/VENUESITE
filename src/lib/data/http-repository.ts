@@ -31,6 +31,9 @@ import {
   type RestaurantRepository,
   type ReviewReplyInput,
 } from "./repository";
+import type { MenuItem, RestaurantProfile } from "@/lib/types/restaurant";
+import type { AssetKind, VenueAsset } from "@/lib/assets/types";
+import type { StaffMemberRow } from "@/lib/db/venue-write-store";
 
 export interface HttpRepositoryConfig {
   baseUrl: string;
@@ -98,6 +101,35 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     await this.request<void>(
       "POST",
       `/api/business/bookings/${reservationId}/remind`,
+    );
+  }
+
+  // ── Venue profile and settings ──
+  getVenueProfile(venueId: string) {
+    return this.request<RestaurantProfile | null>(
+      "GET",
+      `/api/business/venues/${venueId}`,
+    );
+  }
+
+  listMenuItems(venueId: string) {
+    return this.request<MenuItem[]>(
+      "GET",
+      `/api/business/venues/${venueId}/menu`,
+    );
+  }
+
+  listStaff(venueId: string) {
+    return this.request<StaffMemberRow[]>(
+      "GET",
+      `/api/business/venues/${venueId}/staff`,
+    );
+  }
+
+  listAssets(venueId: string, kind: AssetKind) {
+    return this.request<VenueAsset[]>(
+      "GET",
+      `/api/business/venues/${venueId}/assets?kind=${encodeURIComponent(kind)}`,
     );
   }
 

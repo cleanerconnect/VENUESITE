@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
-import { getRefundRequests } from "@/lib/data/static/events";
 import {
   formatDateTimeFR,
   formatMAD,
   formatRelativeFR,
 } from "@/lib/utils/format";
 import type { LyfeEvent, RefundRequest } from "@/lib/types/domain";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 // SLA copy: gold under 12h, danger under 2h, otherwise neutral.
 function slaTone(slaIso: string): "warning" | "danger" | "neutral" {
@@ -34,7 +34,17 @@ function slaLabel(slaIso: string) {
 }
 
 export function RefundsTab({ event }: { event: LyfeEvent }) {
-  const [items, setItems] = useState<RefundRequest[]>(getRefundRequests());
+  const query = useEventQuery(
+    (repo) => repo.listRefundRequests(event.id),
+    [event.id],
+  );
+  // Decisions layer over the fetched list so the optimistic behaviour
+  // survives the move to a backend.
+  const [decided, setDecided] = useState<RefundRequest[] | null>(null);
+  const items = decided ?? query.data ?? [];
+  const setItems = (
+    next: RefundRequest[] | ((prev: RefundRequest[]) => RefundRequest[]),
+  ) => setDecided(typeof next === "function" ? next(items) : next);
   const [denyingId, setDenyingId] = useState<string | null>(null);
   const [denyReason, setDenyReason] = useState("");
   const { toast } = useToast();

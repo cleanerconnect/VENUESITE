@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Pill } from "@/components/ui/Pill";
 import { useToast } from "@/components/ui/Toast";
-import { getAllEvents } from "@/lib/data/static/events";
+import type { LyfeEvent } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
 import type { PromoCodeKind, PromoCodeScope } from "@/lib/types/promoCodes";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 type StepIdx = 0 | 1 | 2 | 3;
 const STEPS: { idx: StepIdx; label: string }[] = [
@@ -62,7 +63,8 @@ export function CreatePromoCodeDialog({
   onOpenChange: (next: boolean) => void;
 }) {
   const { toast } = useToast();
-  const events = useMemo(() => getAllEvents(), []);
+  const eventsQuery = useEventQuery((repo) => repo.listEvents(), []);
+  const events = useMemo(() => eventsQuery.data ?? [], [eventsQuery.data]);
   const [state, setState] = useState<DraftCode>(INITIAL);
 
   const set = <K extends keyof DraftCode>(key: K, value: DraftCode[K]) =>
@@ -349,7 +351,7 @@ function StepScope({
 }: {
   state: DraftCode;
   set: SetFn;
-  events: ReturnType<typeof getAllEvents>;
+  events: LyfeEvent[];
 }) {
   const eligibleEvents = events.filter(
     (e) =>
@@ -518,7 +520,7 @@ function StepRecap({
   events,
 }: {
   state: DraftCode;
-  events: ReturnType<typeof getAllEvents>;
+  events: LyfeEvent[];
 }) {
   const valueLabel =
     state.kind === "percentage"

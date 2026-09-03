@@ -10,13 +10,16 @@ import { PhasePerformanceCard } from "./PhasePerformanceCard";
 import { FunnelCard } from "./FunnelCard";
 import { ReviewsSummaryCard } from "./ReviewsSummaryCard";
 import { AnalysesSideRail } from "./AnalysesSideRail";
-import { getAnalysesByEventId } from "@/lib/data/static/analyses";
 import { formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { CHART, seriesColor } from "@/lib/charts/theme";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
 export function AnalysesTab({ event }: { event: LyfeEvent }) {
-  const data = getAnalysesByEventId(event.id);
+  const query = useEventQuery((repo) => repo.getAnalyses(event.id), [event.id]);
+  const data = query.data;
   if (!data) {
     return (
       <EmptyState

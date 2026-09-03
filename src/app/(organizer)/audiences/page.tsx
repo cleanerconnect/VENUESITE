@@ -2,17 +2,18 @@
 
 import { useMemo } from "react";
 import { useProfile } from "@/lib/auth/role";
-import { getAudiencesByProfileId } from "@/lib/data/static/audiences";
 import { LockedAudiences } from "@/components/audiences/LockedAudiences";
 import { AudiencesReadyView } from "@/components/audiences/AudiencesReadyView";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 export default function AudiencesPage() {
   const profile = useProfile();
 
-  const data = useMemo(() => {
-    if (!profile) return null;
-    return getAudiencesByProfileId(profile.id);
-  }, [profile]);
+  const query = useEventQuery(
+    (repo) => repo.getAudiences(profile?.id ?? ""),
+    [profile?.id],
+  );
+  const data = profile ? query.data : null;
 
   if (!profile || !data) {
     // SSR / first-paint: render an empty shell that matches the page

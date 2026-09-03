@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
-import { getEventById } from "@/lib/data/static/events";
 import { useRole } from "@/lib/auth/role";
 import { formatDateFR } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 // Edit / Corriger et resoumettre flow. When opened with ?reason=rejected,
 // surfaces the rejection reason in a tint-rose callout and highlights every
@@ -37,10 +37,11 @@ function EditEventInner() {
   const role = useRole();
   const { toast } = useToast();
 
-  const event = useMemo(
-    () => (params.id ? getEventById(params.id) : undefined),
+  const eventQuery = useEventQuery(
+    (repo) => (params.id ? repo.getEvent(params.id) : Promise.resolve(null)),
     [params.id],
   );
+  const event = eventQuery.data ?? undefined;
 
   // Route guard — Scanner can't edit.
   useEffect(() => {

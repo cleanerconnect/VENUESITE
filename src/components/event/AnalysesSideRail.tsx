@@ -3,14 +3,12 @@
 import Link from "next/link";
 import { ArrowRight, Lightbulb, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import {
-  getInsightsForSurface,
-} from "@/lib/data/static/insights";
 import type {
   Insight,
   InsightSurface,
   Recommendation,
 } from "@/lib/types/analytics";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 const ANALYSES_SURFACES: InsightSurface[] = [
   "analyses_phase",
@@ -44,9 +42,19 @@ export function AnalysesSideRail({
   eventId: string;
   recommendations: Recommendation[];
 }) {
-  const insights = ANALYSES_SURFACES.flatMap((surface) =>
-    getInsightsForSurface(surface, eventId),
+  // One read per surface the rail shows, merged. Empty while they load
+  // and if they fail: an insight rail is additive context, and an error
+  // card here would crowd out the analyses it sits beside.
+  const insightsQuery = useEventQuery(
+    (repo) =>
+      Promise.all(
+        ANALYSES_SURFACES.map((surface) =>
+          repo.getInsightsForSurface(surface, eventId),
+        ),
+      ),
+    [eventId],
   );
+  const insights: Insight[] = (insightsQuery.data ?? []).flat();
 
   return (
     <aside className="space-y-5 lg:sticky lg:top-6">

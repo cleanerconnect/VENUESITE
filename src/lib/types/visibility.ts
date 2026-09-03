@@ -91,3 +91,23 @@ export interface PortfolioStats {
   /** Headline metric — revenue ÷ spend, portfolio-wide. */
   portfolioRoas: number;
 }
+
+// Moved here from the static dataset so nothing outside the data
+// drivers has to import that module for a type.
+export interface BoostFormat {
+  type: import("@/lib/types/visibility").BoostType;
+  label: string;
+  tagline: string;
+  pricing: string;
+  reachLabel: string;
+}
+
+export interface CampaignHistoryRow {
+  id: string;
+  name: string;
+  eventName: string;
+  finishedAt: string;
+  spentMad: number;
+  ticketsAttributed: number;
+  finalRoas: number;
+}

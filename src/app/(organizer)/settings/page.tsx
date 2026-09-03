@@ -14,10 +14,10 @@ import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
 import { useProfile } from "@/lib/auth/role";
 import { resetOnboarding } from "@/lib/auth/onboarding";
-import { getAudienceSegments } from "@/lib/data/static/visibility";
 import type { OrganizerProfile } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 interface SectionDef {
   id: string;
@@ -446,7 +446,11 @@ function NotificationsSection() {
 }
 
 function BoostPrefsSection() {
-  const segments = getAudienceSegments();
+  const segmentsQuery = useEventQuery(
+    (repo) => repo.listAudienceSegments(),
+    [],
+  );
+  const segments = segmentsQuery.data ?? [];
   const { toast } = useToast();
   const [budgetCap, setBudgetCap] = useState("8000");
   const [defaultSegment, setDefaultSegment] = useState(segments[0]?.id ?? "");

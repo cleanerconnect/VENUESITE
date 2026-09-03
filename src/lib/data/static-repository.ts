@@ -28,6 +28,7 @@ import {
   staticVenue,
 } from "./static/venue-data";
 import type { RestaurantOverview, Reservation } from "@/lib/types/restaurant";
+import type { AssetKind } from "@/lib/assets/types";
 import type {
   CheckInResult,
   NotificationPreferences,
@@ -127,6 +128,25 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       throw new RepositoryError("Aucun compte partenaire.", 404, "no_account");
     }
     return account;
+  }
+
+  // ── Venue profile and settings ──
+
+  async getVenueProfile(venueId: string) {
+    return clone(this.bundle(venueId).profile);
+  }
+
+  async listMenuItems(venueId: string) {
+    return clone(this.bundle(venueId).menuItems);
+  }
+
+  async listStaff(venueId: string) {
+    return clone(this.bundle(venueId).staff);
+  }
+
+  async listAssets(venueId: string, kind: AssetKind) {
+    const bundle = this.bundle(venueId);
+    return clone(kind === "photo" ? bundle.photos : bundle.menuFiles);
   }
 
   // ── Availability ──

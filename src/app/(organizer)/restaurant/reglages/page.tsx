@@ -1,11 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { resolveSession } from "@/lib/auth/server-session";
-import { menuItems, venueProfile } from "@/lib/db/overview-store";
-import { availability } from "@/lib/db/venue-store";
-import { listStaff } from "@/lib/db/venue-write-store";
-import { listAssets } from "@/lib/db/asset-store";
-import { one } from "@/lib/db/store";
+import { getRestaurantRepository } from "@/lib/data";
 import { VenueSettings } from "@/components/settings/VenueSettings";
 
 // Venue settings.
@@ -22,14 +18,24 @@ export default async function VenueSettingsPage() {
   const session = await resolveSession();
   if (!session) redirect("/login");
 
-  const profile = venueProfile(session.venueId);
-  if (!profile) redirect("/restaurant");
+  // Every read goes through the repository, so this route works
+  // identically on SQLite, on the static snapshot, and against a real
+  // backend. It used to reach into the store — and raw SQL — directly,
+  // which made it the one screen that still required a database.
+  const repo = getRestaurantRepository();
+  const venueId = session.venueId;
 
-  // Columns the read model doesn't carry, needed to populate the form.
-  const row = one(
-    "SELECT description, address, latitude, longitude, kind FROM venues WHERE id = ?",
-    session.venueId,
-  );
+  const [profile, menu, availability, photos, menuFiles, staff] =
+    await Promise.all([
+      repo.getVenueProfile(venueId),
+      repo.listMenuItems(venueId),
+      repo.getAvailability(venueId),
+      repo.listAssets(venueId, "photo"),
+      repo.listAssets(venueId, "menu_file"),
+      repo.listStaff(venueId),
+    ]);
+
+  if (!profile) redirect("/restaurant");
 
   return (
     <VenueSettings
@@ -37,16 +43,22 @@ export default async function VenueSettingsPage() {
       identity={{
         name: profile.name,
         shortName: profile.shortName,
-        description: String(row?.description ?? ""),
+        description: profile.description,
         category: profile.cuisine,
-        address: String(row?.address ?? ""),
+        address: profile.address,
         city: profile.city,
-        latitude: row?.latitude == null ? "" : String(row.latitude),
-        longitude: row?.longitude == null ? "" : String(row.longitude),
+        latitude: profile.latitude == null ? "" : String(profile.latitude),
+        longitude: profile.longitude == null ? "" : String(profile.longitude),
         contactEmail: profile.contactEmail,
         contactPhone: profile.contactPhone,
         website: profile.website,
-        kind: (String(row?.kind ?? "restaurant") === "drinks" ? "drinks" : "restaurant"),
+        // Establishment type (restaurant / bar) — distinct from
+        // `profile.kind`, which is the cuisine style. It comes off the
+        // session's membership, already resolved.
+        kind:
+          session.venues.find((v) => v.id === venueId)?.kind === "drinks"
+            ? "drinks"
+            : "restaurant",
       }}
       listing={{
         priceRange: profile.priceRange,
@@ -54,11 +66,11 @@ export default async function VenueSettingsPage() {
         features: profile.features,
         ambience: profile.ambience,
       }}
-      menuItems={menuItems(session.venueId)}
-      availability={availability(session.venueId)}
-      photos={listAssets(session.venueId, "photo")}
-      menuFiles={listAssets(session.venueId, "menu_file")}
-      staff={listStaff(session.venueId)}
+      menuItems={menu}
+      availability={availability}
+      photos={photos}
+      menuFiles={menuFiles}
+      staff={staff}
     />
   );
 }

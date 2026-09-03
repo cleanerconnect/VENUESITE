@@ -12,12 +12,12 @@ import { InvitationsTab } from "@/components/event/InvitationsTab";
 import { RefundsTab } from "@/components/event/RefundsTab";
 import { RegieTab } from "@/components/event/RegieTab";
 import { PromoteTab } from "@/components/event/PromoteTab";
-import { getEventById, getAllEvents } from "@/lib/data/static/events";
-import { hasAnalyses } from "@/lib/data/static/analyses";
-import { hasBilan } from "@/lib/data/static/bilan";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 import type { TabDef } from "@/components/ui/Tabs";
 import type { LyfeEvent } from "@/lib/types/domain";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton, KpiGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 export default function EventDetailPage() {
   // useSearchParams must live under a Suspense boundary in Next 14.
@@ -32,8 +32,39 @@ function EventDetailInner() {
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const initialTab = search.get("tab") ?? undefined;
-  const event = getEventById(params.id) ?? getAllEvents().find((e) => e.id === params.id);
+  const eventQuery = useEventQuery(
+    (repo) => repo.getEvent(params.id),
+    [params.id],
+  );
+  const analysesIds = useEventQuery((repo) => repo.listAnalysesEventIds(), []);
+  const bilanIds = useEventQuery((repo) => repo.listBilanEventIds(), []);
+  const event = eventQuery.data;
+
+  // Loading and failure are not "not found" — 404-ing before the read
+  // resolves would break every deep link into an event.
+  if (eventQuery.status !== "ready") {
+    return (
+      <div className="space-y-6">
+        <QueryState
+          query={eventQuery}
+          label="Chargement de l'événement"
+          skeleton={
+            <div className="space-y-6">
+              <Skeleton shape="card" className="h-56 w-full" />
+              <KpiGridSkeleton count={4} />
+              <EntityListSkeleton rows={4} />
+            </div>
+          }
+        />
+      </div>
+    );
+  }
   if (!event) notFound();
+
+  const has = {
+    analyses: (analysesIds.data ?? []).includes(event.id),
+    bilan: (bilanIds.data ?? []).includes(event.id),
+  };
 
   const sold = event.tiers.reduce((s, t) => s + t.sold, 0);
   const cap = event.tiers.reduce((s, t) => s + t.quantity, 0);
@@ -133,7 +164,7 @@ function EventDetailInner() {
 
       {/* === Tabs === */}
       <div className="px-4 md:px-8 py-7 md:py-9 max-w-[1440px] mx-auto">
-        <Tabs tabs={buildTabs(event, sold)} defaultId={initialTab} />
+        <Tabs tabs={buildTabs(event, sold, has)} defaultId={initialTab} />
       </div>
     </div>
   );
@@ -144,7 +175,13 @@ function EventDetailInner() {
 // Bilan replaces Scanner since door-day is over and what matters is
 // the post-event recap. Cancelled events keep the existing rose
 // ribbon, no Bilan.
-function buildTabs(event: LyfeEvent, sold: number): TabDef[] {
+function buildTabs(
+  event: LyfeEvent,
+  sold: number,
+  // Which optional tabs exist is a data question, so the answer is
+  // passed in rather than looked up from a fixture at render time.
+  has: { analyses: boolean; bilan: boolean },
+): TabDef[] {
   const tabs: TabDef[] = [
     {
       id: "sales",
@@ -152,7 +189,7 @@ function buildTabs(event: LyfeEvent, sold: number): TabDef[] {
       content: <SalesTab event={event} />,
     },
   ];
-  if (hasAnalyses(event.id)) {
+  if (has.analyses) {
     tabs.push({
       id: "analyses",
       label: "Analyses",
@@ -163,7 +200,7 @@ function buildTabs(event: LyfeEvent, sold: number): TabDef[] {
     id: "attendees",
     label: "Participants",
     count: sold,
-    content: <AttendeesTab />,
+    content: <AttendeesTab eventId={event.id} />,
   });
   // Invitations tab — visible on every event except draft / in_review.
   // It tracks comp / press allocations, with an empty-state pitch on
@@ -184,7 +221,7 @@ function buildTabs(event: LyfeEvent, sold: number): TabDef[] {
     content: <RefundsTab event={event} />,
   });
   // Bilan tab on past / settled events only.
-  if (hasBilan(event)) {
+  if (has.bilan) {
     tabs.push({
       id: "bilan",
       label: "Bilan",

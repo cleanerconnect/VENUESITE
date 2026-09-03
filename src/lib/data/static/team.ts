@@ -136,18 +136,4 @@ export function getAuditLog(): AuditEntry[] {
   ];
 }
 
-const ACTION_LABEL: Record<AuditEntry["action"], string> = {
-  invited_member: "A invité",
-  removed_member: "A retiré",
-  changed_role: "A modifié le rôle de",
-  approved_refund: "A approuvé un remboursement",
-  denied_refund: "A refusé un remboursement",
-  cancelled_event: "A annulé l'événement",
-  changed_payout_account: "A modifié les coordonnées de versement",
-  submitted_event: "A soumis l'événement",
-  edited_settings: "A modifié les réglages",
-};
 
-export function describeAuditAction(entry: AuditEntry): string {
-  return ACTION_LABEL[entry.action];
-}

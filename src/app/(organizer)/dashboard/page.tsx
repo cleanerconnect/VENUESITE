@@ -5,7 +5,7 @@ import {
   ShoppingBag,
   Wallet,
 } from "lucide-react";
-import { getOrganizerOverview } from "@/lib/data/static/organizer";
+import { getEventRepository } from "@/lib/data/events";
 import { Card } from "@/components/ui/Card";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { HeroTonight } from "@/components/cards/HeroTonight";
@@ -31,8 +31,15 @@ export const dynamic = "force-dynamic";
 
 const NOW = new Date("2026-04-25T19:30:00+01:00").getTime();
 
-export default function DashboardPage() {
-  const data = getOrganizerOverview();
+export default async function DashboardPage() {
+  // Server component: the repository is awaited here and the payload
+  // passed down, so nothing below this line knows where data comes from.
+  const repo = getEventRepository();
+  const [data, insight, activeBoosts] = await Promise.all([
+    repo.getOverview(),
+    repo.getInsightOfTheDay(),
+    repo.countActiveBoostsByEvent(),
+  ]);
   const payoutDate = new Date(data.nextPayout.scheduledFor);
   const daysToPayout = Math.max(
     0,
@@ -103,7 +110,7 @@ export default function DashboardPage() {
 
         <MobileUpcomingEventsRow events={upcomingForMobile} />
 
-        <InsightOfTheDay />
+        <InsightOfTheDay insight={insight} />
       </div>
 
       {/* === DESKTOP layout (existing bento) === */}
@@ -204,7 +211,7 @@ export default function DashboardPage() {
             />
 
             {/* Insight of the day, top-right of the bento, single column. */}
-            <InsightOfTheDay />
+            <InsightOfTheDay insight={insight} />
 
             {/* Next payout (2-col span) */}
             <StatTile
@@ -271,7 +278,11 @@ export default function DashboardPage() {
                 {data.upcomingEvents
                   .filter((e) => e.status.state !== "draft")
                   .map((event) => (
-                    <UpcomingEventRow key={event.id} event={event} />
+                    <UpcomingEventRow
+                      key={event.id}
+                      event={event}
+                      activeBoosts={activeBoosts[event.id] ?? 0}
+                    />
                   ))}
               </div>
             </section>

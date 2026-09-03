@@ -10,14 +10,21 @@ import { Pill, StatusPill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useToast } from "@/components/ui/Toast";
 import { CancelEventDialog } from "@/components/event/CancelEventDialog";
-import { getCampaigns } from "@/lib/data/static/visibility";
 import { getEventActions, type EventActionId } from "@/lib/event/actions";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
 
 // 96px-tall row card. Hover lifts. Click goes to event detail.
-export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
+export function UpcomingEventRow({
+  event,
+  /** Active paid campaigns on this event. The list that renders these
+   *  rows reads them once, so a row never fetches its own badge. */
+  activeBoosts = 0,
+}: {
+  event: LyfeEvent;
+  activeBoosts?: number;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -29,10 +36,6 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
     0,
   );
   const pct = cap > 0 ? Math.round((sold / cap) * 100) : 0;
-  // Whether at least one paid campaign is currently active for this event.
-  const activeBoosts = getCampaigns().filter(
-    (c) => c.eventId === event.id && c.status === "active",
-  ).length;
   const actions = getEventActions(event.status.state);
 
   const handleAction = (id: EventActionId) => {

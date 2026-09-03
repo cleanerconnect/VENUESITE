@@ -21,14 +21,11 @@ import {
   BOOST_LABEL,
   BoostFormatIcon,
 } from "@/components/visibility/BoostFormatIcon";
-import {
-  getAudienceSegments,
-  getBoostFormats,
-  type BoostFormat,
-} from "@/lib/data/static/visibility";
-import type { BoostType } from "@/lib/types/visibility";
+import type { BoostFormat, BoostType } from "@/lib/types/visibility";
 import { formatMAD } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
+import { useEventQuery } from "@/lib/data/useQuery";
+import type { AudienceSegment } from "@/lib/types/visibility";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 type StepIdx = 0 | 1 | 2;
@@ -102,8 +99,10 @@ export function BoostWizard({
 }) {
   const router = useRouter();
   const { toast } = useToast();
-  const segments = useMemo(() => getAudienceSegments(), []);
-  const formats = useMemo(() => getBoostFormats(), []);
+  const segmentsQuery = useEventQuery((repo) => repo.listAudienceSegments(), []);
+  const segments = useMemo(() => segmentsQuery.data ?? [], [segmentsQuery.data]);
+  const formatsQuery = useEventQuery((repo) => repo.listBoostFormats(), []);
+  const formats = useMemo(() => formatsQuery.data ?? [], [formatsQuery.data]);
 
   const [state, setState] = useState<WizardState>(() => ({
     ...INITIAL,
@@ -399,7 +398,7 @@ function StepAudience({
   value,
   onChange,
 }: {
-  segments: ReturnType<typeof getAudienceSegments>;
+  segments: AudienceSegment[];
   value: string | null;
   onChange: (next: string) => void;
 }) {

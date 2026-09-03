@@ -15,20 +15,55 @@ import {
 } from "@/components/visibility/BoostFormatIcon";
 import { BoostWizardLauncher } from "@/components/visibility/BoostWizard";
 import { CampaignStatusPill } from "@/components/visibility/CampaignStatusPill";
-import {
-  getAudienceSegments,
-  getCampaignHistory,
-  getCampaigns,
-  getPortfolioStats,
-} from "@/lib/data/static/visibility";
+import type {
+  AudienceSegment,
+  Campaign,
+  CampaignHistoryRow,
+  PortfolioStats,
+} from "@/lib/types/visibility";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton, KpiGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 export default function VisibilitePage() {
-  const stats = getPortfolioStats();
-  const campaigns = getCampaigns();
-  const segments = getAudienceSegments();
-  const history = getCampaignHistory();
+  const statsQuery = useEventQuery((repo) => repo.getPortfolioStats(), []);
+  const campaignsQuery = useEventQuery((repo) => repo.listCampaigns(), []);
+  const segmentsQuery = useEventQuery((repo) => repo.listAudienceSegments(), []);
+  const historyQuery = useEventQuery((repo) => repo.getCampaignHistory(), []);
+
+  const stats = statsQuery.data;
+  const campaigns = campaignsQuery.data ?? [];
+  const segments = segmentsQuery.data ?? [];
+  const history = historyQuery.data ?? [];
+
+  // The tabs all read `stats`, so the page waits on it rather than
+  // rendering three panels that each say "loading" on their own.
+  if (statsQuery.status !== "ready" || !stats) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Visibilité"
+          subtitle="Vos campagnes de mise en avant et vos partenaires affiliés. Le ROAS est la métrique qui compte."
+        />
+        <QueryState
+          query={{ ...statsQuery, isEmpty: !stats }}
+          label="Chargement de vos campagnes"
+          skeleton={
+            <div className="space-y-6">
+              <KpiGridSkeleton count={4} />
+              <EntityListSkeleton rows={3} />
+            </div>
+          }
+          empty={{
+            title: "Aucune campagne",
+            body: "Lancez un boost pour mettre un événement en avant.",
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -74,10 +109,10 @@ function BoostsPane({
   segments,
   history,
 }: {
-  stats: ReturnType<typeof getPortfolioStats>;
-  campaigns: ReturnType<typeof getCampaigns>;
-  segments: ReturnType<typeof getAudienceSegments>;
-  history: ReturnType<typeof getCampaignHistory>;
+  stats: PortfolioStats;
+  campaigns: Campaign[];
+  segments: AudienceSegment[];
+  history: CampaignHistoryRow[];
 }) {
   return (
     <Stagger className="space-y-6 md:space-y-7">

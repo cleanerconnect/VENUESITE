@@ -13,9 +13,12 @@ import {
   formatDateTimeFR,
   formatRelativeFR,
 } from "@/lib/utils/format";
-import { describeAuditAction, getAuditLog, getTeam } from "@/lib/data/static/team";
+import { describeAuditAction } from "@/lib/event/audit";
 import type { TeamMember, TeamRole } from "@/lib/types/domain";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton } from "@/components/ui/Skeleton";
 
 const ROLE_LABEL: Record<TeamRole, string> = {
   owner: "Propriétaire",
@@ -36,7 +39,15 @@ const ROLE_TONE: Record<TeamRole, "info" | "success" | "neutral"> = {
 };
 
 export default function TeamPage() {
-  const [members, setMembers] = useState<TeamMember[]>(getTeam());
+  const teamQuery = useEventQuery((repo) => repo.listTeam(), []);
+  const auditQuery = useEventQuery((repo) => repo.getAuditLog(), []);
+
+  // Local edits (invite, role change, removal) layer over the fetched
+  // list, so the optimistic behaviour survives the move to a backend.
+  const [edits, setEdits] = useState<TeamMember[] | null>(null);
+  const members = edits ?? teamQuery.data ?? [];
+  const setMembers = (next: TeamMember[] | ((prev: TeamMember[]) => TeamMember[])) =>
+    setEdits(typeof next === "function" ? next(members) : next);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<TeamRole>("scanner");
@@ -95,6 +106,13 @@ export default function TeamPage() {
       />
 
       {/* === Active members === */}
+      {teamQuery.status !== "ready" ? (
+        <QueryState
+          query={teamQuery}
+          label="Chargement de l'équipe"
+          skeleton={<EntityListSkeleton rows={4} />}
+        />
+      ) : (
       <Card variant="surface" size="md" className="!p-0">
         <div className="px-6 pt-6 pb-4">
           <h2 className="text-h3 text-ink">Membres actifs</h2>
@@ -151,8 +169,10 @@ export default function TeamPage() {
           </AnimatePresence>
         </ul>
       </Card>
+      )}
 
       {/* === Pending invites === */}
+      {/* Empty while the list loads, so it needs no state of its own. */}
       {pending.length > 0 ? (
         <Card variant="canvas-2" size="md" className="!p-0">
           <div className="px-6 pt-6 pb-4">
@@ -207,7 +227,7 @@ export default function TeamPage() {
           </p>
         </div>
         <ul className="divide-y divide-line-soft">
-          {getAuditLog().map((a) => (
+          {(auditQuery.data ?? []).map((a) => (
             <li
               key={a.id}
               className="px-6 py-3.5 flex items-start justify-between gap-4 text-[13px]"

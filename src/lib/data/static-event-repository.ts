@@ -21,13 +21,16 @@ import {
   getRevenueSeries,
   getScanLog,
 } from "./static/events";
-import { getAnalysesByEventId } from "./static/analyses";
+import { getAnalysesByEventId, hasAnalyses } from "./static/analyses";
 import { getBilanByEventId, hasBilan } from "./static/bilan";
 import { getRegieByEventId } from "./static/regie";
 import { getInvitationsByEventId } from "./static/comps";
 import { getOrganizerOverview } from "./static/organizer";
-import { PROFILES, getProfile } from "./static/profiles";
-import { getAudiencesByProfileId, getBuyerById } from "./static/audiences";
+import {
+  getAllSampleBuyers,
+  getAudiencesByProfileId,
+  getBuyerById,
+} from "./static/audiences";
 import {
   getAudienceSegments,
   getBoostFormats,
@@ -77,6 +80,10 @@ export class StaticEventRepository implements EventRepository {
     // list first just to ask for one report.
     return getBilanByEventId(eventId, getAllEvents()) ?? null;
   }
+  async listAnalysesEventIds() {
+    return getAllEvents().map((e) => e.id).filter(hasAnalyses);
+  }
+
   async listBilanEventIds() {
     return getAllEvents().filter(hasBilan).map((e) => e.id);
   }
@@ -105,12 +112,6 @@ export class StaticEventRepository implements EventRepository {
   async getOverview() {
     return getOrganizerOverview();
   }
-  async getProfile(profileId: string) {
-    return getProfile(profileId) ?? null;
-  }
-  async listProfiles() {
-    return Object.values(PROFILES);
-  }
 
   // ── Audiences ──
   async getAudiences(profileId: string) {
@@ -118,6 +119,9 @@ export class StaticEventRepository implements EventRepository {
   }
   async getBuyer(buyerId: string) {
     return getBuyerById(buyerId) ?? null;
+  }
+  async listSampleBuyers() {
+    return getAllSampleBuyers();
   }
 
   // ── Visibility ──
@@ -138,6 +142,15 @@ export class StaticEventRepository implements EventRepository {
   }
   async listBoostFormats() {
     return getBoostFormats();
+  }
+
+  async countActiveBoostsByEvent() {
+    const out: Record<string, number> = {};
+    for (const c of getCampaigns()) {
+      if (c.status !== "active") continue;
+      out[c.eventId] = (out[c.eventId] ?? 0) + 1;
+    }
+    return out;
   }
 
   // ── Promo codes ──
@@ -171,8 +184,8 @@ export class StaticEventRepository implements EventRepository {
   async getInsightOfTheDay() {
     return getInsightOfTheDay();
   }
-  async getInsightsForSurface(surface: InsightSurface) {
-    return getInsightsForSurface(surface);
+  async getInsightsForSurface(surface: InsightSurface, eventId?: string) {
+    return getInsightsForSurface(surface, eventId);
   }
 }
 
@@ -197,22 +210,23 @@ export class FailingEventRepository implements EventRepository {
   listRefundRequests = this.fail;
   getScanLog = this.fail;
   getAnalyses = this.fail;
+  listAnalysesEventIds = this.fail;
   getBilan = this.fail;
   listBilanEventIds = this.fail;
   getRecentBilans = this.fail;
   getRegie = this.fail;
   getInvitations = this.fail;
   getOverview = this.fail;
-  getProfile = this.fail;
-  listProfiles = this.fail;
   getAudiences = this.fail;
   getBuyer = this.fail;
+  listSampleBuyers = this.fail;
   listCampaigns = this.fail;
   getCampaign = this.fail;
   listAudienceSegments = this.fail;
   getPortfolioStats = this.fail;
   getCampaignHistory = this.fail;
   listBoostFormats = this.fail;
+  countActiveBoostsByEvent = this.fail;
   listPromoCodes = this.fail;
   getPromoCodeDetail = this.fail;
   getPromoCodesAggregate = this.fail;
@@ -238,6 +252,9 @@ export class EmptyEventRepository extends StaticEventRepository {
   async listCampaigns() {
     return [];
   }
+  async countActiveBoostsByEvent() {
+    return {};
+  }
   async listPromoCodes() {
     return [];
   }
@@ -251,6 +268,9 @@ export class EmptyEventRepository extends StaticEventRepository {
     return [];
   }
   async getAuditLog() {
+    return [];
+  }
+  async listAnalysesEventIds() {
     return [];
   }
   async listBilanEventIds() {

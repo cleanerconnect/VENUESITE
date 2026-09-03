@@ -14,10 +14,9 @@ import {
   Sliders,
   X,
 } from "lucide-react";
-import { getAllEvents } from "@/lib/data/static/events";
-import { getRegieByEventId } from "@/lib/data/static/regie";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 // Fullscreen scanner takeover for mobile. Replaces the previous stub
 // with a camera viewfinder, event selector pill, live counter, recent
@@ -61,7 +60,8 @@ const SCAN_POOL = [
 ];
 
 export default function ScannerPage() {
-  const allEvents = useMemo(getAllEvents, []);
+  const eventsQuery = useEventQuery((repo) => repo.listEvents(), []);
+  const allEvents = useMemo(() => eventsQuery.data ?? [], [eventsQuery.data]);
   const eligible = useMemo(
     () =>
       allEvents.filter(
@@ -502,7 +502,11 @@ function StatsSheet({
   eventId: string;
   eventName: string;
 }) {
-  const data = getRegieByEventId(eventId);
+  const regieQuery = useEventQuery(
+    (repo) => repo.getRegie(eventId),
+    [eventId],
+  );
+  const data = regieQuery.data;
 
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>

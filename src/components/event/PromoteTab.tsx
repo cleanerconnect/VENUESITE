@@ -20,13 +20,14 @@ import {
 } from "@/components/visibility/BoostFormatIcon";
 import { BoostWizardLauncher } from "@/components/visibility/BoostWizard";
 import { CampaignStatusPill } from "@/components/visibility/CampaignStatusPill";
-import { getCampaigns } from "@/lib/data/static/visibility";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 export function PromoteTab({ event }: { event: LyfeEvent }) {
   // Active campaigns scoped to this event — what already runs.
-  const eventCampaigns = getCampaigns().filter(
+  const campaignsQuery = useEventQuery((repo) => repo.listCampaigns(), []);
+  const eventCampaigns = (campaignsQuery.data ?? []).filter(
     (c) => c.eventId === event.id && c.status !== "completed",
   );
 

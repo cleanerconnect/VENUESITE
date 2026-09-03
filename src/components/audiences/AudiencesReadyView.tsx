@@ -5,10 +5,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
-import {
-  getAllSampleBuyers,
-} from "@/lib/data/static/audiences";
-import { getInsightsForSurface } from "@/lib/data/static/insights";
 import type {
   AudienceSegmentDetail,
   AudiencesData,
@@ -25,6 +21,7 @@ import { TopClientsTable } from "./TopClientsTable";
 import { BenchmarksCard } from "./BenchmarksCard";
 import { BuyerProfileSheet } from "./BuyerProfileSheet";
 import { BoostWizard } from "@/components/visibility/BoostWizard";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 const FORMATTER = new Intl.NumberFormat("fr-FR");
 
@@ -60,11 +57,16 @@ export function AudiencesReadyView({
   const [selectedBuyer, setSelectedBuyer] = useState<BuyerProfile | null>(null);
   const [boostSegmentId, setBoostSegmentId] = useState<string | null>(null);
 
-  const insights = getInsightsForSurface("audiences");
+  const insightsQuery = useEventQuery(
+    (repo) => repo.getInsightsForSurface("audiences"),
+    [],
+  );
+  const insights = insightsQuery.data ?? [];
   const segmentDetail: AudienceSegmentDetail | null = selectedSegment
     ? data.segmentDetails[selectedSegment.id] ?? null
     : null;
-  const buyers = getAllSampleBuyers();
+  const buyersQuery = useEventQuery((repo) => repo.listSampleBuyers(), []);
+  const buyers = buyersQuery.data ?? [];
 
   const handleTopClientSelect = (client: TopClient) => {
     const match = buyers.find((b) => b.name === client.fullName);

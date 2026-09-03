@@ -26,12 +26,38 @@ import {
   BoostFormatIcon,
 } from "@/components/visibility/BoostFormatIcon";
 import { CampaignStatusPill } from "@/components/visibility/CampaignStatusPill";
-import { getCampaignById } from "@/lib/data/static/visibility";
 import { formatMAD, formatRelativeFR } from "@/lib/utils/format";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, KpiGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 export default function CampaignPerformancePage() {
   const params = useParams<{ id: string }>();
-  const campaign = getCampaignById(params.id);
+  const query = useEventQuery(
+    (repo) => repo.getCampaign(params.id),
+    [params.id],
+  );
+  const campaign = query.data;
+
+  // Loading and failure are not "not found". Calling notFound() before
+  // the read resolves would 404 every campaign on first paint.
+  if (query.status !== "ready") {
+    return (
+      <div className="space-y-5 md:space-y-6">
+        <QueryState
+          query={query}
+          label="Chargement de la campagne"
+          skeleton={
+            <div className="space-y-5">
+              <Skeleton className="h-8 w-64 rounded-[var(--radius-sm)]" />
+              <KpiGridSkeleton count={4} />
+              <ChartSkeleton height={220} />
+            </div>
+          }
+        />
+      </div>
+    );
+  }
   if (!campaign) notFound();
 
   const isActive = campaign.status === "active";

@@ -8,18 +8,23 @@ import { Pill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { RevenueChart } from "./RevenueChart";
-import { getRevenueSeries } from "@/lib/data/static/events";
-import { getCampaigns } from "@/lib/data/static/visibility";
 import { formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
 export function SalesTab({ event }: { event: LyfeEvent }) {
-  const series = getRevenueSeries();
+  const seriesQuery = useEventQuery((repo) => repo.getRevenueSeries(), []);
+  const series = seriesQuery.data ?? [];
   const total = series.reduce((s, p) => s + p.amount, 0);
 
   // Boost attribution scoped to this event — what share of sales came
   // from paid promotion. Shown only when at least one campaign exists.
-  const eventCampaigns = getCampaigns().filter((c) => c.eventId === event.id);
+  const campaignsQuery = useEventQuery((repo) => repo.listCampaigns(), []);
+  const eventCampaigns = (campaignsQuery.data ?? []).filter(
+    (c) => c.eventId === event.id,
+  );
   const boostTickets = eventCampaigns.reduce(
     (s, c) => s + c.ticketsAttributed,
     0,

@@ -70,6 +70,13 @@ export default function EventsPage() {
     [],
   );
 
+  // Read once for the whole list rather than once per row.
+  const boostsQuery = useEventQuery(
+    (repo) => repo.countActiveBoostsByEvent(),
+    [],
+  );
+  const activeBoosts = boostsQuery.data ?? {};
+
   const counts = useMemo(() => {
     return FILTERS.reduce<Record<string, number>>((acc, f) => {
       if (f.id === "all") acc[f.id] = all.length;
@@ -214,7 +221,12 @@ export default function EventsPage() {
           {/* Mobile: full event cards with cover, key metric, two CTAs. */}
           <div className="md:hidden flex flex-col gap-4">
             {list.map((event) => (
-              <MobileEventCard key={event.id} event={event} />
+              <MobileEventCard
+                key={event.id}
+                event={event}
+                activeBoosts={activeBoosts[event.id] ?? 0}
+                hasBilan={hasBilan(event)}
+              />
             ))}
           </div>
           {/* Desktop: existing horizontal rows. */}
@@ -225,7 +237,11 @@ export default function EventsPage() {
               ) : event.status.state === "cancelled" ? (
                 <CancelledRow key={event.id} event={event} />
               ) : (
-                <UpcomingEventRow key={event.id} event={event} />
+                <UpcomingEventRow
+                key={event.id}
+                event={event}
+                activeBoosts={activeBoosts[event.id] ?? 0}
+              />
               ),
             )}
           </div>

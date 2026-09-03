@@ -9,14 +9,13 @@ import { Pill } from "@/components/ui/Pill";
 import { useToast } from "@/components/ui/Toast";
 import { CreatePromoCodeDialog } from "@/components/promoCodes/CreatePromoCodeDialog";
 import { PromoCodeDetailDrawer } from "@/components/promoCodes/PromoCodeDetailDrawer";
-import {
-  getPromoCodes,
-  getPromoCodesAggregate,
-} from "@/lib/data/static/promoCodes";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
 import type { PromoCode } from "@/lib/types/promoCodes";
 import { FilterTabs } from "@/components/ui/FilterTabs";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton, KpiGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 type Filter = "all" | "active" | "expired" | "depleted";
 
@@ -56,8 +55,13 @@ const STATUS_ORDER: Record<PromoCode["status"], number> = {
 
 export default function PromoCodesPage() {
   const { toast } = useToast();
-  const codes = useMemo(getPromoCodes, []);
-  const aggregate = useMemo(getPromoCodesAggregate, []);
+  const codesQuery = useEventQuery((repo) => repo.listPromoCodes(), []);
+  const aggregateQuery = useEventQuery(
+    (repo) => repo.getPromoCodesAggregate(),
+    [],
+  );
+  const codes = useMemo(() => codesQuery.data ?? [], [codesQuery.data]);
+  const aggregate = aggregateQuery.data;
 
   const [filter, setFilter] = useState<Filter>("all");
   const [createOpen, setCreateOpen] = useState(false);
@@ -89,6 +93,33 @@ export default function PromoCodesPage() {
     }
     toast({ tone: "success", title: `Code ${code} copié` });
   };
+
+  // The hero strip reads the aggregate, so the page waits on it rather
+  // than rendering three empty figures above a loading table.
+  if (codesQuery.status !== "ready" || !aggregate) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Codes promo"
+          subtitle="Réductions ciblées, partenariats, et tracking de redemptions."
+        />
+        <QueryState
+          query={{ ...codesQuery, isEmpty: codes.length === 0 }}
+          label="Chargement de vos codes promo"
+          skeleton={
+            <div className="space-y-6">
+              <Skeleton shape="card" className="h-32 w-full" />
+              <EntityListSkeleton rows={5} />
+            </div>
+          }
+          empty={{
+            title: "Aucun code promo",
+            body: "Créez un code pour offrir une réduction ciblée.",
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

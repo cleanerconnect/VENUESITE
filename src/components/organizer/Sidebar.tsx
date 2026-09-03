@@ -35,7 +35,7 @@ import {
   switchProfile,
   switchRole,
 } from "@/lib/auth/session";
-import { PROFILES } from "@/lib/data/static/profiles";
+import { PROFILES } from "@/lib/auth/static/profiles";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
 import { cn } from "@/lib/utils/cn";
 

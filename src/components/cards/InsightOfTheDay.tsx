@@ -1,15 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
 import { Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { getInsightOfTheDay } from "@/lib/data/static/insights";
+import type { Insight } from "@/lib/types/analytics";
 
-// Reads from the shared insight engine (lib/mock/insights.ts) so this
-// card and the Analyses tab callouts stay coherent. Rotation is keyed
-// off the current hour and stays SSR-stable for the same render.
-export function InsightOfTheDay() {
-  const insight = useMemo(() => getInsightOfTheDay(), []);
+// Presentational. The insight is read by whoever renders this card, so
+// the same component serves the dashboard, the styleguide and any
+// future surface without knowing where insights come from.
+export function InsightOfTheDay({ insight }: { insight: Insight }) {
 
   return (
     <Card variant="violet-soft" size="md" className="h-full">

@@ -8,28 +8,61 @@ import { Pill } from "@/components/ui/Pill";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { BOOST_LABEL, BoostFormatIcon } from "@/components/visibility/BoostFormatIcon";
-import { getInvoices, getPayouts } from "@/lib/data/static/finance";
-import { getCampaigns } from "@/lib/data/static/visibility";
 import {
   formatDateFR,
   formatDateTimeFR,
   formatMAD,
 } from "@/lib/utils/format";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 export default function SettlementsPage() {
-  const payouts = getPayouts();
-  const invoices = getInvoices();
+  const payoutsQuery = useEventQuery((repo) => repo.listPayouts(), []);
+  const invoicesQuery = useEventQuery((repo) => repo.listInvoices(), []);
+
+  const payouts = payoutsQuery.data ?? [];
+  const invoices = invoicesQuery.data ?? [];
   const next = payouts.find((p) => p.status !== "paid") ?? payouts[0];
   const history = payouts.filter((p) => p.status === "paid");
 
-  const daysToNext = Math.max(
-    0,
-    Math.ceil(
-      (new Date(next.scheduledFor).getTime() - Date.now()) /
-        (1000 * 60 * 60 * 24),
-    ),
-  );
+  const daysToNext = next
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(next.scheduledFor).getTime() - Date.now()) /
+            (1000 * 60 * 60 * 24),
+        ),
+      )
+    : 0;
+
+  // The hero reads `next`, so the whole page waits on the payout list
+  // rather than rendering a header above an empty card.
+  if (payoutsQuery.status !== "ready" || !next) {
+    return (
+      <div className="space-y-5 md:space-y-7">
+        <PageHeader
+          title="Versements"
+          subtitle="L'argent de vos billets, sur votre compte. J+3 après la fin de chaque événement."
+        />
+        <QueryState
+          query={{ ...payoutsQuery, isEmpty: !next }}
+          label="Chargement de vos versements"
+          skeleton={
+            <div className="space-y-5">
+              <Skeleton shape="card" className="h-52 w-full" />
+              <EntityListSkeleton rows={4} />
+            </div>
+          }
+          empty={{
+            title: "Aucun versement pour l'instant",
+            body: "Votre premier versement arrivera trois jours après votre premier événement.",
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 md:space-y-7">
@@ -282,11 +315,14 @@ function PayoutAdvanceCard() {
 }
 
 function BoostSpendCard() {
-  // Spend = sum of all currently-active and recently-completed campaigns
-  // for the period. In production this is a window-bounded query; for the
-  // demo we surface every campaign in the mock factory.
-  const campaigns = getCampaigns();
-  if (campaigns.length === 0) return null;
+  // Spend = every campaign in the window. In production this is a
+  // window-bounded query; the static dataset returns them all.
+  const query = useEventQuery((repo) => repo.listCampaigns(), []);
+  const campaigns = query.data ?? [];
+  // A card that is only ever additive context stays out of the way while
+  // it loads and if it fails — a spend figure is not worth an error card
+  // on a page whose subject is payouts.
+  if (query.status !== "ready" || campaigns.length === 0) return null;
   const total = campaigns.reduce((s, c) => s + c.spentMad, 0);
 
   return (

@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { IssueCompsDialog } from "./IssueCompsDialog";
-import { getInvitationsByEventId } from "@/lib/data/static/comps";
 import {
   COMP_CATEGORY_LABEL,
   type CompAllocation,
@@ -25,6 +24,9 @@ import {
 import { formatDateTimeFR, formatRelativeFR } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
 const STATUS_LABEL: Record<CompStatus, string> = {
   issued: "Émise",
@@ -50,7 +52,8 @@ const ACTION_LABEL = {
 } as const;
 
 export function InvitationsTab({ event }: { event: LyfeEvent }) {
-  const data = getInvitationsByEventId(event.id);
+  const query = useEventQuery((repo) => repo.getInvitations(event.id), [event.id]);
+  const data = query.data;
   const [issueOpen, setIssueOpen] = useState(false);
   const [defaultCategory, setDefaultCategory] = useState<CompCategory>("press");
 

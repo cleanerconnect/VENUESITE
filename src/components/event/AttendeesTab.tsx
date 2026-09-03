@@ -5,15 +5,21 @@ import { Download, MessageSquare, Search } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
-import { getAttendees } from "@/lib/data/static/events";
 import { formatDateFR, formatRelativeFR } from "@/lib/utils/format";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
-export function AttendeesTab() {
+export function AttendeesTab({ eventId }: { eventId: string }) {
   const [query, setQuery] = useState("");
   const [tierFilter, setTierFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const all = getAttendees();
+  const attendees = useEventQuery(
+    (repo) => repo.listAttendees(eventId),
+    [eventId],
+  );
+  const all = attendees.data ?? [];
   const filtered = all.filter((a) => {
     if (
       query &&

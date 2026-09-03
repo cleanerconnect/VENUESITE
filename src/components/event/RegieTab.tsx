@@ -1,5 +1,6 @@
 "use client";
 
+import type { RegieData } from "@/lib/types/regie";
 import { useState } from "react";
 import {
   AlertTriangle,
@@ -29,7 +30,6 @@ import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { useToast } from "@/components/ui/Toast";
-import { getRegieByEventId } from "@/lib/data/static/regie";
 import { formatRelativeFR } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import type { LyfeEvent } from "@/lib/types/domain";
@@ -41,6 +41,9 @@ import type {
   RegieMode,
   WillCallAttendee,
 } from "@/lib/types/regie";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
 const STATUS_TONE = {
   complete: "success",
@@ -83,7 +86,8 @@ const OPS_COLOR = {
 } as const;
 
 export function RegieTab({ event }: { event: LyfeEvent }) {
-  const data = getRegieByEventId(event.id);
+  const query = useEventQuery((repo) => repo.getRegie(event.id), [event.id]);
+  const data = query.data;
   const [mode, setMode] = useState<RegieMode>(data?.defaultMode ?? "pre_event");
 
   if (!data) {
@@ -170,7 +174,7 @@ function ToggleButton({
 function PreEventView({
   data,
 }: {
-  data: ReturnType<typeof getRegieByEventId> & object;
+  data: RegieData;
 }) {
   return (
     <div className="space-y-5">
@@ -414,7 +418,7 @@ function LiveView({
   data,
   isReplay,
 }: {
-  data: ReturnType<typeof getRegieByEventId> & object;
+  data: RegieData;
   isReplay: boolean;
 }) {
   const { toast } = useToast();

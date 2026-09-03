@@ -8,14 +8,16 @@ import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { Brand } from "@/components/organizer/Brand";
 import { ChannelBreakdown } from "./ChannelBreakdown";
-import { getBilanByEventId } from "@/lib/data/static/bilan";
-import { getAllEvents } from "@/lib/data/static/events";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 import type { OperationalStat } from "@/lib/types/analytics";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
 export function BilanTab({ event }: { event: LyfeEvent }) {
-  const data = getBilanByEventId(event.id, getAllEvents());
+  const query = useEventQuery((repo) => repo.getBilan(event.id), [event.id]);
+  const data = query.data;
   const search = useSearchParams();
   const autoPrint = search.get("print") === "1";
 

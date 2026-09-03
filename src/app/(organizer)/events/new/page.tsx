@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Sparkles } from "lucide-react";
-import { getEventById } from "@/lib/data/static/events";
 import { WizardLayout } from "@/components/wizard/WizardLayout";
 import { StepInfo } from "@/components/wizard/StepInfo";
 import { StepTiers, emptyTier } from "@/components/wizard/StepTiers";
@@ -15,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { useRole } from "@/lib/auth/role";
 import type { DraftEvent } from "@/lib/types/domain";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 const INITIAL_DRAFT: DraftEvent = {
   // Smart defaults, date pre-fills the next Friday at 23:00 because the
@@ -68,9 +68,14 @@ function CreateEventInner() {
   // clearing dates and suffixing the name with " (copie)". Festival
   // organizers run the same lineup year over year.
   const duplicateFromId = search.get("duplicateFrom");
+  const sourceQuery = useEventQuery(
+    (repo) =>
+      duplicateFromId ? repo.getEvent(duplicateFromId) : Promise.resolve(null),
+    [duplicateFromId],
+  );
   const seededDraft = useMemo<DraftEvent>(() => {
     if (!duplicateFromId) return INITIAL_DRAFT;
-    const src = getEventById(duplicateFromId);
+    const src = sourceQuery.data;
     if (!src) return INITIAL_DRAFT;
     return {
       ...INITIAL_DRAFT,
@@ -93,9 +98,20 @@ function CreateEventInner() {
             }))
           : [emptyTier()],
     };
-  }, [duplicateFromId]);
+  }, [duplicateFromId, sourceQuery.data]);
 
   const [draft, setDraft] = useState<DraftEvent>(seededDraft);
+
+  // The source event now arrives asynchronously, so the initial state
+  // above can be the empty draft. Seed it once the read lands — guarded
+  // on the source id so a later keystroke is never overwritten.
+  const seededFrom = useRef<string | null>(null);
+  useEffect(() => {
+    if (!duplicateFromId || !sourceQuery.data) return;
+    if (seededFrom.current === duplicateFromId) return;
+    seededFrom.current = duplicateFromId;
+    setDraft(seededDraft);
+  }, [duplicateFromId, sourceQuery.data, seededDraft]);
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);

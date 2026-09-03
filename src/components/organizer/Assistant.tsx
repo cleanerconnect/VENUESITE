@@ -9,7 +9,7 @@ import {
   mockResponse,
   makeStream,
   SUGGESTED_PROMPTS,
-} from "@/lib/data/static/assistant";
+} from "@/lib/ai/static/assistant";
 import { cn } from "@/lib/utils/cn";
 
 // Persistent AI assistant. Three surfaces share one component:

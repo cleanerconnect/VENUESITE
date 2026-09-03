@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getProfile } from "@/lib/data/static/profiles";
+import { getProfile } from "@/lib/auth/static/profiles";
 
 // Onboarding state lives in localStorage, keyed per profile id, so the
 // runtime status can override the static PROFILES default. This lets

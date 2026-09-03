@@ -10,7 +10,13 @@
 // is deliberate — the dashboard renders a coherent snapshot, and six
 // round trips would let the hero disagree with the reservation list.
 
-import type { RestaurantOverview } from "@/lib/types/restaurant";
+import type {
+  MenuItem,
+  RestaurantOverview,
+  RestaurantProfile,
+} from "@/lib/types/restaurant";
+import type { AssetKind, VenueAsset } from "@/lib/assets/types";
+import type { StaffMemberRow } from "@/lib/db/venue-write-store";
 import type {
   AnalyticsPeriod,
   BusinessAccount,
@@ -97,6 +103,16 @@ export interface RestaurantRepository {
    * customer profile.
    */
   reportNoShow(input: NoShowInput): Promise<RestaurantOverview>;
+
+  // ── Venue profile and settings ──
+  //
+  // The settings route used to read these straight from the SQLite
+  // store, which meant it was the one screen that still required a
+  // database. They belong on the seam like everything else.
+  getVenueProfile(venueId: string): Promise<RestaurantProfile | null>;
+  listMenuItems(venueId: string): Promise<MenuItem[]>;
+  listStaff(venueId: string): Promise<StaffMemberRow[]>;
+  listAssets(venueId: string, kind: AssetKind): Promise<VenueAsset[]>;
 
   // ── Availability ──
   getAvailability(venueId: string): Promise<VenueAvailability>;

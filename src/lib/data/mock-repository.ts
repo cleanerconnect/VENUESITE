@@ -13,8 +13,13 @@
 import type { RestaurantOverview } from "@/lib/types/restaurant";
 import type { CheckInResult, NotificationPreferences } from "@/lib/types/business";
 import * as store from "@/lib/db/venue-store";
+import { listStaff as listStaffRows } from "@/lib/db/venue-write-store";
+import { listAssets as listAssetRows } from "@/lib/db/asset-store";
+import type { AssetKind } from "@/lib/assets/types";
 import {
   analytics as analyticsFromStore,
+  menuItems,
+  venueProfile,
   overview as overviewFromStore,
   transitionBooking,
   visibility as visibilityFromStore,
@@ -119,6 +124,20 @@ export class MockRestaurantRepository implements RestaurantRepository {
     // what the risk indicator and the no-show rate both read.
     store.recordNoShow(restaurantId, reservationId);
     return this.getOverview(restaurantId);
+  }
+
+  // ── Venue profile and settings ── persisted
+  async getVenueProfile(venueId: string) {
+    return venueProfile(venueId);
+  }
+  async listMenuItems(venueId: string) {
+    return menuItems(venueId);
+  }
+  async listStaff(venueId: string) {
+    return listStaffRows(venueId);
+  }
+  async listAssets(venueId: string, kind: AssetKind) {
+    return listAssetRows(venueId, kind);
   }
 
   // ── Availability ── persisted
