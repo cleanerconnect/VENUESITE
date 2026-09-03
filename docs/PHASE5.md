@@ -272,13 +272,21 @@ into a client reference a server component could not call. Worth naming
 because the symptom looked like a broken screen rather than a misplaced
 directive.
 
-And the third only the cold-clone pass could find: the venue-switch
-endpoint checked membership against the SQLite store rather than the
-directory. With no database that table is empty, so every switch was
-refused with a 403 and the second venue was unreachable — on exactly the
-setup an external team clones into. It is the same failure mode as the
-layout in Phase 4 and it took the same fix, which is an argument for
-running the cold pass every time rather than once.
+And two the cold-clone pass alone could find.
+
+The venue-switch endpoint checked membership against the SQLite store
+rather than the directory. With no database that table is empty, so every
+switch was refused with a 403 and the second venue was unreachable — on
+exactly the setup an external team clones into. Same failure mode as the
+layout in Phase 4, same fix, which is an argument for running the cold
+pass every time rather than once.
+
+And the settings forms — Ma fiche, Menu, Équipe — write to the store
+directly rather than through the repository. With no database they wrote
+into an empty one and then failed with "lieu introuvable", which tells
+the person who just pressed Save nothing they can act on. They now refuse
+first and name the one command that fixes it. The screens still render
+from the snapshot; it is only saving that needs somewhere to save to.
 
 The check that missed it now asserts the switch succeeded. A refused
 switch is silent otherwise: the page renders the *other* venue perfectly

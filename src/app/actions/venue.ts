@@ -8,6 +8,7 @@
 //   2. Validation runs again server-side, whatever the client did.
 
 import { revalidatePath } from "next/cache";
+import { dataMode } from "@/lib/data/mode";
 import { requireVenueAccess, type PortalRole } from "@/lib/auth/server-session";
 import {
   updateVenueIdentity,
@@ -60,6 +61,22 @@ import type {
 import { COPY } from "@/lib/copy/fr";
 
 const RESTAURANT_PATH = "/restaurant/[[...section]]";
+
+/**
+ * These forms write to the store directly rather than through the
+ * repository, so on a cold clone — which has no database — they would
+ * write into an empty one and then fail with "lieu introuvable", which
+ * tells the person who just pressed Save nothing they can act on.
+ *
+ * So they refuse first, and name the one command that fixes it. The
+ * screens still render from the snapshot; it is only saving that needs
+ * somewhere to save to.
+ */
+function requireWritableStore(): string | null {
+  return dataMode() === "static"
+    ? "Aucune base de données : les écrans s'affichent depuis le jeu de données statique, mais l'enregistrement a besoin d'un store. Lancez `npm run db:reset`, puis rechargez."
+    : null;
+}
 // Ma fiche, Menu and Équipe are three routes over one form, so a write
 // from any of them has to revalidate all three.
 const FORM_PATHS = ["/restaurant/ma-fiche", "/restaurant/menu", "/restaurant/equipe"];
@@ -85,6 +102,9 @@ export interface VenueIdentityInput {
 export async function saveVenueIdentity(
   input: VenueIdentityInput,
 ): Promise<WriteResult<RestaurantProfile>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   let session;
   try {
     session = await requireVenueAccess(await currentVenueId());
@@ -149,6 +169,9 @@ export interface VenueListingInput {
 export async function saveVenueListing(
   input: VenueListingInput,
 ): Promise<WriteResult<RestaurantProfile>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   let session;
   try {
     session = await requireVenueAccess(await currentVenueId());
@@ -223,6 +246,9 @@ export interface MenuItemInput {
 export async function saveMenuItem(
   input: MenuItemInput,
 ): Promise<WriteResult<MenuItemInput>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   let session;
   try {
     session = await requireVenueAccess(await currentVenueId());
@@ -270,6 +296,9 @@ export async function saveSlot(input: {
   capacity: number;
   enabled: boolean;
 }): Promise<WriteResult<VenueAvailability>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     const session = await requireVenueAccess(venueId);
@@ -307,6 +336,9 @@ export async function saveClosure(input: {
   date: string;
   reason: string;
 }): Promise<WriteResult<VenueAvailability>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
@@ -324,6 +356,9 @@ export async function saveClosure(input: {
 export async function deleteClosure(
   id: string,
 ): Promise<WriteResult<VenueAvailability>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
@@ -343,6 +378,9 @@ export async function requestUpload(input: {
   contentType: string;
   sizeBytes: number;
 }): Promise<WriteResult<{ url: string; method: string; headers: Record<string, string>; objectKey: string }>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     const session = await requireVenueAccess(venueId);
@@ -378,6 +416,9 @@ export async function confirmUpload(input: {
   contentType: string;
   sizeBytes: number;
 }): Promise<WriteResult<VenueAsset[]>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
@@ -397,6 +438,9 @@ export async function removeAsset(
   id: string,
   kind: AssetKind,
 ): Promise<WriteResult<VenueAsset[]>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
@@ -415,6 +459,9 @@ export async function saveAssetOrder(
   kind: AssetKind,
   orderedIds: string[],
 ): Promise<WriteResult<VenueAsset[]>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
@@ -431,6 +478,9 @@ export async function saveStaffInvite(input: {
   email: string;
   role: PortalRole;
 }): Promise<WriteResult<StaffMemberRow[]>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     const session = await requireVenueAccess(venueId);
@@ -461,6 +511,9 @@ export async function saveStaffRole(
   staffId: string,
   role: PortalRole,
 ): Promise<WriteResult<StaffMemberRow[]>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     const session = await requireVenueAccess(venueId);
@@ -486,6 +539,9 @@ export async function saveStaffRole(
 export async function deleteStaff(
   staffId: string,
 ): Promise<WriteResult<StaffMemberRow[]>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
   const venueId = await currentVenueId();
   try {
     const session = await requireVenueAccess(venueId);
