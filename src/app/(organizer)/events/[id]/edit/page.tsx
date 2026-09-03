@@ -13,6 +13,9 @@ import { formatDateFR } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useEventQuery } from "@/lib/data/useQuery";
+import { PermissionDenied } from "@/components/data/QueryState";
+import { QueryState } from "@/components/data/QueryState";
+import { FormSkeleton } from "@/components/ui/Skeleton";
 
 // Edit / Corriger et resoumettre flow. When opened with ?reason=rejected,
 // surfaces the rejection reason in a tint-rose callout and highlights every
@@ -43,10 +46,9 @@ function EditEventInner() {
   );
   const event = eventQuery.data ?? undefined;
 
-  // Route guard — Scanner can't edit.
-  useEffect(() => {
-    if (role === "scanner") router.replace("/events");
-  }, [role, router]);
+  // Scanner cannot edit. This used to be a redirect, which flashed the
+  // form and then dropped the user on the list with no reason given.
+  const denied = role === "scanner";
 
   const isFromRejection = search.get("reason") === "rejected";
   const rejectedFields =
@@ -59,6 +61,27 @@ function EditEventInner() {
   const [name, setName] = useState(event?.name ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
   const [coverFile, setCoverFile] = useState<string | null>(null);
+
+  if (denied) {
+    return (
+      <PermissionDenied
+        what="l'édition de cet événement"
+        requiredRole="un propriétaire ou un administrateur"
+      />
+    );
+  }
+
+  // Loading and failure branch before "not found", or a slow read shows
+  // "Événement introuvable" for an event that exists.
+  if (eventQuery.status !== "ready") {
+    return (
+      <QueryState
+        query={eventQuery}
+        label="Chargement de l'événement"
+        skeleton={<FormSkeleton fields={5} />}
+      />
+    );
+  }
 
   if (!event) {
     return (

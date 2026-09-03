@@ -120,6 +120,14 @@ export default function TeamPage() {
             {active.length} personnes avec accès
           </p>
         </div>
+        {active.length === 0 ? (
+          <div className="px-6 pb-6">
+            <p className="text-body text-ink-soft">
+              Personne d&apos;autre n&apos;a accès pour l&apos;instant.
+              Invitez un membre pour partager la billetterie et le scan.
+            </p>
+          </div>
+        ) : null}
         <ul className="divide-y divide-line-soft">
           <AnimatePresence initial={false}>
             {active.map((m) => (

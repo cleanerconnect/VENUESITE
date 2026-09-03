@@ -25,6 +25,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { useEventQuery } from "@/lib/data/useQuery";
 import { QueryState } from "@/components/data/QueryState";
 import { EntityListSkeleton, KpiGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function VisibilitePage() {
   const statsQuery = useEventQuery((repo) => repo.getPortfolioStats(), []);
@@ -135,6 +136,12 @@ function BoostsPane({
 
       {/* === Active campaigns === */}
       <StaggerItem>
+        {campaigns.length === 0 ? (
+          <EmptyState
+            title="Aucune campagne"
+            description="Lancez un boost pour mettre un événement en avant auprès d'un segment d'audience."
+          />
+        ) : (
         <Card variant="surface" size="md" className="!p-0">
           <div className="px-6 pt-6 pb-4 flex items-end justify-between flex-wrap gap-3">
             <div>
@@ -243,6 +250,7 @@ function BoostsPane({
             </table>
           </div>
         </Card>
+        )}
       </StaggerItem>
 
       {/* === Saved audiences === */}

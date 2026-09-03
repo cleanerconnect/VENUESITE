@@ -337,12 +337,16 @@ function SidebarBody({
             <div className="text-[13px] font-semibold text-ink truncate">
               {viewerName || user?.name}
             </div>
-            {/* Role from the session, organisation from the workspace —
-                so the restaurant workspace stops claiming the festival. */}
+            {/* Role and organisation both follow the active workspace, so
+                neither product claims the other's identity: the venue
+                side names the venue, the event side names the festival. */}
             <div className="text-meta text-ink-mute truncate">
               {[
                 viewerRole ? PORTAL_ROLE_LABEL[viewerRole] ?? viewerRole : role ? ROLE_LABEL[role] : null,
-                venues.find((v) => v.id === activeVenueId)?.shortName ?? entity.shortName,
+                workspace.id === "restaurant"
+                  ? (venues.find((v) => v.id === activeVenueId)?.shortName ??
+                    entity.shortName)
+                  : entity.shortName,
               ]
                 .filter(Boolean)
                 .join(" · ")}

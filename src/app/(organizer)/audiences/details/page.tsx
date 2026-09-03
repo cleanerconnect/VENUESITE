@@ -7,6 +7,9 @@ import { useProfile } from "@/lib/auth/role";
 import { LockedAudiences } from "@/components/audiences/LockedAudiences";
 import { AudiencesReadyView } from "@/components/audiences/AudiencesReadyView";
 import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ChartSkeleton, KpiGridSkeleton, PageHeaderSkeleton } from "@/components/ui/Skeleton";
 
 // /audiences/details — full layout always, even on mobile. Reached
 // via the "Voir plus" CTA on the compact mobile view of /audiences.

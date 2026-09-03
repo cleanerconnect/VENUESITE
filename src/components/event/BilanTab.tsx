@@ -30,6 +30,19 @@ export function BilanTab({ event }: { event: LyfeEvent }) {
     return () => window.clearTimeout(t);
   }, [autoPrint, data]);
 
+  // Loading and failure are distinct from "nothing to show" — before the
+  // read became async, `!data` covered all three and a slow load looked
+  // like an empty tab.
+  if (query.status !== "ready") {
+    return (
+      <QueryState
+        query={query}
+        label="Chargement"
+        skeleton={<div className="space-y-5"><KpiGridSkeleton count={4} /><ChartSkeleton height={220} /></div>}
+      />
+    );
+  }
+
   if (!data) {
     return (
       <Card variant="surface" size="md">

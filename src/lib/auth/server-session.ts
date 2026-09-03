@@ -14,7 +14,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { directory } from "./directory";
-import { isKnownAccount } from "./accounts";
+import { accountName, isKnownAccount } from "./accounts";
 
 export type PortalRole = "owner" | "manager" | "staff";
 
@@ -104,7 +104,10 @@ export async function resolveSession(): Promise<PortalSession | null> {
       : (venues[0]?.id ?? "");
 
   const membership = venues.find((v) => v.id === venueId) ?? venues[0];
-  const fullName = account?.fullName ?? userId;
+  // Falls back to the account directory, then the id. An event-only
+  // account is not in the venue directory, and greeting someone by
+  // "usr_mido" is worse than not greeting them.
+  const fullName = account?.fullName ?? accountName(userId) ?? userId;
 
   return {
     userId,

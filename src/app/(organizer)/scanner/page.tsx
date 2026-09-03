@@ -17,6 +17,7 @@ import {
 import type { LyfeEvent } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
 import { useEventQuery } from "@/lib/data/useQuery";
+import { COPY } from "@/lib/copy/fr";
 
 // Fullscreen scanner takeover for mobile. Replaces the previous stub
 // with a camera viewfinder, event selector pill, live counter, recent
@@ -115,6 +116,49 @@ export default function ScannerPage() {
     }, 2400);
     return () => window.clearInterval(id);
   }, [event, totalCapacity]);
+
+  // The scanner is a full-screen dark takeover, so its states live on
+  // that surface rather than in a Card — a white error card here would
+  // blind a host in a dark venue.
+  if (eventsQuery.status !== "ready") {
+    return (
+      <div
+        className="fixed inset-0 z-40 bg-ink text-canvas flex flex-col items-center justify-center px-6 text-center"
+        role={eventsQuery.status === "error" ? "alert" : "status"}
+        aria-live="polite"
+        aria-busy={eventsQuery.status === "loading"}
+      >
+        {eventsQuery.status === "loading" ? (
+          <>
+            <span className="sr-only">Chargement des événements</span>
+            <div
+              aria-hidden
+              className="h-10 w-40 rounded-full bg-canvas/10 animate-pulse"
+            />
+          </>
+        ) : (
+          <>
+            <p className="text-canvas/65 text-body max-w-xs">
+              {eventsQuery.error?.message ?? COPY.error.body}
+            </p>
+            <button
+              type="button"
+              onClick={eventsQuery.retry}
+              className="mt-6 inline-flex items-center gap-1.5 text-meta font-bold uppercase tracking-[0.08em] text-violet"
+            >
+              {COPY.action.retry}
+            </button>
+          </>
+        )}
+        <Link
+          href="/dashboard"
+          className="mt-6 inline-flex items-center gap-1.5 text-meta font-bold uppercase tracking-[0.08em] text-canvas/50"
+        >
+          <ArrowLeft size={12} strokeWidth={2.2} /> Retour
+        </Link>
+      </div>
+    );
+  }
 
   if (!event) {
     return (

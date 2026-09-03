@@ -240,6 +240,12 @@ export class FailingEventRepository implements EventRepository {
 
 /** A driver that returns nothing, for exercising the empty state. */
 export class EmptyEventRepository extends StaticEventRepository {
+  async getOverview() {
+    const base = await super.getOverview();
+    // A brand-new organisation: the account exists, nothing has happened
+    // on it yet. Aggregates stay so the shell still has a shape.
+    return { ...base, activity: [], upcomingEvents: [], upcomingEventsCount: 0 };
+  }
   async listEvents() {
     return [];
   }

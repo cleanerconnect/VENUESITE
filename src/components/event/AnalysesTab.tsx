@@ -20,6 +20,20 @@ import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components
 export function AnalysesTab({ event }: { event: LyfeEvent }) {
   const query = useEventQuery((repo) => repo.getAnalyses(event.id), [event.id]);
   const data = query.data;
+
+  // Loading and failure are distinct from "nothing to show" — before the
+  // read became async, `!data` covered all three and a slow load looked
+  // like an empty tab.
+  if (query.status !== "ready") {
+    return (
+      <QueryState
+        query={query}
+        label="Chargement"
+        skeleton={<div className="space-y-5"><KpiGridSkeleton count={4} /><ChartSkeleton height={260} /></div>}
+      />
+    );
+  }
+
   if (!data) {
     return (
       <EmptyState

@@ -90,6 +90,19 @@ export function RegieTab({ event }: { event: LyfeEvent }) {
   const data = query.data;
   const [mode, setMode] = useState<RegieMode>(data?.defaultMode ?? "pre_event");
 
+  // Loading and failure are distinct from "nothing to show" — before the
+  // read became async, `!data` covered all three and a slow load looked
+  // like an empty tab.
+  if (query.status !== "ready") {
+    return (
+      <QueryState
+        query={query}
+        label="Chargement"
+        skeleton={<div className="space-y-5"><KpiGridSkeleton count={3} /><EntityListSkeleton rows={4} /></div>}
+      />
+    );
+  }
+
   if (!data) {
     return (
       <Card variant="surface" size="md">

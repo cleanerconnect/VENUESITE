@@ -62,6 +62,19 @@ export function InvitationsTab({ event }: { event: LyfeEvent }) {
     setIssueOpen(true);
   };
 
+  // Loading and failure are distinct from "nothing to show" — before the
+  // read became async, `!data` covered all three and a slow load looked
+  // like an empty tab.
+  if (query.status !== "ready") {
+    return (
+      <QueryState
+        query={query}
+        label="Chargement"
+        skeleton={<div className="space-y-5"><KpiGridSkeleton count={3} /><EntityListSkeleton rows={4} /></div>}
+      />
+    );
+  }
+
   if (!data || data.totalIssued === 0) {
     return (
       <div className="space-y-5">

@@ -23,6 +23,12 @@ interface DemoAccount {
   fallbackName: string;
   /** Event organisations this user may act on. */
   organizations: string[];
+  /**
+   * Role in the event workspace. Separate from the venue role, which
+   * comes from the venue directory — the two products have different
+   * role vocabularies and an account can hold both.
+   */
+  eventRole: "owner" | "admin" | "scanner";
   /** Shown on the login screen's account picker. Omit to hide it there. */
   demo?: { label: string; description: string };
 }
@@ -42,6 +48,7 @@ const ACCOUNTS: DemoAccount[] = [
     password: "demo",
     fallbackName: "Mido Reffas",
     organizations: ["org_jazzablanca", "org_rooftop_mansour"],
+    eventRole: "owner",
     demo: {
       label: "Organisateur d'événements",
       description: "Jazzablanca · deux organisations, aucun lieu",
@@ -55,6 +62,7 @@ const ACCOUNTS: DemoAccount[] = [
     password: "demo",
     fallbackName: "Yassine Alami",
     organizations: ["org_rooftop_mansour"],
+    eventRole: "owner",
     demo: {
       label: "Les deux espaces",
       description: "Deux lieux et une organisation",
@@ -66,6 +74,7 @@ const ACCOUNTS: DemoAccount[] = [
     password: "demo",
     fallbackName: "Sofia Bennis",
     organizations: [],
+    eventRole: "scanner",
     demo: {
       label: "Partenaire lieu",
       description: "Nomad Rooftop · gérante, un seul lieu",
@@ -79,6 +88,7 @@ const ACCOUNTS: DemoAccount[] = [
     password: "demo",
     fallbackName: "Rachid Amrani",
     organizations: [],
+    eventRole: "scanner",
     demo: {
       label: "Plusieurs lieux",
       description: "Gérant de deux lieux · doit choisir",
@@ -90,6 +100,7 @@ const ACCOUNTS: DemoAccount[] = [
     password: "demo",
     fallbackName: "Imane Ouali",
     organizations: [],
+    eventRole: "scanner",
   },
   {
     // Signed up, nothing attached. The "no workspace" state ships
@@ -100,6 +111,7 @@ const ACCOUNTS: DemoAccount[] = [
     password: "demo",
     fallbackName: "Nouveau partenaire",
     organizations: [],
+    eventRole: "scanner",
     demo: {
       label: "Compte sans espace",
       description: "Inscrit, rien encore rattaché",
@@ -109,6 +121,11 @@ const ACCOUNTS: DemoAccount[] = [
 
 const byEmail = new Map(ACCOUNTS.map((a) => [a.email, a]));
 const byId = new Map(ACCOUNTS.map((a) => [a.userId, a]));
+
+/** Display name from the account list, for users with no venue. */
+export function accountName(userId: string): string | null {
+  return byId.get(userId)?.fallbackName ?? null;
+}
 
 /** True when the id names a real account, whatever it holds. */
 export function isKnownAccount(userId: string): boolean {
@@ -121,6 +138,8 @@ export interface ResolvedAccount {
   email: string;
   organizations: OrganizerProfile[];
   venues: DirectoryMembership[];
+  /** Display name, resolved from whichever directory knows this user. */
+  eventRole: "owner" | "admin" | "scanner";
 }
 
 export type Workspace = "event" | "venue";
@@ -140,6 +159,7 @@ export function resolveAccount(userId: string): ResolvedAccount | null {
       .map((id) => PROFILES[id])
       .filter((p): p is OrganizerProfile => Boolean(p)),
     venues: fromVenues?.venues ?? [],
+    eventRole: account.eventRole,
   };
 }
 

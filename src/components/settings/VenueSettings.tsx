@@ -19,6 +19,7 @@ import type {
 } from "@/app/actions/venue";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FilterTabs } from "@/components/ui/FilterTabs";
+import { PermissionDenied } from "@/components/data/QueryState";
 
 type SectionId =
   | "identity"
@@ -101,11 +102,10 @@ export function VenueSettings({
       ) : null}
 
       {visible.length === 0 ? (
-        <Card variant="surface" size="md">
-          <p className="text-body text-ink-soft">
-            Votre rôle ne donne pas accès aux réglages du lieu.
-          </p>
-        </Card>
+        <PermissionDenied
+          what="les réglages de ce lieu"
+          requiredRole="un propriétaire ou un gérant"
+        />
       ) : null}
     </div>
   );

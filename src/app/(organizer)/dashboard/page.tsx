@@ -24,6 +24,7 @@ import { MobileSalesPulseCard } from "@/components/cards/MobileSalesPulseCard";
 import { MobileUpcomingEventsRow } from "@/components/cards/MobileUpcomingEventsRow";
 import { OnboardingBanner } from "@/components/cards/OnboardingBanner";
 import { resolveSession } from "@/lib/auth/server-session";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 // `daysToPayout` and the live-event window depend on Date.now(); without
 // this, Next prerenders the page at build time and freezes both values
@@ -55,6 +56,10 @@ export default async function DashboardPage() {
   // === Mobile feed prep ===
   // Live event detection: any upcoming event whose start is within the
   // next 6 hours, or any event currently in `live` state.
+  const publishedUpcoming = data.upcomingEvents.filter(
+    (e) => e.status.state !== "draft",
+  );
+
   const liveEvent = data.upcomingEvents.find((e) => {
     if (e.status.state === "live") return true;
     const startsAt = new Date(e.startsAt).getTime();
@@ -279,15 +284,21 @@ export default async function DashboardPage() {
                 </Link>
               </div>
               <div className="flex flex-col gap-3">
-                {data.upcomingEvents
-                  .filter((e) => e.status.state !== "draft")
-                  .map((event) => (
+                {publishedUpcoming.length === 0 ? (
+                  <EmptyState
+                    title="Aucun événement à venir"
+                    description="Créez votre premier événement — il apparaîtra ici dès qu'il sera en vente."
+                    cta={{ label: "Créer un événement", href: "/events/new" }}
+                  />
+                ) : (
+                  publishedUpcoming.map((event) => (
                     <UpcomingEventRow
                       key={event.id}
                       event={event}
                       activeBoosts={activeBoosts[event.id] ?? 0}
                     />
-                  ))}
+                  ))
+                )}
               </div>
             </section>
 
@@ -301,11 +312,18 @@ export default async function DashboardPage() {
                 <p className="text-meta text-ink-mute mb-2">
                   Dix dernières actions, en direct.
                 </p>
-                <ul className="divide-y divide-line-soft">
-                  {data.activity.map((item) => (
-                    <ActivityFeedItem key={item.id} item={item} />
-                  ))}
-                </ul>
+                {data.activity.length === 0 ? (
+                  <p className="text-body text-ink-soft py-4">
+                    Rien pour l&apos;instant. L&apos;activité de vos
+                    événements apparaîtra ici en temps réel.
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-line-soft">
+                    {data.activity.map((item) => (
+                      <ActivityFeedItem key={item.id} item={item} />
+                    ))}
+                  </ul>
+                )}
               </Card>
             </section>
           </div>

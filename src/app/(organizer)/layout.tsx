@@ -43,7 +43,18 @@ export default async function OrganizerLayout({
         userId={session.userId}
         email={session.email}
         organizerId={account?.organizations[0]?.id ?? ""}
-        role={session.role === "owner" ? "owner" : session.role === "manager" ? "admin" : "scanner"}
+        // A venue membership decides the role where there is one; an
+        // event-only account takes its role from the account directory,
+        // or it would land as a scanner and lose most of the nav.
+        role={
+          session.venues.length > 0
+            ? session.role === "owner"
+              ? "owner"
+              : session.role === "manager"
+                ? "admin"
+                : "scanner"
+            : (account?.eventRole ?? "scanner")
+        }
       />
       <div className="min-h-screen flex">
         <div className="no-print contents">
@@ -51,7 +62,10 @@ export default async function OrganizerLayout({
             venues={session.venues}
             activeVenueId={session.venueId}
             viewerName={session.fullName}
-            viewerRole={session.role}
+            // Only pass the venue role when there is a venue. Otherwise
+            // the sidebar labelled an event owner "Équipe", which is the
+            // venue vocabulary applied to the wrong product.
+            viewerRole={session.venues.length > 0 ? session.role : undefined}
           />
           <MobileSidebarDrawer />
         </div>

@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useRole } from "@/lib/auth/role";
 import type { DraftEvent } from "@/lib/types/domain";
 import { useEventQuery } from "@/lib/data/useQuery";
+import { PermissionDenied } from "@/components/data/QueryState";
 
 const INITIAL_DRAFT: DraftEvent = {
   // Smart defaults, date pre-fills the next Friday at 23:00 because the
@@ -56,10 +57,6 @@ function CreateEventInner() {
   const router = useRouter();
   const role = useRole();
   const search = useSearchParams();
-  // Route-level guard: Scanner role can't create events. Bounce to /events.
-  useEffect(() => {
-    if (role === "scanner") router.replace("/events");
-  }, [role, router]);
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [visited, setVisited] = useState(1);
@@ -73,6 +70,11 @@ function CreateEventInner() {
       duplicateFromId ? repo.getEvent(duplicateFromId) : Promise.resolve(null),
     [duplicateFromId],
   );
+  // Scanner cannot create events. This used to be a redirect, which
+  // flashed the wizard and then dropped the user on the list with no
+  // reason given.
+  const denied = role === "scanner";
+
   const seededDraft = useMemo<DraftEvent>(() => {
     if (!duplicateFromId) return INITIAL_DRAFT;
     const src = sourceQuery.data;
@@ -177,6 +179,15 @@ function CreateEventInner() {
     if (step === 4) return <StepMedia draft={draft} setDraft={setDraft} />;
     return <StepReview draft={draft} onJumpTo={(n) => setStep(n)} />;
   };
+
+  if (denied) {
+    return (
+      <PermissionDenied
+        what="la création d'événements"
+        requiredRole="un propriétaire ou un administrateur"
+      />
+    );
+  }
 
   return (
     <>
