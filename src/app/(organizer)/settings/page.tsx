@@ -515,14 +515,14 @@ function BoostPrefsSection() {
         </div>
       </Card>
 
-      {/* Auto-pilote LYFE — locked v2 panel, gold-soft styling. The toggle
+      {/* Auto-pilote LYFE — locked v2 panel, violet-soft styling. The toggle
           renders so the surface feels real, but flipping it does nothing
           beyond local state. */}
-      <Card variant="gold-soft" size="lg">
+      <Card variant="violet-soft" size="lg">
         <div className="flex items-start gap-4">
           <span
             aria-hidden
-            className="h-12 w-12 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+            className="h-12 w-12 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
           >
             <Sparkles size={20} strokeWidth={1.7} className="text-violet-deep" />
           </span>
@@ -606,11 +606,11 @@ function LanguageSection() {
 
 function ApiSection() {
   return (
-    <Card variant="gold-soft" size="lg">
+    <Card variant="violet-soft" size="lg">
       <div className="flex items-start gap-4">
         <span
           aria-hidden
-          className="h-12 w-12 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+          className="h-12 w-12 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
         >
           <Lock size={20} strokeWidth={1.8} className="text-violet-deep" />
         </span>

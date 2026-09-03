@@ -602,7 +602,7 @@ function StepBudget({
           className="pointer-events-none absolute -top-20 -right-16 w-72 h-72 rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(134,91,166,0.36), transparent 70%)",
+              "radial-gradient(circle, color-mix(in oklab, var(--color-violet) 36%, transparent), transparent 70%)",
           }}
         />
         <div className="relative">

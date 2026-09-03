@@ -138,7 +138,7 @@ export function MobilePlusMenu({
         >
           <div className="flex items-center gap-3">
             <div
-              className="h-12 w-12 rounded-[12px] flex items-center justify-center text-violet-deep font-bold text-[14px] shrink-0"
+              className="h-12 w-12 rounded-chip flex items-center justify-center text-violet-deep font-bold text-[14px] shrink-0"
               style={{ background: "var(--color-violet-soft)" }}
             >
               {profile.initials}

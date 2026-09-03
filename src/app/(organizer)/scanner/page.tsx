@@ -369,8 +369,8 @@ function Viewfinder({
         className="absolute inset-0 rounded-[var(--radius-xl)]"
         style={{
           background:
-            "radial-gradient(circle at 50% 50%, rgba(134,91,166,0.22), transparent 70%), rgba(10,31,61,0.45)",
-          border: "1px solid rgba(250,247,240,0.08)",
+            "radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--color-violet) 22%, transparent), transparent 70%), color-mix(in oklab, var(--color-ink) 45%, transparent)",
+          border: "1px solid color-mix(in oklab, var(--color-on-ink) 8%, transparent)",
         }}
       />
 
@@ -389,7 +389,7 @@ function Viewfinder({
         style={{
           background:
             "linear-gradient(to right, transparent, var(--color-violet), transparent)",
-          boxShadow: "0 0 18px rgba(134,91,166,0.7)",
+          boxShadow: "0 0 18px color-mix(in oklab, var(--color-violet) 70%, transparent)",
         }}
       />
 

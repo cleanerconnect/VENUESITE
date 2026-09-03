@@ -92,7 +92,7 @@ function EventDetailInner() {
           className="absolute -top-32 -right-24 w-[480px] h-[480px] rounded-full pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle, rgba(201,166,76,0.32), transparent 70%)",
+              "radial-gradient(circle, color-mix(in oklab, var(--color-gold) 32%, transparent), transparent 70%)",
           }}
         />
         <div
@@ -100,7 +100,7 @@ function EventDetailInner() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle at 80% 100%, rgba(220,232,242,0.10), transparent 60%)",
+              "radial-gradient(circle at 80% 100%, color-mix(in oklab, var(--color-on-ink-cool) 10%, transparent), transparent 60%)",
           }}
         />
 
@@ -108,7 +108,7 @@ function EventDetailInner() {
           {event.status.state === "rejected" ? (
             <div
               className="mb-6 rounded-[var(--radius-md)] p-4 max-w-2xl"
-              style={{ background: "rgba(161,44,44,0.18)", color: "var(--color-on-ink)" }}
+              style={{ background: "color-mix(in oklab, var(--color-danger) 18%, transparent)", color: "var(--color-on-ink)" }}
             >
               <div className="text-eyebrow mb-1.5" style={{ color: "var(--color-on-ink-mute)" }}>
                 Refusé par LYFE
@@ -260,7 +260,7 @@ function KeyStat({
     <div className={divider ? "border-r border-canvas/15 pr-6" : "pr-6"}>
       <div
         className="text-[10px] font-bold uppercase tracking-[0.12em]"
-        style={{ color: "rgba(250,247,240,0.55)" }}
+        style={{ color: "color-mix(in oklab, var(--color-on-ink) 55%, transparent)" }}
       >
         {label}
       </div>

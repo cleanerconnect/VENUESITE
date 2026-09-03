@@ -153,7 +153,7 @@ export function MobileEventCard({
               className="absolute inset-0"
               style={{
                 background:
-                  "radial-gradient(circle at 30% 30%, rgba(201,166,76,0.45), transparent 70%)",
+                  "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--color-gold) 45%, transparent), transparent 70%)",
               }}
             />
             {isMuted ? (
@@ -210,7 +210,7 @@ export function MobileEventCard({
           {/* Progress + key metric */}
           {cap > 0 ? (
             <div className="mt-4 space-y-2">
-              <ProgressBar value={sold} max={cap} tone="gold" size="xs" />
+              <ProgressBar value={sold} max={cap} tone="violet" size="xs" />
               <div className="flex items-baseline justify-between gap-3 text-meta num">
                 <span className="text-ink-soft">
                   <span className="font-bold text-ink">{sold}</span>

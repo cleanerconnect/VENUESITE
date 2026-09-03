@@ -366,7 +366,7 @@ function Leading({ row }: { row: EntityRow }) {
 
   return (
     <div
-      className="hidden sm:block w-20 h-20 rounded-[12px] shrink-0 relative overflow-hidden"
+      className="hidden sm:block w-20 h-20 rounded-chip shrink-0 relative overflow-hidden"
       style={{
         background:
           "linear-gradient(135deg, var(--color-violet-soft), var(--color-tint-sky))",
@@ -377,7 +377,7 @@ function Leading({ row }: { row: EntityRow }) {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(circle at 30% 30%, rgba(134,91,166,0.35), transparent 70%)",
+            "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--color-violet) 35%, transparent), transparent 70%)",
         }}
       />
     </div>

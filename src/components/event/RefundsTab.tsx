@@ -178,10 +178,10 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
                         style={{
                           background:
                             tone === "danger"
-                              ? "rgba(161,44,44,0.12)"
+                              ? "color-mix(in oklab, var(--color-danger) 12%, transparent)"
                               : tone === "warning"
-                                ? "rgba(134,91,166,0.16)"
-                                : "rgba(10,31,61,0.06)",
+                                ? "color-mix(in oklab, var(--color-violet) 16%, transparent)"
+                                : "color-mix(in oklab, var(--color-ink) 6%, transparent)",
                           color:
                             tone === "danger"
                               ? "var(--color-danger)"

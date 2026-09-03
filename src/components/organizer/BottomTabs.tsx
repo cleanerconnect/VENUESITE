@@ -39,7 +39,7 @@ export function BottomTabs() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-line-soft shadow-[0_-4px_16px_rgba(10,31,61,0.06)] pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-line-soft shadow-[0_-4px_16px_color-mix(in oklab, var(--color-ink) 6%, transparent)] pb-[env(safe-area-inset-bottom)]"
       aria-label="Navigation principale"
     >
       <ul className="grid grid-cols-5 h-16 relative">
@@ -48,7 +48,7 @@ export function BottomTabs() {
             ? isActive(pathname, t.href, workspace.home)
             : false;
           const raisedClass =
-            "absolute left-1/2 -translate-x-1/2 -top-3 h-14 w-14 rounded-full bg-violet text-canvas flex items-center justify-center shadow-[0_8px_20px_rgba(134,91,166,0.42)] active:scale-95 transition-transform";
+            "absolute left-1/2 -translate-x-1/2 -top-3 h-14 w-14 rounded-full bg-violet text-canvas flex items-center justify-center shadow-[0_8px_20px_color-mix(in oklab, var(--color-violet) 42%, transparent)] active:scale-95 transition-transform";
 
           if (t.raised) {
             return (

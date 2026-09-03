@@ -62,7 +62,7 @@ export function AnalysesTab({ event }: { event: LyfeEvent }) {
           <div className="flex items-start gap-3 min-w-0">
             <span
               aria-hidden
-              className="h-10 w-10 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+              className="h-10 w-10 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
             >
               <Sparkles
                 size={18}

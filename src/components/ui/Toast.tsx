@@ -72,10 +72,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   style={{
                     background:
                       t.tone === "success"
-                        ? "rgba(47,107,61,0.32)"
+                        ? "color-mix(in oklab, var(--color-success) 32%, transparent)"
                         : t.tone === "danger"
-                          ? "rgba(161,44,44,0.32)"
-                          : "rgba(134,91,166,0.28)",
+                          ? "color-mix(in oklab, var(--color-danger) 32%, transparent)"
+                          : "color-mix(in oklab, var(--color-violet) 28%, transparent)",
                   }}
                 >
                   {t.tone === "danger" ? (

@@ -86,7 +86,7 @@ export function UpcomingEventRow({
             <div className="flex items-center gap-4">
               {/* Thumbnail, 80x80, gradient placeholder */}
               <div
-                className="hidden sm:block w-20 h-20 rounded-[12px] shrink-0 relative overflow-hidden"
+                className="hidden sm:block w-20 h-20 rounded-chip shrink-0 relative overflow-hidden"
                 style={{
                   background:
                     "linear-gradient(135deg, var(--color-violet-soft), var(--color-tint-sky))",
@@ -97,7 +97,7 @@ export function UpcomingEventRow({
                   className="absolute inset-0"
                   style={{
                     background:
-                      "radial-gradient(circle at 30% 30%, rgba(201,166,76,0.45), transparent 70%)",
+                      "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--color-gold) 45%, transparent), transparent 70%)",
                   }}
                 />
               </div>
@@ -121,7 +121,7 @@ export function UpcomingEventRow({
                 {cap > 0 ? (
                   <div className="mt-3 flex items-center gap-3">
                     <div className="flex-1 max-w-[280px]">
-                      <ProgressBar value={sold} max={cap} tone="gold" size="xs" />
+                      <ProgressBar value={sold} max={cap} tone="violet" size="xs" />
                     </div>
                     <div className="text-meta text-ink-soft num shrink-0">
                       <span className="font-bold text-ink">{sold}</span>

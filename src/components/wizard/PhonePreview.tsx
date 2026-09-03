@@ -65,7 +65,7 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
               className="absolute inset-0"
               style={{
                 background:
-                  "radial-gradient(circle at 70% 30%, rgba(134,91,166,0.50), transparent 60%)",
+                  "radial-gradient(circle at 70% 30%, color-mix(in oklab, var(--color-violet) 50%, transparent), transparent 60%)",
               }}
             />
             <div className="absolute top-12 left-4 inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-canvas/15 backdrop-blur-sm">

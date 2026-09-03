@@ -76,7 +76,7 @@ export function QueryError({
       <div className="flex items-start gap-3">
         <span
           aria-hidden
-          className="h-9 w-9 rounded-[12px] bg-tint-rose flex items-center justify-center shrink-0"
+          className="h-9 w-9 rounded-chip bg-tint-rose flex items-center justify-center shrink-0"
         >
           <TriangleAlert size={16} strokeWidth={1.8} className="text-danger" />
         </span>
@@ -125,7 +125,7 @@ export function PermissionDenied({
       <div className="max-w-md">
         <span
           aria-hidden
-          className="h-10 w-10 rounded-[12px] bg-surface flex items-center justify-center"
+          className="h-10 w-10 rounded-chip bg-surface flex items-center justify-center"
         >
           <TriangleAlert size={18} strokeWidth={1.8} className="text-ink-mute" />
         </span>

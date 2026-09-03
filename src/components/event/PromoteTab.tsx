@@ -135,7 +135,7 @@ export function PromoteTab({ event }: { event: LyfeEvent }) {
             <div className="flex items-start gap-4">
               <span
                 aria-hidden
-                className="h-12 w-12 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+                className="h-12 w-12 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
               >
                 <Sparkles
                   size={20}
@@ -326,7 +326,7 @@ function ShareGrid({ event }: { event: LyfeEvent }) {
             className="absolute -top-12 -right-8 w-72 h-72 rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(134,91,166,0.42), transparent 70%)",
+                "radial-gradient(circle, color-mix(in oklab, var(--color-violet) 42%, transparent), transparent 70%)",
             }}
           />
           <div className="absolute inset-0 flex flex-col justify-end p-5">
@@ -362,7 +362,7 @@ function ShareGrid({ event }: { event: LyfeEvent }) {
                 className="aspect-[1/1.414] rounded-[var(--radius-sm)] mb-3 flex items-center justify-center bg-surface"
                 style={{
                   backgroundImage:
-                    "radial-gradient(circle at 30% 30%, rgba(10,31,61,0.05), transparent 60%)",
+                    "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--color-ink) 5%, transparent), transparent 60%)",
                 }}
               >
                 <QrSvg />

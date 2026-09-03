@@ -67,9 +67,17 @@ const METRIC_SCALE = [
   "text-metric-sm",
 ];
 
-const RADII = ["xs", "sm", "md", "lg", "xl", "pill"];
+const RADII = ["xs", "sm", "chip", "md", "lg", "xl", "pill"];
 const SHADOWS = ["soft", "lift", "deep"];
 const DURATIONS = ["instant", "fast", "base", "slow"];
+
+// The spacing steps the portal actually uses, in units of `--spacing`.
+// Every bar below is sized with `calc(var(--spacing) * n)` rather than a
+// pixel literal, so changing the base unit in globals.css moves this
+// specimen with it.
+const SPACING_STEPS = [
+  0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20, 32,
+];
 
 export function TokensSection() {
   return (
@@ -132,6 +140,28 @@ export function TokensSection() {
                 style={{ borderRadius: `var(--radius-${r})` }}
               />
               <code className="block text-[11px] text-ink-soft mt-1.5">{r}</code>
+            </div>
+          ))}
+        </div>
+      </Specimen>
+
+      <Specimen
+        name="Espacement"
+        note="une seule base — --spacing: 4px — dont dérive chaque utilitaire"
+      >
+        <div className="space-y-2">
+          {SPACING_STEPS.map((step) => (
+            <div key={step} className="flex items-center gap-3">
+              <code className="text-[11px] text-ink-mute w-24 shrink-0">
+                gap-{step}
+              </code>
+              <div
+                className="h-3 bg-violet rounded-[var(--radius-xs)] shrink-0"
+                style={{ width: `calc(var(--spacing) * ${step})` }}
+              />
+              <span className="text-[11px] text-ink-soft num">
+                {step * 4}&#8239;px
+              </span>
             </div>
           ))}
         </div>

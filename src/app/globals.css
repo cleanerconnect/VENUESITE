@@ -12,8 +12,13 @@
   --color-ink-soft: #2c3e5c;
   --color-ink-mute: #6b7689;
 
-  /* Gold lives only inside the wordmark SVG now — kept defined so the logo
-     paths still resolve, but the chrome no longer uses it. */
+  /* Gold is no longer a chrome accent — violet took the CTAs, pulses and
+     status marks. It survives in the wordmark SVG and in four warm radial
+     glows over dark hero surfaces (event detail, the mobile event cards,
+     the upcoming-event row), where violet reads cold against navy. That
+     is the whole remaining surface; do not spend it anywhere else.
+     A previous version of this comment claimed gold was wordmark-only,
+     which was not true of the glows. */
   --color-gold: #c9a64c;
   --color-gold-deep: #a8852e;
   --color-gold-soft: #f2e9cd;
@@ -40,6 +45,10 @@
   --color-on-ink: #faf7f0;
   --color-on-ink-mute: #f2ddd6;
   --color-violet-on-ink: #b388d6;
+  /* The cool counterpart to on-ink, for the secondary glow at the bottom
+     of a dark hero. on-ink is warm, and two warm glows on one surface
+     turn it muddy. */
+  --color-on-ink-cool: #dce8f2;
 
   --color-canvas: #ffffff;
   --color-canvas-2: #f8f5fb;
@@ -69,10 +78,26 @@
   /* Radii */
   --radius-xs: 6px;
   --radius-sm: 10px;
+  /* The icon-chip radius. Sits between sm and md because a 36–48px square
+     chip reads as over-rounded at 14px and as a hard square at 10px. It
+     was an inline arbitrary value in twenty-six places before it was a
+     token; if you need a new one, add it here rather than inline. */
+  --radius-chip: 12px;
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
   --radius-pill: 9999px;
+
+  /* ── Spacing ──
+     The base unit every spacing utility derives from: `gap-3` is
+     `calc(var(--spacing) * 3)` = 12px. Declared explicitly rather than
+     inherited silently from Tailwind's default, so the scale is a token
+     like every other and `/styleguide#tokens` can render it from here.
+
+     The steps the portal actually uses, in units of this base:
+     0.5 1 1.5 2 2.5 3 3.5 4 5 6 7 8 9 10 12 14 16 20 32.
+     Page rhythm is `space-y-5 md:space-y-7`; card padding is 4/6/7/8. */
+  --spacing: 4px;
 
   /* Shadows — earned, never default */
   --shadow-soft:

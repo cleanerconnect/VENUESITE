@@ -133,7 +133,7 @@ export function VocabularySection() {
         <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-8 gap-3">
           {ICON_KEYS.map((key) => (
             <div key={key} className="flex flex-col items-center gap-1.5 min-w-0">
-              <span className="h-9 w-9 rounded-[12px] bg-surface border border-line flex items-center justify-center">
+              <span className="h-9 w-9 rounded-chip bg-surface border border-line flex items-center justify-center">
                 <Icon name={key} size={16} className="text-ink-soft" />
               </span>
               <code className="text-[10px] text-ink-mute truncate max-w-full">

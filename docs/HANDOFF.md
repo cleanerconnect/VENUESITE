@@ -38,6 +38,24 @@ is the route index: every screen the portal ships, linked, with what each
 is for, who may open it, and — where something is missing — whether that
 is work this repo owes or a service nobody has connected yet.
 
+**Before you trust a change, walk it.** Four browser checks are committed
+under `tools/verify/`, deliberately kept out of `package.json` so they
+are run on purpose rather than carried as a dependency. They need a
+server already up on `:3210` and `npm install --no-save playwright`:
+
+```bash
+node tools/verify/walk.mjs            # the 30 venue screens (W/H/VENUE overridable)
+node tools/verify/events.mjs          # the 19 event + shared routes
+node tools/verify/states.mjs          # ?etat= forceable on all 30 venue routes
+node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
+```
+
+One trap worth knowing, because it has now cost time twice: if a stale
+`next start` still holds `:3210`, the new one fails to bind with
+`EADDRINUSE` and every check silently measures the *old* build. Kill by
+PID (`pkill -9 -f next-server`) and confirm the port is free before
+rebuilding.
+
 ---
 
 ## 2. What is solid
@@ -155,15 +173,27 @@ for a bug that was not there.
 
 ## 5. Rules to keep
 
-Six things that will rot quietly if nobody defends them.
+Eight things that will rot quietly if nobody defends them.
 
 1. **`components/ui/` imports nothing from `lib/db`, `lib/data` or
    `lib/mock`.** If a component needs data, it takes a prop. This is
    what keeps `/styleguide` working, and the styleguide is what keeps
    the components honest.
-2. **No hex literals.** A new colour is a token in `globals.css` and a
-   role name, not a value at a call site. Same for `fontSize` — use the
-   metric scale.
+2. **No colour literals, and the rule currently holds.** A new colour is
+   a token in `globals.css` and a role name, not a value at a call site.
+   A tint is that token at an opacity — `bg-violet/12` in a class,
+   `color-mix(in oklab, var(--color-violet) 12%, transparent)` in a
+   gradient or shadow — never a hand-written `rgba()`. Same for
+   `fontSize` (the metric scale), radii (`rounded-chip`) and spacing
+   (everything derives from `--spacing`).
+
+   This was aspirational until the Phase 6 audit, which found the rule
+   broken in thirty-four places: `Pill`'s eleven tones written as rgba
+   (one of them a violet in the palette nowhere else), twenty-six inline
+   `rounded-[12px]`, four gold hero glows the token comment claimed did
+   not exist, and two variants painting a second variant's colour.
+   `grep -rn 'rgba([0-9]' src` now returns one hit — a comment recording
+   the stray value. Two hits means it has started rotting again.
 3. **A domain state is a term.** Add it to the union, add it to the map
    in `vocabulary.ts` (label + tone + icon), and it appears in the
    styleguide automatically. The compiler enforces the pairing.

@@ -38,7 +38,7 @@ export default function MorePage() {
                 >
                   <span
                     aria-hidden
-                    className="h-10 w-10 rounded-[12px] bg-canvas-2/60 flex items-center justify-center shrink-0"
+                    className="h-10 w-10 rounded-chip bg-canvas-2/60 flex items-center justify-center shrink-0"
                   >
                     <Icon size={16} strokeWidth={1.8} className="text-ink" />
                   </span>
@@ -61,7 +61,7 @@ export default function MorePage() {
       <button className="w-full flex items-center gap-4 px-5 py-4 bg-surface border border-line rounded-[var(--radius-md)] text-danger hover:bg-tint-rose/40 transition-colors">
         <span
           aria-hidden
-          className="h-10 w-10 rounded-[12px] bg-tint-rose flex items-center justify-center shrink-0"
+          className="h-10 w-10 rounded-chip bg-tint-rose flex items-center justify-center shrink-0"
         >
           <LogOut size={16} strokeWidth={1.8} className="text-danger" />
         </span>

@@ -12,7 +12,9 @@ export type CardVariant =
   | "sage"
   | "rose"
   | "peach"
-  | "gold-soft"
+  // There used to be a "gold-soft" variant alongside this one, painting the
+  // same bg-violet-soft. Two names, one surface, and no way to tell from a
+  // call site which was intended. Callers now say "violet-soft".
   | "violet-soft" // AI surfaces only, never decoration
   | "canvas-2"; // sidebar/footer surface
 
@@ -26,7 +28,6 @@ const VARIANT: Record<CardVariant, string> = {
   sage: "bg-tint-sage",
   rose: "bg-tint-rose",
   peach: "bg-tint-peach",
-  "gold-soft": "bg-violet-soft",
   "violet-soft": "bg-violet-soft",
   "canvas-2": "bg-canvas-2 border border-line-soft",
 };
@@ -71,7 +72,7 @@ export function Card({
             className="pointer-events-none absolute -top-32 -right-24 w-96 h-96 rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(134,91,166,0.34), transparent 70%)",
+                "radial-gradient(circle, color-mix(in oklab, var(--color-violet) 34%, transparent), transparent 70%)",
             }}
           />
           {/* Lighter secondary glow, bottom right */}
@@ -80,7 +81,7 @@ export function Card({
             className="pointer-events-none absolute -bottom-16 right-20 w-56 h-56 rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(134,91,166,0.14), transparent 70%)",
+                "radial-gradient(circle, color-mix(in oklab, var(--color-violet) 14%, transparent), transparent 70%)",
             }}
           />
         </>

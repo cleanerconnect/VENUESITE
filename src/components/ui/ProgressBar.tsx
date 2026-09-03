@@ -4,13 +4,13 @@ import { motion } from "motion/react";
 import { ease } from "@/lib/utils/motion";
 import { cn } from "@/lib/utils/cn";
 
-// "gold" tone retained as an alias for backwards compat, paints violet
-// now since gold lives only inside the logo asset.
-type Tone = "gold" | "violet" | "ink" | "success";
+// There used to be a "gold" tone here that painted violet — an alias kept
+// for a migration that had already finished, so two names produced one
+// bar. Callers now say "violet", and a tone maps to exactly one fill.
+type Tone = "violet" | "ink" | "success";
 type Size = "xs" | "sm" | "md";
 
 const FILL: Record<Tone, string> = {
-  gold: "bg-violet",
   violet: "bg-violet",
   ink: "bg-ink",
   success: "bg-success",

@@ -17,23 +17,28 @@ type Tone =
   | "danger"
   | "neutral";
 
-interface Style {
-  bg: string;
-  text: string;
-}
-
-const STYLES: Record<Tone, Style> = {
-  live: { bg: "rgba(134,91,166,0.12)", text: "var(--color-violet-deep)" },
-  pending: { bg: "rgba(31,78,121,0.10)", text: "var(--color-info)" },
-  draft: { bg: "rgba(107,118,137,0.12)", text: "var(--color-ink-mute)" },
-  past: { bg: "rgba(107,118,137,0.08)", text: "var(--color-ink-mute)" },
-  rejected: { bg: "rgba(161,44,44,0.10)", text: "var(--color-danger)" },
-  info: { bg: "rgba(31,78,121,0.10)", text: "var(--color-info)" },
-  violet: { bg: "rgba(107,78,168,0.12)", text: "var(--color-violet-deep)" },
-  success: { bg: "rgba(47,107,61,0.10)", text: "var(--color-success)" },
-  warning: { bg: "rgba(140,90,27,0.12)", text: "var(--color-warning)" },
-  danger: { bg: "rgba(161,44,44,0.10)", text: "var(--color-danger)" },
-  neutral: { bg: "rgba(10,31,61,0.06)", text: "var(--color-ink)" },
+// Every tone is a token at an opacity, never a literal. The rgba values
+// that used to live here had drifted from the palette: `violet` was
+// rgba(107,78,168) — a colour that existed nowhere else in the portal and
+// was not `--color-violet` (134,91,166). It now reads the token.
+//
+// Four names therefore resolve to the same pair. That is deliberate: the
+// tone is the caller's vocabulary, not the paint. `live` and `violet`,
+// `pending` and `info`, `rejected` and `danger` are distinct things to
+// say about a row, and collapsing them would push the choice of word
+// into the call site.
+const STYLES: Record<Tone, string> = {
+  live: "bg-violet/12 text-violet-deep",
+  pending: "bg-info/10 text-info",
+  draft: "bg-ink-mute/12 text-ink-mute",
+  past: "bg-ink-mute/8 text-ink-mute",
+  rejected: "bg-danger/10 text-danger",
+  info: "bg-info/10 text-info",
+  violet: "bg-violet/12 text-violet-deep",
+  success: "bg-success/10 text-success",
+  warning: "bg-warning/12 text-warning",
+  danger: "bg-danger/10 text-danger",
+  neutral: "bg-ink/6 text-ink",
 };
 
 const STATE_LABEL: Record<EventState, string> = {
@@ -69,21 +74,21 @@ export function Pill({
   dot?: boolean;
   className?: string;
 }) {
-  const s = STYLES[tone];
   return (
     <span
       className={cn(
         "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full",
         "text-[10px] font-bold uppercase tracking-[0.12em] whitespace-nowrap",
+        STYLES[tone],
         className,
       )}
-      style={{ backgroundColor: s.bg, color: s.text }}
     >
       {dot ? (
+        // `bg-current` takes the tone's text colour from the parent, so the
+        // dot cannot disagree with the label it sits next to.
         <span
           aria-hidden
-          className="inline-block h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: s.text }}
+          className="inline-block h-1.5 w-1.5 rounded-full bg-current"
         />
       ) : null}
       {children}

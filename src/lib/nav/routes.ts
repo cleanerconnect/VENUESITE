@@ -97,7 +97,7 @@ export const ROUTES: RouteEntry[] = [
     gap: "La soumission affiche une confirmation ; rien n'est persisté.",
   },
   {
-    path: "/events/evt_jazz_2026",
+    path: "/events/evt_jzb_robbie",
     label: "Détail d'un événement",
     purpose:
       "Ventes, analyses, participants, invitations, remboursements, régie, promotion, bilan.",
@@ -105,7 +105,7 @@ export const ROUTES: RouteEntry[] = [
     status: "built",
   },
   {
-    path: "/events/evt_jazz_2026/edit",
+    path: "/events/evt_jzb_robbie/edit",
     label: "Édition d'un événement",
     purpose: "Corriger un événement, notamment après un refus de modération.",
     workspace: "event",

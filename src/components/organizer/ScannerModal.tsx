@@ -221,7 +221,7 @@ function EventPicker({
           >
             <div
               aria-hidden
-              className="h-12 w-12 rounded-[12px] bg-gradient-to-br from-tint-sand to-violet-soft flex items-center justify-center shrink-0"
+              className="h-12 w-12 rounded-chip bg-gradient-to-br from-tint-sand to-violet-soft flex items-center justify-center shrink-0"
             >
               <ScanLine size={18} strokeWidth={1.8} className="text-ink-soft" />
             </div>
@@ -306,7 +306,7 @@ function ScannerView({
             <span className="text-ink-mute text-h3">/ {totalCount}</span>
           </div>
           <div className="mt-3">
-            <ProgressBar value={scannedCount} max={totalCount} tone="gold" size="sm" />
+            <ProgressBar value={scannedCount} max={totalCount} tone="violet" size="sm" />
           </div>
           <div className="text-meta text-ink-mute mt-2 num">
             Encore {totalCount - scannedCount} billets à scanner
@@ -359,7 +359,7 @@ function ScannerView({
                     aria-hidden
                     className="h-7 w-7 rounded-full flex items-center justify-center shrink-0"
                     style={{
-                      background: "rgba(47,107,61,0.14)",
+                      background: "color-mix(in oklab, var(--color-success) 14%, transparent)",
                       color: "var(--color-success)",
                     }}
                   >

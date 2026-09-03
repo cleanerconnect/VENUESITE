@@ -285,7 +285,7 @@ function BoostSpendCard() {
         <div className="flex items-start gap-3">
           <span
             aria-hidden
-            className="h-10 w-10 rounded-[12px] bg-violet-soft flex items-center justify-center shrink-0"
+            className="h-10 w-10 rounded-chip bg-violet-soft flex items-center justify-center shrink-0"
           >
             <Megaphone size={18} strokeWidth={1.7} className="text-violet-deep" />
           </span>
@@ -352,7 +352,7 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div>
       <div
         className="text-[10px] font-bold uppercase tracking-[0.12em]"
-        style={{ color: "rgba(250,247,240,0.55)" }}
+        style={{ color: "color-mix(in oklab, var(--color-on-ink) 55%, transparent)" }}
       >
         {label}
       </div>

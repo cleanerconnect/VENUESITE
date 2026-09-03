@@ -6,7 +6,8 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils/cn";
 
 // Floating-label input, label animates up on focus / when the field has
-// content. 48px tall, white surface, gold focus ring.
+// content. White surface; the focus ring is the violet glow defined once
+// in globals.css under `*:focus-visible`, not a per-component style.
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, "prefix"> {
   label: string;
   hint?: string;

@@ -273,7 +273,7 @@ function BoostsPane({
                 <div className="flex items-start gap-3">
                   <span
                     aria-hidden
-                    className="h-9 w-9 rounded-[12px] bg-violet-soft flex items-center justify-center shrink-0"
+                    className="h-9 w-9 rounded-chip bg-violet-soft flex items-center justify-center shrink-0"
                   >
                     <Users
                       size={16}

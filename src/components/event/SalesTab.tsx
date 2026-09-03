@@ -46,7 +46,7 @@ export function SalesTab({ event }: { event: LyfeEvent }) {
           <div className="flex items-start gap-4 flex-wrap">
             <span
               aria-hidden
-              className="h-10 w-10 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+              className="h-10 w-10 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
             >
               <Megaphone size={18} strokeWidth={1.7} className="text-violet-deep" />
             </span>
@@ -130,7 +130,7 @@ export function SalesTab({ event }: { event: LyfeEvent }) {
                     <td className="px-6 py-4 text-ink">
                       <div className="font-semibold">{t.name}</div>
                       <div className="mt-2 max-w-[220px]">
-                        <ProgressBar value={t.sold} max={t.quantity} tone="gold" size="xs" />
+                        <ProgressBar value={t.sold} max={t.quantity} tone="violet" size="xs" />
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right num">{formatMAD(t.faceValueMad)}</td>
@@ -180,7 +180,7 @@ export function SalesTab({ event }: { event: LyfeEvent }) {
           <div className="text-h1 text-canvas num">21h à 22h</div>
           <div
             className="mt-4 inline-flex items-center gap-1.5 text-meta font-bold rounded-full px-2.5 h-6"
-            style={{ background: "rgba(134,91,166,0.20)", color: "var(--color-violet-on-ink)" }}
+            style={{ background: "color-mix(in oklab, var(--color-violet) 20%, transparent)", color: "var(--color-violet-on-ink)" }}
           >
             <TrendingUp size={12} strokeWidth={2} />
             +34 % vs autres heures

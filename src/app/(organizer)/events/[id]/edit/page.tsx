@@ -112,7 +112,7 @@ function EditEventInner() {
           <div className="flex items-start gap-3">
             <span
               aria-hidden
-              className="h-9 w-9 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+              className="h-9 w-9 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
             >
               <AlertTriangle
                 size={18}

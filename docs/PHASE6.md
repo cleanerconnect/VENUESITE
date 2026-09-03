@@ -153,10 +153,69 @@ specimen because the portal has no spacing tokens to render — see
 
 ---
 
-## 3. Écarts constatés
+## 3. Écarts constatés — all fixed in the code
 
-Reproduced as found, not corrected. Each belongs in `00 Lisez-moi` under
-this heading when that section is written.
+**These no longer exist to reproduce.** They were found by reading the
+code against the documents while building the Figma foundations, and the
+instruction that followed was to fix them at the source rather than
+mirror them into the design file. So `00 Lisez-moi` gets no "Écarts
+constatés" heading: there is nothing to list.
+
+What follows is the record of what was wrong and what was done, because
+the fixes changed public component APIs and the next person needs to know
+why a variant name vanished. Commit: see `git log` for
+"Make the no-literals rule true".
+
+| Was | Now |
+|---|---|
+| `Card` variant `gold-soft` painting `bg-violet-soft` | Variant removed; two call sites in `settings/page.tsx` say `violet-soft` |
+| `ProgressBar` tone `gold` painting `bg-violet` | Tone removed; six call sites say `violet` |
+| `Pill`'s eleven tones as hand-written `rgba()`, tone `violet` = `rgba(107,78,168)` | Token classes (`bg-violet/12 text-violet-deep`); the stray violet is gone |
+| Twenty-six inline `rounded-[12px]` | `--radius-chip: 12px` and `rounded-chip` everywhere |
+| `EmptyState` `DefaultMark` filled with `--color-gold` | `--color-violet` |
+| `Input`'s "gold focus ring" comment | Says violet, and points at the one `*:focus-visible` rule |
+| No spacing token layer | `--spacing: 4px` declared, with the scale documented and a specimen at `/styleguide#tokens` |
+| Four gold hero glows the token comment denied existed | Kept — they are deliberate — but written as `color-mix(… var(--color-gold) …)` and the comment now describes them |
+
+Two of these were larger than the audit first recorded, and the fix went
+wider than the écart:
+
+- The rgba sweep was **thirty-three literals across twenty-one files**,
+  not eleven in `Pill`. Everything that was a token-at-an-opacity written
+  by hand is now `color-mix(in oklab, var(--color-…) N%, transparent)`,
+  which is exactly what Tailwind emits for `/N` and works in the
+  gradients and box-shadows where a utility class cannot reach. One new
+  token was needed: `--color-on-ink-cool` (`#dce8f2`), a pale blue used
+  for the secondary glow on a dark hero that matched nothing in the
+  palette.
+- `CapacityRing` keeps `strokeOpacity` rather than a mixed colour, because
+  an SVG presentation attribute is the one place `color-mix` support is
+  not worth relying on.
+
+The eighth item from the original audit is **not** a code defect and
+stands: `Fraunces` at weight 500 italic has no static Figma instance
+(`.font-serif-italic` asks for 500; Figma offers `Italic` at 400 and
+`SemiBold Italic` at 600). A browser interpolates the variable font,
+Figma cannot. The text style uses `Italic` and its description says so.
+
+### A ninth thing, found while fixing
+
+`src/lib/nav/routes.ts` pointed at `/events/evt_jazz_2026` and
+`/events/evt_jazz_2026/edit`. **No dataset contains that id** — every
+seeded event is `evt_jzb_*` — so both rows were 404s wearing an HTTP 200,
+in the one file whose whole purpose is to be the truthful answer to "what
+screens exist". They now point at `evt_jzb_robbie`, the on-sale headline
+event.
+
+This survived two phases because `tools/verify/walk.mjs` only ever
+covered the thirty venue screens. `tools/verify/events.mjs` now walks the
+nineteen event and shared routes, reads its list from `routes.ts` rather
+than repeating it, and treats a 200 whose first heading is `404` as a
+failure — which is the specific shape this bug had.
+
+### The original audit, for the record
+
+Reproduced below as it was written, before any of it was fixed.
 
 1. **`Card` variant `gold-soft` is `bg-violet-soft`.** Identical in
    appearance to the `violet-soft` variant. Two names, one surface.

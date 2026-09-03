@@ -39,7 +39,6 @@ const CARD_VARIANTS: CardVariant[] = [
   "sage",
   "rose",
   "peach",
-  "gold-soft",
   "violet-soft",
   "ink",
 ];
@@ -360,7 +359,7 @@ export function SurfacesSection() {
 
       <Specimen name="Icône de section" note="pastille 36px, fond translucide">
         <Row>
-          <span className="h-9 w-9 rounded-[12px] flex items-center justify-center bg-violet-soft">
+          <span className="h-9 w-9 rounded-chip flex items-center justify-center bg-violet-soft">
             <CalendarPlus size={16} strokeWidth={1.8} className="text-violet-deep" />
           </span>
         </Row>

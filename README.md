@@ -169,8 +169,21 @@ Five rules that will rot quietly if nobody defends them:
 1. **`components/ui/` imports nothing from `lib/data`.** If a component
    needs data, it takes a prop. This is what keeps `/styleguide` working,
    and the styleguide is what keeps the components honest.
-2. **No hex literals.** A new colour is a token in `globals.css` and a
-   role name. Same for font sizes — use the type scale.
+2. **No colour literals — and this is now true, not aspirational.** A new
+   colour is a token in `globals.css` and a role name. A tint is that
+   token at an opacity: `bg-violet/12` in a class, or
+   `color-mix(in oklab, var(--color-violet) 12%, transparent)` in a
+   gradient or shadow where a class cannot reach. Never a fresh `rgba()`.
+   Same discipline for font sizes (the type scale), radii (`rounded-chip`,
+   not `rounded-[12px]`) and spacing (every step derives from
+   `--spacing`).
+
+   `grep -rn 'rgba([0-9]' src` returns exactly one hit — a comment in
+   `Pill.tsx` recording the stray value that used to be there. If it ever
+   returns two, the rule has started rotting again. Note that
+   `rounded-[var(--radius-lg)]` is *not* a literal: arbitrary-value syntax
+   wrapping a token is how Tailwind reaches a custom property, and it is
+   fine.
 3. **A domain state is a term**: add it to the union *and* to the map in
    `vocabulary.ts` (label + tone + icon). The compiler enforces the pair,
    and it appears in the styleguide automatically.

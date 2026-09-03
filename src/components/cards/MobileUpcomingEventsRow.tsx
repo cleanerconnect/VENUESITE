@@ -60,7 +60,7 @@ function UpcomingMiniCard({ event }: { event: LyfeEvent }) {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 30% 30%, rgba(201,166,76,0.45), transparent 70%)",
+              "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--color-gold) 45%, transparent), transparent 70%)",
           }}
         />
         <div className="absolute top-3 left-3">
@@ -90,7 +90,7 @@ function UpcomingMiniCard({ event }: { event: LyfeEvent }) {
 
         {cap > 0 ? (
           <div className="mt-3 space-y-1.5">
-            <ProgressBar value={sold} max={cap} tone="gold" size="xs" />
+            <ProgressBar value={sold} max={cap} tone="violet" size="xs" />
             <div className="text-meta text-ink-soft num">
               <span className="font-bold text-ink">{sold}</span>
               <span className="text-ink-mute"> / {cap}</span>

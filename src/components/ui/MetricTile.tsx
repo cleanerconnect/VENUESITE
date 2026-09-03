@@ -48,7 +48,7 @@ export function MetricTile({
         <div className="text-eyebrow text-ink-soft">{label}</div>
         {icon ? (
           <span
-            className="h-9 w-9 rounded-[12px] flex items-center justify-center bg-surface/70 shrink-0"
+            className="h-9 w-9 rounded-chip flex items-center justify-center bg-surface/70 shrink-0"
             aria-hidden
           >
             {icon}

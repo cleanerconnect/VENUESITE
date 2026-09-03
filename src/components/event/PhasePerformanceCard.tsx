@@ -53,7 +53,7 @@ export function PhasePerformanceCard({ phases }: { phases: PhaseStat[] }) {
             <ProgressBar
               value={p.sold}
               max={p.quantity}
-              tone="gold"
+              tone="violet"
               size="sm"
             />
 

@@ -214,7 +214,7 @@ export function SignInPanel({
                 >
                   <span
                     aria-hidden
-                    className="h-10 w-10 rounded-[12px] bg-violet-soft text-violet-deep flex items-center justify-center text-[13px] font-bold shrink-0"
+                    className="h-10 w-10 rounded-chip bg-violet-soft text-violet-deep flex items-center justify-center text-[13px] font-bold shrink-0"
                   >
                     {v.initials}
                   </span>
@@ -251,7 +251,7 @@ export function SignInPanel({
             <Card variant="canvas-2" size="lg">
               <span
                 aria-hidden
-                className="h-10 w-10 rounded-[12px] bg-surface flex items-center justify-center"
+                className="h-10 w-10 rounded-chip bg-surface flex items-center justify-center"
               >
                 <Info size={18} strokeWidth={1.8} className="text-ink-mute" />
               </span>

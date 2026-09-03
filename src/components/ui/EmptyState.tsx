@@ -50,7 +50,7 @@ function DefaultMark() {
       className="opacity-70"
     >
       <circle cx="24" cy="24" r="22" stroke="var(--color-ink)" strokeWidth="1.4" />
-      <circle cx="24" cy="24" r="6" fill="var(--color-gold)" />
+      <circle cx="24" cy="24" r="6" fill="var(--color-violet)" />
     </svg>
   );
 }

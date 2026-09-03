@@ -111,7 +111,7 @@ export function BilanTab({ event }: { event: LyfeEvent }) {
           className="absolute -top-32 -right-24 w-[480px] h-[480px] rounded-full pointer-events-none print:hidden"
           style={{
             background:
-              "radial-gradient(circle, rgba(134,91,166,0.32), transparent 70%)",
+              "radial-gradient(circle, color-mix(in oklab, var(--color-violet) 32%, transparent), transparent 70%)",
           }}
         />
 

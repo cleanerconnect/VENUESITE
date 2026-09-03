@@ -89,7 +89,7 @@ export default function CampaignPerformancePage() {
             <div className="flex items-center gap-2 mb-2">
               <span
                 aria-hidden
-                className="h-9 w-9 rounded-[12px] bg-violet-soft flex items-center justify-center shrink-0"
+                className="h-9 w-9 rounded-chip bg-violet-soft flex items-center justify-center shrink-0"
               >
                 <BoostFormatIcon
                   type={campaign.boostType}
@@ -399,7 +399,7 @@ export default function CampaignPerformancePage() {
             <div className="flex items-start gap-3 mb-4">
               <span
                 aria-hidden
-                className="h-9 w-9 rounded-[12px] bg-surface/70 flex items-center justify-center shrink-0"
+                className="h-9 w-9 rounded-chip bg-surface/70 flex items-center justify-center shrink-0"
               >
                 <Sparkles
                   size={16}

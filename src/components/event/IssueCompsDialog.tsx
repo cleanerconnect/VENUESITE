@@ -110,7 +110,7 @@ export function IssueCompsDialog({
                 <header className="flex items-start gap-3 p-6 border-b border-line-soft">
                   <span
                     aria-hidden
-                    className="h-10 w-10 rounded-[12px] bg-violet-soft flex items-center justify-center shrink-0"
+                    className="h-10 w-10 rounded-chip bg-violet-soft flex items-center justify-center shrink-0"
                   >
                     <Mail
                       size={18}

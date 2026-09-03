@@ -27,7 +27,7 @@ export function NudgeBlock({ block }: { block: Spec }) {
       <div className="flex items-start gap-3">
         <span
           aria-hidden
-          className="h-9 w-9 rounded-[12px] bg-surface/70 flex items-center justify-center shrink-0"
+          className="h-9 w-9 rounded-chip bg-surface/70 flex items-center justify-center shrink-0"
         >
           <Icon
             name={block.icon ?? "sparkles"}
