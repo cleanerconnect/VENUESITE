@@ -2,14 +2,13 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
   SCREEN_NEEDS,
+  isFormRoute,
   restaurantScreenTitle,
   type ScreenContext,
+  type SpecSlug,
 } from "@/lib/restaurant/screens";
-import {
-  isRestaurantSlug,
-  restaurantHref,
-  type RestaurantSlug,
-} from "@/lib/restaurant/slugs";
+import type { Comparison } from "@/lib/restaurant/operations";
+import { isRestaurantSlug, restaurantHref } from "@/lib/restaurant/slugs";
 import { redirect } from "next/navigation";
 import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
@@ -51,7 +50,9 @@ export default async function RestaurantSectionPage({
 }: Props) {
   const { section } = await params;
   const slug = slugOf(section);
-  if (!isRestaurantSlug(slug)) notFound();
+  // Form surfaces have their own routes, which Next resolves before this
+  // catch-all. Reaching here with one means a stale link.
+  if (!isRestaurantSlug(slug) || isFormRoute(slug)) notFound();
 
   // Venue scoping comes from the session, server side. Nothing here
   // reads a venue id from the URL, and no venue constant is imported.
@@ -60,10 +61,11 @@ export default async function RestaurantSectionPage({
 
   const query = await searchParams;
   const period = readPeriod(query.p);
+  const comparison = readComparison(query.c);
 
   const [overview, context] = await Promise.all([
     loadOverview(session.venueId, session.firstName),
-    loadContext(slug, session.venueId, period),
+    loadContext(slug, session.venueId, period, comparison),
   ]);
 
   return <RestaurantScreen slug={slug} data={overview} context={context} />;
@@ -77,15 +79,36 @@ function readPeriod(raw: string | string[] | undefined): AnalyticsPeriod {
     : "30d";
 }
 
-/** Only the slices this screen declares it needs. */
+/** The comparison baseline lives in the URL too. */
+function readComparison(raw: string | string[] | undefined): Comparison {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return value === "last_year" ? "last_year" : "previous";
+}
+
+/**
+ * Only the slices this screen declares it needs.
+ *
+ * The configuration is always read: it decides vocabulary, and every
+ * screen uses vocabulary. Everything else comes from SCREEN_NEEDS, so
+ * rendering the guest list does not cost a customer list and two
+ * analytics queries.
+ */
 async function loadContext(
-  slug: RestaurantSlug,
+  slug: SpecSlug,
   venueId: string,
   period: AnalyticsPeriod,
+  comparison: Comparison,
 ): Promise<Omit<ScreenContext, "overview">> {
   const repo = getRestaurantRepository();
   const needs = SCREEN_NEEDS[slug];
-  const ctx: Omit<ScreenContext, "overview"> = { period };
+
+  const settings = await repo.getVenueSettings(venueId);
+  const ctx: Omit<ScreenContext, "overview"> = {
+    period,
+    comparison,
+    configuration: settings.configuration,
+    settings,
+  };
 
   await Promise.all(
     needs.map(async (need) => {
@@ -94,10 +117,7 @@ async function loadContext(
           ctx.customers = await repo.listCustomers(venueId);
           return;
         case "analytics":
-          ctx.analytics = await repo.getAnalytics({
-            restaurantId: venueId,
-            period,
-          });
+          ctx.analytics = await repo.getAnalytics({ restaurantId: venueId, period });
           return;
         case "visibility":
           ctx.visibility = await repo.getVisibilityMetrics({
@@ -108,6 +128,56 @@ async function loadContext(
         case "availability":
           ctx.availability = await repo.getAvailability(venueId);
           return;
+        case "serviceFloor":
+          ctx.serviceFloor = await repo.getServiceFloor(venueId);
+          return;
+        case "guestGraph":
+          ctx.guestGraph = await repo.getGuestGraph(venueId);
+          return;
+        case "growth":
+          ctx.growth = await repo.getGrowth(venueId);
+          return;
+        case "nightlife":
+          ctx.nightlife = await repo.getNightlife(venueId);
+          return;
+        case "money":
+          ctx.money = await repo.getMoneyDesk(venueId);
+          return;
+        case "marketing":
+          ctx.marketing = await repo.getMarketing(venueId);
+          return;
+        case "serviceConfig":
+          ctx.serviceConfig = await repo.getServiceConfiguration(venueId);
+          return;
+        case "survey":
+          ctx.survey = await repo.getSurveyConfig(venueId);
+          return;
+        case "settings":
+          // Already loaded above; the declaration is what documents that
+          // this screen is about them.
+          return;
+        case "subscription":
+          ctx.subscription = await repo.getSubscription(venueId);
+          return;
+        case "support":
+          ctx.support = await repo.listSupportTickets(venueId);
+          return;
+        case "spend":
+          ctx.spendByCustomer = await repo.getSpendByCustomer(venueId);
+          return;
+        case "notificationPrefs":
+          ctx.notificationPreferences =
+            await repo.getNotificationPreferences(venueId);
+          return;
+        case "profile": {
+          const [profile, photos] = await Promise.all([
+            repo.getVenueProfile(venueId),
+            repo.listAssets(venueId, "photo"),
+          ]);
+          ctx.profile = profile;
+          ctx.photoCount = photos.length;
+          return;
+        }
       }
     }),
   );

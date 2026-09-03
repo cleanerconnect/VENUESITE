@@ -20,6 +20,8 @@ import {
 import { REJECTION_REASONS } from "@/lib/types/business";
 import { COPY } from "@/lib/copy/fr";
 import { markGuestArrived } from "@/app/actions/checkin";
+import { FormDialog } from "@/components/dashboard/FormDialog";
+import { useVenueCommands } from "./useVenueCommands";
 
 // Client boundary for the restaurant workspace.
 //
@@ -33,12 +35,12 @@ import { markGuestArrived } from "@/app/actions/checkin";
 export function RestaurantScreen({
   slug,
   data: serverData,
-  context = {},
+  context,
 }: {
   slug: string;
   data: RestaurantOverview;
   /** Business Service slices this screen needs, fetched server-side. */
-  context?: Omit<ScreenContext, "overview">;
+  context: Omit<ScreenContext, "overview">;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -55,6 +57,8 @@ export function RestaurantScreen({
     () => buildScreen(slug, { ...context, overview: data }),
     [slug, context, data],
   );
+
+  const serverCommands = useVenueCommands(spec);
 
   const commands = useMemo<Record<string, CommandHandler>>(() => {
     const store = useRestaurantStore.getState;
@@ -161,8 +165,14 @@ export function RestaurantScreen({
       "review.reply": () => toast({ tone: "info", title: COPY.toast.replySaved }),
       "nudge.dismiss": () => toast({ tone: "info", title: COPY.toast.nudgeDismissed }),
       "route.refresh": () => router.refresh(),
+
+      // The server-backed verbs the venue perimeter added, shared with
+      // the detail routes so a button behaves the same wherever it is.
+      // Listed last, so the optimistic handlers above win where both
+      // define a name.
+      ...serverCommands,
     };
-  }, [closeDetail, router, toast]);
+  }, [closeDetail, router, serverCommands, toast]);
 
   if (!spec) return null;
 
@@ -182,6 +192,10 @@ export function RestaurantScreen({
         </header>
       )}
       <DashboardRenderer spec={spec} commands={commands} />
+
+      {/* Mounted once per screen, like the detail drawer. Any button
+          whose command the spec declared a form for raises it. */}
+      <FormDialog />
 
       <RejectBookingDialog
         target={rejectTarget}

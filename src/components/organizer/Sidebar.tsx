@@ -24,6 +24,7 @@ import {
   type Workspace,
   isActive,
   resolveWorkspace,
+  visibleGroups,
   visibleItems,
 } from "@/lib/nav/workspaces";
 import { Brand } from "./Brand";
@@ -89,9 +90,13 @@ export function Sidebar({
   // caption, identity card, nav groups. Nothing below knows the names of
   // any of them.
   const workspace = resolveWorkspace(pathname);
-  const groups = workspace.groups
-    .map((group) => visibleItems(group, role))
-    .filter((group) => group.length > 0);
+  // Two filters, in order: the establishment's configuration decides
+  // which groups exist at all (Vie nocturne appears only for a lounge),
+  // then the role decides which of their items are visible.
+  const { configuration } = useWorkspaceAccess();
+  const groups = visibleGroups(workspace, configuration)
+    .map((group) => ({ ...group, items: visibleItems(group.items, role) }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
@@ -207,7 +212,7 @@ function SidebarBody({
   profile: ReturnType<typeof useProfile>;
   user: ReturnType<typeof useUser>;
   workspace: Workspace;
-  groups: NavItem[][];
+  groups: { label: string; items: NavItem[] }[];
   venues: SwitchableVenue[];
   activeVenueId: string;
   viewerName: string;
@@ -309,12 +314,18 @@ function SidebarBody({
       {/* Groups render with a hairline between them and no spelled-out
           labels — the grouping reads visually. Any number of groups. */}
       <nav className="flex-1 px-3 overflow-y-auto scroll-thin">
-        {groups.map((items, i) => (
-          <div key={items[0]?.href ?? i}>
+        {/* Ten named groups on the venue side, two on the event side.
+            The label is what makes thirty links readable — an unlabelled
+            list of thirty is a list nobody scans. */}
+        {groups.map((group, i) => (
+          <div key={group.label}>
             {i > 0 ? (
               <div aria-hidden className="my-3 mx-3 h-px bg-line-soft" />
             ) : null}
-            <NavGroup items={items} pathname={pathname} home={workspace.home} />
+            <p className="px-3 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-ink-mute/70">
+              {group.label}
+            </p>
+            <NavGroup items={group.items} pathname={pathname} home={workspace.home} />
           </div>
         ))}
       </nav>

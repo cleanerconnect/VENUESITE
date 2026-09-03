@@ -15,9 +15,22 @@ import type { IconKey } from "@/lib/dashboard/icons";
 import type { Role } from "@/lib/auth/session";
 import {
   RESTAURANT_BASE,
-  RESTAURANT_SETTINGS_PATH,
   restaurantHref,
 } from "@/lib/restaurant/slugs";
+import type { VenueConfiguration } from "@/lib/types/venue-operations";
+import { hasNightlife } from "@/lib/venue/config";
+
+/** A named sidebar group. The spec's ten, rendered in its order. */
+export interface NavGroup {
+  label: string;
+  items: NavItem[];
+  /**
+   * Shown only for these configurations. Vie nocturne is the one group
+   * that appears and disappears, which is the whole difference between
+   * the two configurations of the venue product.
+   */
+  configurations?: VenueConfiguration[];
+}
 
 export interface NavItem {
   label: string;
@@ -72,8 +85,8 @@ export interface Workspace {
   switcherLabel: string;
   /** Identity card above the nav. Falls back to the session profile. */
   entity?: { initials: string; shortName: string; subline: string };
-  /** Sidebar groups, rendered with a hairline divider between them. */
-  groups: NavItem[][];
+  /** Sidebar groups, rendered with their label and a hairline rule. */
+  groups: NavGroup[];
   /**
    * Rows for the phone "Plus" hub. Listed explicitly rather than derived
    * from `groups` because the hub is a different editorial cut: it holds
@@ -92,7 +105,9 @@ const EVENT_WORKSPACE: Workspace = {
   switcherLabel: "Espace organisateur",
   matches: ["/dashboard", "/events", "/bilans", "/audiences", "/visibilite", "/promo-codes", "/settlements", "/team", "/settings", "/scanner", "/activity", "/plus", "/more", "/onboarding"],
   groups: [
-    [
+    {
+      label: "Organisation",
+      items: [
       { label: "Vue d'ensemble", href: "/dashboard", icon: "layout" },
       { label: "Mes événements", href: "/events", icon: "ticket" },
       { label: "Bilans", href: "/bilans", icon: "file", allow: ["owner", "admin"] },
@@ -106,12 +121,16 @@ const EVENT_WORKSPACE: Workspace = {
         pulse: true,
         allow: ["owner", "admin"],
       },
-    ],
-    [
-      { label: "Versements", href: "/settlements", icon: "wallet", allow: ["owner", "admin"] },
-      { label: "Équipe", href: "/team", icon: "users", allow: ["owner", "admin"] },
-      { label: "Réglages", href: "/settings", icon: "settings" },
-    ],
+      ],
+    },
+    {
+      label: "Compte",
+      items: [
+        { label: "Versements", href: "/settlements", icon: "wallet", allow: ["owner", "admin"] },
+        { label: "Équipe", href: "/team", icon: "users", allow: ["owner", "admin"] },
+        { label: "Réglages", href: "/settings", icon: "settings" },
+      ],
+    },
   ],
   secondary: [
     { label: "Bilans", href: "/bilans", icon: "file" },
@@ -148,45 +167,187 @@ const EVENT_WORKSPACE: Workspace = {
 
 const RESTAURANT_WORKSPACE: Workspace = {
   id: "restaurant",
-  caption: "restaurant",
+  caption: "établissement",
   home: RESTAURANT_BASE,
-  switcherLabel: "Espace restaurant",
+  switcherLabel: "Espace établissement",
   matches: [RESTAURANT_BASE],
+  // The specification's ten groups, in its order. Roles follow its own
+  // rule: staff see today, service and clients; managers add presence,
+  // growth, nightlife and establishment; owners add payments, pilotage
+  // and account.
   groups: [
-    [
-      { label: "Vue d'ensemble", href: restaurantHref(""), icon: "layout" },
-      { label: "Réservations", href: restaurantHref("reservations"), icon: "calendar-clock" },
-      { label: "Services", href: restaurantHref("services"), icon: "sunset", allow: ["owner", "admin"] },
-      { label: "Disponibilités", href: restaurantHref("disponibilites"), icon: "calendar-plus", allow: ["owner", "admin"] },
-      { label: "Clients", href: restaurantHref("clients"), icon: "users", allow: ["owner", "admin"] },
-      { label: "Carte", href: restaurantHref("menu"), icon: "utensils-crossed", allow: ["owner", "admin"] },
-      { label: "Avis", href: restaurantHref("avis"), icon: "star", allow: ["owner", "admin"] },
-      { label: "Analytique", href: restaurantHref("analytique"), icon: "gauge", allow: ["owner", "admin"] },
-      { label: "Visibilité", href: restaurantHref("visibilite"), icon: "megaphone", allow: ["owner", "admin"] },
-    ],
-    [
-      { label: "Versements", href: restaurantHref("versements"), icon: "wallet", allow: ["owner", "admin"] },
-      { label: "Réglages du lieu", href: RESTAURANT_SETTINGS_PATH, icon: "settings" },
-    ],
+    {
+      label: "Aujourd'hui",
+      items: [
+        { label: "Accueil", href: restaurantHref(""), icon: "layout" },
+        { label: "Réservations", href: restaurantHref("reservations"), icon: "calendar-clock" },
+        { label: "Calendrier", href: restaurantHref("calendrier"), icon: "calendar" },
+      ],
+    },
+    {
+      label: "En service",
+      items: [
+        { label: "Liste d'attente", href: restaurantHref("liste-attente"), icon: "timer" },
+        { label: "Check-in", href: restaurantHref("check-in"), icon: "user-check" },
+        { label: "Briefing", href: restaurantHref("briefing"), icon: "clipboard" },
+      ],
+    },
+    {
+      label: "Clients",
+      items: [
+        { label: "Liste clients", href: restaurantHref("clients"), icon: "users" },
+        {
+          label: "Tags et segments",
+          href: restaurantHref("segments"),
+          icon: "tag",
+          allow: ["owner", "admin"],
+        },
+      ],
+    },
+    {
+      label: "Ma présence",
+      items: [
+        {
+          label: "Ma fiche",
+          href: restaurantHref("ma-fiche"),
+          icon: "building",
+          allow: ["owner", "admin"],
+        },
+        {
+          label: "Menu",
+          href: restaurantHref("menu"),
+          icon: "utensils-crossed",
+          allow: ["owner", "admin"],
+        },
+        { label: "Avis", href: restaurantHref("avis"), icon: "star", allow: ["owner", "admin"] },
+      ],
+    },
+    {
+      label: "Croissance",
+      items: [
+        {
+          label: "Visibilité",
+          href: restaurantHref("visibilite"),
+          icon: "megaphone",
+          allow: ["owner", "admin"],
+        },
+        { label: "Offres", href: restaurantHref("offres"), icon: "percent", allow: ["owner", "admin"] },
+        {
+          label: "Expériences",
+          href: restaurantHref("experiences"),
+          icon: "sparkles",
+          allow: ["owner", "admin"],
+        },
+      ],
+    },
+    {
+      label: "Vie nocturne",
+      // The one group that is configuration-dependent. A restaurant does
+      // not see it at all — not greyed out, not empty: absent.
+      configurations: ["lounge", "both"],
+      items: [
+        {
+          label: "Guest list",
+          href: restaurantHref("guest-list"),
+          icon: "door-open",
+        },
+        {
+          label: "Tables minimums",
+          href: restaurantHref("tables"),
+          icon: "armchair",
+          allow: ["owner", "admin"],
+        },
+        {
+          label: "Promoteurs",
+          href: restaurantHref("promoteurs"),
+          icon: "user-plus",
+          allow: ["owner", "admin"],
+        },
+      ],
+    },
+    {
+      label: "Paiements",
+      items: [
+        { label: "Acomptes", href: restaurantHref("acomptes"), icon: "wallet", allow: ["owner"] },
+        { label: "Annulations", href: restaurantHref("annulations"), icon: "ban", allow: ["owner"] },
+        { label: "Lyfe Pay", href: restaurantHref("lyfe-pay"), icon: "banknote", allow: ["owner"] },
+      ],
+    },
+    {
+      label: "Pilotage",
+      items: [
+        { label: "Performance", href: restaurantHref("performance"), icon: "gauge", allow: ["owner"] },
+        { label: "Bilans", href: restaurantHref("bilans"), icon: "file", allow: ["owner"] },
+        { label: "Campagnes", href: restaurantHref("campagnes"), icon: "megaphone", allow: ["owner"] },
+      ],
+    },
+    {
+      label: "Établissement",
+      items: [
+        {
+          label: "Disponibilités",
+          href: restaurantHref("disponibilites"),
+          icon: "calendar-plus",
+          allow: ["owner", "admin"],
+        },
+        {
+          label: "Équipe et rôles",
+          href: restaurantHref("equipe"),
+          icon: "users",
+          allow: ["owner", "admin"],
+        },
+        {
+          label: "Notifications",
+          href: restaurantHref("notifications"),
+          icon: "bell",
+          allow: ["owner", "admin"],
+        },
+      ],
+    },
+    {
+      label: "Compte",
+      items: [
+        { label: "Paramètres", href: restaurantHref("parametres"), icon: "settings", allow: ["owner"] },
+        { label: "Abonnement", href: restaurantHref("abonnement"), icon: "coins", allow: ["owner"] },
+        { label: "Support", href: restaurantHref("support"), icon: "message" },
+      ],
+    },
   ],
   secondary: [
-    { label: "Services", href: restaurantHref("services"), icon: "sunset" },
-    { label: "Disponibilités", href: restaurantHref("disponibilites"), icon: "calendar-plus" },
-    { label: "Clients", href: restaurantHref("clients"), icon: "users" },
-    { label: "Analytique", href: restaurantHref("analytique"), icon: "gauge" },
-    { label: "Visibilité", href: restaurantHref("visibilite"), icon: "megaphone" },
+    { label: "Calendrier", href: restaurantHref("calendrier"), icon: "calendar" },
+    { label: "Briefing", href: restaurantHref("briefing"), icon: "clipboard" },
+    { label: "Liste clients", href: restaurantHref("clients"), icon: "users" },
+    { label: "Tags et segments", href: restaurantHref("segments"), icon: "tag" },
+    { label: "Ma fiche", href: restaurantHref("ma-fiche"), icon: "building" },
+    { label: "Menu", href: restaurantHref("menu"), icon: "utensils-crossed" },
     { label: "Avis", href: restaurantHref("avis"), icon: "star" },
-    { label: "Versements", href: restaurantHref("versements"), icon: "wallet" },
-    { label: "Réglages du lieu", href: RESTAURANT_SETTINGS_PATH, icon: "settings" },
+    { label: "Visibilité", href: restaurantHref("visibilite"), icon: "megaphone" },
+    { label: "Offres", href: restaurantHref("offres"), icon: "percent" },
+    { label: "Expériences", href: restaurantHref("experiences"), icon: "sparkles" },
+    { label: "Guest list", href: restaurantHref("guest-list"), icon: "door-open" },
+    { label: "Tables minimums", href: restaurantHref("tables"), icon: "armchair" },
+    { label: "Promoteurs", href: restaurantHref("promoteurs"), icon: "user-plus" },
+    { label: "Acomptes", href: restaurantHref("acomptes"), icon: "wallet" },
+    { label: "Annulations", href: restaurantHref("annulations"), icon: "ban" },
+    { label: "Lyfe Pay", href: restaurantHref("lyfe-pay"), icon: "banknote" },
+    { label: "Performance", href: restaurantHref("performance"), icon: "gauge" },
+    { label: "Bilans", href: restaurantHref("bilans"), icon: "file" },
+    { label: "Campagnes", href: restaurantHref("campagnes"), icon: "megaphone" },
+    { label: "Disponibilités", href: restaurantHref("disponibilites"), icon: "calendar-plus" },
+    { label: "Équipe et rôles", href: restaurantHref("equipe"), icon: "users" },
+    { label: "Notifications", href: restaurantHref("notifications"), icon: "bell" },
+    { label: "Paramètres", href: restaurantHref("parametres"), icon: "settings" },
+    { label: "Abonnement", href: restaurantHref("abonnement"), icon: "coins" },
+    { label: "Support", href: restaurantHref("support"), icon: "message" },
   ],
   tabs: [
-    { label: "Aperçu", href: restaurantHref(""), icon: "layout" },
+    { label: "Accueil", href: restaurantHref(""), icon: "layout" },
     { label: "Carnet", href: restaurantHref("reservations"), icon: "calendar-clock" },
     // Door duty gets the raised centre button, the way the event
     // workspace raises the scanner. It opens a sheet rather than
     // navigating, so it carries a command instead of an href.
     { label: "Arrivées", command: "checkin.open", icon: "user-check", raised: true },
-    { label: "Carte", href: restaurantHref("menu"), icon: "utensils-crossed" },
+    { label: "Attente", href: restaurantHref("liste-attente"), icon: "timer" },
     { label: "Plus", href: "/plus", icon: "grid" },
   ],
   topbar: {
@@ -204,6 +365,26 @@ const RESTAURANT_WORKSPACE: Workspace = {
     },
   },
 };
+
+/**
+ * The groups a configuration actually shows.
+ *
+ * Vie nocturne is the only one that moves, and it moves as a whole: the
+ * spec is explicit that drinks is a configuration rather than a second
+ * product, so nothing else in the navigation changes with it.
+ */
+export function visibleGroups(
+  workspace: Workspace,
+  configuration: VenueConfiguration,
+): NavGroup[] {
+  return workspace.groups.filter(
+    (group) =>
+      !group.configurations ||
+      (group.label === "Vie nocturne"
+        ? hasNightlife(configuration)
+        : group.configurations.includes(configuration)),
+  );
+}
 
 export const WORKSPACES: Workspace[] = [EVENT_WORKSPACE, RESTAURANT_WORKSPACE];
 

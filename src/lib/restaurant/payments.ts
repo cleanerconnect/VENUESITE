@@ -17,6 +17,7 @@ import type {
   MoneyDesk,
   Transaction,
 } from "@/lib/types/venue-operations";
+import type { RestaurantPayout } from "@/lib/types/restaurant";
 import { restaurantHref } from "./slugs";
 import { dayLabel, hm, initialsOf, mobileTiles, money, shortDay } from "./format";
 
@@ -485,15 +486,7 @@ function cancellationRow(entry: CancellationEntry): EntityRow {
 
 export function buildLyfePayScreen(
   desk: MoneyDesk,
-  payouts: {
-    id: string;
-    reference: string;
-    amountMad: number;
-    commissionMad: number;
-    scheduledFor: string;
-    paidAt: string | null;
-    state: string;
-  }[],
+  payouts: RestaurantPayout[],
 ): ScreenSpec {
   // A venue with no transactions is not an error and not an empty list
   // to apologise for — it is a venue that has not connected Lyfe Pay.
@@ -707,15 +700,7 @@ function transactionRow(transaction: Transaction): EntityRow {
   };
 }
 
-function payoutRow(payout: {
-  id: string;
-  reference: string;
-  amountMad: number;
-  commissionMad: number;
-  scheduledFor: string;
-  paidAt: string | null;
-  state: string;
-}): EntityRow {
+function payoutRow(payout: RestaurantPayout): EntityRow {
   return {
     id: payout.id,
     title: payout.reference,
@@ -727,7 +712,7 @@ function payoutRow(payout: {
       `commission ${money(payout.commissionMad)}`,
     ].join(" · "),
     badges:
-      payout.paidAt !== null
+      payout.paidAt
         ? [{ label: "VERSÉ", tone: "success" }]
         : [{ label: "PROGRAMMÉ", tone: "info" }],
     trailing: { label: "Montant", metric: { value: payout.amountMad, format: MAD } },

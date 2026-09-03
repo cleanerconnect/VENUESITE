@@ -51,13 +51,60 @@ import {
 import { formatValue } from "@/lib/dashboard/value";
 import { buildCustomersScreen } from "./crm";
 import {
-  buildAnalyticsScreen,
-  buildAvailabilityScreen,
+  buildPerformanceScreen,
+  buildReportsScreen,
   buildVisibilityScreen,
+  type Comparison,
 } from "./operations";
+import {
+  buildBriefingScreen,
+  buildCalendarScreen,
+  buildWaitlistScreen,
+} from "./service-floor";
+import {
+  buildExperiencesScreen,
+  buildOffersScreen,
+  buildSegmentsScreen,
+} from "./growth";
+import {
+  buildGuestListScreen,
+  buildPromotersScreen,
+  buildTablesScreen,
+} from "./nightlife";
+import {
+  buildCancellationsScreen,
+  buildDepositsScreen,
+  buildLyfePayScreen,
+} from "./payments";
+import { buildCampaignsScreen } from "./marketing";
+import { formsFor } from "./forms";
+import {
+  buildAvailabilityScreen,
+  buildNotificationsScreen,
+  buildSettingsScreen,
+  buildSubscriptionScreen,
+  buildSupportScreen,
+} from "./establishment";
+import { configFor } from "@/lib/venue/config";
+import type { ServiceConfiguration } from "@/lib/data/repository";
+import type {
+  Deposit,
+  Growth,
+  GuestGraph,
+  Marketing,
+  MoneyDesk,
+  Nightlife,
+  ServiceFloor,
+  Subscription,
+  SupportTicket,
+  SurveyConfig,
+  VenueConfiguration,
+  VenueSettings,
+} from "@/lib/types/venue-operations";
 import type {
   AnalyticsPeriod,
   Customer,
+  NotificationPreferences,
   VenueAnalytics,
   VenueAvailability,
   VisibilityMetrics,
@@ -69,13 +116,17 @@ import {
   restaurantHref,
 } from "./slugs";
 import { COUNT, MAD } from "@/lib/dashboard/formats";
-import { dayLabel, hm, initialsOf, mobileTiles, money } from "./format";
+import { coversIn, dayLabel, hm, initialsOf, mobileTiles, money } from "./format";
 
 const covers = (n: number) => `${n} ${n > 1 ? "couverts" : "couvert"}`;
 
 // ── Dashboard ────────────────────────────────────────────────
 
-export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
+export function buildDashboardScreen(
+  data: RestaurantOverview,
+  floor: ServiceFloor,
+  desk: MoneyDesk,
+): ScreenSpec {
   const service = data.currentService;
   const inService = service.state === "open" || service.state === "peak";
   const remainingCovers = Math.max(0, service.capacity - service.bookedCovers);
@@ -100,11 +151,15 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
       bottomLabel: `${service.arrivedCovers} / ${service.capacity}`,
     },
     stats: [
-      {
-        label: "Encaissé ce service",
-        metric: { value: service.revenueMad, format: MAD, animate: true },
-        accent: true,
-      },
+      ...(desk.hasTransactionSource
+        ? [
+            {
+              label: "Encaissé ce service",
+              metric: { value: service.revenueMad, format: MAD, animate: true },
+              accent: true,
+            },
+          ]
+        : []),
       {
         label: "Couverts arrivés",
         metric: {
@@ -177,6 +232,24 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         },
         variant: "secondary",
       },
+      {
+        action: {
+          kind: "link",
+          label: "Liste d'attente",
+          href: restaurantHref("liste-attente"),
+          icon: "timer",
+        },
+        variant: "secondary",
+      },
+      {
+        action: {
+          kind: "link",
+          label: "Briefing",
+          href: restaurantHref("briefing"),
+          icon: "clipboard",
+        },
+        variant: "ghost",
+      },
     ],
   };
 
@@ -198,16 +271,23 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         hint: data.coversToday.peakHourLabel,
         sparkline: data.coversToday.series24h,
       },
-      {
-        id: "ticket",
-        label: "Ticket moyen",
-        tone: "surface",
-        metric: { value: data.averageTicket.amountMad, format: MAD, animate: true },
-        delta: {
-          value: data.averageTicket.deltaPctVsLastWeek,
-          period: "vs sem. dernière",
-        },
-      },
+      // Money, so it follows the same rule as every other money tile:
+      // present only where Lyfe Pay is. A venue without it sees one
+      // tile fewer, not a plausible-looking zero.
+      ...(desk.hasTransactionSource
+        ? ([
+            {
+              id: "ticket",
+              label: "Ticket moyen",
+              tone: "surface",
+              metric: { value: data.averageTicket.amountMad, format: MAD, animate: true },
+              delta: {
+                value: data.averageTicket.deltaPctVsLastWeek,
+                period: "vs sem. dernière",
+              },
+            },
+          ] satisfies KpiTile[])
+        : []),
       {
         id: "occupancy",
         label: "Taux d'occupation",
@@ -243,7 +323,7 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
             tone: "muted",
           },
         ],
-        action: { kind: "link", label: "Voir les versements", href: restaurantHref("versements") },
+        action: { kind: "link", label: "Voir Lyfe Pay", href: restaurantHref("lyfe-pay") },
       },
       {
         id: "no-shows",
@@ -303,6 +383,151 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
     entries: data.activity.map(activityEntry),
   };
 
+  // The attention queue: everything that needs a decision before the
+  // service does. Assembled from four sources rather than four lists,
+  // because "what needs me now" is one question.
+  const attention: EntityRow[] = [
+    ...data.upcomingReservations
+      .filter((r) => r.state === "requested")
+      .map((r) => ({
+        id: `req-${r.id}`,
+        title: r.guestName,
+        initials: initialsOf(r.guestName),
+        meta: `${hm(r.at)} · ${covers(r.partySize)} · demande en attente`,
+        badges: [{ label: "À CONFIRMER", tone: "warning" as const }],
+        facets: { queue: "requests" },
+        actions: [
+          {
+            action: {
+              kind: "command" as const,
+              command: "reservation.accept",
+              payload: { id: r.id },
+              label: "Accepter",
+              icon: "check" as const,
+            },
+            variant: "primary" as const,
+          },
+          {
+            action: {
+              kind: "command" as const,
+              command: "reservation.refuse",
+              payload: { id: r.id },
+              label: "Refuser",
+              icon: "ban" as const,
+            },
+            variant: "secondary" as const,
+          },
+        ],
+      })),
+    ...data.upcomingReservations
+      .filter((r) => (r.noShowRisk ?? 0) >= 0.3 && r.state === "confirmed")
+      .map((r) => ({
+        id: `risk-${r.id}`,
+        title: r.guestName,
+        initials: initialsOf(r.guestName),
+        meta: `${hm(r.at)} · ${covers(r.partySize)} · risque d'absence élevé`,
+        badges: [{ label: "RISQUE ÉLEVÉ", tone: "danger" as const }],
+        facets: { queue: "risk" },
+        actions: [
+          {
+            action: {
+              kind: "command" as const,
+              command: "reservation.remind",
+              payload: { id: r.id },
+              label: "Demander une reconfirmation",
+              icon: "message-square" as const,
+            },
+            variant: "secondary" as const,
+          },
+        ],
+      })),
+    ...desk.deposits
+      .filter((d) => d.status === "echoue")
+      .map((d) => ({
+        id: `dep-${d.id}`,
+        title: d.guestName,
+        icon: "wallet" as const,
+        meta: `Acompte échoué · ${d.failureReason || "paiement refusé"}`,
+        badges: [{ label: "ACOMPTE ÉCHOUÉ", tone: "danger" as const }],
+        facets: { queue: "deposits" },
+        actions: [
+          {
+            action: {
+              kind: "command" as const,
+              command: "deposit.chase",
+              payload: { id: d.id },
+              label: "Relancer",
+              icon: "message-square" as const,
+            },
+            variant: "primary" as const,
+          },
+        ],
+      })),
+    ...data.reviews
+      .filter((r) => !r.replied)
+      .slice(0, 3)
+      .map((r) => ({
+        id: `rev-${r.id}`,
+        title: r.guestName,
+        initials: initialsOf(r.guestName),
+        meta: `Avis ${r.rating}/5 sans réponse · ${r.comment.slice(0, 70)}`,
+        badges: [{ label: "AVIS SANS RÉPONSE", tone: "warning" as const }],
+        facets: { queue: "reviews" },
+        href: restaurantHref("avis"),
+      })),
+  ];
+
+  const attentionBlock: Block = {
+    id: "attention",
+    type: "entity-list",
+    heading: "À traiter",
+    tabs: [
+      { id: "all", label: "Tout" },
+      { id: "requests", label: "Demandes", match: { facet: "queue", values: ["requests"] } },
+      { id: "risk", label: "Risque", match: { facet: "queue", values: ["risk"] } },
+      { id: "deposits", label: "Acomptes", match: { facet: "queue", values: ["deposits"] } },
+      { id: "reviews", label: "Avis", match: { facet: "queue", values: ["reviews"] } },
+    ],
+    rows: attention,
+    empty: {
+      title: "Rien à traiter",
+      body: "Aucune demande en attente, aucun acompte échoué, aucun avis sans réponse.",
+      icon: "check",
+    },
+    noMatches: { title: "Rien ici", body: "Aucun élément dans cette file." },
+  };
+
+  // The next four hours, in quarter-hour arrivals. A manager reads a
+  // service by when the door opens, not by a daily total.
+  const bandStart = Date.now();
+  const arrivalsPerQuarter = new Map<string, number>();
+  for (const r of data.upcomingReservations) {
+    const at = Date.parse(r.at);
+    if (at < bandStart || at > bandStart + 4 * 3_600_000) continue;
+    const slot = new Date(Math.floor(at / 900_000) * 900_000).toISOString();
+    arrivalsPerQuarter.set(slot, (arrivalsPerQuarter.get(slot) ?? 0) + r.partySize);
+  }
+  const nextServiceBand: Block = {
+    id: "next-service",
+    type: "slot-grid",
+    heading: "Les quatre prochaines heures",
+    subheading: "Couverts attendus par quart d'heure, à partir de maintenant.",
+    capacity: Math.max(
+      1,
+      Math.round(data.currentService.capacity / 16),
+    ),
+    capacityLabel: `${Math.max(1, Math.round(data.currentService.capacity / 16))} couverts / 15 min`,
+    unitLabel: "couverts",
+    slots: Array.from({ length: 16 }, (_, i) => {
+      const at = new Date(Math.floor(bandStart / 900_000) * 900_000 + i * 900_000);
+      return {
+        label: hm(at.toISOString()),
+        value: arrivalsPerQuarter.get(at.toISOString()) ?? 0,
+        current: i === 0,
+      };
+    }),
+  };
+
   const revenueChart: Block = {
     id: "revenue",
     type: "chart",
@@ -326,9 +551,11 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         main: nudgeBlock ? [greetingBlock, nudgeBlock] : [greetingBlock],
         rail: [heroBlock],
       },
+      attentionBlock,
       kpiBlock,
       // Operational before strategic: which half-hour is about to break
       // comes above how the week is trending.
+      nextServiceBand,
       serviceLoadBlock(data),
       {
         id: "floor",
@@ -337,14 +564,16 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
         main: [arrivalsBlock],
         rail: [feedBlock],
       },
-      revenueChart,
+      ...(desk.hasTransactionSource ? [revenueChart] : []),
     ],
     // Phone lane: the floor comes first because that is what a manager
     // opens the app for mid-service. Same blocks, different order and a
     // trimmed KPI set — a layout decision, so it lives in the layout.
     mobileBlocks: [
+      attentionBlock,
       heroBlock,
       ...(nudgeBlock ? [nudgeBlock] : []),
+      nextServiceBand,
       { ...kpiBlock, id: "kpis-mobile", columns: 1, tiles: mobileTiles(kpiBlock) },
       { ...(serviceLoadBlock(data) as Block), id: "service-load-mobile" },
       arrivalsBlock,
@@ -355,10 +584,20 @@ export function buildDashboardScreen(data: RestaurantOverview): ScreenSpec {
 
 // ── Reservations ─────────────────────────────────────────────
 
-export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
+export function buildReservationsScreen(
+  data: RestaurantOverview,
+  configuration: VenueConfiguration,
+  desk: MoneyDesk,
+): ScreenSpec {
   const all = [...data.upcomingReservations, ...data.waitlist];
   const requested = all.filter((r) => r.state === "requested");
   const atRisk = all.filter((r) => (r.noShowRisk ?? 0) >= 0.3);
+  const vocabulary = configFor(configuration);
+  const depositByReservation = new Map(
+    desk.deposits
+      .filter((d) => d.reservationId)
+      .map((d) => [d.reservationId as string, d]),
+  );
 
   const kpiBlock: Block = {
     id: "reservation-kpis",
@@ -367,7 +606,7 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
     tiles: [
       {
         id: "booked",
-        label: "Couverts réservés",
+        label: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} réservés`,
         tone: "sand",
         icon: "calendar-clock",
         metric: {
@@ -420,6 +659,12 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
     id: "book",
     type: "entity-list",
     heading: "Carnet du service",
+    headingAction: {
+      kind: "command",
+      command: "reservation.create",
+      label: "Nouvelle réservation",
+      icon: "plus",
+    },
     // One list, filtered — rather than four lists a manager has to
     // scan in turn. Counts, search and sort all derive from the rows.
     tabs: [
@@ -445,6 +690,16 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
         match: { facet: "state", values: ["waitlisted"] },
       },
       {
+        id: "no_show",
+        label: "No-show",
+        match: { facet: "state", values: ["no_show"] },
+      },
+      {
+        id: "cancelled",
+        label: "Annulées",
+        match: { facet: "state", values: ["cancelled", "rejected"] },
+      },
+      {
         id: "risk",
         label: "À risque",
         match: { facet: "risk", values: ["high"] },
@@ -458,7 +713,9 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
       { id: "visits", label: "Fidélité", key: "visits", direction: "desc" },
       { id: "name", label: "Nom", key: "name", direction: "asc" },
     ],
-    rows: all.map((r) => reservationRow(r, data.zones)),
+    rows: all.map((r) =>
+      reservationRow(r, data.zones, configuration, depositByReservation.get(r.id)),
+    ),
     empty: {
       title: "Carnet vide",
       body: "Aucune table réservée sur ce service.",
@@ -470,11 +727,72 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
     },
   };
 
+  // The day and the service, as a control rather than a heading: the
+  // book is always read for one day, and the previous one is one tap
+  // away all through a service.
+  const dayPicker: Block = {
+    id: "day",
+    type: "settings",
+    heading: "Journée",
+    rows: [
+      {
+        id: "date",
+        label: "Date",
+        control: { kind: "date", value: data.currentService.date },
+        command: "reservations.day",
+      },
+      {
+        id: "service",
+        label: vocabulary.service.one.replace(/^./, (c) => c.toUpperCase()),
+        hint: `Les ${vocabulary.service.many} se définissent dans Disponibilités.`,
+        control: {
+          kind: "select",
+          value: data.currentService.id,
+          options: [{ value: data.currentService.id, label: data.currentService.label }],
+        },
+        command: "reservations.service",
+      },
+    ],
+    footerActions: [
+      {
+        action: {
+          kind: "command",
+          command: "reservation.create",
+          label: "Nouvelle réservation",
+          icon: "plus",
+        },
+        variant: "primary",
+      },
+      {
+        action: {
+          kind: "command",
+          command: "reservation.walkIn",
+          label: vocabulary.walkInLabel,
+          icon: "door-open",
+        },
+        variant: "secondary",
+      },
+      {
+        action: {
+          kind: "command",
+          command: "reservations.export",
+          label: "Exporter la journée",
+          icon: "file",
+        },
+        variant: "ghost",
+      },
+      {
+        action: { kind: "command", command: "print", label: "Imprimer", icon: "file" },
+        variant: "ghost",
+      },
+    ],
+  };
+
   return {
     slug: "reservations",
     title: "Réservations",
     subtitle: dayLabel(data.currentService.opensAt),
-    blocks: [kpiBlock, serviceLoadBlock(data), bookBlock],
+    blocks: [dayPicker, kpiBlock, serviceLoadBlock(data), bookBlock],
     // Phone lane: the book first.
     //
     // Accepting and refusing is one of the three things that has to work
@@ -490,6 +808,7 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
         columns: 1,
         tiles: mobileTiles(kpiBlock),
       },
+      dayPicker,
     ],
   };
 }
@@ -640,8 +959,90 @@ export function buildMenuScreen(data: RestaurantOverview): ScreenSpec {
 
 // ── Reviews ──────────────────────────────────────────────────
 
-export function buildReviewsScreen(data: RestaurantOverview): ScreenSpec {
+export function buildReviewsScreen(
+  data: RestaurantOverview,
+  survey: SurveyConfig | undefined,
+): ScreenSpec {
   const unanswered = data.reviews.filter((r) => !r.replied);
+
+  // The post-visit survey and the external redirection. Both are
+  // configuration, both belong beside the reviews they produce, and
+  // neither is worth a screen of its own.
+  const surveyBlock: Block = {
+    id: "survey",
+    type: "settings",
+    heading: "Sondage après visite",
+    subheading:
+      "Envoyé après la venue. Les clients satisfaits peuvent ensuite être invités à publier ailleurs.",
+    banner: survey?.enabled
+      ? undefined
+      : {
+          tone: "neutral",
+          title: "Le sondage est désactivé",
+          body: "Aucun message n'est envoyé après une visite.",
+        },
+    rows: [
+      {
+        id: "survey-enabled",
+        label: "Envoyer le sondage",
+        hint: "Un message court, dans l'application, après la visite.",
+        control: { kind: "toggle", value: survey?.enabled ?? false },
+        command: "survey.set",
+        payload: { field: "enabled" },
+        allow: ["owner", "admin"],
+      },
+      {
+        id: "survey-delay",
+        label: "Délai d'envoi",
+        hint: "Heures après la fin du service.",
+        control: { kind: "number", value: survey?.sendAfterHours ?? 3, min: 1, max: 72 },
+        command: "survey.set",
+        payload: { field: "sendAfterHours" },
+        allow: ["owner", "admin"],
+      },
+      {
+        id: "survey-questions",
+        label: "Questions posées",
+        control: {
+          kind: "readonly",
+          value: `${survey?.questions.length ?? 0} questions`,
+        },
+        command: "survey.questions",
+      },
+      {
+        id: "redirect-rating",
+        label: "Inviter à publier à partir de",
+        hint: "Les clients notant au moins ce score se voient proposer Google ou Tripadvisor.",
+        control: {
+          kind: "select",
+          value: String(survey?.redirectFromRating ?? 4),
+          options: [
+            { value: "4", label: "4 étoiles et plus" },
+            { value: "5", label: "5 étoiles uniquement" },
+          ],
+        },
+        command: "survey.set",
+        payload: { field: "redirectFromRating" },
+        allow: ["owner", "admin"],
+      },
+      {
+        id: "google-url",
+        label: "Lien Google",
+        control: { kind: "text", value: survey?.googleUrl ?? "" },
+        command: "survey.set",
+        payload: { field: "googleUrl" },
+        allow: ["owner", "admin"],
+      },
+      {
+        id: "tripadvisor-url",
+        label: "Lien Tripadvisor",
+        control: { kind: "text", value: survey?.tripadvisorUrl ?? "" },
+        command: "survey.set",
+        payload: { field: "tripadvisorUrl" },
+        allow: ["owner", "admin"],
+      },
+    ],
+  };
 
   return {
     slug: "avis",
@@ -650,6 +1051,7 @@ export function buildReviewsScreen(data: RestaurantOverview): ScreenSpec {
       .toFixed(1)
       .replace(".", ",")} / 5`,
     blocks: [
+      surveyBlock,
       {
         id: "review-kpis",
         type: "kpi-grid",
@@ -701,113 +1103,45 @@ export function buildReviewsScreen(data: RestaurantOverview): ScreenSpec {
   };
 }
 
-// ── Services ─────────────────────────────────────────────────
-
-export function buildServicesScreen(data: RestaurantOverview): ScreenSpec {
-  return {
-    slug: "services",
-    title: "Services",
-    subtitle: "Programmation et remplissage à venir",
-    blocks: [
-      {
-        id: "services-list",
-        type: "entity-list",
-        heading: "Prochains services",
-        rows: data.services.map(serviceRow),
-        empty: {
-          title: "Aucun service programmé",
-          body: "Ouvrez un service pour commencer à prendre des réservations.",
-          icon: "calendar",
-        },
-      },
-    ],
-  };
-}
-
-// ── Settlements ──────────────────────────────────────────────
-
-export function buildPayoutsScreen(data: RestaurantOverview): ScreenSpec {
-  const next = data.payouts.find((p) => p.state !== "paid");
-  const paid = data.payouts.filter((p) => p.state === "paid");
-
-  return {
-    slug: "versements",
-    title: "Versements",
-    subtitle: "Encaissements LYFE et commissions",
-    blocks: [
-      {
-        id: "payout-hero",
-        type: "hero",
-        eyebrow: next ? `PROCHAIN VERSEMENT · ${countdownLabel(next.scheduledFor).toUpperCase()}` : "AUCUN VERSEMENT EN ATTENTE",
-        title: next ? next.periodLabel : "Tout est à jour",
-        subtitle: next?.reference,
-        stats: next
-          ? [
-              {
-                label: "Montant net",
-                metric: { value: next.amountMad, format: MAD, animate: true },
-                accent: true,
-              },
-              {
-                label: "Commission LYFE",
-                metric: { value: next.commissionMad, format: MAD, animate: true },
-              },
-              {
-                label: "Couverts réglés",
-                metric: { value: next.coversSettled, format: COUNT, animate: true },
-              },
-            ]
-          : undefined,
-      },
-      {
-        id: "payout-history",
-        type: "table",
-        heading: "Historique",
-        columns: [
-          { key: "period", label: "Période" },
-          { key: "reference", label: "Référence", hideOnMobile: true },
-          { key: "covers", label: "Couverts", align: "right", format: COUNT },
-          { key: "commission", label: "Commission", align: "right", format: MAD, hideOnMobile: true },
-          { key: "amount", label: "Net versé", align: "right", format: MAD },
-          { key: "state", label: "État", align: "right" },
-        ],
-        rows: paid.map((payout) => ({
-          id: payout.id,
-          cells: {
-            period: { value: payout.periodLabel },
-            reference: { value: payout.reference },
-            covers: { value: payout.coversSettled },
-            commission: { value: payout.commissionMad },
-            amount: { value: payout.amountMad },
-            state: { value: "", badge: payoutBadge(payout.state) },
-          },
-        })),
-        empty: {
-          title: "Aucun versement",
-          body: "L'historique apparaîtra après le premier service réglé.",
-        },
-      },
-    ],
-  };
-}
-
-// ── Row builders ─────────────────────────────────────────────
-
 function zoneName(zones: Zone[], id?: string): string | null {
   if (!id) return null;
   return zones.find((z) => z.id === id)?.name ?? null;
 }
 
-function reservationRow(reservation: Reservation, zones: Zone[]): EntityRow {
+function reservationRow(
+  reservation: Reservation,
+  zones: Zone[],
+  configuration: VenueConfiguration = "restaurant",
+  deposit?: Deposit,
+): EntityRow {
+  const vocabulary = configFor(configuration);
   const badges = [reservationBadge(reservation.state)];
   if (reservation.vip) badges.push({ label: "Habitué", tone: "violet", icon: "star" });
   if ((reservation.noShowRisk ?? 0) >= 0.3) {
     badges.push({ label: "Risque d'absence", tone: "warning", icon: "alert" });
   }
+  // The deposit's state, on the row, because it decides whether the
+  // table is really held — a booking with a failed deposit is not.
+  if (deposit) {
+    badges.push({
+      label: `ACOMPTE ${deposit.status.toUpperCase()}`,
+      tone:
+        deposit.status === "paye"
+          ? "success"
+          : deposit.status === "echoue"
+            ? "danger"
+            : "warning",
+      icon: "wallet",
+    });
+  }
 
   const place = [
     zoneName(zones, reservation.zoneId),
-    RESERVATION_CHANNEL[reservation.channel],
+    // Source, spelled the way the configuration speaks: a bar takes
+    // entries at the door, a restaurant takes walk-ins.
+    reservation.channel === "walk_in"
+      ? vocabulary.walkInLabel
+      : RESERVATION_CHANNEL[reservation.channel],
   ]
     .filter(Boolean)
     .join(" · ");
@@ -816,7 +1150,7 @@ function reservationRow(reservation: Reservation, zones: Zone[]): EntityRow {
     id: reservation.id,
     title: reservation.guestName,
     initials: initialsOf(reservation.guestName),
-    meta: `${hm(reservation.at)} · ${covers(reservation.partySize)} · ${place}`,
+    meta: `${hm(reservation.at)} · ${coversIn(configuration, reservation.partySize)} · ${place}`,
     badges,
     signal: reservation.note ? { text: reservation.note, icon: "note" } : undefined,
     trailing: reservation.depositMad
@@ -1053,7 +1387,7 @@ function serviceRow(service: Service): EntityRow {
       service.revenueMad > 0
         ? { label: "Recette", metric: { value: service.revenueMad, format: MAD } }
         : undefined,
-    href: `${restaurantHref("services")}?service=${service.id}`,
+    href: `${restaurantHref("calendrier")}?service=${service.id}`,
   };
 }
 
@@ -1098,40 +1432,109 @@ function ratingDeltaPct(average: number, deltaPoints: number): number {
 // ── Registry ─────────────────────────────────────────────────
 
 /**
- * Every screen the restaurant workspace can serve, keyed by URL slug.
- * The route resolves against this — so a new screen ships without a new
- * page file, and the nav can be generated from the same source rather
- * than kept in sync by hand.
- */
-/**
- * What a builder is given. The service payload is always present; the
- * Business Service slices are optional because fetching all four for
- * every screen would cost four round trips to render one. `SCREEN_NEEDS`
- * below says which slug needs which, so the page fetches exactly that.
+ * What a builder is given.
+ *
+ * The service payload and the establishment's configuration are always
+ * present — the second because vocabulary depends on it and every screen
+ * uses vocabulary. Everything else is optional, because fetching all
+ * twelve slices to render one screen would cost twelve reads for a
+ * screen that wanted two. `SCREEN_NEEDS` says which slug needs which.
  */
 export interface ScreenContext {
   overview: RestaurantOverview;
+  configuration: VenueConfiguration;
   customers?: Customer[];
   analytics?: VenueAnalytics;
   visibility?: VisibilityMetrics;
   availability?: VenueAvailability;
+  serviceFloor?: ServiceFloor;
+  guestGraph?: GuestGraph;
+  growth?: Growth;
+  nightlife?: Nightlife;
+  money?: MoneyDesk;
+  marketing?: Marketing;
+  serviceConfig?: ServiceConfiguration;
+  survey?: SurveyConfig;
+  settings?: VenueSettings;
+  subscription?: Subscription;
+  support?: SupportTicket[];
+  spendByCustomer?: Record<string, number>;
+  notificationPreferences?: NotificationPreferences;
+  profile?: import("@/lib/types/restaurant").RestaurantProfile | null;
+  photoCount?: number;
   period?: AnalyticsPeriod;
+  comparison?: Comparison;
 }
 
-export type ScreenDataNeed = "customers" | "analytics" | "visibility" | "availability";
+export type ScreenDataNeed =
+  | "customers"
+  | "analytics"
+  | "visibility"
+  | "availability"
+  | "serviceFloor"
+  | "guestGraph"
+  | "growth"
+  | "nightlife"
+  | "money"
+  | "marketing"
+  | "serviceConfig"
+  | "survey"
+  | "settings"
+  | "subscription"
+  | "support"
+  | "spend"
+  | "profile"
+  | "notificationPrefs";
+
+/**
+ * The screens that are forms rather than specs.
+ *
+ * Photo reordering, drag-and-drop and file upload are not blocks, and
+ * inventing a block type per field would be worse than a page. They keep
+ * their own routes; excluding them here is what keeps the registry below
+ * a total map, so a missing builder stays a compile error.
+ */
+export const FORM_ROUTE_SLUGS = [
+  "ma-fiche",
+  "menu",
+  "equipe",
+  "check-in",
+] as const;
+
+export type FormRouteSlug = (typeof FORM_ROUTE_SLUGS)[number];
+export type SpecSlug = Exclude<RestaurantSlug, FormRouteSlug>;
+
+export function isFormRoute(slug: string): slug is FormRouteSlug {
+  return (FORM_ROUTE_SLUGS as readonly string[]).includes(slug);
+}
 
 /** Which extra slices each screen requires. */
-export const SCREEN_NEEDS: Record<RestaurantSlug, ScreenDataNeed[]> = {
-  "": [],
-  reservations: [],
-  services: [],
-  clients: ["customers"],
-  menu: [],
-  avis: [],
-  analytique: ["analytics"],
-  visibilite: ["visibility"],
-  disponibilites: ["availability"],
-  versements: [],
+export const SCREEN_NEEDS: Record<SpecSlug, ScreenDataNeed[]> = {
+  "": ["serviceFloor", "money"],
+  reservations: ["money"],
+  calendrier: ["serviceFloor", "growth"],
+  "liste-attente": ["serviceFloor"],
+  briefing: ["serviceFloor"],
+  clients: ["customers", "guestGraph", "spend"],
+  segments: ["guestGraph", "money"],
+  avis: ["survey"],
+  visibilite: ["visibility", "profile"],
+  offres: ["growth"],
+  experiences: ["growth"],
+  "guest-list": ["nightlife"],
+  tables: ["nightlife", "money"],
+  promoteurs: ["nightlife", "money"],
+  acomptes: ["money"],
+  annulations: ["money"],
+  "lyfe-pay": ["money"],
+  performance: ["analytics", "money", "serviceFloor"],
+  bilans: ["analytics", "money"],
+  campagnes: ["marketing"],
+  disponibilites: ["serviceConfig", "availability"],
+  notifications: ["marketing", "notificationPrefs"],
+  parametres: ["settings"],
+  abonnement: ["subscription"],
+  support: ["support"],
 };
 
 /** Adapts a builder that only needs the service payload. */
@@ -1140,29 +1543,200 @@ const fromOverview =
   (ctx: ScreenContext): ScreenSpec =>
     build(ctx.overview);
 
-export const RESTAURANT_SCREENS: Record<
-  RestaurantSlug,
-  (ctx: ScreenContext) => ScreenSpec
-> = {
-  "": fromOverview(buildDashboardScreen),
-  reservations: fromOverview(buildReservationsScreen),
-  services: fromOverview(buildServicesScreen),
-  menu: fromOverview(buildMenuScreen),
-  avis: fromOverview(buildReviewsScreen),
-  versements: fromOverview(buildPayoutsScreen),
-  clients: (ctx) =>
-    buildCustomersScreen(ctx.customers ?? [], ctx.overview.reviews),
-  analytique: (ctx) => buildAnalyticsScreen(ctx.analytics, ctx.period ?? "30d"),
-  visibilite: (ctx) => buildVisibilityScreen(ctx.visibility, ctx.period ?? "30d"),
-  disponibilites: (ctx) => buildAvailabilityScreen(ctx.availability),
+/** An empty bundle, so a builder never has to guard for one. */
+const EMPTY_FLOOR: ServiceFloor = {
+  waitlist: [],
+  waitlistSettings: {
+    onlineOpen: false,
+    maxPartyOnline: 0,
+    defaultQuoteMinutes: 0,
+    pausedReason: "",
+    updatedAt: new Date().toISOString(),
+  },
+  briefing: {
+    serviceId: null,
+    serviceLabel: "Prochain service",
+    date: new Date().toISOString().slice(0, 10),
+    covers: 0,
+    bookings: 0,
+    guests: [],
+    notes: [],
+  },
+  calendar: [],
 };
 
-export function buildScreen(
-  slug: string,
-  ctx: ScreenContext,
-): ScreenSpec | null {
-  if (!isRestaurantSlug(slug)) return null;
-  return RESTAURANT_SCREENS[slug](ctx);
+const EMPTY_MONEY: MoneyDesk = {
+  depositPolicies: [],
+  deposits: [],
+  cancellationPolicy: {
+    freeUntilHours: 24,
+    lateFeeMad: 0,
+    noShowFeeMad: 0,
+    guestMessage: "",
+    version: 1,
+    updatedAt: new Date().toISOString(),
+  },
+  cancellations: [],
+  transactions: [],
+  hasTransactionSource: false,
+};
+
+const EMPTY_GRAPH: GuestGraph = { tags: [], rules: [], segments: [], tagsByCustomer: {} };
+const EMPTY_GROWTH: Growth = { offers: [], experiences: [] };
+const EMPTY_NIGHTLIFE: Nightlife = {
+  guestLists: [],
+  promoters: [],
+  tableTypes: [],
+  tableReservations: [],
+};
+const EMPTY_MARKETING: Marketing = {
+  campaigns: [],
+  messages: [],
+  suppressions: [],
+  consent: { optedIn: 0, optedOut: 0, suppressed: 0 },
+};
+
+export const RESTAURANT_SCREENS: Record<
+  SpecSlug,
+  (ctx: ScreenContext) => ScreenSpec
+> = {
+  // 1. Aujourd'hui
+  "": (ctx) =>
+    buildDashboardScreen(ctx.overview, ctx.serviceFloor ?? EMPTY_FLOOR, ctx.money ?? EMPTY_MONEY),
+  reservations: (ctx) =>
+    buildReservationsScreen(ctx.overview, ctx.configuration, ctx.money ?? EMPTY_MONEY),
+  calendrier: (ctx) =>
+    buildCalendarScreen(ctx.serviceFloor ?? EMPTY_FLOOR, ctx.configuration),
+
+  // 2. En service
+  "liste-attente": (ctx) =>
+    buildWaitlistScreen(ctx.serviceFloor ?? EMPTY_FLOOR, ctx.configuration),
+  briefing: (ctx) =>
+    buildBriefingScreen(ctx.serviceFloor ?? EMPTY_FLOOR, ctx.configuration),
+
+  // 3. Clients
+  clients: (ctx) =>
+    buildCustomersScreen(
+      ctx.customers ?? [],
+      ctx.overview.reviews,
+      ctx.guestGraph ?? EMPTY_GRAPH,
+      ctx.spendByCustomer ?? {},
+    ),
+  segments: (ctx) =>
+    buildSegmentsScreen(
+      ctx.guestGraph ?? EMPTY_GRAPH,
+      (ctx.money ?? EMPTY_MONEY).hasTransactionSource,
+    ),
+
+  // 4. Ma présence
+  avis: (ctx) => buildReviewsScreen(ctx.overview, ctx.survey),
+
+  // 5. Croissance
+  visibilite: (ctx) =>
+    buildVisibilityScreen(
+      ctx.visibility,
+      ctx.period ?? "30d",
+      ctx.profile ?? null,
+      ctx.photoCount ?? 0,
+      replyRateOf(ctx.overview),
+      ctx.analytics?.noShowRate ?? 0,
+    ),
+  offres: (ctx) => buildOffersScreen(ctx.growth ?? EMPTY_GROWTH, ctx.configuration),
+  experiences: (ctx) => buildExperiencesScreen(ctx.growth ?? EMPTY_GROWTH),
+
+  // 6. Vie nocturne
+  "guest-list": (ctx) => buildGuestListScreen(ctx.nightlife ?? EMPTY_NIGHTLIFE),
+  tables: (ctx) =>
+    buildTablesScreen(
+      ctx.nightlife ?? EMPTY_NIGHTLIFE,
+      (ctx.money ?? EMPTY_MONEY).hasTransactionSource,
+    ),
+  promoteurs: (ctx) =>
+    buildPromotersScreen(
+      ctx.nightlife ?? EMPTY_NIGHTLIFE,
+      (ctx.money ?? EMPTY_MONEY).hasTransactionSource,
+    ),
+
+  // 7. Paiements
+  acomptes: (ctx) => buildDepositsScreen(ctx.money ?? EMPTY_MONEY),
+  annulations: (ctx) => buildCancellationsScreen(ctx.money ?? EMPTY_MONEY),
+  "lyfe-pay": (ctx) =>
+    buildLyfePayScreen(ctx.money ?? EMPTY_MONEY, ctx.overview.payouts),
+
+  // 8. Pilotage
+  performance: (ctx) =>
+    buildPerformanceScreen(
+      ctx.analytics,
+      ctx.period ?? "30d",
+      ctx.comparison ?? "previous",
+      ctx.money,
+      (ctx.serviceFloor ?? EMPTY_FLOOR).calendar,
+      ctx.configuration,
+    ),
+  bilans: (ctx) => buildReportsScreen(ctx.analytics, ctx.money, ctx.configuration),
+  campagnes: (ctx) => buildCampaignsScreen(ctx.marketing ?? EMPTY_MARKETING),
+
+  // 9. Établissement
+  disponibilites: (ctx) =>
+    buildAvailabilityScreen(ctx.serviceConfig, ctx.availability, ctx.configuration),
+  notifications: (ctx) =>
+    buildNotificationsScreen(
+      ctx.notificationPreferences,
+      (ctx.marketing ?? EMPTY_MARKETING).messages,
+    ),
+
+  // 10. Compte
+  parametres: (ctx) =>
+    buildSettingsScreen(
+      ctx.settings ?? {
+        configuration: ctx.configuration,
+        legalName: "",
+        ice: "",
+        rc: "",
+        billingAddress: "",
+        iban: "",
+        language: "fr",
+        timezone: "Africa/Casablanca",
+        consentText: "",
+        retentionMonths: 36,
+        googlePlaceUrl: "",
+        instagramHandle: "",
+        whatsappNumber: "",
+        dressCode: "",
+        minimumAge: 0,
+        apiAccessEnabled: false,
+      },
+    ),
+  abonnement: (ctx) =>
+    buildSubscriptionScreen(
+      ctx.subscription ?? {
+        plan: "annual",
+        status: "actif",
+        trialEndsAt: null,
+        renewsAt: null,
+        priceMad: 0,
+        paymentMethod: "",
+        invoices: [],
+        usage: { reservations: 0, guests: 0, messagesSent: 0, campaigns: 0 },
+      },
+    ),
+  support: (ctx) => buildSupportScreen(ctx.support ?? []),
+};
+
+/** Share of reviews the venue has answered. Feeds the ranking checklist. */
+function replyRateOf(data: RestaurantOverview): number {
+  const total = data.reviews.length;
+  if (total === 0) return 100;
+  return (data.reviews.filter((r) => r.replied).length / total) * 100;
+}
+
+export function buildScreen(slug: string, ctx: ScreenContext): ScreenSpec | null {
+  if (!isRestaurantSlug(slug) || isFormRoute(slug)) return null;
+  const spec = RESTAURANT_SCREENS[slug](ctx);
+  // The dialogs this screen's buttons open, attached to the payload.
+  // A button whose command has no form and no handler still says so —
+  // there are no buttons that quietly do nothing.
+  return { ...spec, forms: formsFor(spec) };
 }
 
 /**
@@ -1173,17 +1747,36 @@ export function restaurantScreenTitle(slug: string): string | null {
   return isRestaurantSlug(slug) ? SCREEN_TITLES[slug] : null;
 }
 
-const SCREEN_TITLES: Record<RestaurantSlug, string> = {
-  "": "Vue d'ensemble",
+export const SCREEN_TITLES: Record<RestaurantSlug, string> = {
+  "": "Accueil",
   reservations: "Réservations",
-  services: "Services",
-  clients: "Clients",
-  menu: "Carte",
+  calendrier: "Calendrier",
+  "liste-attente": "Liste d'attente",
+  "check-in": "Check-in",
+  briefing: "Briefing",
+  clients: "Liste clients",
+  segments: "Tags et segments",
+  "ma-fiche": "Ma fiche",
+  menu: "Menu",
   avis: "Avis",
-  analytique: "Analytique",
   visibilite: "Visibilité",
+  offres: "Offres",
+  experiences: "Expériences",
+  "guest-list": "Guest list",
+  tables: "Tables minimums",
+  promoteurs: "Promoteurs",
+  acomptes: "Acomptes",
+  annulations: "Annulations",
+  "lyfe-pay": "Lyfe Pay",
+  performance: "Performance",
+  bilans: "Bilans",
+  campagnes: "Campagnes",
   disponibilites: "Disponibilités",
-  versements: "Versements",
+  equipe: "Équipe et rôles",
+  notifications: "Notifications",
+  parametres: "Paramètres",
+  abonnement: "Abonnement",
+  support: "Support",
 };
 
 export function restaurantScreenSlugs(): readonly string[] {

@@ -8,6 +8,7 @@ import { SessionSync } from "@/components/auth/SessionSync";
 import { WorkspaceAccessProvider } from "@/lib/auth/workspace-access";
 import { resolveSession } from "@/lib/auth/server-session";
 import { resolveAccount } from "@/lib/auth/accounts";
+import { getRestaurantRepository } from "@/lib/data";
 import { redirect } from "next/navigation";
 
 // Shell, sticky sidebar (desktop), top app bar, mobile bottom tabs.
@@ -32,9 +33,18 @@ export default async function OrganizerLayout({
 
   const account = resolveAccount(session.userId);
 
+  // The active venue's configuration decides whether Vie nocturne is
+  // part of the navigation at all. Read here, once, and published — the
+  // three pieces of chrome that need it must not each guess.
+  const configuration =
+    session.venues.length > 0
+      ? (await getRestaurantRepository().getVenueSettings(session.venueId)).configuration
+      : "restaurant";
+
   const access = {
     event: (account?.organizations.length ?? 0) > 0,
     venue: session.venues.length > 0,
+    configuration,
   };
 
   return (

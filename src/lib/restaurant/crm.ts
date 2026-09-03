@@ -10,8 +10,11 @@ import type {
   Badge,
   DetailSpec,
   EntityRow,
+  KpiTile,
   ScreenSpec,
 } from "@/lib/dashboard/spec";
+import type { GuestGraph } from "@/lib/types/venue-operations";
+import { initialsOf } from "./format";
 import type { Customer, LoyaltyTier } from "@/lib/types/business";
 import { CUSTOMER_SEGMENT, LOYALTY_TIER } from "@/lib/types/business";
 import type { GuestReview } from "@/lib/types/restaurant";
@@ -41,12 +44,21 @@ function riskBadge(risk: number): Badge | null {
 export function buildCustomersScreen(
   customers: Customer[],
   reviews: GuestReview[],
+  graph: GuestGraph,
+  spendByCustomer: Record<string, number>,
 ): ScreenSpec {
   const loyal = customers.filter(
     (c) => c.visitCount >= LOYALTY_TIER.fidele.minVisits,
   );
   const atRisk = customers.filter((c) => c.noShowRisk >= 0.3);
-  const totalSpend = customers.reduce((n, c) => n + c.totalSpendMad, 0);
+  // Spend comes from Lyfe Pay alone. An empty map means no source, and
+  // every spend tile and column on this screen disappears rather than
+  // showing a base that has apparently never spent anything.
+  const hasSpend = Object.keys(spendByCustomer).length > 0;
+  const totalSpend = Object.values(spendByCustomer).reduce((n, v) => n + v, 0);
+
+  const tagLabels = new Map(graph.tags.map((t) => [t.id, t.label]));
+  const thisMonth = new Date().getMonth();
 
   return {
     slug: "clients",
@@ -75,13 +87,18 @@ export function buildCustomersScreen(
             metric: { value: loyal.length, format: COUNT, animate: true },
             hint: `${LOYALTY_TIER.fidele.minVisits} visites ou plus`,
           },
-          {
-            id: "spend",
-            label: "Chiffre cumulé",
-            tone: "sage",
-            icon: "coins",
-            metric: { value: totalSpend, format: MAD, animate: true },
-          },
+          ...(hasSpend
+            ? ([
+                {
+                  id: "spend",
+                  label: "Chiffre cumulé",
+                  tone: "sage",
+                  icon: "coins",
+                  metric: { value: totalSpend, format: MAD, animate: true },
+                  hint: "Transactions Lyfe Pay rattachées à un client.",
+                },
+              ] satisfies KpiTile[])
+            : []),
           {
             id: "risk",
             label: "À risque d'absence",
@@ -100,7 +117,7 @@ export function buildCustomersScreen(
         heading: "Base clients",
         headingAction: {
           kind: "command",
-          label: "Exporter CSV",
+          label: "Exporter la sélection",
           command: "customers.export",
           icon: "file",
         },
@@ -108,11 +125,16 @@ export function buildCustomersScreen(
         // segment facet rather than recomputing the rule here.
         tabs: [
           { id: "all", label: CUSTOMER_SEGMENT.all },
-          { id: "new", label: CUSTOMER_SEGMENT.new, match: { facet: "new", values: ["yes"] } },
-          { id: "returning", label: CUSTOMER_SEGMENT.returning, match: { facet: "returning", values: ["yes"] } },
-          { id: "loyal", label: CUSTOMER_SEGMENT.loyal, match: { facet: "loyal", values: ["yes"] } },
-          { id: "at_risk", label: CUSTOMER_SEGMENT.at_risk, match: { facet: "at_risk", values: ["yes"] } },
-          { id: "lapsed", label: CUSTOMER_SEGMENT.lapsed, match: { facet: "lapsed", values: ["yes"] } },
+          { id: "vip", label: "VIP", match: { facet: "vip", values: ["yes"] } },
+          { id: "loyal", label: "Habitués", match: { facet: "loyal", values: ["yes"] } },
+          { id: "new", label: "Nouveaux", match: { facet: "new", values: ["yes"] } },
+          { id: "at_risk", label: "À risque no-show", match: { facet: "at_risk", values: ["yes"] } },
+          { id: "lapsed", label: "Inactifs 90 jours", match: { facet: "lapsed", values: ["yes"] } },
+          {
+            id: "birthday",
+            label: "Anniversaire ce mois",
+            match: { facet: "birthday", values: ["yes"] },
+          },
         ],
         search: { placeholder: "Rechercher un nom, un téléphone, un e-mail…" },
         sorts: [
@@ -122,7 +144,9 @@ export function buildCustomersScreen(
           { id: "risk", label: "Risque d'absence", key: "risk", direction: "desc" },
           { id: "name", label: "Nom", key: "name", direction: "asc" },
         ],
-        rows: customers.map((c) => customerRow(c, reviews)),
+        rows: customers.map((c) =>
+          customerRow(c, reviews, graph.tagsByCustomer[c.id] ?? [], tagLabels, spendByCustomer[c.id], thisMonth),
+        ),
         empty: {
           title: "Aucun client",
           body: "La base se remplit dès la première réservation confirmée.",
@@ -133,6 +157,57 @@ export function buildCustomersScreen(
           body: "Aucun client ne correspond à ce segment.",
         },
       },
+      // Bulk work, declared rather than hidden behind a selection mode
+      // nobody discovers. Each hands the current filter to the screen
+      // that does the work.
+      {
+        id: "bulk",
+        type: "settings",
+        heading: "Actions groupées",
+        subheading:
+          "S'appliquent à la sélection courante de la liste, filtres et recherche compris.",
+        rows: [
+          {
+            id: "bulk-tag",
+            label: "Ajouter une étiquette en masse",
+            hint: "Les étiquettes se définissent dans Tags et segments.",
+            control: {
+              kind: "select",
+              value: graph.tags.find((t) => !t.archived)?.id ?? "",
+              options: graph.tags
+                .filter((t) => !t.archived)
+                .map((t) => ({ value: t.id, label: t.label })),
+            },
+            command: "customers.bulkTag",
+            allow: ["owner", "admin"],
+          },
+          {
+            id: "bulk-export",
+            label: "Exporter en CSV",
+            hint: "Les clients ayant refusé le démarchage sont exclus de l'export.",
+            control: { kind: "readonly", value: "Exporter" },
+            command: "customers.export",
+          },
+          {
+            id: "bulk-campaign",
+            label: "Créer une campagne à partir de la sélection",
+            control: {
+              kind: "readonly",
+              value: "Ouvrir Campagnes",
+              href: "/restaurant/campagnes",
+            },
+            command: "customers.campaign",
+          },
+          {
+            id: "bulk-merge",
+            label: "Fusionner des doublons",
+            hint: "Deux fiches au même numéro sont proposées à la fusion.",
+            control: { kind: "readonly", value: "Rechercher les doublons" },
+            command: "customers.merge",
+            allow: ["owner", "admin"],
+          },
+        ],
+      },
     ],
   };
 }
@@ -140,10 +215,16 @@ export function buildCustomersScreen(
 export function customerRow(
   customer: Customer,
   reviews: GuestReview[],
+  tagIds: string[] = [],
+  tagLabels: Map<string, string> = new Map(),
+  spendMad?: number,
+  currentMonth = new Date().getMonth(),
 ): EntityRow {
   const loyalty = LOYALTY_TIER[customer.loyaltyTier];
+  const labels = tagIds.map((id) => tagLabels.get(id) ?? "").filter(Boolean);
   const badges: Badge[] = [
     { label: loyalty.label, tone: LOYALTY_TONE[customer.loyaltyTier] },
+    ...labels.map((label) => ({ label: label.toUpperCase(), tone: "violet" as const })),
   ];
   const risk = riskBadge(customer.noShowRisk);
   if (risk) badges.push(risk);
@@ -170,16 +251,24 @@ export function customerRow(
     signal: customer.preferences.length
       ? { text: customer.preferences.join(" · "), icon: "note" }
       : undefined,
-    trailing: {
-      label: "Panier moyen",
-      metric: { value: customer.averageSpendMad, format: MAD },
-    },
+    // Absent, not zero: a guest whose spend nobody can see has not
+    // spent nothing.
+    trailing:
+      spendMad === undefined
+        ? undefined
+        : { label: "Dépensé", metric: { value: spendMad, format: MAD } },
     facets: {
       new: customer.segments.includes("new") ? "yes" : "no",
       returning: customer.segments.includes("returning") ? "yes" : "no",
       loyal: customer.segments.includes("loyal") ? "yes" : "no",
       at_risk: customer.segments.includes("at_risk") ? "yes" : "no",
       lapsed: customer.segments.includes("lapsed") ? "yes" : "no",
+      vip: labels.some((l) => l.toLowerCase().includes("vip")) ? "yes" : "no",
+      birthday: customer.preferences.some((p) =>
+        p.toLowerCase().includes(MONTHS[currentMonth]),
+      )
+        ? "yes"
+        : "no",
     },
     sortKeys: {
       lastVisit: customer.lastVisitAt ? new Date(customer.lastVisitAt).getTime() : 0,
@@ -191,7 +280,8 @@ export function customerRow(
     keywords: [customer.phone, customer.email, ...customer.preferences]
       .filter(Boolean)
       .join(" "),
-    detail: customerDetail(customer, reviews),
+    href: `/restaurant/clients/${customer.id}`,
+    detail: customerDetail(customer, reviews, spendMad),
   };
 }
 
@@ -206,6 +296,7 @@ export function customerRow(
 export function customerDetail(
   customer: Customer,
   reviews: GuestReview[],
+  spendMad?: number,
 ): DetailSpec {
   const theirReviews = reviews.filter((r) => customer.reviewIds.includes(r.id));
   const loyalty = LOYALTY_TIER[customer.loyaltyTier];
@@ -240,8 +331,10 @@ export function customerDetail(
             label: "Dernière visite",
             metric: { value: customer.lastVisitAt ? dateFR(customer.lastVisitAt) : "—" },
           },
-          { label: "Panier moyen", metric: { value: customer.averageSpendMad, format: MAD } },
-          { label: "Total dépensé", metric: { value: customer.totalSpendMad, format: MAD } },
+          // Spend only where Lyfe Pay says so.
+          ...(spendMad === undefined
+            ? []
+            : [{ label: "Total dépensé", metric: { value: spendMad, format: MAD } }]),
           { label: "Palier fidélité", metric: { value: loyalty.label } },
         ],
       },
@@ -304,15 +397,21 @@ export function customerDetail(
         },
         variant: "secondary",
       },
+      {
+        action: {
+          kind: "link",
+          label: "Ouvrir la fiche",
+          href: `/restaurant/clients/${customer.id}`,
+          icon: "users",
+        },
+        variant: "primary",
+      },
     ],
   };
 }
 
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("");
-}
+/** Lowercase French months, for the birthday-this-month segment. */
+const MONTHS = [
+  "janvier", "février", "mars", "avril", "mai", "juin",
+  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+];

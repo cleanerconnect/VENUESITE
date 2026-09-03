@@ -493,6 +493,41 @@ export type Block =
 
 export type BlockType = Block["type"];
 
+// ── Forms ────────────────────────────────────────────────────
+//
+// A spec is JSON, so "Ajouter" cannot carry a dialog any more than it
+// can carry an onClick. It carries a command name, and the screen
+// declares the form that command opens.
+//
+// That keeps the whole write surface inside the same closed registry as
+// everything else: a screen can only ask for a form it declared, the
+// fields are values the backend could just as well have sent, and a
+// button whose command has no form and no handler still says so rather
+// than doing nothing.
+
+export type FormField =
+  | { kind: "text"; name: string; label: string; hint?: string; placeholder?: string; required?: boolean; value?: string }
+  | { kind: "textarea"; name: string; label: string; hint?: string; placeholder?: string; required?: boolean; value?: string; rows?: number }
+  | { kind: "number"; name: string; label: string; hint?: string; required?: boolean; value?: number; min?: number; max?: number; step?: number; suffix?: string }
+  | { kind: "select"; name: string; label: string; hint?: string; required?: boolean; value?: string; options: { value: string; label: string }[] }
+  | { kind: "toggle"; name: string; label: string; hint?: string; value?: boolean }
+  | { kind: "date"; name: string; label: string; hint?: string; required?: boolean; value?: string }
+  | { kind: "time"; name: string; label: string; hint?: string; required?: boolean; value?: string }
+  | { kind: "tel"; name: string; label: string; hint?: string; placeholder?: string; required?: boolean; value?: string }
+  /** Static explanation between fields. Not an input. */
+  | { kind: "note"; name: string; label: string; hint?: string };
+
+export interface FormSpec {
+  title: string;
+  description?: string;
+  fields: FormField[];
+  submitLabel: string;
+  /** What the submitted values are sent to. Resolved server-side. */
+  command: string;
+  /** Red submit button and a confirmation line, for destructive verbs. */
+  destructive?: boolean;
+}
+
 // ── Screen ───────────────────────────────────────────────────
 
 export interface ScreenSpec {
@@ -514,4 +549,12 @@ export interface ScreenSpec {
    * inside a component.
    */
   mobileBlocks?: Block[];
+  /**
+   * Forms this screen's commands open, keyed by command name.
+   *
+   * A command with an entry here opens the form; the values are merged
+   * over the button's own payload and submitted together. A command
+   * without one falls through to the client registry as before.
+   */
+  forms?: Record<string, FormSpec>;
 }

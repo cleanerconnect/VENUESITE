@@ -12,13 +12,25 @@
 // from a venue portal holding no venue of theirs.
 
 import { createContext, useContext } from "react";
+import type { VenueConfiguration } from "@/lib/types/venue-operations";
 
 export interface WorkspaceAccess {
   event: boolean;
   venue: boolean;
+  /**
+   * The active venue's configuration. Published here for the same reason
+   * as the rest: the sidebar, the drawer and the Plus sheet all need it
+   * to decide whether Vie nocturne exists, and a prop drilled through
+   * three components is a prop two of them get wrong.
+   */
+  configuration: VenueConfiguration;
 }
 
-const Ctx = createContext<WorkspaceAccess>({ event: true, venue: true });
+const Ctx = createContext<WorkspaceAccess>({
+  event: true,
+  venue: true,
+  configuration: "restaurant",
+});
 
 export function WorkspaceAccessProvider({
   value,

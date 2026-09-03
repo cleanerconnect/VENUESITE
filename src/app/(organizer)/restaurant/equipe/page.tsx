@@ -12,9 +12,9 @@ import { VenueSettings } from "@/components/settings/VenueSettings";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Réglages du lieu · LYFE" };
+export const metadata: Metadata = { title: "Équipe et rôles · LYFE" };
 
-export default async function VenueSettingsPage() {
+export default async function EquipePage() {
   const session = await resolveSession();
   if (!session) redirect("/login");
 
@@ -39,6 +39,9 @@ export default async function VenueSettingsPage() {
 
   return (
     <VenueSettings
+      only={["staff"]}
+      title="Équipe et rôles"
+      subtitle="Qui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré."
       role={session.role}
       identity={{
         name: profile.name,

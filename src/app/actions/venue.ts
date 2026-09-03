@@ -57,10 +57,13 @@ import type {
   RestaurantProfile,
   VenueFeature,
 } from "@/lib/types/restaurant";
-import { RESTAURANT_SETTINGS_PATH } from "@/lib/restaurant/slugs";
 import { COPY } from "@/lib/copy/fr";
 
 const RESTAURANT_PATH = "/restaurant/[[...section]]";
+// Ma fiche, Menu and Équipe are three routes over one form, so a write
+// from any of them has to revalidate all three.
+const FORM_PATHS = ["/restaurant/ma-fiche", "/restaurant/menu", "/restaurant/equipe"];
+const revalidateForms = () => FORM_PATHS.forEach((p) => revalidatePath(p, "page"));
 
 // ── Venue identity ───────────────────────────────────────────
 
@@ -187,7 +190,7 @@ export async function saveVenueListing(
   });
 
   revalidatePath(RESTAURANT_PATH, "page");
-  revalidatePath(RESTAURANT_SETTINGS_PATH, "page");
+  revalidateForms();
   const profile = venueProfile(session.venueId);
   return profile ? ok(profile) : failed(COPY.error.venueNotFound);
 }
@@ -254,7 +257,7 @@ export async function saveMenuItem(
   }
 
   revalidatePath(RESTAURANT_PATH, "page");
-  revalidatePath(RESTAURANT_SETTINGS_PATH, "page");
+  revalidateForms();
   return ok(input);
 }
 
@@ -450,6 +453,7 @@ export async function saveStaffInvite(input: {
     role: input.role,
   });
   revalidatePath(RESTAURANT_PATH, "page");
+  revalidateForms();
   return ok(listStaff(venueId));
 }
 
@@ -475,6 +479,7 @@ export async function saveStaffRole(
     throw error;
   }
   revalidatePath(RESTAURANT_PATH, "page");
+  revalidateForms();
   return ok(listStaff(venueId));
 }
 
@@ -499,6 +504,7 @@ export async function deleteStaff(
     throw error;
   }
   revalidatePath(RESTAURANT_PATH, "page");
+  revalidateForms();
   return ok(listStaff(venueId));
 }
 

@@ -64,12 +64,14 @@ export function restaurantHref(slug: RestaurantSlug): string {
 }
 
 /**
- * The venue's own editing surface: identity, listing, photos, menu,
- * staff. A form, not a spec screen, so it lives on its own route rather
- * than in the screen registry. Ma fiche links into it section by
- * section; the path is exported here so the nav has one source.
+ * Ma fiche: identity, listing and photos.
+ *
+ * A form, not a spec screen — drag-reordering and file upload are not
+ * blocks, and inventing a block type per field would be worse than a
+ * page. It keeps its own route, alongside Menu and Équipe et rôles,
+ * which are the same form scoped to their own panel.
  */
-export const RESTAURANT_SETTINGS_PATH = `${RESTAURANT_BASE}/reglages`;
+export const RESTAURANT_SETTINGS_PATH = `${RESTAURANT_BASE}/ma-fiche`;
 
 /**
  * Fiche client. A detail route under Clients rather than a slug of its

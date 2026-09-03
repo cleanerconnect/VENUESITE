@@ -50,8 +50,19 @@ export function VenueSettings({
   photos,
   menuFiles,
   staff,
+  only,
+  title,
+  subtitle,
 }: {
   role: PortalRole;
+  /**
+   * Which panels this route renders. The target specification splits the
+   * old single settings page into Ma fiche, Menu and Équipe et rôles, and
+   * each is a route over the same form rather than three copies of it.
+   */
+  only?: SectionId[];
+  title?: string;
+  subtitle?: string;
   identity: VenueIdentityInput;
   listing: VenueListingInput;
   menuItems: MenuItemInput[];
@@ -60,22 +71,30 @@ export function VenueSettings({
   menuFiles: VenueAsset[];
   staff: StaffMemberRow[];
 }) {
-  const visible = SECTIONS.filter((s) => s.minRole.includes(role));
+  const visible = SECTIONS.filter(
+    (s) => s.minRole.includes(role) && (!only || only.includes(s.id)),
+  );
   const [active, setActive] = useState<SectionId>(visible[0]?.id ?? "staff");
 
   return (
     <div className="space-y-6 pb-4">
       <PageHeader
-        title="Réglages du lieu"
-        subtitle="Tout ce qui suit est enregistré et visible par vos clients dans l'application."
+        title={title ?? "Ma fiche"}
+        subtitle={
+          subtitle ??
+          "Tout ce qui suit est enregistré et visible par vos clients dans l'application."
+        }
       />
 
+      {/* A single-panel route has nothing to switch between. */}
+      {visible.length > 1 ? (
       <FilterTabs
         layoutId="venue-settings-underline"
         value={active}
         onChange={setActive}
         tabs={visible.map((s) => ({ id: s.id, label: s.label }))}
       />
+      ) : null}
 
       {active === "identity" ? <VenueIdentityForm initial={identity} /> : null}
       {active === "listing" ? <VenueListingForm initial={listing} /> : null}
