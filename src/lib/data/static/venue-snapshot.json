@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-03T11:32:41.341Z",
+  "capturedAt": "2026-09-03T12:38:43.378Z",
   "users": [
     {
       "userId": "usr_imane",
@@ -221,7 +221,7 @@
         },
         "greeting": {
           "firstName": "",
-          "salutation": "Bonjour",
+          "salutation": "Bon après-midi",
           "clause": "le service est complet.",
           "subline": "104 couverts réservés, 6 en liste d'attente, 16 encore disponibles."
         },
@@ -230,8 +230,8 @@
           "kind": "petit_dejeuner",
           "label": "Petit-déjeuner",
           "date": "2026-09-03",
-          "opensAt": "2026-09-03T09:38:07.096Z",
-          "closesAt": "2026-09-03T14:08:07.096Z",
+          "opensAt": "2026-09-03T10:58:41.051Z",
+          "closesAt": "2026-09-03T15:28:41.051Z",
           "state": "peak",
           "capacity": 120,
           "bookedCovers": 104,
@@ -240,43 +240,43 @@
           "revenueMad": 63400,
           "slotLoad": [
             {
-              "at": "2026-09-03T09:38:07.096Z",
+              "at": "2026-09-03T10:58:41.051Z",
               "covers": 10
             },
             {
-              "at": "2026-09-03T10:08:07.096Z",
+              "at": "2026-09-03T11:28:41.051Z",
               "covers": 19
             },
             {
-              "at": "2026-09-03T10:38:07.096Z",
+              "at": "2026-09-03T11:58:41.051Z",
               "covers": 28
             },
             {
-              "at": "2026-09-03T11:08:07.096Z",
+              "at": "2026-09-03T12:28:41.051Z",
               "covers": 34
             },
             {
-              "at": "2026-09-03T11:38:07.096Z",
+              "at": "2026-09-03T12:58:41.051Z",
               "covers": 32
             },
             {
-              "at": "2026-09-03T12:08:07.096Z",
+              "at": "2026-09-03T13:28:41.051Z",
               "covers": 26
             },
             {
-              "at": "2026-09-03T12:38:07.096Z",
+              "at": "2026-09-03T13:58:41.051Z",
               "covers": 20
             },
             {
-              "at": "2026-09-03T13:08:07.096Z",
+              "at": "2026-09-03T14:28:41.051Z",
               "covers": 14
             },
             {
-              "at": "2026-09-03T13:38:07.096Z",
+              "at": "2026-09-03T14:58:41.051Z",
               "covers": 9
             },
             {
-              "at": "2026-09-03T14:08:07.096Z",
+              "at": "2026-09-03T15:28:41.051Z",
               "covers": 5
             }
           ]
@@ -314,6 +314,7 @@
             0,
             0,
             0,
+            0,
             10,
             47,
             66,
@@ -327,10 +328,9 @@
             0,
             0,
             0,
-            0,
             0
           ],
-          "peakHourLabel": "Pic à 11h"
+          "peakHourLabel": "Pic à 12h"
         },
         "averageTicket": {
           "amountMad": 737,
@@ -386,7 +386,7 @@
         },
         "nextPayout": {
           "amountMad": 291700,
-          "scheduledFor": "2026-09-06T11:18:07.096Z"
+          "scheduledFor": "2026-09-06T12:38:41.051Z"
         },
         "upcomingReservations": [
           {
@@ -395,7 +395,7 @@
             "guestName": "Salma Bennani",
             "guestPhone": "+212 661 20 44 18",
             "partySize": 4,
-            "at": "2026-09-03T11:38:07.096Z",
+            "at": "2026-09-03T12:58:41.051Z",
             "state": "confirmed",
             "channel": "lyfe",
             "zoneId": "z_patio",
@@ -411,7 +411,7 @@
             "guestName": "Groupe Karam",
             "guestPhone": "+212 662 88 10 03",
             "partySize": 6,
-            "at": "2026-09-03T11:53:07.096Z",
+            "at": "2026-09-03T13:13:41.051Z",
             "state": "confirmed",
             "channel": "phone",
             "zoneId": "z_salle",
@@ -426,7 +426,7 @@
             "guestName": "Yasmine El Alaoui",
             "guestPhone": "+212 663 41 77 92",
             "partySize": 4,
-            "at": "2026-09-03T12:08:07.096Z",
+            "at": "2026-09-03T13:28:41.051Z",
             "state": "confirmed",
             "channel": "instagram",
             "zoneId": "z_terrasse",
@@ -440,7 +440,7 @@
             "guestName": "Nabil Cherkaoui",
             "guestPhone": "+212 665 09 33 71",
             "partySize": 2,
-            "at": "2026-09-03T12:38:07.096Z",
+            "at": "2026-09-03T13:58:41.051Z",
             "state": "requested",
             "channel": "lyfe",
             "note": "Demande une table près de la fontaine",
@@ -454,7 +454,7 @@
             "guestName": "Hind Tazi",
             "guestPhone": "+212 660 15 62 40",
             "partySize": 5,
-            "at": "2026-09-03T13:03:07.096Z",
+            "at": "2026-09-03T14:23:41.051Z",
             "state": "confirmed",
             "channel": "partner",
             "zoneId": "z_salle",
@@ -471,7 +471,7 @@
             "guestName": "Omar Idrissi",
             "guestPhone": "+212 667 74 21 08",
             "partySize": 2,
-            "at": "2026-09-03T11:33:07.096Z",
+            "at": "2026-09-03T12:53:41.051Z",
             "state": "waitlisted",
             "channel": "walk_in",
             "visits": 0,
@@ -483,7 +483,7 @@
             "guestName": "Famille Berrada",
             "guestPhone": "+212 668 30 90 55",
             "partySize": 4,
-            "at": "2026-09-03T11:43:07.096Z",
+            "at": "2026-09-03T13:03:41.051Z",
             "state": "waitlisted",
             "channel": "walk_in",
             "visits": 3,
@@ -496,7 +496,7 @@
             "type": "guest_arrived",
             "actor": "Salma Bennani",
             "message": "est arrivée · 4 couverts",
-            "at": "2026-09-03T11:17:07.096Z",
+            "at": "2026-09-03T12:37:41.051Z",
             "reservationId": "res_001",
             "needsAttention": false
           },
@@ -505,7 +505,7 @@
             "type": "reservation_created",
             "actor": "Nabil Cherkaoui",
             "message": "a demandé une table pour 2",
-            "at": "2026-09-03T11:14:07.096Z",
+            "at": "2026-09-03T12:34:41.051Z",
             "reservationId": "res_010",
             "needsAttention": false
           },
@@ -514,7 +514,7 @@
             "type": "anomaly",
             "actor": "LYFE",
             "message": "détecte 3 annulations sur le même créneau",
-            "at": "2026-09-03T11:09:07.096Z",
+            "at": "2026-09-03T12:29:41.051Z",
             "needsAttention": true
           },
           {
@@ -522,7 +522,7 @@
             "type": "guest_arrived",
             "actor": "Hind Tazi",
             "message": "est arrivée · 5 couverts",
-            "at": "2026-09-03T11:06:07.096Z",
+            "at": "2026-09-03T12:26:41.051Z",
             "reservationId": "res_011",
             "needsAttention": false
           },
@@ -531,7 +531,7 @@
             "type": "waitlist_joined",
             "actor": "Famille Berrada",
             "message": "rejoint la liste d'attente · 4 couverts",
-            "at": "2026-09-03T10:55:07.096Z",
+            "at": "2026-09-03T12:15:41.051Z",
             "reservationId": "res_w2",
             "needsAttention": false
           },
@@ -540,7 +540,7 @@
             "type": "no_show",
             "actor": "Réservation précédente",
             "message": "notée absente après 25 min · 3 couverts",
-            "at": "2026-09-03T10:38:07.096Z",
+            "at": "2026-09-03T11:58:41.051Z",
             "needsAttention": true
           },
           {
@@ -548,7 +548,7 @@
             "type": "reservation_cancelled",
             "actor": "Sofia Lahlou",
             "message": "a annulé sa table de 2",
-            "at": "2026-09-03T10:31:07.096Z",
+            "at": "2026-09-03T11:51:41.051Z",
             "needsAttention": false
           },
           {
@@ -556,7 +556,7 @@
             "type": "review_received",
             "actor": "Leïla M.",
             "message": "a laissé un avis 5 étoiles",
-            "at": "2026-09-03T08:18:07.096Z",
+            "at": "2026-09-03T09:38:41.051Z",
             "needsAttention": false
           },
           {
@@ -564,7 +564,7 @@
             "type": "payment_settled",
             "actor": "LYFE",
             "message": "a clôturé le versement de la semaine",
-            "at": "2026-09-01T11:18:07.096Z",
+            "at": "2026-09-01T12:38:41.051Z",
             "needsAttention": false
           }
         ],
@@ -654,7 +654,7 @@
             "guestName": "Leïla M.",
             "rating": 5,
             "comment": "Le patio au coucher du soleil, rien à redire. Service attentif sans être pesant.",
-            "at": "2026-09-03T08:18:07.096Z",
+            "at": "2026-09-03T09:38:41.051Z",
             "channel": "lyfe",
             "tags": [
               "cadre",
@@ -667,7 +667,7 @@
             "guestName": "Thomas R.",
             "rating": 4,
             "comment": "Cuisine excellente. Vingt minutes d'attente malgré la réservation à 21h.",
-            "at": "2026-09-03T04:18:07.096Z",
+            "at": "2026-09-03T05:38:41.051Z",
             "channel": "google",
             "tags": [
               "attente",
@@ -680,7 +680,7 @@
             "guestName": "Amina B.",
             "rating": 5,
             "comment": "La pastilla vaut le détour à elle seule.",
-            "at": "2026-09-02T10:18:07.096Z",
+            "at": "2026-09-02T11:38:41.051Z",
             "channel": "lyfe",
             "tags": [
               "cuisine"
@@ -692,7 +692,7 @@
             "guestName": "Karim H.",
             "rating": 3,
             "comment": "Table en terrasse bruyante, on s'entendait à peine.",
-            "at": "2026-09-01T15:58:07.096Z",
+            "at": "2026-09-01T17:18:41.051Z",
             "channel": "google",
             "tags": [
               "bruit",
@@ -707,8 +707,8 @@
             "kind": "petit_dejeuner",
             "label": "Petit-déjeuner",
             "date": "2026-09-03",
-            "opensAt": "2026-09-03T09:38:07.096Z",
-            "closesAt": "2026-09-03T14:08:07.096Z",
+            "opensAt": "2026-09-03T10:58:41.051Z",
+            "closesAt": "2026-09-03T15:28:41.051Z",
             "state": "peak",
             "capacity": 120,
             "bookedCovers": 104,
@@ -717,43 +717,43 @@
             "revenueMad": 63400,
             "slotLoad": [
               {
-                "at": "2026-09-03T09:38:07.096Z",
+                "at": "2026-09-03T10:58:41.051Z",
                 "covers": 10
               },
               {
-                "at": "2026-09-03T10:08:07.096Z",
+                "at": "2026-09-03T11:28:41.051Z",
                 "covers": 19
               },
               {
-                "at": "2026-09-03T10:38:07.096Z",
+                "at": "2026-09-03T11:58:41.051Z",
                 "covers": 28
               },
               {
-                "at": "2026-09-03T11:08:07.096Z",
+                "at": "2026-09-03T12:28:41.051Z",
                 "covers": 34
               },
               {
-                "at": "2026-09-03T11:38:07.096Z",
+                "at": "2026-09-03T12:58:41.051Z",
                 "covers": 32
               },
               {
-                "at": "2026-09-03T12:08:07.096Z",
+                "at": "2026-09-03T13:28:41.051Z",
                 "covers": 26
               },
               {
-                "at": "2026-09-03T12:38:07.096Z",
+                "at": "2026-09-03T13:58:41.051Z",
                 "covers": 20
               },
               {
-                "at": "2026-09-03T13:08:07.096Z",
+                "at": "2026-09-03T14:28:41.051Z",
                 "covers": 14
               },
               {
-                "at": "2026-09-03T13:38:07.096Z",
+                "at": "2026-09-03T14:58:41.051Z",
                 "covers": 9
               },
               {
-                "at": "2026-09-03T14:08:07.096Z",
+                "at": "2026-09-03T15:28:41.051Z",
                 "covers": 5
               }
             ]
@@ -767,7 +767,7 @@
             "commissionMad": 17900,
             "coversSettled": 612,
             "periodLabel": "27 août – 3 septembre",
-            "scheduledFor": "2026-09-06T11:18:07.096Z",
+            "scheduledFor": "2026-09-06T12:38:41.051Z",
             "state": "scheduled"
           },
           {
@@ -777,8 +777,8 @@
             "commissionMad": 16500,
             "coversSettled": 571,
             "periodLabel": "20 août – 27 août",
-            "scheduledFor": "2026-09-01T11:18:07.096Z",
-            "paidAt": "2026-09-01T11:18:07.096Z",
+            "scheduledFor": "2026-09-01T12:38:41.051Z",
+            "paidAt": "2026-09-01T12:38:41.051Z",
             "state": "paid"
           },
           {
@@ -788,8 +788,8 @@
             "commissionMad": 14900,
             "coversSettled": 518,
             "periodLabel": "13 août – 20 août",
-            "scheduledFor": "2026-08-25T11:18:07.096Z",
-            "paidAt": "2026-08-25T11:18:07.096Z",
+            "scheduledFor": "2026-08-25T12:38:41.051Z",
+            "paidAt": "2026-08-25T12:38:41.051Z",
             "state": "paid"
           }
         ]
@@ -1038,7 +1038,7 @@
             "reason": "Privatisation"
           }
         ],
-        "updatedAt": "2026-09-03T11:18:07.096Z"
+        "updatedAt": "2026-09-03T12:38:41.051Z"
       },
       "customers": [
         {
@@ -1046,8 +1046,8 @@
           "fullName": "Leïla Mansouri",
           "phone": "+212 664 51 12 87",
           "email": "leila.m@gmail.com",
-          "firstSeenAt": "2026-03-20T11:18:07.096Z",
-          "lastVisitAt": "2026-08-30T11:18:07.096Z",
+          "firstSeenAt": "2026-03-20T12:38:41.051Z",
+          "lastVisitAt": "2026-08-30T12:38:41.051Z",
           "visitCount": 14,
           "averageSpendMad": 890,
           "totalSpendMad": 12460,
@@ -1072,8 +1072,8 @@
           "fullName": "Thomas Renaud",
           "phone": "+33 6 12 44 90 21",
           "email": "t.renaud@free.fr",
-          "firstSeenAt": "2026-03-09T11:18:07.096Z",
-          "lastVisitAt": "2026-08-29T11:18:07.096Z",
+          "firstSeenAt": "2026-03-09T12:38:41.051Z",
+          "lastVisitAt": "2026-08-29T12:38:41.051Z",
           "visitCount": 2,
           "averageSpendMad": 1310,
           "totalSpendMad": 2620,
@@ -1094,8 +1094,8 @@
           "fullName": "Hind Tazi",
           "phone": "+212 660 15 62 40",
           "email": "h.tazi@outlook.com",
-          "firstSeenAt": "2026-05-25T11:18:07.096Z",
-          "lastVisitAt": "2026-08-25T11:18:07.096Z",
+          "firstSeenAt": "2026-05-25T12:38:41.051Z",
+          "lastVisitAt": "2026-08-25T12:38:41.051Z",
           "visitCount": 9,
           "averageSpendMad": 1120,
           "totalSpendMad": 10080,
@@ -1118,8 +1118,8 @@
           "fullName": "Amina Bouzid",
           "phone": "+212 661 88 03 45",
           "email": "amina.bouzid@gmail.com",
-          "firstSeenAt": "2026-02-15T11:18:07.096Z",
-          "lastVisitAt": "2026-08-18T11:18:07.096Z",
+          "firstSeenAt": "2026-02-15T12:38:41.051Z",
+          "lastVisitAt": "2026-08-18T12:38:41.051Z",
           "visitCount": 11,
           "averageSpendMad": 830,
           "totalSpendMad": 9130,
@@ -1141,8 +1141,8 @@
           "fullName": "Salma Bennani",
           "phone": "+212 661 20 44 18",
           "email": "salma.bennani@gmail.com",
-          "firstSeenAt": "2026-06-05T11:18:07.096Z",
-          "lastVisitAt": "2026-08-13T11:18:07.096Z",
+          "firstSeenAt": "2026-06-05T12:38:41.051Z",
+          "lastVisitAt": "2026-08-13T12:38:41.051Z",
           "visitCount": 6,
           "averageSpendMad": 780,
           "totalSpendMad": 4680,
@@ -1163,8 +1163,8 @@
           "id": "cus_12",
           "fullName": "Sofia Lahlou",
           "phone": "+212 666 70 15 29",
-          "firstSeenAt": "2026-02-04T11:18:07.096Z",
-          "lastVisitAt": "2026-08-07T11:18:07.096Z",
+          "firstSeenAt": "2026-02-04T12:38:41.051Z",
+          "lastVisitAt": "2026-08-07T12:38:41.051Z",
           "visitCount": 5,
           "averageSpendMad": 760,
           "totalSpendMad": 3800,
@@ -1173,17 +1173,17 @@
           "noShowHistory": [
             {
               "bookingId": "res_hist_cus_12_0",
-              "at": "2026-08-03T11:18:07.096Z",
+              "at": "2026-08-03T12:38:41.051Z",
               "partySize": 2
             },
             {
               "bookingId": "res_hist_cus_12_1",
-              "at": "2026-07-14T11:18:07.096Z",
+              "at": "2026-07-14T12:38:41.051Z",
               "partySize": 3
             },
             {
               "bookingId": "res_hist_cus_12_2",
-              "at": "2026-06-24T11:18:07.096Z",
+              "at": "2026-06-24T12:38:41.051Z",
               "partySize": 4
             }
           ],
@@ -1199,8 +1199,8 @@
           "id": "cus_7",
           "fullName": "Famille Berrada",
           "phone": "+212 668 30 90 55",
-          "firstSeenAt": "2026-03-31T11:18:07.096Z",
-          "lastVisitAt": "2026-08-01T11:18:07.096Z",
+          "firstSeenAt": "2026-03-31T12:38:41.051Z",
+          "lastVisitAt": "2026-08-01T12:38:41.051Z",
           "visitCount": 3,
           "averageSpendMad": 940,
           "totalSpendMad": 2820,
@@ -1220,8 +1220,8 @@
           "id": "cus_3",
           "fullName": "Groupe Karam",
           "phone": "+212 662 88 10 03",
-          "firstSeenAt": "2026-05-14T11:18:07.096Z",
-          "lastVisitAt": "2026-07-17T11:18:07.096Z",
+          "firstSeenAt": "2026-05-14T12:38:41.051Z",
+          "lastVisitAt": "2026-07-17T12:38:41.051Z",
           "visitCount": 2,
           "averageSpendMad": 1640,
           "totalSpendMad": 3280,
@@ -1232,7 +1232,7 @@
           "noShowHistory": [
             {
               "bookingId": "res_hist_cus_3_0",
-              "at": "2026-08-12T11:18:07.096Z",
+              "at": "2026-08-12T12:38:41.051Z",
               "partySize": 2
             }
           ],
@@ -1248,8 +1248,8 @@
           "id": "cus_10",
           "fullName": "Karim Hakimi",
           "phone": "+212 669 22 41 06",
-          "firstSeenAt": "2026-02-26T11:18:07.096Z",
-          "lastVisitAt": "2026-07-05T11:18:07.096Z",
+          "firstSeenAt": "2026-02-26T12:38:41.051Z",
+          "lastVisitAt": "2026-07-05T12:38:41.051Z",
           "visitCount": 4,
           "averageSpendMad": 700,
           "totalSpendMad": 2800,
@@ -1260,7 +1260,7 @@
           "noShowHistory": [
             {
               "bookingId": "res_hist_cus_10_0",
-              "at": "2026-08-05T11:18:07.096Z",
+              "at": "2026-08-05T12:38:41.051Z",
               "partySize": 2
             }
           ],
@@ -1279,8 +1279,8 @@
           "fullName": "Yasmine El Alaoui",
           "phone": "+212 663 41 77 92",
           "email": "yasmine.ea@gmail.com",
-          "firstSeenAt": "2026-05-03T11:18:07.096Z",
-          "lastVisitAt": "2026-06-21T11:18:07.096Z",
+          "firstSeenAt": "2026-05-03T12:38:41.051Z",
+          "lastVisitAt": "2026-06-21T12:38:41.051Z",
           "visitCount": 1,
           "averageSpendMad": 620,
           "totalSpendMad": 620,
@@ -1289,12 +1289,12 @@
           "noShowHistory": [
             {
               "bookingId": "res_hist_cus_4_0",
-              "at": "2026-08-11T11:18:07.096Z",
+              "at": "2026-08-11T12:38:41.051Z",
               "partySize": 2
             },
             {
               "bookingId": "res_hist_cus_4_1",
-              "at": "2026-07-22T11:18:07.096Z",
+              "at": "2026-07-22T12:38:41.051Z",
               "partySize": 3
             }
           ],
@@ -1311,7 +1311,7 @@
           "id": "cus_5",
           "fullName": "Nabil Cherkaoui",
           "phone": "+212 665 09 33 71",
-          "firstSeenAt": "2026-04-22T11:18:07.096Z",
+          "firstSeenAt": "2026-04-22T12:38:41.051Z",
           "visitCount": 0,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -1331,7 +1331,7 @@
           "id": "cus_6",
           "fullName": "Omar Idrissi",
           "phone": "+212 667 74 21 08",
-          "firstSeenAt": "2026-04-11T11:18:07.096Z",
+          "firstSeenAt": "2026-04-11T12:38:41.051Z",
           "visitCount": 0,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -1352,7 +1352,7 @@
           "type": "booking_request",
           "title": "Nouvelle demande de réservation",
           "body": "Nabil Cherkaoui · 2 personnes · à confirmer",
-          "at": "2026-09-03T11:14:07.096Z",
+          "at": "2026-09-03T12:34:41.051Z",
           "read": false,
           "href": "/restaurant/reservations"
         },
@@ -1361,7 +1361,7 @@
           "type": "cancellation",
           "title": "Réservation annulée",
           "body": "Sofia Lahlou a annulé sa table de 2",
-          "at": "2026-09-03T10:31:07.096Z",
+          "at": "2026-09-03T11:51:41.051Z",
           "read": false,
           "href": "/restaurant/reservations"
         },
@@ -1370,7 +1370,7 @@
           "type": "review",
           "title": "Nouvel avis · 5 étoiles",
           "body": "Leïla M. — « Le patio au coucher du soleil, rien à redire. »",
-          "at": "2026-09-03T08:18:07.096Z",
+          "at": "2026-09-03T09:38:41.051Z",
           "read": true,
           "href": "/restaurant/avis"
         }
@@ -1398,7 +1398,7 @@
           "fullName": "Rachid Amrani",
           "email": "rachid@darzellij.ma",
           "role": "manager",
-          "lastActive": "2026-09-03T11:13:07.096Z",
+          "lastActive": "2026-09-03T12:33:41.051Z",
           "pending": false
         },
         {
@@ -1407,7 +1407,7 @@
           "fullName": "Yassine Alami",
           "email": "yassine@darzellij.ma",
           "role": "owner",
-          "lastActive": "2026-09-03T11:16:07.096Z",
+          "lastActive": "2026-09-03T12:36:41.051Z",
           "pending": false
         },
         {
@@ -1416,7 +1416,7 @@
           "fullName": "Imane Ouali",
           "email": "imane@darzellij.ma",
           "role": "staff",
-          "lastActive": "2026-09-03T10:38:07.096Z",
+          "lastActive": "2026-09-03T11:58:41.051Z",
           "pending": false
         },
         {
@@ -1425,7 +1425,7 @@
           "fullName": "Karim Sefrioui",
           "email": "karim@darzellij.ma",
           "role": "staff",
-          "lastActive": "2026-09-02T11:18:07.096Z",
+          "lastActive": "2026-09-02T12:38:41.051Z",
           "pending": false
         }
       ],
@@ -1923,10 +1923,10 @@
               "guestPhone": "",
               "partySize": 4,
               "quotedMinutes": 45,
-              "addedAt": "2026-09-03T09:42:07.096Z",
-              "notifiedAt": "2026-09-03T10:26:07.096Z",
+              "addedAt": "2026-09-03T11:02:41.051Z",
+              "notifiedAt": "2026-09-03T11:46:41.051Z",
               "seatedAt": null,
-              "removedAt": "2026-09-03T10:40:07.096Z",
+              "removedAt": "2026-09-03T12:00:41.051Z",
               "source": "app",
               "status": "left",
               "removalReason": "parti",
@@ -1940,9 +1940,9 @@
               "guestPhone": "+212 661 20 44 18",
               "partySize": 2,
               "quotedMinutes": 15,
-              "addedAt": "2026-09-03T10:04:07.096Z",
-              "notifiedAt": "2026-09-03T10:17:07.096Z",
-              "seatedAt": "2026-09-03T10:20:07.096Z",
+              "addedAt": "2026-09-03T11:24:41.051Z",
+              "notifiedAt": "2026-09-03T11:37:41.051Z",
+              "seatedAt": "2026-09-03T11:40:41.051Z",
               "removedAt": null,
               "source": "walk_in",
               "status": "seated",
@@ -1957,8 +1957,8 @@
               "guestPhone": "+212 667 74 21 08",
               "partySize": 2,
               "quotedMinutes": 20,
-              "addedAt": "2026-09-03T10:44:07.096Z",
-              "notifiedAt": "2026-09-03T11:12:07.096Z",
+              "addedAt": "2026-09-03T12:04:41.051Z",
+              "notifiedAt": "2026-09-03T12:32:41.051Z",
               "seatedAt": null,
               "removedAt": null,
               "source": "walk_in",
@@ -1974,7 +1974,7 @@
               "guestPhone": "+212 668 30 90 55",
               "partySize": 4,
               "quotedMinutes": 35,
-              "addedAt": "2026-09-03T10:56:07.096Z",
+              "addedAt": "2026-09-03T12:16:41.051Z",
               "notifiedAt": null,
               "seatedAt": null,
               "removedAt": null,
@@ -1991,7 +1991,7 @@
               "guestPhone": "+212 666 70 15 29",
               "partySize": 3,
               "quotedMinutes": 40,
-              "addedAt": "2026-09-03T11:04:07.096Z",
+              "addedAt": "2026-09-03T12:24:41.051Z",
               "notifiedAt": null,
               "seatedAt": null,
               "removedAt": null,
@@ -2008,7 +2008,7 @@
               "guestPhone": "+33 6 12 44 90 21",
               "partySize": 2,
               "quotedMinutes": 45,
-              "addedAt": "2026-09-03T11:10:07.096Z",
+              "addedAt": "2026-09-03T12:30:41.051Z",
               "notifiedAt": null,
               "seatedAt": null,
               "removedAt": null,
@@ -2024,7 +2024,7 @@
             "maxPartyOnline": 8,
             "defaultQuoteMinutes": 25,
             "pausedReason": "",
-            "updatedAt": "2026-09-03T09:48:07.096Z"
+            "updatedAt": "2026-09-03T11:08:41.051Z"
           },
           "briefing": {
             "serviceId": "svc_current",
@@ -2041,7 +2041,7 @@
                 "author": "Rachid Amrani",
                 "body": "Fontaine du patio en réparation jusqu'à 21 h — ne pas placer les tables 4 et 5.",
                 "pinned": true,
-                "createdAt": "2026-09-03T06:18:07.096Z"
+                "createdAt": "2026-09-03T07:38:41.051Z"
               },
               {
                 "id": "dz_sn_2",
@@ -2051,7 +2051,7 @@
                 "author": "Rachid Amrani",
                 "body": "Le chef propose un dessert hors carte ce soir : cheesecake à l'argan, 90 MAD.",
                 "pinned": false,
-                "createdAt": "2026-09-03T08:18:07.096Z"
+                "createdAt": "2026-09-03T09:38:41.051Z"
               }
             ],
             "guests": [
@@ -2060,7 +2060,7 @@
                 "customerId": "cus_1",
                 "guestName": "Salma Bennani",
                 "partySize": 4,
-                "at": "2026-09-03T11:38:07.096Z",
+                "at": "2026-09-03T12:58:41.051Z",
                 "zone": "Patio",
                 "tags": [
                   "VIP",
@@ -2080,7 +2080,7 @@
                 "customerId": "cus_3",
                 "guestName": "Groupe Karam",
                 "partySize": 6,
-                "at": "2026-09-03T11:53:07.096Z",
+                "at": "2026-09-03T13:13:41.051Z",
                 "zone": "Grande salle",
                 "tags": [
                   "Allergie"
@@ -2098,7 +2098,7 @@
                 "customerId": "cus_4",
                 "guestName": "Yasmine El Alaoui",
                 "partySize": 4,
-                "at": "2026-09-03T12:08:07.096Z",
+                "at": "2026-09-03T13:28:41.051Z",
                 "zone": "Terrasse",
                 "tags": [
                   "À risque",
@@ -2115,7 +2115,7 @@
                 "customerId": "cus_5",
                 "guestName": "Nabil Cherkaoui",
                 "partySize": 2,
-                "at": "2026-09-03T12:38:07.096Z",
+                "at": "2026-09-03T13:58:41.051Z",
                 "zone": null,
                 "tags": [
                   "Nouveau"
@@ -2133,7 +2133,7 @@
                 "customerId": "cus_2",
                 "guestName": "Hind Tazi",
                 "partySize": 5,
-                "at": "2026-09-03T13:03:07.096Z",
+                "at": "2026-09-03T14:23:41.051Z",
                 "zone": "Grande salle",
                 "tags": [
                   "Allergie",
@@ -3603,7 +3603,7 @@
                 ]
               },
               "memberCount": 4,
-              "updatedAt": "2026-08-28T11:18:07.096Z"
+              "updatedAt": "2026-08-28T12:38:41.051Z"
             },
             {
               "id": "dz_sg_vip",
@@ -3616,7 +3616,7 @@
                 ]
               },
               "memberCount": 2,
-              "updatedAt": "2026-08-28T11:18:07.096Z"
+              "updatedAt": "2026-08-28T12:38:41.051Z"
             },
             {
               "id": "dz_sg_winback",
@@ -3626,7 +3626,7 @@
                 "lastVisitAfterDays": 90
               },
               "memberCount": 3,
-              "updatedAt": "2026-08-28T11:18:07.096Z"
+              "updatedAt": "2026-08-28T12:38:41.051Z"
             }
           ],
           "tagsByCustomer": {
@@ -3811,7 +3811,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_2_TK0",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-14T11:18:07.096Z"
+                  "purchasedAt": "2026-08-14T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_2_tk1",
@@ -3824,7 +3824,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_2_TK1",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-15T11:18:07.096Z"
+                  "purchasedAt": "2026-08-15T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_2_tk2",
@@ -3837,7 +3837,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_2_TK2",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-16T11:18:07.096Z"
+                  "purchasedAt": "2026-08-16T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_2_tk3",
@@ -3852,7 +3852,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_2_TK3",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-17T11:18:07.096Z"
+                  "purchasedAt": "2026-08-17T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_2_tk4",
@@ -3865,7 +3865,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_2_TK4",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-18T11:18:07.096Z"
+                  "purchasedAt": "2026-08-18T12:38:41.051Z"
                 }
               ],
               "seatsSold": 7,
@@ -3909,7 +3909,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK0",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-14T11:18:07.096Z"
+                  "purchasedAt": "2026-08-14T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk1",
@@ -3922,7 +3922,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK1",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-15T11:18:07.096Z"
+                  "purchasedAt": "2026-08-15T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk2",
@@ -3935,7 +3935,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK2",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-16T11:18:07.096Z"
+                  "purchasedAt": "2026-08-16T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk3",
@@ -3950,7 +3950,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK3",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-17T11:18:07.096Z"
+                  "purchasedAt": "2026-08-17T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk4",
@@ -3963,7 +3963,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK4",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-18T11:18:07.096Z"
+                  "purchasedAt": "2026-08-18T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk5",
@@ -3976,7 +3976,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK5",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-19T11:18:07.096Z"
+                  "purchasedAt": "2026-08-19T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk6",
@@ -3991,7 +3991,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK6",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-20T11:18:07.096Z"
+                  "purchasedAt": "2026-08-20T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk7",
@@ -4004,7 +4004,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK7",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-21T11:18:07.096Z"
+                  "purchasedAt": "2026-08-21T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk8",
@@ -4017,7 +4017,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK8",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-22T11:18:07.096Z"
+                  "purchasedAt": "2026-08-22T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk9",
@@ -4032,7 +4032,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK9",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-23T11:18:07.096Z"
+                  "purchasedAt": "2026-08-23T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_1_tk10",
@@ -4045,7 +4045,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-DZ_XP_1_TK10",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-24T11:18:07.096Z"
+                  "purchasedAt": "2026-08-24T12:38:41.051Z"
                 }
               ],
               "seatsSold": 16,
@@ -4083,8 +4083,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK0",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-14T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-14T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk1",
@@ -4096,8 +4096,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK1",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-15T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-15T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk2",
@@ -4109,8 +4109,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK2",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-16T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-16T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk3",
@@ -4124,8 +4124,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK3",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-17T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-17T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk4",
@@ -4137,8 +4137,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK4",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-18T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-18T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk5",
@@ -4150,8 +4150,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK5",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-19T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-19T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk6",
@@ -4165,8 +4165,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK6",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-20T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-20T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk7",
@@ -4178,8 +4178,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK7",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-21T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-21T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk8",
@@ -4191,8 +4191,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK8",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-22T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-22T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk9",
@@ -4206,8 +4206,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK9",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-23T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-23T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk10",
@@ -4219,8 +4219,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK10",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-24T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-24T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk11",
@@ -4232,8 +4232,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK11",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-25T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-25T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk12",
@@ -4247,8 +4247,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK12",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-26T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-26T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk13",
@@ -4260,8 +4260,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK13",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-27T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-27T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk14",
@@ -4273,8 +4273,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK14",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-28T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-28T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk15",
@@ -4288,8 +4288,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK15",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-29T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-29T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk16",
@@ -4301,8 +4301,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK16",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-30T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-30T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk17",
@@ -4314,8 +4314,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK17",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-08-31T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-08-31T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk18",
@@ -4329,8 +4329,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK18",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-01T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-01T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk19",
@@ -4342,8 +4342,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK19",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-02T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-02T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk20",
@@ -4355,8 +4355,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK20",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-03T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-03T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk21",
@@ -4370,8 +4370,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK21",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-04T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-04T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk22",
@@ -4383,8 +4383,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK22",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-05T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-05T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk23",
@@ -4396,8 +4396,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK23",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-06T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-06T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk24",
@@ -4411,8 +4411,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK24",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-07T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-07T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk25",
@@ -4424,8 +4424,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK25",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-08T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-08T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk26",
@@ -4437,8 +4437,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK26",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-09T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-09T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk27",
@@ -4452,8 +4452,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK27",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-10T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-10T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk28",
@@ -4465,8 +4465,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK28",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-11T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-11T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk29",
@@ -4478,8 +4478,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK29",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-12T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-12T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk30",
@@ -4493,8 +4493,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK30",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-13T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-13T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk31",
@@ -4506,8 +4506,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK31",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-14T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-14T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk32",
@@ -4519,8 +4519,8 @@
                   "amountMad": 320,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK32",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-15T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-15T12:38:41.051Z"
                 },
                 {
                   "id": "dz_xp_3_tk33",
@@ -4534,8 +4534,8 @@
                   "amountMad": 640,
                   "status": "utilise",
                   "qrCode": "LYFE-DZ_XP_3_TK33",
-                  "checkedInAt": "2026-08-20T11:18:07.096Z",
-                  "purchasedAt": "2026-09-16T11:18:07.096Z"
+                  "checkedInAt": "2026-08-20T12:38:41.051Z",
+                  "purchasedAt": "2026-09-16T12:38:41.051Z"
                 }
               ],
               "seatsSold": 51,
@@ -4589,7 +4589,7 @@
               "amountMad": 500,
               "status": "demande",
               "processorRef": null,
-              "requestedAt": "2026-09-02T11:18:07.096Z",
+              "requestedAt": "2026-09-02T12:38:41.051Z",
               "paidAt": null,
               "settledAt": null,
               "failureReason": ""
@@ -4604,8 +4604,8 @@
               "amountMad": 400,
               "status": "paye",
               "processorRef": "PZ-DZ-p_1",
-              "requestedAt": "2026-08-31T11:18:07.096Z",
-              "paidAt": "2026-08-31T11:18:07.096Z",
+              "requestedAt": "2026-08-31T12:38:41.051Z",
+              "paidAt": "2026-08-31T12:38:41.051Z",
               "settledAt": null,
               "failureReason": ""
             },
@@ -4619,7 +4619,7 @@
               "amountMad": 1200,
               "status": "echoue",
               "processorRef": "PZ-DZ-p_3",
-              "requestedAt": "2026-08-30T11:18:07.096Z",
+              "requestedAt": "2026-08-30T12:38:41.051Z",
               "paidAt": null,
               "settledAt": null,
               "failureReason": "Carte refusée par l'émetteur"
@@ -4634,8 +4634,8 @@
               "amountMad": 600,
               "status": "libere",
               "processorRef": "PZ-DZ-p_5",
-              "requestedAt": "2026-08-25T11:18:07.096Z",
-              "paidAt": "2026-08-25T11:18:07.096Z",
+              "requestedAt": "2026-08-25T12:38:41.051Z",
+              "paidAt": "2026-08-25T12:38:41.051Z",
               "settledAt": null,
               "failureReason": ""
             },
@@ -4649,9 +4649,9 @@
               "amountMad": 900,
               "status": "capture",
               "processorRef": "PZ-DZ-p_4",
-              "requestedAt": "2026-08-22T11:18:07.096Z",
-              "paidAt": "2026-08-22T11:18:07.096Z",
-              "settledAt": "2026-09-02T11:18:07.096Z",
+              "requestedAt": "2026-08-22T12:38:41.051Z",
+              "paidAt": "2026-08-22T12:38:41.051Z",
+              "settledAt": "2026-09-02T12:38:41.051Z",
               "failureReason": ""
             },
             {
@@ -4664,9 +4664,9 @@
               "amountMad": 750,
               "status": "rembourse",
               "processorRef": "PZ-DZ-p_6",
-              "requestedAt": "2026-08-13T11:18:07.096Z",
-              "paidAt": "2026-08-13T11:18:07.096Z",
-              "settledAt": "2026-09-02T11:18:07.096Z",
+              "requestedAt": "2026-08-13T12:38:41.051Z",
+              "paidAt": "2026-08-13T12:38:41.051Z",
+              "settledAt": "2026-09-02T12:38:41.051Z",
               "failureReason": ""
             }
           ],
@@ -4676,7 +4676,7 @@
             "noShowFeeMad": 200,
             "guestMessage": "Annulation gratuite jusqu'à 24 h avant votre venue. Passé ce délai, des frais peuvent s'appliquer. En cas d'absence, le montant indiqué au moment de la réservation sera prélevé.",
             "version": 2,
-            "updatedAt": "2026-08-09T11:18:07.096Z"
+            "updatedAt": "2026-08-09T12:38:41.051Z"
           },
           "cancellations": [
             {
@@ -4689,7 +4689,7 @@
               "feeMad": 200,
               "waived": false,
               "disputed": false,
-              "at": "2026-08-30T11:18:07.096Z"
+              "at": "2026-08-30T12:38:41.051Z"
             },
             {
               "id": "dz_cx_2",
@@ -4701,7 +4701,7 @@
               "feeMad": 100,
               "waived": true,
               "disputed": false,
-              "at": "2026-08-27T11:18:07.096Z"
+              "at": "2026-08-27T12:38:41.051Z"
             },
             {
               "id": "dz_cx_3",
@@ -4713,7 +4713,7 @@
               "feeMad": 0,
               "waived": false,
               "disputed": false,
-              "at": "2026-08-23T11:18:07.096Z"
+              "at": "2026-08-23T12:38:41.051Z"
             },
             {
               "id": "dz_cx_4",
@@ -4725,7 +4725,7 @@
               "feeMad": 200,
               "waived": false,
               "disputed": true,
-              "at": "2026-08-18T11:18:07.096Z"
+              "at": "2026-08-18T12:38:41.051Z"
             }
           ],
           "transactions": [
@@ -4739,7 +4739,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80400",
-              "at": "2026-09-03T09:18:07.096Z"
+              "at": "2026-09-03T10:38:41.051Z"
             },
             {
               "id": "dz_tx_1",
@@ -4751,7 +4751,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80401",
-              "at": "2026-09-03T02:18:07.096Z"
+              "at": "2026-09-03T03:38:41.051Z"
             },
             {
               "id": "dz_tx_2",
@@ -4763,7 +4763,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80402",
-              "at": "2026-09-02T19:18:07.096Z"
+              "at": "2026-09-02T20:38:41.051Z"
             },
             {
               "id": "dz_tx_3",
@@ -4775,7 +4775,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80403",
-              "at": "2026-09-02T12:18:07.096Z"
+              "at": "2026-09-02T13:38:41.051Z"
             },
             {
               "id": "dz_tx_4",
@@ -4787,7 +4787,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80404",
-              "at": "2026-09-02T05:18:07.096Z"
+              "at": "2026-09-02T06:38:41.051Z"
             },
             {
               "id": "dz_tx_5",
@@ -4799,7 +4799,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80405",
-              "at": "2026-09-01T22:18:07.096Z"
+              "at": "2026-09-01T23:38:41.051Z"
             },
             {
               "id": "dz_tx_6",
@@ -4811,7 +4811,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80406",
-              "at": "2026-09-01T15:18:07.096Z"
+              "at": "2026-09-01T16:38:41.051Z"
             },
             {
               "id": "dz_tx_7",
@@ -4823,7 +4823,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80407",
-              "at": "2026-09-01T08:18:07.096Z"
+              "at": "2026-09-01T09:38:41.051Z"
             },
             {
               "id": "dz_tx_8",
@@ -4835,7 +4835,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80408",
-              "at": "2026-09-01T01:18:07.096Z"
+              "at": "2026-09-01T02:38:41.051Z"
             },
             {
               "id": "dz_tx_9",
@@ -4847,7 +4847,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80409",
-              "at": "2026-08-31T18:18:07.096Z"
+              "at": "2026-08-31T19:38:41.051Z"
             },
             {
               "id": "dz_tx_10",
@@ -4859,7 +4859,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80410",
-              "at": "2026-08-31T11:18:07.096Z"
+              "at": "2026-08-31T12:38:41.051Z"
             },
             {
               "id": "dz_tx_11",
@@ -4871,7 +4871,7 @@
               "method": "tpe",
               "status": "remboursee",
               "processorRef": "PZ-80411",
-              "at": "2026-08-31T04:18:07.096Z"
+              "at": "2026-08-31T05:38:41.051Z"
             },
             {
               "id": "dz_tx_12",
@@ -4883,7 +4883,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80412",
-              "at": "2026-08-30T21:18:07.096Z"
+              "at": "2026-08-30T22:38:41.051Z"
             },
             {
               "id": "dz_tx_13",
@@ -4895,7 +4895,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80413",
-              "at": "2026-08-30T14:18:07.096Z"
+              "at": "2026-08-30T15:38:41.051Z"
             },
             {
               "id": "dz_tx_14",
@@ -4907,7 +4907,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80414",
-              "at": "2026-08-30T07:18:07.096Z"
+              "at": "2026-08-30T08:38:41.051Z"
             },
             {
               "id": "dz_tx_15",
@@ -4919,7 +4919,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80415",
-              "at": "2026-08-30T00:18:07.096Z"
+              "at": "2026-08-30T01:38:41.051Z"
             },
             {
               "id": "dz_tx_16",
@@ -4931,7 +4931,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80416",
-              "at": "2026-08-29T17:18:07.096Z"
+              "at": "2026-08-29T18:38:41.051Z"
             },
             {
               "id": "dz_tx_17",
@@ -4943,7 +4943,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80417",
-              "at": "2026-08-29T10:18:07.096Z"
+              "at": "2026-08-29T11:38:41.051Z"
             },
             {
               "id": "dz_tx_18",
@@ -4955,7 +4955,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80418",
-              "at": "2026-08-29T03:18:07.096Z"
+              "at": "2026-08-29T04:38:41.051Z"
             },
             {
               "id": "dz_tx_19",
@@ -4967,7 +4967,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80419",
-              "at": "2026-08-28T20:18:07.096Z"
+              "at": "2026-08-28T21:38:41.051Z"
             },
             {
               "id": "dz_tx_20",
@@ -4979,7 +4979,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80420",
-              "at": "2026-08-28T13:18:07.096Z"
+              "at": "2026-08-28T14:38:41.051Z"
             },
             {
               "id": "dz_tx_21",
@@ -4991,7 +4991,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80421",
-              "at": "2026-08-28T06:18:07.096Z"
+              "at": "2026-08-28T07:38:41.051Z"
             },
             {
               "id": "dz_tx_22",
@@ -5003,7 +5003,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80422",
-              "at": "2026-08-27T23:18:07.096Z"
+              "at": "2026-08-28T00:38:41.051Z"
             },
             {
               "id": "dz_tx_23",
@@ -5015,7 +5015,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80423",
-              "at": "2026-08-27T16:18:07.096Z"
+              "at": "2026-08-27T17:38:41.051Z"
             },
             {
               "id": "dz_tx_24",
@@ -5027,7 +5027,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80424",
-              "at": "2026-08-27T09:18:07.096Z"
+              "at": "2026-08-27T10:38:41.051Z"
             },
             {
               "id": "dz_tx_25",
@@ -5039,7 +5039,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80425",
-              "at": "2026-08-27T02:18:07.096Z"
+              "at": "2026-08-27T03:38:41.051Z"
             },
             {
               "id": "dz_tx_26",
@@ -5051,7 +5051,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80426",
-              "at": "2026-08-26T19:18:07.096Z"
+              "at": "2026-08-26T20:38:41.051Z"
             },
             {
               "id": "dz_tx_27",
@@ -5063,7 +5063,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80427",
-              "at": "2026-08-26T12:18:07.096Z"
+              "at": "2026-08-26T13:38:41.051Z"
             },
             {
               "id": "dz_tx_28",
@@ -5075,7 +5075,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80428",
-              "at": "2026-08-26T05:18:07.096Z"
+              "at": "2026-08-26T06:38:41.051Z"
             },
             {
               "id": "dz_tx_29",
@@ -5087,7 +5087,7 @@
               "method": "tpe",
               "status": "echouee",
               "processorRef": "PZ-80429",
-              "at": "2026-08-25T22:18:07.096Z"
+              "at": "2026-08-25T23:38:41.051Z"
             },
             {
               "id": "dz_tx_30",
@@ -5099,7 +5099,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80430",
-              "at": "2026-08-25T15:18:07.096Z"
+              "at": "2026-08-25T16:38:41.051Z"
             },
             {
               "id": "dz_tx_31",
@@ -5111,7 +5111,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80431",
-              "at": "2026-08-25T08:18:07.096Z"
+              "at": "2026-08-25T09:38:41.051Z"
             },
             {
               "id": "dz_tx_32",
@@ -5123,7 +5123,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80432",
-              "at": "2026-08-25T01:18:07.096Z"
+              "at": "2026-08-25T02:38:41.051Z"
             },
             {
               "id": "dz_tx_33",
@@ -5135,7 +5135,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80433",
-              "at": "2026-08-24T18:18:07.096Z"
+              "at": "2026-08-24T19:38:41.051Z"
             },
             {
               "id": "dz_tx_34",
@@ -5147,7 +5147,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80434",
-              "at": "2026-08-24T11:18:07.096Z"
+              "at": "2026-08-24T12:38:41.051Z"
             },
             {
               "id": "dz_tx_35",
@@ -5159,7 +5159,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80435",
-              "at": "2026-08-24T04:18:07.096Z"
+              "at": "2026-08-24T05:38:41.051Z"
             },
             {
               "id": "dz_tx_36",
@@ -5171,7 +5171,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80436",
-              "at": "2026-08-23T21:18:07.096Z"
+              "at": "2026-08-23T22:38:41.051Z"
             },
             {
               "id": "dz_tx_37",
@@ -5183,7 +5183,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80437",
-              "at": "2026-08-23T14:18:07.096Z"
+              "at": "2026-08-23T15:38:41.051Z"
             },
             {
               "id": "dz_tx_38",
@@ -5195,7 +5195,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80438",
-              "at": "2026-08-23T07:18:07.096Z"
+              "at": "2026-08-23T08:38:41.051Z"
             },
             {
               "id": "dz_tx_39",
@@ -5207,7 +5207,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80439",
-              "at": "2026-08-23T00:18:07.096Z"
+              "at": "2026-08-23T01:38:41.051Z"
             },
             {
               "id": "dz_tx_40",
@@ -5219,7 +5219,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80440",
-              "at": "2026-08-22T17:18:07.096Z"
+              "at": "2026-08-22T18:38:41.051Z"
             },
             {
               "id": "dz_tx_41",
@@ -5231,7 +5231,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80441",
-              "at": "2026-08-22T10:18:07.096Z"
+              "at": "2026-08-22T11:38:41.051Z"
             },
             {
               "id": "dz_tx_42",
@@ -5243,7 +5243,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80442",
-              "at": "2026-08-22T03:18:07.096Z"
+              "at": "2026-08-22T04:38:41.051Z"
             },
             {
               "id": "dz_tx_43",
@@ -5255,7 +5255,7 @@
               "method": "carte",
               "status": "reussie",
               "processorRef": "PZ-80443",
-              "at": "2026-08-21T20:18:07.096Z"
+              "at": "2026-08-21T21:38:41.051Z"
             },
             {
               "id": "dz_tx_44",
@@ -5267,7 +5267,7 @@
               "method": "tpe",
               "status": "reussie",
               "processorRef": "PZ-80444",
-              "at": "2026-08-21T13:18:07.096Z"
+              "at": "2026-08-21T14:38:41.051Z"
             },
             {
               "id": "dz_tx_45",
@@ -5279,7 +5279,7 @@
               "method": "wallet",
               "status": "reussie",
               "processorRef": "PZ-80445",
-              "at": "2026-08-21T06:18:07.096Z"
+              "at": "2026-08-21T07:38:41.051Z"
             }
           ],
           "hasTransactionSource": true
@@ -5297,7 +5297,7 @@
               "body": "Bonjour {{prenom}}, nous avons pensé à vous. Réservez votre table en un geste depuis l'application LYFE.",
               "status": "programmee",
               "automation": "",
-              "scheduledFor": "2026-09-06T11:18:07.096Z",
+              "scheduledFor": "2026-09-06T12:38:41.051Z",
               "sentAt": null,
               "unitCostMad": 0.02,
               "recipients": 0,
@@ -5319,7 +5319,7 @@
               "status": "envoyee",
               "automation": "remerciement",
               "scheduledFor": null,
-              "sentAt": "2026-09-02T11:18:07.096Z",
+              "sentAt": "2026-09-02T12:38:41.051Z",
               "unitCostMad": 0.18,
               "recipients": 128,
               "delivered": 126,
@@ -5340,7 +5340,7 @@
               "status": "envoyee",
               "automation": "bienvenue",
               "scheduledFor": null,
-              "sentAt": "2026-09-02T11:18:07.096Z",
+              "sentAt": "2026-09-02T12:38:41.051Z",
               "unitCostMad": 0.02,
               "recipients": 34,
               "delivered": 34,
@@ -5361,7 +5361,7 @@
               "status": "envoyee",
               "automation": "",
               "scheduledFor": null,
-              "sentAt": "2026-08-25T11:18:07.096Z",
+              "sentAt": "2026-08-25T12:38:41.051Z",
               "unitCostMad": 0.02,
               "recipients": 412,
               "delivered": 401,
@@ -5382,7 +5382,7 @@
               "status": "envoyee",
               "automation": "",
               "scheduledFor": null,
-              "sentAt": "2026-08-10T11:18:07.096Z",
+              "sentAt": "2026-08-10T12:38:41.051Z",
               "unitCostMad": 0.18,
               "recipients": 96,
               "delivered": 94,
@@ -5403,7 +5403,7 @@
               "status": "en_pause",
               "automation": "anniversaire",
               "scheduledFor": null,
-              "sentAt": "2026-07-25T11:18:07.096Z",
+              "sentAt": "2026-07-25T12:38:41.051Z",
               "unitCostMad": 0.35,
               "recipients": 22,
               "delivered": 22,
@@ -5425,7 +5425,7 @@
               "preview": "Votre table est prête, présentez-vous à l'accueil.",
               "status": "delivre",
               "failureReason": "",
-              "at": "2026-09-03T11:12:07.096Z"
+              "at": "2026-09-03T12:32:41.051Z"
             },
             {
               "id": "dz_ml_1",
@@ -5438,7 +5438,7 @@
               "preview": "Votre table de 4 est confirmée pour ce soir 20h30.",
               "status": "lu",
               "failureReason": "",
-              "at": "2026-09-03T08:18:07.096Z"
+              "at": "2026-09-03T09:38:41.051Z"
             },
             {
               "id": "dz_ml_4",
@@ -5451,7 +5451,7 @@
               "preview": "Confirmez-vous votre venue de ce soir ?",
               "status": "echoue",
               "failureReason": "Numéro non joignable sur WhatsApp",
-              "at": "2026-09-03T06:18:07.096Z"
+              "at": "2026-09-03T07:38:41.051Z"
             },
             {
               "id": "dz_ml_2",
@@ -5464,7 +5464,7 @@
               "preview": "À demain ! Votre table de 5 vous attend à 21h15.",
               "status": "delivre",
               "failureReason": "",
-              "at": "2026-09-02T15:18:07.096Z"
+              "at": "2026-09-02T16:38:41.051Z"
             },
             {
               "id": "dz_ml_5",
@@ -5477,7 +5477,7 @@
               "preview": "Merci de votre visite — dites-nous tout en une minute.",
               "status": "lu",
               "failureReason": "",
-              "at": "2026-09-01T12:38:07.096Z"
+              "at": "2026-09-01T13:58:41.051Z"
             },
             {
               "id": "dz_ml_6",
@@ -5490,14 +5490,14 @@
               "preview": "Votre avis compte : notez votre soirée.",
               "status": "envoye",
               "failureReason": "",
-              "at": "2026-08-31T09:58:07.096Z"
+              "at": "2026-08-31T11:18:41.051Z"
             }
           ],
           "suppressions": [
             {
               "contact": "t.renaud@free.fr",
               "reason": "Désinscription depuis un email",
-              "at": "2026-07-17T11:18:07.096Z"
+              "at": "2026-07-17T12:38:41.051Z"
             }
           ],
           "consent": {
@@ -5535,7 +5535,7 @@
               ],
               "enabled": true,
               "version": 1,
-              "updatedAt": "2026-08-23T11:18:07.096Z"
+              "updatedAt": "2026-08-23T12:38:41.051Z"
             },
             {
               "id": "dz_sd_din",
@@ -5564,7 +5564,7 @@
               ],
               "enabled": true,
               "version": 1,
-              "updatedAt": "2026-08-23T11:18:07.096Z"
+              "updatedAt": "2026-08-23T12:38:41.051Z"
             }
           ],
           "pacing": {
@@ -5579,7 +5579,7 @@
             "onlineBookingOpen": true,
             "reopenAt": null,
             "version": 3,
-            "updatedAt": "2026-08-30T11:18:07.096Z"
+            "updatedAt": "2026-08-30T12:38:41.051Z"
           }
         },
         "surveyConfig": {
@@ -5615,8 +5615,8 @@
         "subscription": {
           "plan": "annual",
           "status": "actif",
-          "trialEndsAt": "2025-10-18T11:18:07.096Z",
-          "renewsAt": "2026-10-19T11:18:07.096Z",
+          "trialEndsAt": "2025-10-18T12:38:41.051Z",
+          "renewsAt": "2026-10-19T12:38:41.051Z",
           "priceMad": 14400,
           "paymentMethod": "Carte •••• 4417",
           "invoices": [
@@ -5625,14 +5625,14 @@
               "reference": "LYFE-2026-0182",
               "amountMad": 14400,
               "status": "payee",
-              "issuedOn": "2025-10-19T11:18:07.096Z"
+              "issuedOn": "2025-10-19T12:38:41.051Z"
             },
             {
               "id": "dz_inv_b",
               "reference": "LYFE-2025-0611",
               "amountMad": 12000,
               "status": "payee",
-              "issuedOn": "2024-10-19T11:18:07.096Z"
+              "issuedOn": "2024-10-19T12:38:41.051Z"
             }
           ],
           "usage": {
@@ -5650,8 +5650,8 @@
             "subject": "Acompte marqué échoué alors que le client a été débité",
             "body": "Détail transmis à l'équipe LYFE avec les captures d'écran.",
             "status": "en_cours",
-            "createdAt": "2026-09-01T11:18:07.096Z",
-            "updatedAt": "2026-09-02T11:18:07.096Z"
+            "createdAt": "2026-09-01T12:38:41.051Z",
+            "updatedAt": "2026-09-02T12:38:41.051Z"
           },
           {
             "id": "dz_sup_a",
@@ -5660,8 +5660,8 @@
             "subject": "Une réservation de l'app n'apparaît pas dans le carnet",
             "body": "Détail transmis à l'équipe LYFE avec les captures d'écran.",
             "status": "resolu",
-            "createdAt": "2026-08-25T11:18:07.096Z",
-            "updatedAt": "2026-08-26T11:18:07.096Z"
+            "createdAt": "2026-08-25T12:38:41.051Z",
+            "updatedAt": "2026-08-26T12:38:41.051Z"
           }
         ],
         "spendByCustomer": {
@@ -5715,17 +5715,17 @@
         },
         "greeting": {
           "firstName": "",
-          "salutation": "Bonjour",
+          "salutation": "Bon après-midi",
           "clause": "le service est lancé.",
           "subline": "38 couverts réservés, 3 en liste d'attente, 32 encore disponibles."
         },
         "currentService": {
           "id": "svc_nomad_current",
-          "kind": "petit_dejeuner",
-          "label": "Petit-déjeuner",
+          "kind": "dejeuner",
+          "label": "Déjeuner",
           "date": "2026-09-03",
-          "opensAt": "2026-09-03T10:38:07.096Z",
-          "closesAt": "2026-09-03T15:38:07.096Z",
+          "opensAt": "2026-09-03T11:58:41.051Z",
+          "closesAt": "2026-09-03T16:58:41.051Z",
           "state": "open",
           "capacity": 70,
           "bookedCovers": 38,
@@ -5734,27 +5734,27 @@
           "revenueMad": 14800,
           "slotLoad": [
             {
-              "at": "2026-09-03T10:38:07.096Z",
+              "at": "2026-09-03T11:58:41.051Z",
               "covers": 4
             },
             {
-              "at": "2026-09-03T11:08:07.096Z",
+              "at": "2026-09-03T12:28:41.051Z",
               "covers": 8
             },
             {
-              "at": "2026-09-03T11:38:07.096Z",
+              "at": "2026-09-03T12:58:41.051Z",
               "covers": 13
             },
             {
-              "at": "2026-09-03T12:08:07.096Z",
+              "at": "2026-09-03T13:28:41.051Z",
               "covers": 14
             },
             {
-              "at": "2026-09-03T12:38:07.096Z",
+              "at": "2026-09-03T13:58:41.051Z",
               "covers": 11
             },
             {
-              "at": "2026-09-03T13:08:07.096Z",
+              "at": "2026-09-03T14:28:41.051Z",
               "covers": 7
             }
           ]
@@ -5787,6 +5787,7 @@
             0,
             0,
             0,
+            0,
             4,
             21,
             25,
@@ -5799,10 +5800,9 @@
             0,
             0,
             0,
-            0,
             0
           ],
-          "peakHourLabel": "Pic à 12h"
+          "peakHourLabel": "Pic à 13h"
         },
         "averageTicket": {
           "amountMad": 412,
@@ -5858,7 +5858,7 @@
         },
         "nextPayout": {
           "amountMad": 41200,
-          "scheduledFor": "2026-09-05T11:18:07.096Z"
+          "scheduledFor": "2026-09-05T12:38:41.051Z"
         },
         "upcomingReservations": [
           {
@@ -5867,7 +5867,7 @@
             "guestName": "Leïla Fassi",
             "guestPhone": "+212 661 55 20 11",
             "partySize": 4,
-            "at": "2026-09-03T11:43:07.096Z",
+            "at": "2026-09-03T13:03:41.051Z",
             "state": "confirmed",
             "channel": "lyfe",
             "zoneId": "z_n_toit",
@@ -5882,7 +5882,7 @@
             "guestName": "Anas Berrada",
             "guestPhone": "+212 662 31 88 40",
             "partySize": 2,
-            "at": "2026-09-03T12:13:07.096Z",
+            "at": "2026-09-03T13:33:41.051Z",
             "state": "requested",
             "channel": "lyfe",
             "visits": 0,
@@ -5895,7 +5895,7 @@
             "guestName": "Groupe Anfa",
             "guestPhone": "+212 663 12 74 05",
             "partySize": 8,
-            "at": "2026-09-03T12:48:07.096Z",
+            "at": "2026-09-03T14:08:41.051Z",
             "state": "confirmed",
             "channel": "partner",
             "zoneId": "z_n_bar",
@@ -5912,7 +5912,7 @@
             "guestName": "Youssef Alaoui",
             "guestPhone": "+212 664 90 33 27",
             "partySize": 3,
-            "at": "2026-09-03T11:28:07.096Z",
+            "at": "2026-09-03T12:48:41.051Z",
             "state": "waitlisted",
             "channel": "walk_in",
             "visits": 0,
@@ -5924,8 +5924,8 @@
             "id": "act_n1",
             "type": "guest_arrived",
             "actor": "Leïla Fassi",
-            "message": "est arrivée · 4 couverts",
-            "at": "2026-09-03T11:12:07.096Z",
+            "message": "est arrivée · 4 personnes",
+            "at": "2026-09-03T12:32:41.051Z",
             "reservationId": "res_n1",
             "needsAttention": false
           },
@@ -5933,8 +5933,8 @@
             "id": "act_n2",
             "type": "waitlist_joined",
             "actor": "Youssef Alaoui",
-            "message": "rejoint la liste d'attente · 3 couverts",
-            "at": "2026-09-03T11:04:07.096Z",
+            "message": "rejoint la liste d'attente · 3 personnes",
+            "at": "2026-09-03T12:24:41.051Z",
             "reservationId": "res_nw1",
             "needsAttention": false
           },
@@ -5943,7 +5943,7 @@
             "type": "review_received",
             "actor": "Meryem T.",
             "message": "a laissé un avis 5 étoiles",
-            "at": "2026-08-31T11:18:07.096Z",
+            "at": "2026-08-31T12:38:41.051Z",
             "needsAttention": false
           }
         ],
@@ -5999,7 +5999,7 @@
             "guestName": "Meryem T.",
             "rating": 5,
             "comment": "Vue imbattable au coucher du soleil, cocktails créatifs.",
-            "at": "2026-08-31T11:18:07.096Z",
+            "at": "2026-08-31T12:38:41.051Z",
             "channel": "lyfe",
             "tags": [],
             "replied": false
@@ -6009,7 +6009,7 @@
             "guestName": "Otmane K.",
             "rating": 4,
             "comment": "Très bonne ambiance le samedi, un peu bruyant.",
-            "at": "2026-08-23T11:18:07.096Z",
+            "at": "2026-08-23T12:38:41.051Z",
             "channel": "google",
             "tags": [],
             "replied": false
@@ -6018,11 +6018,11 @@
         "services": [
           {
             "id": "svc_nomad_current",
-            "kind": "petit_dejeuner",
-            "label": "Petit-déjeuner",
+            "kind": "dejeuner",
+            "label": "Déjeuner",
             "date": "2026-09-03",
-            "opensAt": "2026-09-03T10:38:07.096Z",
-            "closesAt": "2026-09-03T15:38:07.096Z",
+            "opensAt": "2026-09-03T11:58:41.051Z",
+            "closesAt": "2026-09-03T16:58:41.051Z",
             "state": "open",
             "capacity": 70,
             "bookedCovers": 38,
@@ -6031,27 +6031,27 @@
             "revenueMad": 14800,
             "slotLoad": [
               {
-                "at": "2026-09-03T10:38:07.096Z",
+                "at": "2026-09-03T11:58:41.051Z",
                 "covers": 4
               },
               {
-                "at": "2026-09-03T11:08:07.096Z",
+                "at": "2026-09-03T12:28:41.051Z",
                 "covers": 8
               },
               {
-                "at": "2026-09-03T11:38:07.096Z",
+                "at": "2026-09-03T12:58:41.051Z",
                 "covers": 13
               },
               {
-                "at": "2026-09-03T12:08:07.096Z",
+                "at": "2026-09-03T13:28:41.051Z",
                 "covers": 14
               },
               {
-                "at": "2026-09-03T12:38:07.096Z",
+                "at": "2026-09-03T13:58:41.051Z",
                 "covers": 11
               },
               {
-                "at": "2026-09-03T13:08:07.096Z",
+                "at": "2026-09-03T14:28:41.051Z",
                 "covers": 7
               }
             ]
@@ -6065,7 +6065,7 @@
             "commissionMad": 3100,
             "coversSettled": 168,
             "periodLabel": "25 août – 31 août",
-            "scheduledFor": "2026-09-05T11:18:07.096Z",
+            "scheduledFor": "2026-09-05T12:38:41.051Z",
             "state": "scheduled"
           }
         ]
@@ -6199,7 +6199,7 @@
           }
         ],
         "closures": [],
-        "updatedAt": "2026-09-03T11:18:07.096Z"
+        "updatedAt": "2026-09-03T12:38:41.051Z"
       },
       "customers": [
         {
@@ -6207,8 +6207,8 @@
           "fullName": "Leïla Fassi",
           "phone": "+212 661 55 20 11",
           "email": "leila.fassi@gmail.com",
-          "firstSeenAt": "2026-05-06T11:18:07.096Z",
-          "lastVisitAt": "2026-08-31T11:18:07.096Z",
+          "firstSeenAt": "2026-05-06T12:38:41.051Z",
+          "lastVisitAt": "2026-08-31T12:38:41.051Z",
           "visitCount": 12,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -6228,8 +6228,8 @@
           "fullName": "Nada Skalli",
           "phone": "+212 662 18 70 33",
           "email": "n.skalli@outlook.com",
-          "firstSeenAt": "2026-04-09T11:18:07.096Z",
-          "lastVisitAt": "2026-08-29T11:18:07.096Z",
+          "firstSeenAt": "2026-04-09T12:38:41.051Z",
+          "lastVisitAt": "2026-08-29T12:38:41.051Z",
           "visitCount": 7,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -6247,8 +6247,8 @@
           "id": "cus_n3",
           "fullName": "Réda Bennis",
           "phone": "+212 661 90 44 12",
-          "firstSeenAt": "2026-04-18T11:18:07.096Z",
-          "lastVisitAt": "2026-08-26T11:18:07.096Z",
+          "firstSeenAt": "2026-04-18T12:38:41.051Z",
+          "lastVisitAt": "2026-08-26T12:38:41.051Z",
           "visitCount": 5,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -6257,12 +6257,12 @@
           "noShowHistory": [
             {
               "bookingId": "res_nhist_cus_n3_0",
-              "at": "2026-08-09T11:18:07.096Z",
+              "at": "2026-08-09T12:38:41.051Z",
               "partySize": 2
             },
             {
               "bookingId": "res_nhist_cus_n3_1",
-              "at": "2026-07-15T11:18:07.096Z",
+              "at": "2026-07-15T12:38:41.051Z",
               "partySize": 3
             }
           ],
@@ -6278,8 +6278,8 @@
           "fullName": "Anas Berrada",
           "phone": "+212 662 31 88 40",
           "email": "anas.berrada@gmail.com",
-          "firstSeenAt": "2026-04-27T11:18:07.096Z",
-          "lastVisitAt": "2026-08-22T11:18:07.096Z",
+          "firstSeenAt": "2026-04-27T12:38:41.051Z",
+          "lastVisitAt": "2026-08-22T12:38:41.051Z",
           "visitCount": 1,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -6297,8 +6297,8 @@
           "id": "cus_n5",
           "fullName": "Ilyas Mrabet",
           "phone": "+212 664 55 02 19",
-          "firstSeenAt": "2026-03-31T11:18:07.096Z",
-          "lastVisitAt": "2026-08-13T11:18:07.096Z",
+          "firstSeenAt": "2026-03-31T12:38:41.051Z",
+          "lastVisitAt": "2026-08-13T12:38:41.051Z",
           "visitCount": 3,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -6307,7 +6307,7 @@
           "noShowHistory": [
             {
               "bookingId": "res_nhist_cus_n5_0",
-              "at": "2026-08-09T11:18:07.096Z",
+              "at": "2026-08-09T12:38:41.051Z",
               "partySize": 2
             }
           ],
@@ -6322,8 +6322,8 @@
           "id": "cus_n7",
           "fullName": "Hamza Doukkali",
           "phone": "+212 666 12 33 90",
-          "firstSeenAt": "2026-03-13T11:18:07.096Z",
-          "lastVisitAt": "2026-05-22T11:18:07.096Z",
+          "firstSeenAt": "2026-03-13T12:38:41.051Z",
+          "lastVisitAt": "2026-05-22T12:38:41.051Z",
           "visitCount": 2,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -6332,7 +6332,7 @@
           "noShowHistory": [
             {
               "bookingId": "res_nhist_cus_n7_0",
-              "at": "2026-08-09T11:18:07.096Z",
+              "at": "2026-08-09T12:38:41.051Z",
               "partySize": 2
             }
           ],
@@ -6349,7 +6349,7 @@
           "id": "cus_n6",
           "fullName": "Sanaa Kettani",
           "phone": "+212 665 12 66 30",
-          "firstSeenAt": "2026-03-22T11:18:07.096Z",
+          "firstSeenAt": "2026-03-22T12:38:41.051Z",
           "visitCount": 0,
           "averageSpendMad": 0,
           "totalSpendMad": 0,
@@ -6379,7 +6379,7 @@
           "fullName": "Rachid Amrani",
           "email": "rachid@darzellij.ma",
           "role": "manager",
-          "lastActive": "2026-09-03T10:48:07.096Z",
+          "lastActive": "2026-09-03T12:08:41.051Z",
           "pending": false
         },
         {
@@ -6388,7 +6388,7 @@
           "fullName": "Sofia Bennis",
           "email": "sofia@nomadrooftop.ma",
           "role": "manager",
-          "lastActive": "2026-09-03T11:00:07.096Z",
+          "lastActive": "2026-09-03T12:20:41.051Z",
           "pending": false
         },
         {
@@ -6397,7 +6397,7 @@
           "fullName": "Yassine Alami",
           "email": "yassine@darzellij.ma",
           "role": "owner",
-          "lastActive": "2026-09-03T11:16:07.096Z",
+          "lastActive": "2026-09-03T12:36:41.051Z",
           "pending": false
         }
       ],
@@ -6895,10 +6895,10 @@
               "guestPhone": "",
               "partySize": 4,
               "quotedMinutes": 45,
-              "addedAt": "2026-09-03T09:42:07.096Z",
-              "notifiedAt": "2026-09-03T10:26:07.096Z",
+              "addedAt": "2026-09-03T11:02:41.051Z",
+              "notifiedAt": "2026-09-03T11:46:41.051Z",
               "seatedAt": null,
-              "removedAt": "2026-09-03T10:40:07.096Z",
+              "removedAt": "2026-09-03T12:00:41.051Z",
               "source": "app",
               "status": "left",
               "removalReason": "parti",
@@ -6912,9 +6912,9 @@
               "guestPhone": "+212 661 55 20 11",
               "partySize": 2,
               "quotedMinutes": 15,
-              "addedAt": "2026-09-03T10:04:07.096Z",
-              "notifiedAt": "2026-09-03T10:17:07.096Z",
-              "seatedAt": "2026-09-03T10:20:07.096Z",
+              "addedAt": "2026-09-03T11:24:41.051Z",
+              "notifiedAt": "2026-09-03T11:37:41.051Z",
+              "seatedAt": "2026-09-03T11:40:41.051Z",
               "removedAt": null,
               "source": "walk_in",
               "status": "seated",
@@ -6929,8 +6929,8 @@
               "guestPhone": "+212 664 90 33 27",
               "partySize": 3,
               "quotedMinutes": 20,
-              "addedAt": "2026-09-03T11:00:07.096Z",
-              "notifiedAt": "2026-09-03T11:14:07.096Z",
+              "addedAt": "2026-09-03T12:20:41.051Z",
+              "notifiedAt": "2026-09-03T12:34:41.051Z",
               "seatedAt": null,
               "removedAt": null,
               "source": "walk_in",
@@ -6946,7 +6946,7 @@
               "guestPhone": "+212 665 71 20 04",
               "partySize": 5,
               "quotedMinutes": 40,
-              "addedAt": "2026-09-03T11:07:07.096Z",
+              "addedAt": "2026-09-03T12:27:41.051Z",
               "notifiedAt": null,
               "seatedAt": null,
               "removedAt": null,
@@ -6963,7 +6963,7 @@
               "guestPhone": "+212 662 18 70 33",
               "partySize": 2,
               "quotedMinutes": 25,
-              "addedAt": "2026-09-03T11:12:07.096Z",
+              "addedAt": "2026-09-03T12:32:41.051Z",
               "notifiedAt": null,
               "seatedAt": null,
               "removedAt": null,
@@ -6979,11 +6979,11 @@
             "maxPartyOnline": 10,
             "defaultQuoteMinutes": 20,
             "pausedReason": "Cuisine en rupture de service",
-            "updatedAt": "2026-09-03T09:48:07.096Z"
+            "updatedAt": "2026-09-03T11:08:41.051Z"
           },
           "briefing": {
             "serviceId": "svc_nomad_current",
-            "serviceLabel": "Petit-déjeuner",
+            "serviceLabel": "Déjeuner",
             "date": "2026-09-03",
             "covers": 14,
             "bookings": 3,
@@ -6996,7 +6996,7 @@
                 "author": "Sofia Bennis",
                 "body": "DJ résident jusqu'à 1 h, invité international à partir de 1 h — carré VIP réservé à sa table.",
                 "pinned": true,
-                "createdAt": "2026-09-03T07:18:07.096Z"
+                "createdAt": "2026-09-03T08:38:41.051Z"
               },
               {
                 "id": "nm_sn_2",
@@ -7006,7 +7006,7 @@
                 "author": "Sofia Bennis",
                 "body": "Rupture sur le mezcal. Proposer le tequila reposado en remplacement.",
                 "pinned": false,
-                "createdAt": "2026-09-03T09:18:07.096Z"
+                "createdAt": "2026-09-03T10:38:41.051Z"
               }
             ],
             "guests": [
@@ -7015,7 +7015,7 @@
                 "customerId": null,
                 "guestName": "Leïla Fassi",
                 "partySize": 4,
-                "at": "2026-09-03T11:43:07.096Z",
+                "at": "2026-09-03T13:03:41.051Z",
                 "zone": "Terrasse toit",
                 "tags": [],
                 "preferences": [],
@@ -7029,7 +7029,7 @@
                 "customerId": null,
                 "guestName": "Anas Berrada",
                 "partySize": 2,
-                "at": "2026-09-03T12:13:07.096Z",
+                "at": "2026-09-03T13:33:41.051Z",
                 "zone": null,
                 "tags": [],
                 "preferences": [],
@@ -7043,7 +7043,7 @@
                 "customerId": null,
                 "guestName": "Groupe Anfa",
                 "partySize": 8,
-                "at": "2026-09-03T12:48:07.096Z",
+                "at": "2026-09-03T14:08:41.051Z",
                 "zone": "Bar",
                 "tags": [],
                 "preferences": [],
@@ -8556,7 +8556,7 @@
                 ]
               },
               "memberCount": 4,
-              "updatedAt": "2026-08-28T11:18:07.096Z"
+              "updatedAt": "2026-08-28T12:38:41.051Z"
             },
             {
               "id": "nm_sg_vip",
@@ -8569,7 +8569,7 @@
                 ]
               },
               "memberCount": 2,
-              "updatedAt": "2026-08-28T11:18:07.096Z"
+              "updatedAt": "2026-08-28T12:38:41.051Z"
             },
             {
               "id": "nm_sg_winback",
@@ -8579,7 +8579,7 @@
                 "lastVisitAfterDays": 90
               },
               "memberCount": 3,
-              "updatedAt": "2026-08-28T11:18:07.096Z"
+              "updatedAt": "2026-08-28T12:38:41.051Z"
             }
           ],
           "tagsByCustomer": {
@@ -8718,7 +8718,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-NM_XP_1_TK0",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-14T11:18:07.096Z"
+                  "purchasedAt": "2026-08-14T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_1_tk1",
@@ -8731,7 +8731,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-NM_XP_1_TK1",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-15T11:18:07.096Z"
+                  "purchasedAt": "2026-08-15T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_1_tk2",
@@ -8744,7 +8744,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-NM_XP_1_TK2",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-16T11:18:07.096Z"
+                  "purchasedAt": "2026-08-16T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_1_tk3",
@@ -8759,7 +8759,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-NM_XP_1_TK3",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-17T11:18:07.096Z"
+                  "purchasedAt": "2026-08-17T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_1_tk4",
@@ -8772,7 +8772,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-NM_XP_1_TK4",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-18T11:18:07.096Z"
+                  "purchasedAt": "2026-08-18T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_1_tk5",
@@ -8785,7 +8785,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-NM_XP_1_TK5",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-19T11:18:07.096Z"
+                  "purchasedAt": "2026-08-19T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_1_tk6",
@@ -8800,7 +8800,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-NM_XP_1_TK6",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-20T11:18:07.096Z"
+                  "purchasedAt": "2026-08-20T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_1_tk7",
@@ -8813,7 +8813,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-NM_XP_1_TK7",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-21T11:18:07.096Z"
+                  "purchasedAt": "2026-08-21T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_1_tk8",
@@ -8826,7 +8826,7 @@
                   "status": "paye",
                   "qrCode": "LYFE-NM_XP_1_TK8",
                   "checkedInAt": null,
-                  "purchasedAt": "2026-08-22T11:18:07.096Z"
+                  "purchasedAt": "2026-08-22T12:38:41.051Z"
                 }
               ],
               "seatsSold": 13,
@@ -8864,8 +8864,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK0",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-14T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-14T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk1",
@@ -8877,8 +8877,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK1",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-15T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-15T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk2",
@@ -8890,8 +8890,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK2",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-16T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-16T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk3",
@@ -8905,8 +8905,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK3",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-17T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-17T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk4",
@@ -8918,8 +8918,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK4",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-18T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-18T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk5",
@@ -8931,8 +8931,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK5",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-19T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-19T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk6",
@@ -8946,8 +8946,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK6",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-20T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-20T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk7",
@@ -8959,8 +8959,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK7",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-21T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-21T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk8",
@@ -8972,8 +8972,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK8",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-22T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-22T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk9",
@@ -8987,8 +8987,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK9",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-23T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-23T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk10",
@@ -9000,8 +9000,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK10",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-24T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-24T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk11",
@@ -9013,8 +9013,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK11",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-25T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-25T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk12",
@@ -9028,8 +9028,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK12",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-26T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-26T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk13",
@@ -9041,8 +9041,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK13",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-27T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-27T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk14",
@@ -9054,8 +9054,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK14",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-28T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-28T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk15",
@@ -9069,8 +9069,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK15",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-29T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-29T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk16",
@@ -9082,8 +9082,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK16",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-30T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-30T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk17",
@@ -9095,8 +9095,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK17",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-08-31T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-08-31T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk18",
@@ -9110,8 +9110,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK18",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-01T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-01T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk19",
@@ -9123,8 +9123,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK19",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-02T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-02T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk20",
@@ -9136,8 +9136,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK20",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-03T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-03T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk21",
@@ -9151,8 +9151,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK21",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-04T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-04T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk22",
@@ -9164,8 +9164,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK22",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-05T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-05T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk23",
@@ -9177,8 +9177,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK23",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-06T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-06T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk24",
@@ -9192,8 +9192,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK24",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-07T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-07T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk25",
@@ -9205,8 +9205,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK25",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-08T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-08T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk26",
@@ -9218,8 +9218,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK26",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-09T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-09T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk27",
@@ -9233,8 +9233,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK27",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-10T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-10T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk28",
@@ -9246,8 +9246,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK28",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-11T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-11T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk29",
@@ -9259,8 +9259,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK29",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-12T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-12T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk30",
@@ -9274,8 +9274,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK30",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-13T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-13T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk31",
@@ -9287,8 +9287,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK31",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-14T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-14T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk32",
@@ -9300,8 +9300,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK32",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-15T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-15T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk33",
@@ -9315,8 +9315,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK33",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-16T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-16T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk34",
@@ -9328,8 +9328,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK34",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-17T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-17T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk35",
@@ -9341,8 +9341,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK35",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-18T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-18T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk36",
@@ -9356,8 +9356,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK36",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-19T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-19T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk37",
@@ -9369,8 +9369,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK37",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-20T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-20T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk38",
@@ -9382,8 +9382,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK38",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-21T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-21T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk39",
@@ -9397,8 +9397,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK39",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-22T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-22T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk40",
@@ -9410,8 +9410,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK40",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-23T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-23T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk41",
@@ -9423,8 +9423,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK41",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-24T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-24T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk42",
@@ -9438,8 +9438,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK42",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-25T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-25T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk43",
@@ -9451,8 +9451,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK43",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-26T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-26T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk44",
@@ -9464,8 +9464,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK44",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-27T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-27T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk45",
@@ -9479,8 +9479,8 @@
                   "amountMad": 500,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK45",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-28T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-28T12:38:41.051Z"
                 },
                 {
                   "id": "nm_xp_2_tk46",
@@ -9492,8 +9492,8 @@
                   "amountMad": 250,
                   "status": "utilise",
                   "qrCode": "LYFE-NM_XP_2_TK46",
-                  "checkedInAt": "2026-08-24T11:18:07.096Z",
-                  "purchasedAt": "2026-09-29T11:18:07.096Z"
+                  "checkedInAt": "2026-08-24T12:38:41.051Z",
+                  "purchasedAt": "2026-09-29T12:38:41.051Z"
                 }
               ],
               "seatsSold": 70,
@@ -9546,7 +9546,7 @@
                   "qrCode": "LYFE-NM_GLE_7",
                   "checkedInAt": null,
                   "checkedInCount": 0,
-                  "addedAt": "2026-08-29T11:18:07.096Z"
+                  "addedAt": "2026-08-29T12:38:41.051Z"
                 },
                 {
                   "id": "nm_gle_1",
@@ -9560,7 +9560,7 @@
                   "qrCode": "LYFE-NM_GLE_1",
                   "checkedInAt": null,
                   "checkedInCount": 0,
-                  "addedAt": "2026-08-30T11:18:07.096Z"
+                  "addedAt": "2026-08-30T12:38:41.051Z"
                 },
                 {
                   "id": "nm_gle_3",
@@ -9574,7 +9574,7 @@
                   "qrCode": "LYFE-NM_GLE_3",
                   "checkedInAt": null,
                   "checkedInCount": 0,
-                  "addedAt": "2026-08-28T11:18:07.096Z"
+                  "addedAt": "2026-08-28T12:38:41.051Z"
                 },
                 {
                   "id": "nm_gle_9",
@@ -9588,7 +9588,7 @@
                   "qrCode": "LYFE-NM_GLE_9",
                   "checkedInAt": null,
                   "checkedInCount": 0,
-                  "addedAt": "2026-08-27T11:18:07.096Z"
+                  "addedAt": "2026-08-27T12:38:41.051Z"
                 }
               ]
             },
@@ -9635,7 +9635,7 @@
                   "qrCode": "LYFE-NM_GLE_0",
                   "checkedInAt": null,
                   "checkedInCount": 0,
-                  "addedAt": "2026-08-31T11:18:07.096Z"
+                  "addedAt": "2026-08-31T12:38:41.051Z"
                 },
                 {
                   "id": "nm_gle_10",
@@ -9649,7 +9649,7 @@
                   "qrCode": "LYFE-NM_GLE_10",
                   "checkedInAt": null,
                   "checkedInCount": 0,
-                  "addedAt": "2026-08-31T11:18:07.096Z"
+                  "addedAt": "2026-08-31T12:38:41.051Z"
                 },
                 {
                   "id": "nm_gle_6",
@@ -9663,7 +9663,7 @@
                   "qrCode": "LYFE-NM_GLE_6",
                   "checkedInAt": null,
                   "checkedInCount": 0,
-                  "addedAt": "2026-08-30T11:18:07.096Z"
+                  "addedAt": "2026-08-30T12:38:41.051Z"
                 },
                 {
                   "id": "nm_gle_4",
@@ -9677,7 +9677,7 @@
                   "qrCode": "LYFE-NM_GLE_4",
                   "checkedInAt": null,
                   "checkedInCount": 0,
-                  "addedAt": "2026-08-27T11:18:07.096Z"
+                  "addedAt": "2026-08-27T12:38:41.051Z"
                 }
               ]
             },
@@ -9724,7 +9724,7 @@
                   "qrCode": "LYFE-NM_GLE_11",
                   "checkedInAt": null,
                   "checkedInCount": 0,
-                  "addedAt": "2026-08-30T11:18:07.096Z"
+                  "addedAt": "2026-08-30T12:38:41.051Z"
                 },
                 {
                   "id": "nm_gle_2",
@@ -9736,9 +9736,9 @@
                   "promoterId": null,
                   "promoterName": null,
                   "qrCode": "LYFE-NM_GLE_2",
-                  "checkedInAt": "2026-08-27T11:18:07.096Z",
+                  "checkedInAt": "2026-08-27T12:38:41.051Z",
                   "checkedInCount": 3,
-                  "addedAt": "2026-08-29T11:18:07.096Z"
+                  "addedAt": "2026-08-29T12:38:41.051Z"
                 },
                 {
                   "id": "nm_gle_8",
@@ -9750,9 +9750,9 @@
                   "promoterId": null,
                   "promoterName": null,
                   "qrCode": "LYFE-NM_GLE_8",
-                  "checkedInAt": "2026-08-27T11:18:07.096Z",
+                  "checkedInAt": "2026-08-27T12:38:41.051Z",
                   "checkedInCount": 1,
-                  "addedAt": "2026-08-28T11:18:07.096Z"
+                  "addedAt": "2026-08-28T12:38:41.051Z"
                 },
                 {
                   "id": "nm_gle_5",
@@ -9764,9 +9764,9 @@
                   "promoterId": null,
                   "promoterName": null,
                   "qrCode": "LYFE-NM_GLE_5",
-                  "checkedInAt": "2026-08-27T11:18:07.096Z",
+                  "checkedInAt": "2026-08-27T12:38:41.051Z",
                   "checkedInCount": 2,
-                  "addedAt": "2026-08-31T11:18:07.096Z"
+                  "addedAt": "2026-08-31T12:38:41.051Z"
                 }
               ]
             }
@@ -10037,7 +10037,7 @@
               "amountMad": 7000,
               "status": "demande",
               "processorRef": null,
-              "requestedAt": "2026-09-02T11:18:07.096Z",
+              "requestedAt": "2026-09-02T12:38:41.051Z",
               "paidAt": null,
               "settledAt": null,
               "failureReason": ""
@@ -10052,8 +10052,8 @@
               "amountMad": 1800,
               "status": "paye",
               "processorRef": "PZ-NM-p_2",
-              "requestedAt": "2026-08-30T11:18:07.096Z",
-              "paidAt": "2026-08-30T11:18:07.096Z",
+              "requestedAt": "2026-08-30T12:38:41.051Z",
+              "paidAt": "2026-08-30T12:38:41.051Z",
               "settledAt": null,
               "failureReason": ""
             },
@@ -10067,8 +10067,8 @@
               "amountMad": 1800,
               "status": "paye",
               "processorRef": "PZ-NM-p_1",
-              "requestedAt": "2026-08-29T11:18:07.096Z",
-              "paidAt": "2026-08-29T11:18:07.096Z",
+              "requestedAt": "2026-08-29T12:38:41.051Z",
+              "paidAt": "2026-08-29T12:38:41.051Z",
               "settledAt": null,
               "failureReason": ""
             },
@@ -10082,7 +10082,7 @@
               "amountMad": 750,
               "status": "echoue",
               "processorRef": "PZ-NM-p_5",
-              "requestedAt": "2026-08-28T11:18:07.096Z",
+              "requestedAt": "2026-08-28T12:38:41.051Z",
               "paidAt": null,
               "settledAt": null,
               "failureReason": "Fonds insuffisants"
@@ -10097,9 +10097,9 @@
               "amountMad": 7000,
               "status": "capture",
               "processorRef": "PZ-NM-p_4",
-              "requestedAt": "2026-08-25T11:18:07.096Z",
-              "paidAt": "2026-08-25T11:18:07.096Z",
-              "settledAt": "2026-09-02T11:18:07.096Z",
+              "requestedAt": "2026-08-25T12:38:41.051Z",
+              "paidAt": "2026-08-25T12:38:41.051Z",
+              "settledAt": "2026-09-02T12:38:41.051Z",
               "failureReason": ""
             }
           ],
@@ -10109,7 +10109,7 @@
             "noShowFeeMad": 500,
             "guestMessage": "Annulation gratuite jusqu'à 24 h avant votre venue. Passé ce délai, des frais peuvent s'appliquer. En cas d'absence, le montant indiqué au moment de la réservation sera prélevé.",
             "version": 2,
-            "updatedAt": "2026-08-09T11:18:07.096Z"
+            "updatedAt": "2026-08-09T12:38:41.051Z"
           },
           "cancellations": [
             {
@@ -10122,7 +10122,7 @@
               "feeMad": 300,
               "waived": false,
               "disputed": false,
-              "at": "2026-08-28T11:18:07.096Z"
+              "at": "2026-08-28T12:38:41.051Z"
             },
             {
               "id": "nm_cx_2",
@@ -10134,7 +10134,7 @@
               "feeMad": 500,
               "waived": false,
               "disputed": true,
-              "at": "2026-08-21T11:18:07.096Z"
+              "at": "2026-08-21T12:38:41.051Z"
             },
             {
               "id": "nm_cx_3",
@@ -10146,7 +10146,7 @@
               "feeMad": 0,
               "waived": false,
               "disputed": false,
-              "at": "2026-08-15T11:18:07.096Z"
+              "at": "2026-08-15T12:38:41.051Z"
             }
           ],
           "transactions": [],
@@ -10187,7 +10187,7 @@
               "status": "envoyee",
               "automation": "remerciement",
               "scheduledFor": null,
-              "sentAt": "2026-09-02T11:18:07.096Z",
+              "sentAt": "2026-09-02T12:38:41.051Z",
               "unitCostMad": 0.18,
               "recipients": 64,
               "delivered": 63,
@@ -10208,7 +10208,7 @@
               "status": "envoyee",
               "automation": "",
               "scheduledFor": null,
-              "sentAt": "2026-08-31T11:18:07.096Z",
+              "sentAt": "2026-08-31T12:38:41.051Z",
               "unitCostMad": 0.18,
               "recipients": 214,
               "delivered": 210,
@@ -10229,7 +10229,7 @@
               "status": "envoyee",
               "automation": "",
               "scheduledFor": null,
-              "sentAt": "2026-08-23T11:18:07.096Z",
+              "sentAt": "2026-08-23T12:38:41.051Z",
               "unitCostMad": 0.35,
               "recipients": 88,
               "delivered": 86,
@@ -10251,7 +10251,7 @@
               "preview": "Votre table est prête, présentez-vous à l'entrée.",
               "status": "delivre",
               "failureReason": "",
-              "at": "2026-09-03T11:14:07.096Z"
+              "at": "2026-09-03T12:34:41.051Z"
             },
             {
               "id": "nm_ml_1",
@@ -10264,7 +10264,7 @@
               "preview": "Votre table de 4 est confirmée, terrasse toit, 22h.",
               "status": "lu",
               "failureReason": "",
-              "at": "2026-09-03T07:18:07.096Z"
+              "at": "2026-09-03T08:38:41.051Z"
             },
             {
               "id": "nm_ml_2",
@@ -10277,7 +10277,7 @@
               "preview": "Vous êtes sur la liste de vendredi. Gratuit avant 23 h.",
               "status": "delivre",
               "failureReason": "",
-              "at": "2026-09-02T20:18:07.096Z"
+              "at": "2026-09-02T21:38:41.051Z"
             },
             {
               "id": "nm_ml_4",
@@ -10290,7 +10290,7 @@
               "preview": "Merci de régler l'acompte de 7 000 MAD pour confirmer le carré VIP.",
               "status": "envoye",
               "failureReason": "",
-              "at": "2026-09-02T11:18:07.096Z"
+              "at": "2026-09-02T12:38:41.051Z"
             },
             {
               "id": "nm_ml_5",
@@ -10303,14 +10303,14 @@
               "preview": "Merci pour votre soirée — laissez-nous un avis.",
               "status": "echoue",
               "failureReason": "Adresse inexistante",
-              "at": "2026-08-31T23:18:07.096Z"
+              "at": "2026-09-01T00:38:41.051Z"
             }
           ],
           "suppressions": [
             {
               "contact": "anas.berrada@gmail.com",
               "reason": "Désinscription depuis un email",
-              "at": "2026-07-17T11:18:07.096Z"
+              "at": "2026-07-17T12:38:41.051Z"
             }
           ],
           "consent": {
@@ -10345,7 +10345,7 @@
               ],
               "enabled": true,
               "version": 1,
-              "updatedAt": "2026-08-23T11:18:07.096Z"
+              "updatedAt": "2026-08-23T12:38:41.051Z"
             },
             {
               "id": "nm_sd_night",
@@ -10371,7 +10371,7 @@
               ],
               "enabled": true,
               "version": 1,
-              "updatedAt": "2026-08-23T11:18:07.096Z"
+              "updatedAt": "2026-08-23T12:38:41.051Z"
             }
           ],
           "pacing": {
@@ -10386,7 +10386,7 @@
             "onlineBookingOpen": true,
             "reopenAt": null,
             "version": 3,
-            "updatedAt": "2026-08-30T11:18:07.096Z"
+            "updatedAt": "2026-08-30T12:38:41.051Z"
           }
         },
         "surveyConfig": {
@@ -10422,8 +10422,8 @@
         "subscription": {
           "plan": "annual",
           "status": "actif",
-          "trialEndsAt": "2025-10-18T11:18:07.096Z",
-          "renewsAt": "2026-10-19T11:18:07.096Z",
+          "trialEndsAt": "2025-10-18T12:38:41.051Z",
+          "renewsAt": "2026-10-19T12:38:41.051Z",
           "priceMad": 14400,
           "paymentMethod": "Carte •••• 4417",
           "invoices": [
@@ -10432,14 +10432,14 @@
               "reference": "LYFE-2026-0182",
               "amountMad": 14400,
               "status": "payee",
-              "issuedOn": "2025-10-19T11:18:07.096Z"
+              "issuedOn": "2025-10-19T12:38:41.051Z"
             },
             {
               "id": "nm_inv_b",
               "reference": "LYFE-2025-0611",
               "amountMad": 12000,
               "status": "payee",
-              "issuedOn": "2024-10-19T11:18:07.096Z"
+              "issuedOn": "2024-10-19T12:38:41.051Z"
             }
           ],
           "usage": {
@@ -10457,8 +10457,8 @@
             "subject": "Acompte marqué échoué alors que le client a été débité",
             "body": "Détail transmis à l'équipe LYFE avec les captures d'écran.",
             "status": "en_cours",
-            "createdAt": "2026-09-01T11:18:07.096Z",
-            "updatedAt": "2026-09-02T11:18:07.096Z"
+            "createdAt": "2026-09-01T12:38:41.051Z",
+            "updatedAt": "2026-09-02T12:38:41.051Z"
           },
           {
             "id": "nm_sup_a",
@@ -10467,8 +10467,8 @@
             "subject": "Une réservation de l'app n'apparaît pas dans le carnet",
             "body": "Détail transmis à l'équipe LYFE avec les captures d'écran.",
             "status": "resolu",
-            "createdAt": "2026-08-25T11:18:07.096Z",
-            "updatedAt": "2026-08-26T11:18:07.096Z"
+            "createdAt": "2026-08-25T12:38:41.051Z",
+            "updatedAt": "2026-08-26T12:38:41.051Z"
           }
         ],
         "spendByCustomer": {}

@@ -13,7 +13,18 @@ import { Specimen } from "../Shell";
 // production. Rendering them side by side here — from literal props, no
 // data layer — is the only way they stay maintained.
 
-const FORCED_ROUTES = ["/events", "/team", "/settlements", "/visibilite"];
+// A few of each side. The two workspaces reach the same three states by
+// different mechanisms — the event side swaps a client repository, the
+// venue side wraps the server one — and the point of listing both here
+// is that a reviewer should not have to know which.
+const FORCED_ROUTES = [
+  "/events",
+  "/team",
+  "/restaurant",
+  "/restaurant/liste-attente",
+  "/restaurant/acomptes",
+  "/restaurant/parametres",
+];
 
 export function StatesSection() {
   const base = {
@@ -32,7 +43,11 @@ export function StatesSection() {
         <p className="text-body text-ink-soft mb-4 max-w-2xl">
           Chaque écran accepte un paramètre d&apos;URL qui force son état.
           Sans lui, un état d&apos;erreur ne se voit qu&apos;en cassant
-          quelque chose — donc il ne se voit jamais, et il pourrit.
+          quelque chose — donc il ne se voit jamais, et il pourrit. Les
+          trente écrans de l&apos;espace établissement l&apos;acceptent
+          aussi&nbsp;: côté serveur le dépôt est enveloppé plutôt
+          qu&apos;échangé, et l&apos;écran d&apos;erreur forcé est
+          exactement celui qu&apos;une vraie panne affiche.
         </p>
         <div className="flex flex-col gap-2">
           {DEMO_STATES.map((state) => (

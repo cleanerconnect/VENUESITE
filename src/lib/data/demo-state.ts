@@ -1,6 +1,10 @@
-"use client";
-
 // The demo state switch.
+//
+// Deliberately neither "use client" nor "server-only": both workspaces
+// read it, from opposite sides of the boundary. Marking it client-only
+// turned `parseDemoState` into a client reference, which a server
+// component cannot call — the failure looked like a broken screen
+// rather than a misplaced directive, which is why it is worth a line.
 //
 // An external team reproducing this portal has to be able to *see* what
 // a failed load looks like, and what an empty reservation day looks

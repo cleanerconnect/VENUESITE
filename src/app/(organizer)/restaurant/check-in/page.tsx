@@ -2,6 +2,11 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
+import { demoRepository } from "@/lib/data/demo-repository";
+import { DEMO_STATE_PARAM, parseDemoState } from "@/lib/data/demo-state";
+import { RepositoryError } from "@/lib/data/repository";
+import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
+import { ScreenError } from "@/components/restaurant/ScreenError";
 import { CheckInScreen } from "@/components/restaurant/CheckInScreen";
 
 // Check-in.
@@ -19,11 +24,24 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Check-in · LYFE" };
 
-export default async function CheckInPage() {
+interface Props {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function CheckInPage({ searchParams }: Props) {
   const session = await resolveSession();
   if (!session) redirect("/login");
 
-  const repo = getRestaurantRepository();
+  const query = await searchParams;
+  const demo = parseDemoState(
+    Array.isArray(query[DEMO_STATE_PARAM])
+      ? query[DEMO_STATE_PARAM][0]
+      : query[DEMO_STATE_PARAM],
+  );
+  if (demo === "chargement") return <ScreenSkeleton />;
+
+  const repo = demoRepository(getRestaurantRepository(), demo);
+  try {
   const [overview, settings] = await Promise.all([
     repo.getOverview(session.venueId),
     repo.getVenueSettings(session.venueId),
@@ -46,4 +64,11 @@ export default async function CheckInPage() {
       }))}
     />
   );
+  } catch (error) {
+    // Only a repository failure becomes the error screen. `notFound()`
+    // and `redirect()` throw too, and swallowing those would turn a
+    // deliberate 404 into a misleading "something went wrong".
+    if (!(error instanceof RepositoryError)) throw error;
+    return <ScreenError reference={error.code} />;
+  }
 }

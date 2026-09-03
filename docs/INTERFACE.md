@@ -20,8 +20,10 @@ app/
 │  ├─ error.tsx             one boundary for every route in the group
 │  ├─ dashboard/ events/ audiences/ …      event workspace
 │  └─ restaurant/                          venue workspace
-│     ├─ [[...section]]/    every spec screen, one route
-│     ├─ reglages/          the write surface
+│     ├─ [[...section]]/    the twenty-four spec screens, one route
+│     ├─ ma-fiche/ menu/ equipe/   form surfaces over one component
+│     ├─ check-in/          the door: camera, code, name search
+│     ├─ clients/[id]/      Fiche client, built per guest
 │     └─ loading.tsx
 ├─ login/ splash/ contact/ styleguide/     outside the shell
 └─ api/                    assistant, assets, webhooks, session
@@ -108,11 +110,22 @@ takes only a member. A link to a screen that does not exist is a type
 error, and a slug added without a screen fails the build. Use it —
 do not write `/restaurant/…` by hand.
 
-**Settings is a route, not a spec screen.** Forms are not blocks, and
-pretending they were would mean inventing a block type per field. The
-spec engine owns the read surfaces; `restaurant/reglages` owns the write
-surfaces. `RESTAURANT_SETTINGS_PATH` is exported so the nav still has one
-source.
+**Six screens are routes, not specs.** Drag reordering, file upload and a
+live camera are not blocks, and inventing a block type per field would be
+worse than a page. Ma fiche, Menu and Équipe et rôles are three routes
+over one form component, scoped to their own panel; Check-in and Fiche
+client have their own; the spec engine owns the other twenty-four.
+
+`SpecSlug = Exclude<RestaurantSlug, FormRouteSlug>` keeps the registry a
+total map over the rest, so a missing builder is still a compile error.
+
+**Configuration is not a fork.** `venue_settings.configuration` decides
+whether the Vie nocturne group exists and which words the screens use. It
+is resolved once, in the workspace layout, and published through
+`WorkspaceAccessProvider` — the sidebar, the mobile drawer and the Plus
+sheet all read the same value rather than each guessing. There is no
+per-configuration screen list anywhere, and adding one would be the wrong
+answer to whatever question prompted it.
 
 ---
 

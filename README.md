@@ -62,12 +62,29 @@ resolved from their account, not from a separate URL.
 tickets. Ticketing, audiences, promo codes, boosts, door scanning,
 post-event reports, payouts. Roles: `owner`, `admin`, `scanner`.
 
-**Espace lieux** — restaurants and bars that take bookings. The service
-in progress, the booking book, availability, the menu as the app shows
-it, reviews, analytics, payouts. Roles: `owner`, `manager`, `staff`.
+**Espace établissement** — restaurants and bars that take bookings.
+Thirty screens in ten groups: the day, the service floor, the guest base,
+the app listing, growth, nightlife, payments, reporting, configuration
+and the account. Roles: `owner`, `manager`, `staff`. Built against
+`docs/TARGET_SPEC.md`, which is the document to read before deciding
+whether something belongs.
 
 An account holding both switches between them in the sidebar. An account
 holding one is never offered the other.
+
+### One product, two configurations
+
+`Paramètres → Type de configuration` is `Restaurant`, `Lounge` or both.
+Lounge adds the **Vie nocturne** group — guest lists, tables with a
+minimum spend, promoters — renames covers to people and services to time
+bands, and adds dress code and age policy to Ma fiche. Nothing else
+changes: there is no per-configuration screen list anywhere in the
+codebase, and there should never be one.
+
+Both are seeded. **Dar Zellij** is a restaurant; **Nomad Rooftop** is a
+lounge, and is deliberately seeded with no Lyfe Pay history, so the rule
+that spend appears only where a transaction source exists can be checked
+rather than taken on trust — open Lyfe Pay on each and count the tiles.
 
 ---
 
@@ -96,14 +113,14 @@ src/
 │  ├─ types/ copy/ charts/ utils/
 └─ middleware.ts          the server-side gate
 db/
-├─ schema.sql             28 tables, Postgres/SQLite intersection
+├─ schema.sql             63 tables, Postgres/SQLite intersection
 ├─ seed.mjs               the demo dataset
 └─ snapshot.mjs           captures it into src/lib/data/static/
 ```
 
 ### Two ideas worth ten minutes
 
-**The venue workspace has no page files.** A screen is a pure function
+**Most venue screens have no page file.** A screen is a pure function
 `(context) => ScreenSpec`, where a `ScreenSpec` is an ordered list of
 typed blocks, rendered by a block registry. Specs are plain JSON — an
 action is `{ kind: "command", command: "…" }`, an icon is a string key —
@@ -111,6 +128,18 @@ so a backend could serve them unchanged. Adding a screen is a builder
 plus an entry in a typed slug list; a link to a screen that does not
 exist is a compile error. See `/styleguide#blocks`, which renders every
 block type from a hand-written spec.
+
+Six of the thirty are routes instead: Ma fiche, Menu, Équipe et rôles,
+Check-in, Fiche client and the workspace index. Drag reordering, file
+upload and a live camera are not blocks, and inventing a block type per
+field would be worse than a page. A type-level exclusion keeps the
+registry a total map anyway.
+
+**A button carries a name, not a function.** Since a spec is JSON, an
+action is a command *name*; the screen declares the form that name opens;
+and one server action switches on the name against a list both halves
+import. A button cannot dispatch a verb the server has never heard of,
+and a verb with no handler says so rather than doing nothing.
 
 **Everything reads through a repository.** `RestaurantRepository` and
 `EventRepository` are the only ways a screen gets data. Three drivers sit

@@ -13,6 +13,9 @@ import {
 } from "@/lib/restaurant/vocabulary";
 import { DIETARY_TAG, PRICE_RANGE_LABEL, VENUE_FEATURE } from "@/lib/types/restaurant";
 import { ICON_KEYS } from "@/lib/dashboard/icons";
+import { CONFIGURATION_LABEL, VENUE_CONFIGS } from "@/lib/venue/config";
+import type { VenueConfiguration } from "@/lib/types/venue-operations";
+import { hasNightlife } from "@/lib/venue/config";
 import { Specimen } from "../Shell";
 
 // The domain vocabulary, rendered from the same maps the app reads.
@@ -72,6 +75,56 @@ export function VocabularySection() {
           </dl>
         </Specimen>
       ))}
+
+      <Specimen
+        name="Configuration"
+        note="le seul réglage qui ajoute un groupe de navigation — et ce qu'il renomme"
+      >
+        <p className="text-body text-ink-soft mb-4 max-w-2xl">
+          Boissons n&apos;est pas un second produit. La configuration active
+          Vie nocturne, renomme les couverts en personnes et les services en
+          créneaux, ajoute les types de table comme inventaire, et ajoute le
+          dress code et l&apos;âge minimum à Ma fiche. Rien d&apos;autre —
+          il n&apos;existe aucune liste d&apos;écrans par configuration dans
+          le code.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-[13px] min-w-[520px]">
+            <thead className="text-eyebrow text-ink-mute">
+              <tr className="border-b border-line">
+                <th className="py-2 pr-4 font-semibold">Configuration</th>
+                <th className="py-2 pr-4 font-semibold">Une place</th>
+                <th className="py-2 pr-4 font-semibold">Un sitting</th>
+                <th className="py-2 pr-4 font-semibold">Sans réservation</th>
+                <th className="py-2 font-semibold">Vie nocturne</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {(["restaurant", "lounge", "both"] as VenueConfiguration[]).map(
+                (configuration) => {
+                  const config =
+                    VENUE_CONFIGS[configuration === "lounge" ? "drinks" : "restaurant"];
+                  return (
+                    <tr key={configuration}>
+                      <td className="py-2.5 pr-4 font-semibold text-ink">
+                        {CONFIGURATION_LABEL[configuration]}
+                      </td>
+                      <td className="py-2.5 pr-4 text-ink-soft">{config.cover.many}</td>
+                      <td className="py-2.5 pr-4 text-ink-soft">{config.service.many}</td>
+                      <td className="py-2.5 pr-4 text-ink-soft">{config.walkInLabel}</td>
+                      <td className="py-2.5">
+                        <Pill tone={hasNightlife(configuration) ? "success" : "draft"}>
+                          {hasNightlife(configuration) ? "Visible" : "Absente"}
+                        </Pill>
+                      </td>
+                    </tr>
+                  );
+                },
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Specimen>
 
       <Specimen
         name="IconKey"

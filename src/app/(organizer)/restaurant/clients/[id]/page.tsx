@@ -2,6 +2,11 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
+import { demoRepository } from "@/lib/data/demo-repository";
+import { DEMO_STATE_PARAM, parseDemoState } from "@/lib/data/demo-state";
+import { RepositoryError } from "@/lib/data/repository";
+import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
+import { ScreenError } from "@/components/restaurant/ScreenError";
 import { buildCustomerScreen } from "@/lib/restaurant/customer";
 import { RestaurantSpecScreen } from "@/components/restaurant/RestaurantSpecScreen";
 
@@ -15,6 +20,7 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -25,14 +31,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${customer?.fullName ?? "Client"} · LYFE` };
 }
 
-export default async function CustomerPage({ params }: Props) {
+export default async function CustomerPage({ params, searchParams }: Props) {
   const { id } = await params;
   const session = await resolveSession();
   if (!session) redirect("/login");
 
-  const repo = getRestaurantRepository();
+  const query = await searchParams;
+  const demo = parseDemoState(
+    Array.isArray(query[DEMO_STATE_PARAM])
+      ? query[DEMO_STATE_PARAM][0]
+      : query[DEMO_STATE_PARAM],
+  );
+  if (demo === "chargement") return <ScreenSkeleton />;
+
+  const repo = demoRepository(getRestaurantRepository(), demo);
   const venueId = session.venueId;
 
+  try {
   const [customer, overview, graph, spend, desk, marketing, settings] =
     await Promise.all([
       repo.getCustomer(venueId, id),
@@ -62,4 +77,11 @@ export default async function CustomerPage({ params }: Props) {
   });
 
   return <RestaurantSpecScreen spec={spec} />;
+  } catch (error) {
+    // Only a repository failure becomes the error screen. `notFound()`
+    // and `redirect()` throw too, and swallowing those would turn a
+    // deliberate 404 into a misleading "something went wrong".
+    if (!(error instanceof RepositoryError)) throw error;
+    return <ScreenError reference={error.code} />;
+  }
 }

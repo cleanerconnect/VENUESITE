@@ -12,6 +12,11 @@ import { isRestaurantSlug, restaurantHref } from "@/lib/restaurant/slugs";
 import { redirect } from "next/navigation";
 import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
+import { demoRepository } from "@/lib/data/demo-repository";
+import { DEMO_STATE_PARAM, parseDemoState } from "@/lib/data/demo-state";
+import { RepositoryError } from "@/lib/data/repository";
+import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
+import { ScreenError } from "@/components/restaurant/ScreenError";
 import { getAdvisor } from "@/lib/ai";
 import type { AnalyticsPeriod } from "@/lib/types/business";
 import { ANALYTICS_PERIOD } from "@/lib/types/business";
@@ -62,13 +67,36 @@ export default async function RestaurantSectionPage({
   const query = await searchParams;
   const period = readPeriod(query.p);
   const comparison = readComparison(query.c);
+  const demo = parseDemoState(
+    Array.isArray(query[DEMO_STATE_PARAM])
+      ? query[DEMO_STATE_PARAM][0]
+      : query[DEMO_STATE_PARAM],
+  );
 
-  const [overview, context] = await Promise.all([
-    loadOverview(session.venueId, session.firstName),
-    loadContext(slug, session.venueId, period, comparison),
-  ]);
+  // A server render cannot stay pending, so the loading state paints the
+  // skeleton the route's own `loading.tsx` would. Same component, so what
+  // a reviewer forces is exactly what a slow request shows.
+  if (demo === "chargement") return <ScreenSkeleton />;
 
-  return <RestaurantScreen slug={slug} data={overview} context={context} />;
+  const repo = demoRepository(getRestaurantRepository(), demo);
+
+  try {
+    const [overview, context] = await Promise.all([
+      loadOverview(repo, session.venueId, session.firstName),
+      loadContext(repo, slug, session.venueId, period, comparison),
+    ]);
+    return <RestaurantScreen slug={slug} data={overview} context={context} />;
+  } catch (error) {
+    // The error state, reached either by forcing it or by a real
+    // failure. Both land here, which is the point: the forced one is
+    // not a separate screen that can drift from the real one.
+    //
+    // Only a repository failure qualifies. `notFound()` and `redirect()`
+    // throw as well, and swallowing those would turn a deliberate 404
+    // into a misleading "something went wrong".
+    if (!(error instanceof RepositoryError)) throw error;
+    return <ScreenError reference={error.code} />;
+  }
 }
 
 /** The period control lives in the URL; anything unknown falls back. */
@@ -94,12 +122,12 @@ function readComparison(raw: string | string[] | undefined): Comparison {
  * analytics queries.
  */
 async function loadContext(
+  repo: ReturnType<typeof getRestaurantRepository>,
   slug: SpecSlug,
   venueId: string,
   period: AnalyticsPeriod,
   comparison: Comparison,
 ): Promise<Omit<ScreenContext, "overview">> {
-  const repo = getRestaurantRepository();
   const needs = SCREEN_NEEDS[slug];
 
   const settings = await repo.getVenueSettings(venueId);
@@ -191,10 +219,11 @@ async function loadContext(
  * after paint reads as a layout bug, not as intelligence.
  */
 async function loadOverview(
+  repo: ReturnType<typeof getRestaurantRepository>,
   venueId: string,
   viewerFirstName: string,
 ): Promise<RestaurantOverview> {
-  const data = await getRestaurantRepository().getOverview(venueId);
+  const data = await repo.getOverview(venueId);
   data.greeting.firstName = viewerFirstName || data.greeting.firstName;
   const nudge = await getAdvisor().serviceNudge(data);
 

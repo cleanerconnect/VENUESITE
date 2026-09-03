@@ -532,8 +532,11 @@ for (let i = 0; i < 365; i += 1) {
 }
 
 [
-  ["act_n1", "guest_arrived", "Leïla Fassi", "est arrivée · 4 couverts", "res_n1", 0, 6],
-  ["act_n2", "waitlist_joined", "Youssef Alaoui", "rejoint la liste d'attente · 3 couverts", "res_nw1", 0, 14],
+  // A lounge counts people, not covers. The vocabulary belongs to the
+  // configuration, and seed copy that ignores it is the fastest way to
+  // make a bar manager conclude the screen was written for someone else.
+  ["act_n1", "guest_arrived", "Leïla Fassi", "est arrivée · 4 personnes", "res_n1", 0, 6],
+  ["act_n2", "waitlist_joined", "Youssef Alaoui", "rejoint la liste d'attente · 3 personnes", "res_nw1", 0, 14],
   ["act_n3", "review_received", "Meryem T.", "a laissé un avis 5 étoiles", null, 0, 4320],
 ].forEach(([id, type, actor, message, res, attention, mins]) =>
   insert("activity", {

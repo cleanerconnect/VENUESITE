@@ -3,7 +3,10 @@
 What a development team receives, what it can rely on, and what it has to
 build. Written to be read before the code, not after.
 
-Phase 4 (handoff completion) is reported in `docs/PHASE4.md`.
+Phase 4 (handoff completion) is reported in `docs/PHASE4.md`; Phase 5
+(completing the venue dashboard) in `docs/PHASE5.md`. The screen-by-screen
+target the venue side is built against is `docs/TARGET_SPEC.md`, and it is
+the document to read first if you are deciding whether something belongs.
 
 Companion documents:
 `docs/INTERFACE.md` (how the UI is put together) ·
@@ -28,8 +31,9 @@ which of the three data drivers is live.
 Then open **`/styleguide`**. It needs no session and no seeded database
 — every specimen renders from literal props — and it is the fastest way
 to see what exists before reading a line of code. Its "Écrans" section
-is the route index: all 33 screens, linked, with what each is for and
-what it still lacks.
+is the route index: every screen the portal ships, linked, with what each
+is for, who may open it, and — where something is missing — whether that
+is work this repo owes or a service nobody has connected yet.
 
 ---
 
@@ -43,18 +47,50 @@ labelled as such. `components/ui/` imports nothing from the data layer,
 which is what makes the styleguide possible and what keeps the
 components portable.
 
-**The spec engine.** The venue workspace's ten screens are pure functions
-returning JSON-serialisable `ScreenSpec` values, painted by a block
-registry. Adding a screen is a builder plus an entry in a typed slug
-list; the registry is a total map over that list, so a missing screen or
-a dead link is a compile error rather than a 404 in production.
+**The spec engine.** Twenty-four of the venue workspace's thirty screens
+are pure functions returning JSON-serialisable `ScreenSpec` values,
+painted by a block registry. Adding a screen is a builder plus an entry
+in a typed slug list; the registry is a total map over that list, so a
+missing screen or a dead link is a compile error rather than a 404 in
+production.
+
+The other six are routes rather than specs — Ma fiche, Menu, Équipe et
+rôles, Check-in, Fiche client and the workspace's own detail pages. Drag
+reordering, file upload and a live camera are not blocks, and inventing a
+block type per field would have been worse than a page. A type-level
+exclusion keeps the registry total anyway.
+
+**Writes are a closed list too.** A spec is JSON, so a button carries a
+command *name*; the screen carries the form that name opens, and one
+server action switches on the name against a list both halves import.
+A button cannot dispatch a verb the server has never heard of, and a
+verb with no handler says so rather than doing nothing.
 
 **The data seam.** `RestaurantRepository` is the single interface every
 read and write in the venue workspace goes through. `MockRestaurantRepository`
-implements it against a real SQLite database (`db/schema.sql`, 28 tables,
+implements it against a real SQLite database (`db/schema.sql`, 63 tables,
 seeded by `db/seed.mjs`); `HttpRestaurantRepository` implements it against
-`/api/business/*`. Integration is: fill in the HTTP adapter, flip
-`LYFE_REPOSITORY=http`, delete nothing.
+`/api/business/*`; `StaticRestaurantRepository` implements it against a
+snapshot captured from the seeded database through those same store
+functions, which is what lets a cold clone render everything with no
+infrastructure at all. Integration is: fill in the HTTP adapter, set
+`LYFE_API_BASE_URL` and `LYFE_API_TOKEN`, delete nothing.
+
+Reads arrive as bundles rather than one table at a time, because a screen
+renders one coherent snapshot and six round trips would let a counter
+disagree with the list beneath it. Writes are a typed union per bundle:
+one HTTP endpoint per surface instead of forty routes to write and forty
+to secure.
+
+**The app contract, both directions.** `lib/integrations/events.ts` is
+what the platform sends in; `lib/integrations/outbound.ts` is what the
+portal sends out. Every guest-affecting action — confirm, refuse, table
+ready, seated, deposit requested, table confirmed, guest-list check-in —
+emits the consumer-app notification *and* the tracking event through one
+helper, so "both are emitted" is a property of the code rather than a
+rule somebody has to remember. With no gateway configured the emissions
+are recorded and the console says once that nothing is being sent, which
+is better than succeeding silently.
 
 **Venue scoping.** Every query and every mutation carries `venue_id` in
 its WHERE clause, and that id comes from the resolved session, never from
@@ -96,15 +132,21 @@ they exist.
 |---|---|---|---|
 | 1 | ~~Event workspace reads fixtures directly~~ — **done in Phase 4.** What remains is the *write* path: there is no `EventRepository` mutation surface, because there is no event backend to shape one against | Creating an event, promo code or boost persists nothing | Large. The venue side is the worked example to copy |
 | 2 | No add/remove for menu items | A venue with a new dish has to call support | Small |
-| 3 | No editor for seating areas | A venue that opens a rooftop cannot list it | Small |
-| 4 | No preview of the app listing | A partner edits blind, finds out from a customer | Medium; all the data is present |
+| 3 | ~~No editor for seating areas~~ — **done in Phase 5.** Zones open and close from Ma fiche, and the write reaches the app immediately | — | — |
+| 4 | ~~No preview of the app listing~~ — **done in Phase 5.** Ma fiche renders the listing from the same values the form edits | — | — |
 | 5 | ~500 French literals inline, almost all one-off headings | A copy change means a code change | Medium, mechanical |
 | 6 | ~~`loading.tsx` only on venue routes~~ — **done in Phase 4.** Every route has loading, empty, error and denied states | — | — |
 
-Gap 1 is the one to do first. Gap 4 is the one worth arguing for: every
-listing field is edited in one place and rendered somewhere else
-entirely, and closing that loop currently runs through a customer
-complaint.
+Gap 1 is the one to do first: the venue side is now a complete worked
+example of a repository seam with three drivers, a typed action union and
+a snapshot generator, and the event side needs the same treatment for
+writes.
+
+Beyond those, six venue routes are marked **service à brancher** rather
+than partial. Nothing is missing from the portal on them; what is missing
+is Payzone, a message gateway, a review platform or a PDF extractor. The
+distinction matters because "partial" told the last reader to go looking
+for a bug that was not there.
 
 ---
 
@@ -128,6 +170,16 @@ Six things that will rot quietly if nobody defends them.
    query string, or a request body. Every new query carries it.
 6. **A copy string moves to `lib/copy/fr.ts` when a second component
    would want it.** A one-off heading stays where it reads.
+7. **Spend, revenue and average ticket appear only where a transaction
+   source exists.** Where none does, the tile is *absent* — not zero, not
+   estimated. `MoneyDesk.hasTransactionSource` is the single fact every
+   money tile in the portal keys off, and Nomad Rooftop is seeded without
+   Lyfe Pay precisely so the rule can be checked rather than asserted.
+8. **Drinks is a configuration, not a second product.** It enables the
+   Vie nocturne group, renames covers to people, adds table types as
+   inventory and adds dress code and age policy. There is no
+   per-configuration screen list anywhere in the codebase, and there
+   should never be one.
 
 ---
 

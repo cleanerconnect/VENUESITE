@@ -44,7 +44,7 @@ export function RestaurantScreen({
 }) {
   const router = useRouter();
   const { toast } = useToast();
-  const data = useHydrateRestaurant(serverData);
+  const data = useHydrateRestaurant(serverData, context.configuration);
   const closeDetail = useDetailStore((s) => s.close);
 
   // Business slices are fetched server-side and passed through unchanged;

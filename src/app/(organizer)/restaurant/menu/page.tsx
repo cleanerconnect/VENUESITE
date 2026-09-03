@@ -2,6 +2,11 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
+import { demoRepository } from "@/lib/data/demo-repository";
+import { DEMO_STATE_PARAM, parseDemoState } from "@/lib/data/demo-state";
+import { RepositoryError } from "@/lib/data/repository";
+import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
+import { ScreenError } from "@/components/restaurant/ScreenError";
 import { VenueSettings } from "@/components/settings/VenueSettings";
 
 // Venue settings.
@@ -14,17 +19,33 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Menu · LYFE" };
 
-export default async function MenuPage() {
+interface Props {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function MenuPage({ searchParams }: Props) {
   const session = await resolveSession();
   if (!session) redirect("/login");
+
+  // `?etat=` forces the three states here too, so every one of the
+  // thirty screens can be shown failing or empty on demand rather than
+  // only when something actually breaks.
+  const query = await searchParams;
+  const demo = parseDemoState(
+    Array.isArray(query[DEMO_STATE_PARAM])
+      ? query[DEMO_STATE_PARAM][0]
+      : query[DEMO_STATE_PARAM],
+  );
+  if (demo === "chargement") return <ScreenSkeleton />;
 
   // Every read goes through the repository, so this route works
   // identically on SQLite, on the static snapshot, and against a real
   // backend. It used to reach into the store — and raw SQL — directly,
   // which made it the one screen that still required a database.
-  const repo = getRestaurantRepository();
+  const repo = demoRepository(getRestaurantRepository(), demo);
   const venueId = session.venueId;
 
+  try {
   const [profile, menu, availability, photos, menuFiles, staff] =
     await Promise.all([
       repo.getVenueProfile(venueId),
@@ -76,4 +97,11 @@ export default async function MenuPage() {
       staff={staff}
     />
   );
+  } catch (error) {
+    // Only a repository failure becomes the error screen. `notFound()`
+    // and `redirect()` throw too, and swallowing those would turn a
+    // deliberate 404 into a misleading "something went wrong".
+    if (!(error instanceof RepositoryError)) throw error;
+    return <ScreenError reference={error.code} />;
+  }
 }

@@ -118,7 +118,14 @@ import {
 import { COUNT, MAD } from "@/lib/dashboard/formats";
 import { coversIn, dayLabel, hm, initialsOf, mobileTiles, money } from "./format";
 
-const covers = (n: number) => `${n} ${n > 1 ? "couverts" : "couvert"}`;
+/**
+ * The venue's word for a booked head.
+ *
+ * Takes the configuration rather than assuming a restaurant: this used
+ * to be a private literal, which is exactly how a lounge ended up
+ * counting "couverts" on its own home screen.
+ */
+const covers = coversIn;
 
 // ── Dashboard ────────────────────────────────────────────────
 
@@ -126,7 +133,9 @@ export function buildDashboardScreen(
   data: RestaurantOverview,
   floor: ServiceFloor,
   desk: MoneyDesk,
+  configuration: VenueConfiguration,
 ): ScreenSpec {
+  const vocabulary = configFor(configuration);
   const service = data.currentService;
   const inService = service.state === "open" || service.state === "peak";
   const remainingCovers = Math.max(0, service.capacity - service.bookedCovers);
@@ -161,7 +170,7 @@ export function buildDashboardScreen(
           ]
         : []),
       {
-        label: "Couverts arrivés",
+        label: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} arrivés`,
         metric: {
           value: service.arrivedCovers,
           format: COUNT,
@@ -170,14 +179,14 @@ export function buildDashboardScreen(
         },
       },
       {
-        label: "Couverts disponibles",
+        label: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} disponibles`,
         metric: { value: remainingCovers, format: COUNT, animate: true },
       },
     ],
     footnote: {
       // Covers, not bookings — the KPI tile beside it counts incidents,
       // and two unlabelled numbers that disagree read as a bug.
-      text: `${service.bookedCovers} couverts réservés sur ${service.capacity} · ${service.noShowCovers} couverts absents.`,
+      text: `${covers(configuration, service.bookedCovers)} réservés sur ${service.capacity} · ${covers(configuration, service.noShowCovers)} absents.`,
       badge: {
         label: `${Math.round((service.bookedCovers / Math.max(1, service.capacity)) * 100)} % engagé`,
         tone: "violet",
@@ -262,7 +271,7 @@ export function buildDashboardScreen(
     tiles: [
       {
         id: "covers",
-        label: "Couverts aujourd'hui",
+        label: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} aujourd'hui`,
         tone: "sand",
         span: 2,
         icon: "users",
@@ -366,7 +375,9 @@ export function buildDashboardScreen(
       label: "Tout voir →",
       href: restaurantHref("reservations"),
     },
-    rows: data.upcomingReservations.map((r) => reservationRow(r, data.zones)),
+    rows: data.upcomingReservations.map((r) =>
+      reservationRow(r, data.zones, configuration),
+    ),
     empty: {
       title: "Plus personne d'attendu",
       body: "Le carnet est vide pour la fin de ce service.",
@@ -393,7 +404,7 @@ export function buildDashboardScreen(
         id: `req-${r.id}`,
         title: r.guestName,
         initials: initialsOf(r.guestName),
-        meta: `${hm(r.at)} · ${covers(r.partySize)} · demande en attente`,
+        meta: `${hm(r.at)} · ${covers(configuration, r.partySize)} · demande en attente`,
         badges: [{ label: "À CONFIRMER", tone: "warning" as const }],
         facets: { queue: "requests" },
         actions: [
@@ -425,7 +436,7 @@ export function buildDashboardScreen(
         id: `risk-${r.id}`,
         title: r.guestName,
         initials: initialsOf(r.guestName),
-        meta: `${hm(r.at)} · ${covers(r.partySize)} · risque d'absence élevé`,
+        meta: `${hm(r.at)} · ${covers(configuration, r.partySize)} · risque d'absence élevé`,
         badges: [{ label: "RISQUE ÉLEVÉ", tone: "danger" as const }],
         facets: { queue: "risk" },
         actions: [
@@ -511,13 +522,13 @@ export function buildDashboardScreen(
     id: "next-service",
     type: "slot-grid",
     heading: "Les quatre prochaines heures",
-    subheading: "Couverts attendus par quart d'heure, à partir de maintenant.",
+    subheading: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} attendus par quart d'heure, à partir de maintenant.`,
     capacity: Math.max(
       1,
       Math.round(data.currentService.capacity / 16),
     ),
-    capacityLabel: `${Math.max(1, Math.round(data.currentService.capacity / 16))} couverts / 15 min`,
-    unitLabel: "couverts",
+    capacityLabel: `${Math.max(1, Math.round(data.currentService.capacity / 16))} ${vocabulary.cover.many} / 15 min`,
+    unitLabel: vocabulary.cover.many,
     slots: Array.from({ length: 16 }, (_, i) => {
       const at = new Date(Math.floor(bandStart / 900_000) * 900_000 + i * 900_000);
       return {
@@ -556,7 +567,7 @@ export function buildDashboardScreen(
       // Operational before strategic: which half-hour is about to break
       // comes above how the week is trending.
       nextServiceBand,
-      serviceLoadBlock(data),
+      serviceLoadBlock(data, configuration),
       {
         id: "floor",
         type: "split",
@@ -575,7 +586,7 @@ export function buildDashboardScreen(
       ...(nudgeBlock ? [nudgeBlock] : []),
       nextServiceBand,
       { ...kpiBlock, id: "kpis-mobile", columns: 1, tiles: mobileTiles(kpiBlock) },
-      { ...(serviceLoadBlock(data) as Block), id: "service-load-mobile" },
+      { ...(serviceLoadBlock(data, configuration) as Block), id: "service-load-mobile" },
       arrivalsBlock,
       { ...feedBlock, id: "activity-mobile", entries: data.activity.slice(0, 5).map(activityEntry) },
     ],
@@ -723,7 +734,7 @@ export function buildReservationsScreen(
     },
     noMatches: {
       title: "Aucune réservation",
-      body: "Aucun couvert ne correspond à ce filtre.",
+      body: "Aucune réservation ne correspond à ce filtre.",
     },
   };
 
@@ -792,7 +803,7 @@ export function buildReservationsScreen(
     slug: "reservations",
     title: "Réservations",
     subtitle: dayLabel(data.currentService.opensAt),
-    blocks: [dayPicker, kpiBlock, serviceLoadBlock(data), bookBlock],
+    blocks: [dayPicker, kpiBlock, serviceLoadBlock(data, configuration), bookBlock],
     // Phone lane: the book first.
     //
     // Accepting and refusing is one of the three things that has to work
@@ -818,7 +829,11 @@ export function buildReservationsScreen(
  * the dashboard and the reservations screen — the same question, asked
  * from two places.
  */
-function serviceLoadBlock(data: RestaurantOverview): Block {
+function serviceLoadBlock(
+  data: RestaurantOverview,
+  configuration: VenueConfiguration,
+): Block {
+  const vocabulary = configFor(configuration);
   const service = data.currentService;
   const now = Date.now();
   // Covers the room can seat per slot, from the service window itself.
@@ -831,11 +846,10 @@ function serviceLoadBlock(data: RestaurantOverview): Block {
     id: "service-load",
     type: "slot-grid",
     heading: "Charge du service",
-    subheading:
-      "Couverts réservés par créneau de 30 min. La ligne marque ce que la salle peut tourner.",
+    subheading: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} réservés par créneau de 30 min. La ligne marque ce que la salle peut tourner.`,
     capacity: perSlotCapacity,
-    capacityLabel: `${perSlotCapacity} couverts / créneau`,
-    unitLabel: "couverts",
+    capacityLabel: `${perSlotCapacity} ${vocabulary.cover.many} / créneau`,
+    unitLabel: vocabulary.cover.many,
     slots: service.slotLoad.map((slot) => {
       const start = new Date(slot.at).getTime();
       return {
@@ -1180,7 +1194,7 @@ function reservationRow(
     ]
       .filter(Boolean)
       .join(" "),
-    detail: reservationDetail(reservation, zones),
+    detail: reservationDetail(reservation, zones, configuration),
     menu: reservationMenu(reservation),
   };
 }
@@ -1259,12 +1273,16 @@ function reservationMenu(reservation: Reservation): EntityRow["menu"] {
   return items;
 }
 
-function reservationDetail(reservation: Reservation, zones: Zone[]): DetailSpec {
+function reservationDetail(
+  reservation: Reservation,
+  zones: Zone[],
+  configuration: VenueConfiguration = "restaurant",
+): DetailSpec {
   const risk = Math.round((reservation.noShowRisk ?? 0) * 100);
 
   return {
     title: reservation.guestName,
-    subtitle: `${hm(reservation.at)} · ${covers(reservation.partySize)} · ${
+    subtitle: `${hm(reservation.at)} · ${covers(configuration, reservation.partySize)} · ${
       RESERVATION_CHANNEL[reservation.channel]
     }`,
     badges: [
@@ -1275,7 +1293,7 @@ function reservationDetail(reservation: Reservation, zones: Zone[]): DetailSpec 
     ],
     sections: [
       {
-        label: "Le couvert",
+        label: "La réservation",
         items: [
           { label: "Heure", metric: { value: hm(reservation.at) } },
           {
@@ -1602,7 +1620,12 @@ export const RESTAURANT_SCREENS: Record<
 > = {
   // 1. Aujourd'hui
   "": (ctx) =>
-    buildDashboardScreen(ctx.overview, ctx.serviceFloor ?? EMPTY_FLOOR, ctx.money ?? EMPTY_MONEY),
+    buildDashboardScreen(
+      ctx.overview,
+      ctx.serviceFloor ?? EMPTY_FLOOR,
+      ctx.money ?? EMPTY_MONEY,
+      ctx.configuration,
+    ),
   reservations: (ctx) =>
     buildReservationsScreen(ctx.overview, ctx.configuration, ctx.money ?? EMPTY_MONEY),
   calendrier: (ctx) =>

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { create } from "zustand";
+import { configFor } from "@/lib/venue/config";
+import type { VenueConfiguration } from "@/lib/types/venue-operations";
 import type {
   RestaurantActivityItem,
   RestaurantOverview,
@@ -25,8 +27,15 @@ interface RestaurantState {
   data: RestaurantOverview | null;
   /** Snapshots, newest last. Bounded — this is undo, not history. */
   past: RestaurantOverview[];
+  /**
+   * The establishment's configuration, so the activity feed speaks its
+   * vocabulary. Not derivable from the payload: `profile.kind` is the
+   * cuisine style, and guessing from it is how a bar ends up counting
+   * "couverts" on its own home screen.
+   */
+  configuration: VenueConfiguration;
 
-  hydrate: (data: RestaurantOverview) => void;
+  hydrate: (data: RestaurantOverview, configuration?: VenueConfiguration) => void;
   undo: () => void;
 
   /** Guest presented at the door. The LYFE check-in, not a table seating. */
@@ -46,10 +55,12 @@ const UNDO_DEPTH = 10;
 export const useRestaurantStore = create<RestaurantState>((set, get) => ({
   data: null,
   past: [],
+  configuration: "restaurant",
 
   // Seeded from the server payload on mount. Re-seeding on a later
   // navigation must not clobber local mutations, so the caller guards it.
-  hydrate: (data) => set({ data, past: [] }),
+  hydrate: (data, configuration = "restaurant") =>
+    set({ data, past: [], configuration }),
 
   undo: () =>
     set((s) => {
@@ -73,7 +84,7 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
       pushActivity(draft, {
         type: "guest_arrived",
         actor: reservation.guestName,
-        message: `est arrivé · ${reservation.partySize} couverts`,
+        message: `est arrivé · ${coversFor(reservation.partySize)}`,
         reservationId: reservation.id,
       });
       return `${reservation.guestName} enregistré à l'arrivée`;
@@ -162,7 +173,7 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
       pushActivity(draft, {
         type: "no_show",
         actor: reservation.guestName,
-        message: `noté absent · ${reservation.partySize} couverts`,
+        message: `noté absent · ${coversFor(reservation.partySize)}`,
         needsAttention: true,
       });
       return `${reservation.guestName} noté absent`;
@@ -188,7 +199,7 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
       pushActivity(draft, {
         type: "reservation_created",
         actor: reservation.guestName,
-        message: `sort de la liste d'attente · ${reservation.partySize} couverts`,
+        message: `sort de la liste d'attente · ${coversFor(reservation.partySize)}`,
         reservationId: reservation.id,
       });
       return `${reservation.guestName} confirmé depuis la liste d'attente`;
@@ -220,6 +231,18 @@ function mutate(
   }));
 }
 
+/**
+ * The venue's word for a booked head.
+ *
+ * The activity feed used to say "couverts" whatever the venue was, which
+ * is exactly the sort of detail that tells a bar manager the screen was
+ * written for someone else.
+ */
+function coversFor(n: number): string {
+  const config = configFor(useRestaurantStore.getState().configuration);
+  return `${n} ${n > 1 ? config.cover.many : config.cover.one}`;
+}
+
 function findReservation(data: RestaurantOverview, id: string) {
   return (
     data.upcomingReservations.find((r) => r.id === id) ??
@@ -242,7 +265,10 @@ function pushActivity(
  * Re-running on every render would discard local mutations on each
  * re-render; keying on the payload lets a genuine server refresh through.
  */
-export function useHydrateRestaurant(data: RestaurantOverview) {
+export function useHydrateRestaurant(
+  data: RestaurantOverview,
+  configuration: VenueConfiguration = "restaurant",
+) {
   const hydrate = useRestaurantStore((s) => s.hydrate);
   const seeded = useRef<RestaurantOverview | null>(null);
 
@@ -250,13 +276,13 @@ export function useHydrateRestaurant(data: RestaurantOverview) {
     // First paint, including SSR — hydrate synchronously so the very
     // first render already has data and nothing flashes.
     seeded.current = data;
-    useRestaurantStore.setState({ data, past: [] });
+    useRestaurantStore.setState({ data, past: [], configuration });
   }
 
   useEffect(() => {
     if (seeded.current !== data) {
       seeded.current = data;
-      hydrate(data);
+      hydrate(data, configuration);
     }
   }, [data, hydrate]);
 
