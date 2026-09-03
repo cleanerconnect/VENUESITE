@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import * as RadixDialog from "@radix-ui/react-dialog";
 import { motion, AnimatePresence } from "motion/react";
@@ -18,6 +18,8 @@ import type { LyfeEvent } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
 import { useEventQuery } from "@/lib/data/useQuery";
 import { COPY } from "@/lib/copy/fr";
+import { useEventRepository } from "@/lib/data/useQuery";
+import { useQrScanner, type QrScanner } from "@/lib/scan/useQrScanner";
 
 // Fullscreen scanner takeover for mobile. Replaces the previous stub
 // with a camera viewfinder, event selector pill, live counter, recent
@@ -44,21 +46,6 @@ const MODE_LABEL: Record<Mode, string> = {
   express: "Express",
   exit: "Sortie",
 };
-
-const SCAN_POOL = [
-  { initials: "Y. B.", tier: "Carré Or" },
-  { initials: "K. L.", tier: "Pass Jour · General" },
-  { initials: "S. R.", tier: "Pass Week-End 2" },
-  { initials: "H. E. I.", tier: "Carré Or" },
-  { initials: "M. R.", tier: "Pass Jour · General" },
-  { initials: "A. T.", tier: "Pass Semaine 1" },
-  { initials: "L. F.", tier: "Pass Jour · Early Bird" },
-  { initials: "O. B.", tier: "Pass Jour · General" },
-  { initials: "S. I.", tier: "Pass Semaine 1" },
-  { initials: "N. E. A.", tier: "Pass Jour · General" },
-  { initials: "I. C.", tier: "Carré Or" },
-  { initials: "R. H.", tier: "Pass Jour · General" },
-];
 
 export default function ScannerPage() {
   const eventsQuery = useEventQuery((repo) => repo.listEvents(), []);
@@ -88,6 +75,7 @@ export default function ScannerPage() {
   const [mode, setMode] = useState<Mode>("standard");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [manualCode, setManualCode] = useState("");
 
   // Reset on event change.
   useEffect(() => {
@@ -95,27 +83,44 @@ export default function ScannerPage() {
     setRecent([]);
   }, [selectedId, seededScanned]);
 
-  // Mock scan loop — adds one new scan every ~2.4 s.
-  useEffect(() => {
-    if (!event) return;
-    let i = 0;
-    const id = window.setInterval(() => {
-      const seed = SCAN_POOL[i % SCAN_POOL.length];
-      const status: ScanStatus = i % 12 === 7 ? "invalid" : "valid";
+  // Real redemption. The code comes off the camera (or the manual
+  // fallback) and is resolved by the repository, which records it — so a
+  // ticket presented twice is refused the second time even on this
+  // device. The loop that used to invent a scan every 2.4 seconds is
+  // gone: a simulated scan in a handover teaches the wrong thing.
+  const repo = useEventRepository();
+  const handleCode = useCallback(
+    async (raw: string) => {
+      if (!event) return;
+      const result = await repo.scanTicket(event.id, raw);
       const at = Date.now();
-      const next: RecentScan = {
-        id: `${at}_${i}`,
-        initials: seed.initials,
-        tierName: seed.tier,
-        status,
-        at,
-      };
-      setRecent((r) => [next, ...r].slice(0, 5));
-      if (status === "valid") setCount((c) => Math.min(totalCapacity, c + 1));
-      i += 1;
-    }, 2400);
-    return () => window.clearInterval(id);
-  }, [event, totalCapacity]);
+      const name = result.attendee?.name ?? raw.toUpperCase();
+      setRecent((r) =>
+        [
+          {
+            id: `${at}_${raw}`,
+            initials: name
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((w) => w[0])
+                .join("")
+                .toUpperCase(),
+            tierName:
+              result.attendee?.tierName ??
+              (result.error === "unknown_code" ? "Code inconnu" : "Billet"),
+            status: result.ok ? ("valid" as const) : ("invalid" as const),
+            at,
+          },
+          ...r,
+        ].slice(0, 5),
+      );
+      if (result.ok) setCount((c) => Math.min(totalCapacity, c + 1));
+    },
+    [event, repo, totalCapacity],
+  );
+
+  const scanner = useQrScanner({ active: true, onScan: handleCode });
 
   // The scanner is a full-screen dark takeover, so its states live on
   // that surface rather than in a Card — a white error card here would
@@ -208,8 +213,41 @@ export default function ScannerPage() {
       </header>
 
       {/* === Viewfinder, fills the remaining vertical space (~60 %) === */}
-      <main className="flex-1 flex items-center justify-center px-8 py-6 min-h-0">
-        <Viewfinder mode={mode} />
+      <main className="flex-1 flex flex-col items-center justify-center gap-5 px-8 py-6 min-h-0">
+        <Viewfinder mode={mode} scanner={scanner} />
+
+        {/* Manual entry, always available and promoted when the camera
+            cannot run. A door does not stop working because a phone
+            refused a permission. */}
+        {scanner.status !== "scanning" ? (
+          <CameraTrouble status={scanner.status} onRetry={scanner.start} />
+        ) : null}
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (manualCode.trim().length < 4) return;
+            void handleCode(manualCode);
+            setManualCode("");
+          }}
+          className="flex w-full max-w-sm items-center gap-2"
+        >
+          <input
+            value={manualCode}
+            onChange={(e) => setManualCode(e.target.value)}
+            placeholder="Saisir le code du billet"
+            aria-label="Saisir le code du billet"
+            autoComplete="off"
+            className="h-11 flex-1 rounded-full border border-canvas/15 bg-canvas/[0.06] px-4 text-[13px] text-canvas placeholder:text-canvas/40 outline-none focus:border-violet"
+          />
+          <button
+            type="submit"
+            disabled={manualCode.trim().length < 4}
+            className="h-11 shrink-0 rounded-full bg-violet px-5 text-[13px] font-bold text-canvas transition-opacity disabled:opacity-40"
+          >
+            Valider
+          </button>
+        </form>
       </main>
 
       {/* === Counter + recent scans === */}
@@ -299,9 +337,32 @@ export default function ScannerPage() {
 
 // ─── Viewfinder ────────────────────────────────────────────────────────
 
-function Viewfinder({ mode }: { mode: Mode }) {
+function Viewfinder({
+  mode,
+  scanner,
+}: {
+  mode: Mode;
+  scanner: QrScanner;
+}) {
+  // The camera fills the frame once it is running; the decorative
+  // brackets and sweep stay on top of it so the surface still reads as a
+  // scanner while the stream warms up or when it cannot start.
   return (
     <div className="relative w-full max-w-sm aspect-square">
+      {/* Always mounted. The hook attaches the stream to this element
+          before the status flips, and a video that mounts only once
+          scanning has started is never there to receive it. */}
+      <video
+        ref={scanner.videoRef}
+        autoPlay
+        muted
+        playsInline
+        aria-label="Aperçu de la caméra"
+        className={cn(
+          "absolute inset-0 h-full w-full rounded-[var(--radius-xl)] object-cover transition-opacity duration-200",
+          scanner.status === "scanning" ? "opacity-100" : "opacity-0",
+        )}
+      />
       {/* Dark frame backdrop */}
       <div
         aria-hidden
@@ -371,6 +432,58 @@ function Bracket({ position }: { position: "tl" | "tr" | "bl" | "br" }) {
         />
       </svg>
     </span>
+  );
+}
+
+// ─── Camera trouble ────────────────────────────────────────────────────
+//
+// Says which problem it is, because the remedy differs: a refused
+// permission is retried, a missing camera is not, and an insecure origin
+// is a deploy setting the host cannot change from here.
+
+const TROUBLE: Record<string, { text: string; retry: boolean }> = {
+  idle: { text: "Caméra en veille.", retry: true },
+  starting: { text: "Ouverture de la caméra…", retry: false },
+  denied: {
+    text: "Accès à la caméra refusé. Autorisez-le, ou saisissez le code ci-dessous.",
+    retry: true,
+  },
+  no_camera: {
+    text: "Aucune caméra sur cet appareil. Saisissez le code ci-dessous.",
+    retry: false,
+  },
+  insecure: {
+    text: "La caméra exige une connexion HTTPS. Saisissez le code ci-dessous.",
+    retry: false,
+  },
+  error: { text: "La caméra n'a pas démarré.", retry: true },
+};
+
+function CameraTrouble({
+  status,
+  onRetry,
+}: {
+  status: string;
+  onRetry: () => void;
+}) {
+  const info = TROUBLE[status] ?? TROUBLE.error;
+  return (
+    <div
+      role={status === "starting" ? "status" : "alert"}
+      aria-live="polite"
+      className="flex w-full max-w-sm flex-col items-center gap-2 text-center"
+    >
+      <p className="text-[12.5px] leading-snug text-canvas/60">{info.text}</p>
+      {info.retry ? (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="text-meta font-bold uppercase tracking-[0.08em] text-violet"
+        >
+          Activer la caméra
+        </button>
+      ) : null}
+    </div>
   );
 }
 

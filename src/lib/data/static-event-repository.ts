@@ -49,6 +49,13 @@ import { getAuditLog, getTeam } from "./static/team";
 import { getInsightOfTheDay, getInsightsForSurface } from "./static/insights";
 import type { InsightSurface } from "@/lib/types/analytics";
 
+/**
+ * Tickets redeemed this process. The static driver has nowhere durable
+ * to write, and dropping the fact entirely would let one code through
+ * repeatedly — the one thing a door scanner must not allow.
+ */
+const redeemed = new Set<string>();
+
 export class StaticEventRepository implements EventRepository {
   // ── Events ──
   async listEvents() {
@@ -68,6 +75,27 @@ export class StaticEventRepository implements EventRepository {
   }
   async getScanLog(_eventId: string) {
     return getScanLog();
+  }
+
+  async scanTicket(eventId: string, code: string) {
+    const normalised = code.trim().toUpperCase();
+    const attendee = getAttendees().find(
+      (a) =>
+        `LYFE-${a.id}`.toUpperCase() === normalised ||
+        a.id.toUpperCase() === normalised,
+    );
+
+    if (!attendee) return { ok: false as const, error: "unknown_code" as const };
+
+    const key = `${eventId}:${attendee.id}`;
+    if (redeemed.has(key) || attendee.qrStatus === "scanned") {
+      return { ok: false as const, error: "already_used" as const, attendee };
+    }
+
+    // Recorded here rather than in the client's list, so the same code
+    // presented twice at two doors is refused the second time.
+    redeemed.add(key);
+    return { ok: true as const, attendee };
   }
 
   // ── Per-event detail ──
@@ -209,6 +237,7 @@ export class FailingEventRepository implements EventRepository {
   listAttendees = this.fail;
   listRefundRequests = this.fail;
   getScanLog = this.fail;
+  scanTicket = this.fail;
   getAnalyses = this.fail;
   listAnalysesEventIds = this.fail;
   getBilan = this.fail;

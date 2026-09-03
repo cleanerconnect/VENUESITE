@@ -59,6 +59,15 @@ export interface EventRepository {
   listAttendees(eventId: string): Promise<Attendee[]>;
   listRefundRequests(eventId: string): Promise<RefundRequest[]>;
   getScanLog(eventId: string): Promise<ScanLog[]>;
+  /**
+   * Redeems a ticket code at the door.
+   *
+   * The code is opaque to the portal — it is minted app-side and
+   * resolved here. Redemption is recorded by the resolver, not by the
+   * client, because a check-in that lived only in one browser would let
+   * the same ticket through twice.
+   */
+  scanTicket(eventId: string, code: string): Promise<TicketScanResult>;
 
   // ── Per-event detail ──
   getAnalyses(eventId: string): Promise<AnalysesData | null>;
@@ -109,6 +118,13 @@ export interface EventRepository {
   // ── Insights ──
   getInsightOfTheDay(): Promise<Insight>;
   getInsightsForSurface(surface: InsightSurface, eventId?: string): Promise<Insight[]>;
+}
+
+export interface TicketScanResult {
+  ok: boolean;
+  attendee?: Attendee;
+  /** Populated when ok is false. */
+  error?: "unknown_code" | "already_used" | "refunded";
 }
 
 /** Thrown for anything the caller could act on. Mirrors RepositoryError. */

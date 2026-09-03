@@ -18,6 +18,7 @@ import { CapacityRing } from "@/components/cards/CapacityRing";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { ChartTooltip } from "@/components/ui/ChartTooltip";
+import { QrViewfinder } from "@/components/scan/QrViewfinder";
 import { CHART, seriesColor } from "@/lib/charts/theme";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
@@ -309,6 +310,39 @@ export function SurfacesSection() {
               { label: "Projection", value: "58,1 %", color: CHART.projection },
             ]}
           />
+        </div>
+      </Specimen>
+
+      <Specimen
+        name="QrViewfinder"
+        note="lecture caméra — chaque échec dit lequel, la saisie manuelle reste à côté"
+      >
+        <p className="text-body text-ink-soft mb-4 max-w-2xl">
+          Deux décodeurs derrière un seul composant.{" "}
+          <code className="text-[12px]">BarcodeDetector</code> quand le
+          navigateur le fournit ; sinon <code className="text-[12px]">jsqr</code>,
+          importé dynamiquement pour que les 250&nbsp;Ko ne soient
+          téléchargés que là où ils servent. Le badge en bas du cadre dit
+          lequel tourne — la première chose à savoir quand un scan échoue
+          sur un seul appareil.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {(["idle", "denied", "no_camera", "insecure"] as const).map((status) => (
+            <div key={status}>
+              <code className="text-[11px] text-ink-mute">{status}</code>
+              <div className="mt-1.5">
+                <QrViewfinder
+                  scanner={{
+                    status,
+                    videoRef: { current: null },
+                    decoder: null,
+                    start: () => {},
+                    stop: () => {},
+                  }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       </Specimen>
 

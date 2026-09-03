@@ -13,6 +13,8 @@ import {
   X,
 } from "lucide-react";
 import { useScannerStore } from "@/lib/stores/scanner";
+import { useQrScanner, type QrScanner } from "@/lib/scan/useQrScanner";
+import { useEventRepository } from "@/lib/data/useQuery";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -49,35 +51,53 @@ export function ScannerModal() {
   );
   const selected = liveEvents.find((e) => e.id === selectedEventId);
   const [manualCode, setManualCode] = useState("");
+  const repo = useEventRepository();
   const { toast } = useToast();
 
-  // Camera detection on first open. If getUserMedia rejects (no camera /
-  // no permission / on a laptop) we default to manual entry.
-  useEffect(() => {
-    if (!open || cameraAvailable !== null) return;
-    if (typeof navigator === "undefined" || !navigator.mediaDevices) {
-      setCameraAvailable(false);
-      return;
-    }
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" } })
-      .then((stream) => {
-        stream.getTracks().forEach((t) => t.stop());
-        setCameraAvailable(true);
-      })
-      .catch(() => setCameraAvailable(false));
-  }, [open, cameraAvailable, setCameraAvailable]);
+  // The camera is opened by the scanner hook, not probed separately.
+  // Probing used to open a stream, immediately stop it, and record a
+  // boolean — which told us whether a camera existed but never read a
+  // single frame from it.
+  const scanner = useQrScanner({
+    active: open,
+    onScan: (code) => void redeem(code),
+  });
 
-  const handleManual = () => {
-    if (manualCode.trim().length < 6) return;
-    registerScan();
-    toast({
-      tone: "success",
-      title: `Billet vérifié, ${manualCode.toUpperCase()}`,
-      description: "Entrée enregistrée.",
-    });
+  useEffect(() => {
+    if (scanner.status === "idle") return;
+    setCameraAvailable(scanner.status === "scanning");
+  }, [scanner.status, setCameraAvailable]);
+
+  // One redemption path for the camera and the keyboard alike.
+  const redeem = async (raw: string) => {
+    const eventId = selected?.id;
+    if (!eventId || raw.trim().length < 4) return;
+
+    const result = await repo.scanTicket(eventId, raw);
+    if (result.ok) {
+      registerScan();
+      toast({
+        tone: "success",
+        title: `Billet vérifié · ${result.attendee?.name ?? raw.toUpperCase()}`,
+        description: result.attendee?.tierName ?? "Entrée enregistrée.",
+      });
+    } else {
+      toast({
+        tone: "danger",
+        title:
+          result.error === "already_used"
+            ? "Billet déjà scanné"
+            : "Code inconnu",
+        description:
+          result.error === "already_used"
+            ? `${result.attendee?.name ?? "Ce billet"} est déjà entré.`
+            : "Vérifiez la saisie ou réessayez le scan.",
+      });
+    }
     setManualCode("");
   };
+
+  const handleManual = () => void redeem(manualCode);
 
   // If the user opens without picking an event yet, but only one is live,
   // auto-select it.
@@ -158,6 +178,7 @@ export function ScannerModal() {
                     scannedCount={scannedCount}
                     totalCount={totalCount}
                     cameraAvailable={cameraAvailable}
+                    scanner={scanner}
                     onChangeEvent={() => selectEvent(null, 0)}
                     manualCode={manualCode}
                     setManualCode={setManualCode}
@@ -225,6 +246,7 @@ function ScannerView({
   scannedCount,
   totalCount,
   cameraAvailable,
+  scanner,
   onChangeEvent,
   manualCode,
   setManualCode,
@@ -240,13 +262,22 @@ function ScannerView({
   setManualCode: (s: string) => void;
   onManualSubmit: () => void;
   setCameraAvailable: (b: boolean) => void;
+  scanner: QrScanner;
 }) {
   void eventName;
   return (
     <div className="flex-1 grid lg:grid-cols-[1.2fr_1fr] overflow-hidden min-h-0">
       {/* Left column: camera viewport (or manual fallback) */}
       <div className="bg-ink relative flex items-center justify-center p-6 min-h-[280px]">
-        {cameraAvailable ? <CameraViewport /> : <ManualFallback />}
+        {/* The viewport is always mounted so the hook has a video
+            element to attach the stream to; the manual fallback layers
+            over it until the camera is actually running. */}
+        <CameraViewport scanner={scanner} />
+        {scanner.status !== "scanning" ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-ink p-6">
+            <ManualFallback />
+          </div>
+        ) : null}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
           <div className="inline-flex items-center gap-2">
             <LivePulse />
@@ -355,9 +386,17 @@ function ScannerView({
   );
 }
 
-function CameraViewport() {
+function CameraViewport({ scanner }: { scanner: QrScanner }) {
   return (
     <div className="relative w-full max-w-[420px] aspect-square rounded-[var(--radius-md)] overflow-hidden bg-black">
+      <video
+        ref={scanner.videoRef}
+        autoPlay
+        muted
+        playsInline
+        aria-label="Aperçu de la caméra"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
       {/* Corner brackets */}
       <div className="absolute inset-6 rounded-[var(--radius-md)]">
         <Bracket position="top-left" />

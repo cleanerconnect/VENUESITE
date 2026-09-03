@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, ScanLine, TriangleAlert } from "lucide-react";
+import { Camera, Check, ScanLine, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Pill } from "@/components/ui/Pill";
@@ -10,6 +10,8 @@ import { useToast } from "@/components/ui/Toast";
 import { useCheckInStore } from "@/lib/stores/checkin";
 import { useRestaurantStore } from "@/lib/restaurant/store";
 import { checkInByCode, markGuestArrived } from "@/app/actions/checkin";
+import { useQrScanner } from "@/lib/scan/useQrScanner";
+import { QrViewfinder } from "@/components/scan/QrViewfinder";
 import { COPY } from "@/lib/copy/fr";
 import { formatTimeFR } from "@/lib/utils/format";
 
@@ -42,6 +44,7 @@ export function CheckInSheet() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const field = useRef<HTMLInputElement>(null);
 
   // A hardware scanner types into whatever has focus, so the field takes
@@ -65,12 +68,15 @@ export function CheckInSheet() {
     (r) => r.state === "confirmed" || r.state === "requested",
   );
 
-  const submit = async () => {
-    if (pending || code.trim().length < 4) return;
+  // One redemption path for both inputs: a scanned code and a typed one
+  // are the same string arriving by different routes, and the portal
+  // never parses either — the backend resolves it.
+  const redeem = async (raw: string) => {
+    if (pending || raw.trim().length < 4) return;
     setPending(true);
     setError(null);
     try {
-      const result = await checkInByCode(code);
+      const result = await checkInByCode(raw);
       if (!result.ok) {
         setError(CODE_ERROR[result.error ?? "unknown_code"]);
         return;
@@ -88,6 +94,19 @@ export function CheckInSheet() {
       setPending(false);
     }
   };
+
+  const submit = () => redeem(code);
+
+  // Camera runs only while the sheet is open and the door tab is
+  // showing, so closing the sheet releases the camera — a stream left
+  // running keeps the phone's indicator lit and drains the battery.
+  const scanner = useQrScanner({
+    active: open && scanOpen,
+    onScan: (scanned) => {
+      setCode(scanned);
+      void redeem(scanned);
+    },
+  });
 
   // Optimistic first, then persist. If the server refuses, the snapshot
   // the store took goes back — an arrival that only ever existed in one
@@ -124,9 +143,28 @@ export function CheckInSheet() {
     >
       <div className="space-y-6">
         <div>
-          <div className="text-eyebrow text-ink-soft mb-2.5">
-            Code de réservation
+          <div className="mb-2.5 flex items-center justify-between gap-3">
+            <span className="text-eyebrow text-ink-soft">
+              Code de réservation
+            </span>
+            <button
+              type="button"
+              onClick={() => setScanOpen((v) => !v)}
+              className="inline-flex items-center gap-1.5 text-meta font-bold uppercase tracking-[0.06em] text-violet-deep transition-colors hover:text-ink"
+            >
+              <Camera size={13} strokeWidth={2.2} />
+              {scanOpen ? "Fermer la caméra" : "Scanner"}
+            </button>
           </div>
+
+          {scanOpen ? (
+            <QrViewfinder
+              scanner={scanner}
+              hint="Visez le QR du client"
+              className="mb-4"
+            />
+          ) : null}
+
           <Input
             ref={field}
             label="Scanner ou saisir le code"
