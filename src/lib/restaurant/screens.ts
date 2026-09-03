@@ -382,119 +382,135 @@ export function buildReservationsScreen(data: RestaurantOverview): ScreenSpec {
   const requested = all.filter((r) => r.state === "requested");
   const atRisk = all.filter((r) => (r.noShowRisk ?? 0) >= 0.3);
 
+  const kpiBlock: Block = {
+    id: "reservation-kpis",
+    type: "kpi-grid",
+    columns: 4,
+    tiles: [
+      {
+        id: "booked",
+        label: "Couverts réservés",
+        tone: "sand",
+        icon: "calendar-clock",
+        metric: {
+          value: data.currentService.bookedCovers,
+          format: COUNT,
+          suffix: `/ ${data.currentService.capacity}`,
+          animate: true,
+        },
+        hint: `${Math.round(
+          (data.currentService.bookedCovers /
+            Math.max(1, data.currentService.capacity)) *
+            100,
+        )} % de la salle engagée`,
+      },
+      {
+        id: "arrived",
+        label: "Déjà arrivés",
+        tone: "surface",
+        icon: "user-check",
+        metric: {
+          value: data.currentService.arrivedCovers,
+          format: COUNT,
+          animate: true,
+        },
+      },
+      {
+        id: "requested",
+        label: "À confirmer",
+        tone: requested.length > 0 ? "peach" : "surface",
+        icon: "hourglass",
+        metric: { value: requested.length, format: COUNT, animate: true },
+        hint: requested.length
+          ? "À traiter avant le coup de feu"
+          : "Rien en attente",
+      },
+      {
+        id: "risk",
+        label: "Risque d'absence",
+        tone: atRisk.length > 0 ? "rose" : "sage",
+        icon: "user-x",
+        metric: { value: atRisk.length, format: COUNT, animate: true },
+        hint: atRisk.length
+          ? "Un rappel SMS réduit le risque de moitié"
+          : "Aucun risque détecté",
+      },
+    ],
+  };
+
+  const bookBlock: Block = {
+    id: "book",
+    type: "entity-list",
+    heading: "Carnet du service",
+    // One list, filtered — rather than four lists a manager has to
+    // scan in turn. Counts, search and sort all derive from the rows.
+    tabs: [
+      { id: "all", label: "Tous" },
+      {
+        id: "requested",
+        label: "À confirmer",
+        match: { facet: "state", values: ["requested"] },
+      },
+      {
+        id: "confirmed",
+        label: "Confirmées",
+        match: { facet: "state", values: ["confirmed"] },
+      },
+      {
+        id: "arrived",
+        label: "Arrivés",
+        match: { facet: "state", values: ["arrived"] },
+      },
+      {
+        id: "waiting",
+        label: "Liste d'attente",
+        match: { facet: "state", values: ["waitlisted"] },
+      },
+      {
+        id: "risk",
+        label: "À risque",
+        match: { facet: "risk", values: ["high"] },
+      },
+    ],
+    search: { placeholder: "Rechercher un client, un téléphone, une table…" },
+    sorts: [
+      { id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" },
+      { id: "time_desc", label: "Heure · tard → tôt", key: "time", direction: "desc" },
+      { id: "party", label: "Couverts", key: "party", direction: "desc" },
+      { id: "visits", label: "Fidélité", key: "visits", direction: "desc" },
+      { id: "name", label: "Nom", key: "name", direction: "asc" },
+    ],
+    rows: all.map((r) => reservationRow(r, data.zones)),
+    empty: {
+      title: "Carnet vide",
+      body: "Aucune table réservée sur ce service.",
+      icon: "calendar",
+    },
+    noMatches: {
+      title: "Aucune réservation",
+      body: "Aucun couvert ne correspond à ce filtre.",
+    },
+  };
+
   return {
     slug: "reservations",
     title: "Réservations",
     subtitle: dayLabel(data.currentService.opensAt),
-    blocks: [
+    blocks: [kpiBlock, serviceLoadBlock(data), bookBlock],
+    // Phone lane: the book first.
+    //
+    // Accepting and refusing is one of the three things that has to work
+    // one-handed at a host stand, and on the desktop order it sat below
+    // four stacked KPI tiles — about a thousand pixels of scrolling
+    // before the host could reach a decision. The figures still matter,
+    // so they follow rather than disappear.
+    mobileBlocks: [
+      bookBlock,
       {
-        id: "reservation-kpis",
-        type: "kpi-grid",
-        columns: 4,
-        tiles: [
-          {
-            id: "booked",
-            label: "Couverts réservés",
-            tone: "sand",
-            icon: "calendar-clock",
-            metric: {
-              value: data.currentService.bookedCovers,
-              format: COUNT,
-              suffix: `/ ${data.currentService.capacity}`,
-              animate: true,
-            },
-            hint: `${Math.round(
-              (data.currentService.bookedCovers /
-                Math.max(1, data.currentService.capacity)) *
-                100,
-            )} % de la salle engagée`,
-          },
-          {
-            id: "arrived",
-            label: "Déjà arrivés",
-            tone: "surface",
-            icon: "user-check",
-            metric: {
-              value: data.currentService.arrivedCovers,
-              format: COUNT,
-              animate: true,
-            },
-          },
-          {
-            id: "requested",
-            label: "À confirmer",
-            tone: requested.length > 0 ? "peach" : "surface",
-            icon: "hourglass",
-            metric: { value: requested.length, format: COUNT, animate: true },
-            hint: requested.length
-              ? "À traiter avant le coup de feu"
-              : "Rien en attente",
-          },
-          {
-            id: "risk",
-            label: "Risque d'absence",
-            tone: atRisk.length > 0 ? "rose" : "sage",
-            icon: "user-x",
-            metric: { value: atRisk.length, format: COUNT, animate: true },
-            hint: atRisk.length
-              ? "Un rappel SMS réduit le risque de moitié"
-              : "Aucun risque détecté",
-          },
-        ],
-      },
-      serviceLoadBlock(data),
-      {
-        id: "book",
-        type: "entity-list",
-        heading: "Carnet du service",
-        // One list, filtered — rather than four lists a manager has to
-        // scan in turn. Counts, search and sort all derive from the rows.
-        tabs: [
-          { id: "all", label: "Tous" },
-          {
-            id: "requested",
-            label: "À confirmer",
-            match: { facet: "state", values: ["requested"] },
-          },
-          {
-            id: "confirmed",
-            label: "Confirmées",
-            match: { facet: "state", values: ["confirmed"] },
-          },
-          {
-            id: "arrived",
-            label: "Arrivés",
-            match: { facet: "state", values: ["arrived"] },
-          },
-          {
-            id: "waiting",
-            label: "Liste d'attente",
-            match: { facet: "state", values: ["waitlisted"] },
-          },
-          {
-            id: "risk",
-            label: "À risque",
-            match: { facet: "risk", values: ["high"] },
-          },
-        ],
-        search: { placeholder: "Rechercher un client, un téléphone, une table…" },
-        sorts: [
-          { id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" },
-          { id: "time_desc", label: "Heure · tard → tôt", key: "time", direction: "desc" },
-          { id: "party", label: "Couverts", key: "party", direction: "desc" },
-          { id: "visits", label: "Fidélité", key: "visits", direction: "desc" },
-          { id: "name", label: "Nom", key: "name", direction: "asc" },
-        ],
-        rows: all.map((r) => reservationRow(r, data.zones)),
-        empty: {
-          title: "Carnet vide",
-          body: "Aucune table réservée sur ce service.",
-          icon: "calendar",
-        },
-        noMatches: {
-          title: "Aucune réservation",
-          body: "Aucun couvert ne correspond à ce filtre.",
-        },
+        ...kpiBlock,
+        id: "reservation-kpis-mobile",
+        columns: 1,
+        tiles: mobileTiles(kpiBlock),
       },
     ],
   };

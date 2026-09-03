@@ -61,8 +61,11 @@ export default function SettingsPage() {
       />
 
       <div className="grid lg:grid-cols-[200px_1fr] gap-8 items-start">
-        {/* Vertical tab nav, sticky on desktop */}
-        <aside className="lg:sticky lg:top-[88px]">
+        {/* Vertical tab nav on desktop, a scrolling row below it.
+            `min-w-0` is load-bearing: without it the grid child sizes to
+            its content and the row pushed the whole page sideways at
+            tablet width instead of scrolling inside itself. */}
+        <aside className="min-w-0 lg:sticky lg:top-[88px]">
           <nav className="flex lg:flex-col gap-1 overflow-x-auto scroll-thin no-scrollbar">
             {sections.map((s) => {
               const isActive = active === s.id;
