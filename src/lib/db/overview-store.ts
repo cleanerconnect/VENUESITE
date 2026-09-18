@@ -25,6 +25,8 @@ import type {
   ServiceKind,
   Zone,
 } from "@/lib/types/restaurant";
+import type { VenueConfiguration } from "@/lib/types/venue-operations";
+import { configFor, coverAgreement, covers } from "@/lib/venue/config";
 import { all, bool, one, run, toMad } from "./store";
 
 const day = (d: Date) => format(d, "yyyy-MM-dd");
@@ -378,6 +380,21 @@ function aggregates(venueId: string, service: Service | null) {
 
 // ── Assembly ─────────────────────────────────────────────────
 
+/**
+ * The configuration this venue is running, straight from its settings row.
+ *
+ * Read here rather than imported from `operations-store` so the overview
+ * query keeps its one dependency direction (SQL in, payload out). A venue
+ * with no settings row is a restaurant, matching `venueSettings()`.
+ */
+function configuration(venueId: string): VenueConfiguration {
+  const r = one(
+    "SELECT configuration FROM venue_settings WHERE venue_id = ?",
+    venueId,
+  );
+  return (String(r?.configuration ?? "") || "restaurant") as VenueConfiguration;
+}
+
 /** Bonjour / Bon après-midi / Bonsoir, from the hour the page is opened. */
 function salutation(date: Date): string {
   const h = date.getHours();
@@ -394,6 +411,10 @@ export function overview(venueId: string, viewerFirstName: string): RestaurantOv
   const service = currentService(venueId, list);
   const queue = waitlist(venueId);
   const agg = aggregates(venueId, service);
+
+  // The greeting speaks the venue's vocabulary: a lounge books people,
+  // not covers, and the participle has to agree with whichever it is.
+  const vocabulary = configFor(configuration(venueId));
 
   const waiting = queue.reduce((n, r) => n + r.partySize, 0);
   // Remaining capacity, which is what LYFE knows — not free tables.
@@ -423,7 +444,10 @@ export function overview(venueId: string, viewerFirstName: string): RestaurantOv
           ? "le service est complet."
           : "le service est lancé.",
       subline: service
-        ? `${service.bookedCovers} couverts réservés, ${waiting} en liste d'attente, ${remainingCovers} encore disponibles.`
+        ? `${covers(vocabulary, service.bookedCovers)} ${coverAgreement(
+            vocabulary,
+            "réservé",
+          )}, ${waiting} en liste d'attente, ${remainingCovers} encore disponibles.`
         : "Aucun service en cours.",
     },
     currentService: service ?? list[0],

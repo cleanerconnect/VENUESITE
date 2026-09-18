@@ -145,12 +145,7 @@
     "Variable names reject '.', so Tailwind half-steps are espace/0-5 etc.",
     "For a wrapped horizontal auto-layout, the width is the PRIMARY axis and must be FIXED."
   ],
-  "openFindings": [
-    "src/lib/db/overview-store.ts:426 — the Accueil subtitle hardcodes 'couverts réservés' and never reads venue configuration, so Nomad Rooftop (lounge) says 'couverts' on its home screen while its own KPI tiles say 'personnes'.",
-    "src/lib/restaurant/screens.ts:173 — `${cover.many} arrivés` yields 'Personnes arrivés'; French agreement wants 'arrivées'.",
-    "src/lib/restaurant/screens.ts:620 — same shape yields 'Personnes réservés'; wants 'réservées'.",
-    "components/ui/Button.tsx — text sizes 13/14/15px are arbitrary values outside the type scale; 15px matches no token."
-  ],
+  "openFindings": [],
   "phase7": {
     "page": "08 Exemple complet · Dar Zellij",
     "pageId": "53:2",
@@ -184,5 +179,10 @@
       "figma.createNodeFromSvg imports recharts path geometry; the imported wrapper frame carries a white fill that must be cleared or the no-literals audit fails.",
       "Applying a text style then setting fontName clears textStyleId — the Fraunces italic clause in the Accueil title is the one node on the page without a style."
     ]
-  }
+  },
+  "closedFindings": [
+    "src/lib/db/overview-store.ts — Accueil subtitle now reads venue_settings.configuration via configFor()/covers(); lounge says 'personnes réservées'.",
+    "src/lib/restaurant/screens.ts — feminine agreement fixed via VenueConfig.cover.gender + coverAgreement()/coverLabel(); five sites, not the two §5 named.",
+    "components/ui/Button.tsx — text sizes now spend --text-control-sm|md|lg; 15px joined the type scale as a token."
+  ]
 }

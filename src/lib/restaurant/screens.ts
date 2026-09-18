@@ -85,7 +85,12 @@ import {
   buildSubscriptionScreen,
   buildSupportScreen,
 } from "./establishment";
-import { configFor } from "@/lib/venue/config";
+import {
+  configFor,
+  coverAgreement,
+  coverLabel,
+  coverNoun,
+} from "@/lib/venue/config";
 import type { ServiceConfiguration } from "@/lib/data/repository";
 import type {
   Deposit,
@@ -170,7 +175,7 @@ export function buildDashboardScreen(
           ]
         : []),
       {
-        label: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} arrivés`,
+        label: coverLabel(vocabulary, "arrivé"),
         metric: {
           value: service.arrivedCovers,
           format: COUNT,
@@ -179,14 +184,20 @@ export function buildDashboardScreen(
         },
       },
       {
-        label: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} disponibles`,
+        label: `${coverNoun(vocabulary)} disponibles`,
         metric: { value: remainingCovers, format: COUNT, animate: true },
       },
     ],
     footnote: {
       // Covers, not bookings — the KPI tile beside it counts incidents,
       // and two unlabelled numbers that disagree read as a bug.
-      text: `${covers(configuration, service.bookedCovers)} réservés sur ${service.capacity} · ${covers(configuration, service.noShowCovers)} absents.`,
+      text: `${covers(configuration, service.bookedCovers)} ${coverAgreement(
+        vocabulary,
+        "réservé",
+      )} sur ${service.capacity} · ${covers(
+        configuration,
+        service.noShowCovers,
+      )} ${coverAgreement(vocabulary, "absent")}.`,
       badge: {
         label: `${Math.round((service.bookedCovers / Math.max(1, service.capacity)) * 100)} % engagé`,
         tone: "violet",
@@ -271,7 +282,7 @@ export function buildDashboardScreen(
     tiles: [
       {
         id: "covers",
-        label: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} aujourd'hui`,
+        label: `${coverNoun(vocabulary)} aujourd'hui`,
         tone: "sand",
         span: 2,
         icon: "users",
@@ -522,7 +533,10 @@ export function buildDashboardScreen(
     id: "next-service",
     type: "slot-grid",
     heading: "Les quatre prochaines heures",
-    subheading: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} attendus par quart d'heure, à partir de maintenant.`,
+    subheading: `${coverLabel(
+      vocabulary,
+      "attendu",
+    )} par quart d'heure, à partir de maintenant.`,
     capacity: Math.max(
       1,
       Math.round(data.currentService.capacity / 16),
@@ -617,7 +631,7 @@ export function buildReservationsScreen(
     tiles: [
       {
         id: "booked",
-        label: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} réservés`,
+        label: coverLabel(vocabulary, "réservé"),
         tone: "sand",
         icon: "calendar-clock",
         metric: {
@@ -846,7 +860,10 @@ function serviceLoadBlock(
     id: "service-load",
     type: "slot-grid",
     heading: "Charge du service",
-    subheading: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} réservés par créneau de 30 min. La ligne marque ce que la salle peut tourner.`,
+    subheading: `${coverLabel(
+      vocabulary,
+      "réservé",
+    )} par créneau de 30 min. La ligne marque ce que la salle peut tourner.`,
     capacity: perSlotCapacity,
     capacityLabel: `${perSlotCapacity} ${vocabulary.cover.many} / créneau`,
     unitLabel: vocabulary.cover.many,

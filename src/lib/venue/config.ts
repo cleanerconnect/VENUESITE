@@ -17,8 +17,15 @@ export interface VenueConfig {
   kind: VenueKind;
   /** Sidebar caption and workspace switcher label. */
   workspaceLabel: string;
-  /** What a booked head is called. Drives every count in the UI. */
-  cover: { one: string; many: string };
+  /**
+   * What a booked head is called. Drives every count in the UI.
+   *
+   * `gender` is not decoration: French past participles agree with the
+   * noun, so "couverts réservés" becomes "personnes réservées" and a
+   * screen that concatenates a masculine participle is wrong in one
+   * configuration. Agreement is `coverAgreement()`'s job, below.
+   */
+  cover: { one: string; many: string; gender: "m" | "f" };
   /** What a sitting is called. */
   service: { one: string; many: string };
   /** What the seating map is called. */
@@ -36,7 +43,7 @@ export interface VenueConfig {
 const RESTAURANT: VenueConfig = {
   kind: "restaurant",
   workspaceLabel: "Espace restaurant",
-  cover: { one: "couvert", many: "couverts" },
+  cover: { one: "couvert", many: "couverts", gender: "m" },
   service: { one: "service", many: "services" },
   floorPlanLabel: "Plan de salle",
   menuLabel: "Carte",
@@ -49,7 +56,7 @@ const DRINKS: VenueConfig = {
   kind: "drinks",
   workspaceLabel: "Espace bar",
   // A bar seats people, not covers — and turns them roughly twice as fast.
-  cover: { one: "personne", many: "personnes" },
+  cover: { one: "personne", many: "personnes", gender: "f" },
   service: { one: "créneau", many: "créneaux" },
   floorPlanLabel: "Plan de salle",
   menuLabel: "Carte des boissons",
@@ -71,6 +78,35 @@ export function venueConfig(kind: VenueKind): VenueConfig {
 /** "6 couverts" / "6 personnes", per the venue's vocabulary. */
 export function covers(config: VenueConfig, n: number): string {
   return `${n} ${n > 1 ? config.cover.many : config.cover.one}`;
+}
+
+/**
+ * A past participle agreeing with the plural `cover` noun.
+ *
+ * Takes the masculine singular — "réservé", "arrivé", "absent" — and
+ * returns the plural that agrees: "réservés" at a restaurant,
+ * "réservées" at a lounge. Adjectives with no feminine form
+ * ("disponible") do not belong here; write those out.
+ */
+export function coverAgreement(config: VenueConfig, masculine: string): string {
+  return `${masculine}${config.cover.gender === "f" ? "es" : "s"}`;
+}
+
+/**
+ * A sentence-cased tile label: "Couverts réservés" / "Personnes
+ * réservées". The capitalisation and the agreement were both open-coded
+ * at every call site before, which is how the agreement came to be wrong
+ * in the feminine.
+ */
+export function coverLabel(config: VenueConfig, masculine: string): string {
+  const many = config.cover.many;
+  return `${many.charAt(0).toUpperCase()}${many.slice(1)} ${coverAgreement(config, masculine)}`;
+}
+
+/** Sentence-cased plural noun alone: "Couverts" / "Personnes". */
+export function coverNoun(config: VenueConfig): string {
+  const many = config.cover.many;
+  return `${many.charAt(0).toUpperCase()}${many.slice(1)}`;
 }
 
 // ── Configuration type ───────────────────────────────────────

@@ -139,6 +139,16 @@
   --text-metric-lg: 44px;
   --text-metric-xl: 64px;
 
+  /* ── Control type scale ──
+     The three button sizes. These were arbitrary `text-[13px]`,
+     `text-[14px]` and `text-[15px]` values in `Button`; 15px matched no
+     step in the scale above, which made it the last font-size literal in
+     the codebase. Declared here it is a step like any other, and the
+     `--text-*` namespace generates `text-control-{sm,md,lg}` for free. */
+  --text-control-sm: 13px;
+  --text-control-md: 14px;
+  --text-control-lg: 15px;
+
   /* ── Motion ──
      One curve, four durations. Every transition in the portal picks a
      step here rather than inventing a number. */

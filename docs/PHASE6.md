@@ -250,35 +250,38 @@ A ninth was found in the same pass: `routes.ts` pointed at
 rows were 404s wearing an HTTP 200. Fixed to `evt_jzb_robbie`, and
 `tools/verify/events.mjs` now walks the event side so it cannot recur.
 
-### Found during this phase, reproduced as-is, still open
+### Found during this phase, fixed after it
 
-Three more surfaced while extracting the lounge configuration — after the
-fixes above. The brief says to reproduce rather than improve, so the
-frames show them as they are, and they are annotated on the lounge delta
-frame where a designer will meet them. **None is fixed in the code.**
+Three more surfaced while extracting the lounge configuration, after the
+fixes above. They were reproduced in the frames as they stood when this
+file was written; all three are now fixed in the code, the affected frames
+and the lounge delta annotation are updated, and nothing in §5 is open.
 
-1. **The Accueil subtitle ignores the configuration.**
-   `src/lib/db/overview-store.ts:426` hardcodes
-   `"${bookedCovers} couverts réservés, …"` and never reads
-   `venue_settings.configuration`. Nomad Rooftop, a lounge, therefore
-   says "38 couverts réservés" on its home screen while its own KPI tiles
-   say "Personnes". Visible on `/restaurant` in the lounge configuration.
-2. **French agreement is wrong in the feminine plural.**
-   `src/lib/restaurant/screens.ts:173` and `:620` concatenate a masculine
-   participle after `vocabulary.cover.many`, yielding "Personnes arrivés"
-   and "Personnes réservés" where French wants "arrivées" and
-   "réservées". Visible on the Accueil and Réservations tiles in the
-   lounge configuration.
-3. **`Button` sizes its text off-scale.** `components/ui/Button.tsx`
-   writes `text-[13px]`, `text-[14px]` and `text-[15px]` as arbitrary
-   values; 15px matches no step in the type scale. The Figma `Button`
-   reproduces all three and its description says so. This is a font-size
-   literal, so it is the one place the README's rule is still aspirational
-   rather than true.
+1. **The Accueil subtitle ignored the configuration.**
+   `src/lib/db/overview-store.ts` hardcoded `"${bookedCovers} couverts
+   réservés, …"`. It now reads `venue_settings.configuration` and renders
+   through the venue vocabulary, so Nomad Rooftop says "38 personnes
+   réservées" and Dar Zellij still says "120 couverts réservés".
+2. **French agreement was wrong in the feminine plural.**
+   `cover.many` was concatenated with a masculine participle, yielding
+   "Personnes arrivés" and "Personnes réservés". `VenueConfig.cover` now
+   carries a `gender`, and `coverAgreement()` / `coverLabel()` in
+   `src/lib/venue/config.ts` own the agreement. The two sites §5 named
+   were not the only ones: the service summary ("réservés sur … absents")
+   and the two load-chart subheadings ("attendus", "réservés par créneau")
+   had the same bug and are fixed with them. Every open-coded
+   `cover.many.replace(/^./, …)` in `screens.ts` is gone.
+3. **`Button` sized its text off-scale.** `--text-control-sm|md|lg`
+   (13/14/15px) are declared in the `@theme` block, so Tailwind generates
+   `text-control-*` and `Button` spends tokens. 15px joined the scale
+   rather than `size=lg` dropping to 14px. No font-size literal remains in
+   `Button`, which makes the README's no-literals rule true rather than
+   aspirational.
 
-The first two are one fix each and both are in the vocabulary seam that
-`configFor()` exists to own. The third is a decision — either 15px joins
-the scale as a token, or `size=lg` drops to 14px.
+Verified on a production build, not in dev: `configuration.mjs` reports
+« couverts » for the restaurant and « personnes » for the lounge,
+`walk.mjs` 30/30, `events.mjs` 19/19, `states.mjs` three states on all 30
+routes.
 
 ---
 

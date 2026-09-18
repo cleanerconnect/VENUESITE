@@ -28,9 +28,9 @@ const VARIANT: Record<Variant, string> = {
 };
 
 const SIZE: Record<Size, string> = {
-  sm: "h-9 px-3.5 text-[13px] rounded-[var(--radius-sm)]",
-  md: "h-11 px-5 text-[14px] rounded-[var(--radius-sm)]",
-  lg: "h-14 px-7 text-[15px] rounded-[var(--radius-md)]",
+  sm: "h-9 px-3.5 text-control-sm rounded-[var(--radius-sm)]",
+  md: "h-11 px-5 text-control-md rounded-[var(--radius-sm)]",
+  lg: "h-14 px-7 text-control-lg rounded-[var(--radius-md)]",
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
