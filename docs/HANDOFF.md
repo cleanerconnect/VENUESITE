@@ -1,76 +1,270 @@
-# Handoff summary
+# Handover — LYFE Portail Partenaire
 
-What a development team receives, what it can rely on, and what it has to
-build. Written to be read before the code, not after.
-
-Phase 4 (handoff completion) is reported in `docs/PHASE4.md`; Phase 5
-(completing the venue dashboard) in `docs/PHASE5.md`; Phase 6 (the Figma
-export) in `docs/PHASE6.md`; Phase 7 (the worked example — one venue,
-every screen, populated from the seed) in `docs/PHASE7.md`. The Figma
-file is `LYFE Portail Partenaire`; PHASE6 §5 lists three defects found
-while building it, and PHASE7 §6 six observations made while populating
-it — four of them defects still open in this repository. The screen-by-screen
-target the venue side is built against is `docs/TARGET_SPEC.md`, and it is
-the document to read first if you are deciding whether something belongs.
-
-Companion documents:
-`docs/INTERFACE.md` (how the UI is put together) ·
-`docs/CONVERGENCE.md` (what was unified and what is still duplicated) ·
-`docs/APP_MAPPING.md` (app element → portal control) ·
-`docs/INTEGRATION.md` (the API and AI seams) ·
-`docs/SCOPE_AUDIT.md` and `docs/PHASE2_HARDCODED_AUDIT.md` (earlier passes).
+The single entry point. Read this before the code; everything else is
+linked from here.
 
 ---
 
-## 1. Start here
+## 1. What this is
+
+The partner portal for **LYFE**, Morocco's lifestyle discovery platform.
+Two workspaces behind one login:
+
+- **Espace partenaire** — the venue side: thirty-one screens for a
+  restaurant or a bar, from tonight's service to the monthly payout.
+  Complete, and the worked example for everything else.
+- **Espace organisateur** — the event side: sixteen screens for a
+  promoter selling tickets. Reads are real; writes have no backend to
+  shape them against yet (§11, gap 1).
+
+It is a **front end with a seam**, not a product with a database. Every
+read and write goes through one interface with three drivers, so
+connecting the real Business Service is filling in the HTTP adapter and
+setting two environment variables — not a rewrite. What ships today runs
+on a committed snapshot, which is why a cold clone renders every screen
+before anyone stands a service up.
+
+Scope is deliberate and narrow: the portal shows what LYFE delivers and
+nothing else. No kitchen management, no stock, no POS, no staff
+scheduling. See §13.
+
+---
+
+## 2. Run it cold
+
+No database, no services, no credentials:
 
 ```bash
 npm install
-npm run dev          # runs on the committed static dataset — no database needed
+npm run dev          # http://localhost:3000 → /dashboard
 ```
 
-Optionally, `npm run db:reset` seeds `.data/lyfe.db` and the portal
-switches to it, so edits persist across restarts. `GET /api/health` says
-which of the three data drivers is live.
+That serves the committed static dataset. Sign in with any demo account
+on `/login` — the password is `demo`; `yassine@darzellij.ma` is the owner
+of both venues and the account every capture and check uses.
 
-Then open **`/styleguide`**. It needs no session and no seeded database
-— every specimen renders from literal props — and it is the fastest way
-to see what exists before reading a line of code. Its "Écrans" section
-is the route index: every screen the portal ships, linked, with what each
-is for, who may open it, and — where something is missing — whether that
-is work this repo owes or a service nobody has connected yet.
-
-**Before you trust a change, walk it.** Four browser checks are committed
-under `tools/verify/`, deliberately kept out of `package.json` so they
-are run on purpose rather than carried as a dependency. They need a
-server already up on `:3210` and `npm install --no-save playwright`:
+Optionally promote to a real database, after which edits persist across
+restarts:
 
 ```bash
-node tools/verify/walk.mjs            # the 30 venue screens (W/H/VENUE overridable)
-node tools/verify/events.mjs          # the 19 event + shared routes
-node tools/verify/states.mjs          # ?etat= forceable on all 30 venue routes
-node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
-node tools/verify/extract.mjs         # dumps what every route actually renders
+npm run db:reset     # seeds .data/lyfe.db from db/schema.sql + db/seed.mjs
+npm run db:snapshot  # re-captures the static dataset from that database
 ```
+
+`GET /api/health` says which of the three drivers is live. The rule is in
+`lib/data/mode.ts`: `http` when `LYFE_API_BASE_URL` and `LYFE_API_TOKEN`
+are set, else `db` when a seeded SQLite file exists, else `static`.
+`LYFE_DATA` forces any of the three.
+
+**Two venues are seeded on purpose.** Dar Zellij is a restaurant in
+Marrakech with Lyfe Pay history; Nomad Rooftop is a lounge in Casablanca
+with none. The pair is what makes three rules checkable rather than
+asserted: the configuration switch, the money-tile rule (§12.7) and the
+minimum group size on Audience.
+
+### Before you trust a change, walk it
+
+Five browser checks are committed under `tools/verify/`, kept out of
+`package.json` deliberately — they need a running server and a browser
+binary, and a check that pretends to be a unit test is a check that gets
+skipped in CI and then deleted.
+
+```bash
+npm install --no-save playwright          # once
+npm run build && npx next start -p 3210   # in one terminal
+
+node tools/verify/walk.mjs            # the 31 venue screens (W/H/VENUE overridable)
+node tools/verify/events.mjs          # the 19 event + shared routes
+node tools/verify/states.mjs          # ?etat= forceable on all 31 venue routes
+node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
+node tools/verify/audience.mjs        # the minimum group of ten, both configurations
+node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
+```
+
+Run them against a **production build**, not `npm run dev`. Three of them
+fill the login form before React has hydrated in dev, and the submit gate
+never opens; the symptom is a timeout on a disabled button.
 
 `extract.mjs` is the odd one out: it asserts nothing, it *records*. At
 its default depth it writes the route outline; at `DEPTH=full` it writes
 every table cell, list row, metric, chart geometry and form value, with
-`SHOTS=` capturing reference PNGs alongside. That file is what the Figma
-export is built from, which is why Phase 7 found four content-losing bugs
-in it — a screen that reads as prose in the JSON is a screen the
-extractor is not seeing properly, and it is worth checking before
-trusting the output.
+`SHOTS=` capturing reference PNGs. That file is what the Figma export is
+built from, which is why Phase 7 found four content-losing bugs in it — a
+screen that reads as prose in the JSON is a screen the extractor is not
+seeing properly.
 
-One trap worth knowing, because it has now cost time twice: if a stale
-`next start` still holds `:3210`, the new one fails to bind with
-`EADDRINUSE` and every check silently measures the *old* build. Kill by
-PID (`pkill -9 -f next-server`) and confirm the port is free before
+One trap, because it has now cost time twice: if a stale `next start`
+still holds `:3210`, the new one fails to bind with `EADDRINUSE` and
+every check silently measures the *old* build. Kill by PID
+(`pkill -9 -f next-server`) and confirm the port is free before
 rebuilding.
 
 ---
 
-## 2. What is solid
+## 3. The styleguide
+
+Open **`/styleguide`**. It needs no session and no seeded database —
+every specimen renders from literal props — and it is the fastest way to
+see what exists before reading a line of code.
+
+Seven sections, in this order:
+
+| Section | What it holds |
+|---|---|
+| `Tokens` | colours, typography, radii, shadows, motion — read from the CSS variables, so editing `globals.css` edits this page |
+| `Contrôles` | what you click and what you fill, in every state: empty, filled, in error, disabled |
+| `Surfaces` | cards, pills, headers, tiles, drawers, empty states and loading skeletons |
+| `Blocs d'écran` | every block the spec engine can paint, rendered from a hand-written spec by the same renderer the app uses |
+| `États` | loading, empty, failed and access-denied — each forceable on any route from its URL |
+| `Vocabulaire` | every domain term with its label, tone and icon, generated from the same tables the app reads |
+| `Écrans` | **the route index** — see §6 |
+
+It is also the enforcement mechanism for the rule that keeps the
+components portable: `components/ui/` imports nothing from the data
+layer, so if the styleguide renders, that rule still holds.
+
+---
+
+## 4. The Figma file, and how its pages map to the repo
+
+**`LYFE Portail Partenaire`** —
+<https://www.figma.com/design/fztoNaEvTrZrWDaLy1MEWg>
+
+The file is not a mockup of the portal; it is generated *from* it. Every
+French string, number and status pill on pages `04` and `08` came out of
+the running portal through `tools/verify/extract.mjs`, never typed. Read
+`00 Lisez-moi` in the file first — it states the naming rules the pages
+follow.
+
+| Figma page | Mirrors | Built from |
+|---|---|---|
+| `00 Lisez-moi` | this document and `docs/TARGET_SPEC.md` | — |
+| `01 Fondations` | `src/app/globals.css` | the token block, 1:1 |
+| `02 Composants` | `src/components/ui/` | 29 components, 175 variants; a component is named for its file |
+| `03 Entrée` | `/login`, `/splash`, `/contact` | built without the shell, as the code renders them |
+| `04 Espace partenaire` | the 31 venue screens | structure, in ten Sections named for the ten nav groups of `src/lib/nav/workspaces.ts` |
+| `05 Espace organisateur` | the 16 event screens | structure, in two Sections |
+| `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
+| `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
+| `08 Exemple complet · Dar Zellij` | every screen, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
+
+Two rules the file keeps, and a designer extending it should keep too:
+the library on `02 Composants` is the source for components, and `08` is
+the **only** page where detaching from it is allowed — because a Figma
+instance cannot be given rows.
+
+Page and component ids, the variable collections and the verification
+record live in `docs/phase6-figma-state.json`.
+
+---
+
+## 5. The spec
+
+**`docs/TARGET_SPEC.md`** is the screen-by-screen target the venue side is
+built against, and the document to read first when deciding whether
+something belongs. Ten sections, one per nav group, each screen with its
+purpose, its sections, its actions, what it reads and what it writes.
+
+The relationship is enforced, not aspirational: `src/lib/restaurant/slugs.ts`
+is the canonical screen list, the builder registry is a total map over it,
+and `restaurantHref` builds every nav link from it — so a screen in the
+spec with no builder is a compile error, and a nav link to a screen that
+does not exist cannot be written.
+
+---
+
+## 6. The route index
+
+`src/lib/nav/routes.ts` is the one list of what the portal ships — 53
+rows: 31 venue, 16 event, 3 entry, 3 shared. The styleguide's `Écrans`
+section renders it, linked, with roles and status. Three statuses:
+
+- **`built`** (41) — complete.
+- **`partial`** (6) — work *this repo* owes: `/events/new`,
+  `/events/:id/edit`, `/visibilite`, `/promo-codes`, `/scanner`,
+  `/team`. All six are the event side's missing write path (§11, gap 1).
+- **`service`** (6) — nothing is missing from the portal; a third party
+  is not connected. Each row carries its dependency verbatim, so nobody
+  goes looking for a bug that is not there.
+
+| Route | What waits, and on what |
+|---|---|
+| `/restaurant/menu` | Assisted PDF-to-articles import awaits an **extraction service**. The PDF upload itself works — the file card is published on the listing. |
+| `/restaurant/avis` | Public replies and redirection to Google or Tripadvisor await **those platforms being connected**. The survey, the links and the redirect threshold all save. |
+| `/restaurant/acomptes` | **Payzone** is not connected, and the specification leaves the direction of the flow open: the venue collects directly, or LYFE collects and remits. Both paths use the same idempotency key, so the choice does not change this screen. |
+| `/restaurant/bilans` | PDF export goes through the browser's own print, which renders correctly. A server-side render awaits a **composition service**. |
+| `/restaurant/campagnes` | No **send gateway** is connected. Messages are logged with their cost and recipient, and the console says once that nothing is being sent. |
+| `/restaurant/notifications` | Channels, schedules and templates all save. Delivery awaits LYFE's **Twilio or Infobip** account. |
+
+The distinction between `partial` and `service` is the point of the
+third status: "partial" once told a reader to go hunting for a bug that
+was not there.
+
+---
+
+## 7. The schema is the Business Service contract
+
+`db/schema.sql` — **65 tables**. It is not an implementation detail of
+the demo; it is the specification of what the Business Service must
+store. It is written on the Postgres/SQLite intersection precisely so it
+ports without translation, and `db/seed.mjs` fills it with a dataset the
+whole portal renders from.
+
+Four properties the specification names, and where they live:
+
+- **Every row is venue-scoped.** Every table carries `venue_id`, every
+  store function scopes by it in the `WHERE` clause, and that id comes
+  from the resolved session — never from a payload. `platform_benchmarks`
+  is the one deliberate exception: a row there is an anonymised cohort,
+  not a venue, which is why it carries none.
+- **Versioned writes.** `service_definitions`, `pacing_rules`,
+  `deposit_policies` and `cancellation_policies` carry a `version`. A
+  write that read an older value is refused, not merged — a lost update
+  there is a double-booked room or money taken under a rule nobody chose.
+- **Idempotent money.** `deposits.idempotency_key` is unique. Capture,
+  release and refund all send it; a replayed request finds the key spent
+  and stops.
+- **Spend has exactly one source.** `transactions`. `MoneyDesk.hasTransactionSource`
+  is the single fact every money tile keys off, and where it is false the
+  tile is *absent* — not zero, not estimated.
+
+Reads cross the seam as **bundles**, not one table at a time: a screen
+renders one coherent snapshot, and six round trips would let a counter
+disagree with the list beneath it. `SCREEN_NEEDS` declares which bundles
+each screen wants. Writes are a **typed union per bundle**, so each
+surface is one endpoint rather than forty routes to write and forty to
+secure, and every action returns the refreshed bundle.
+
+---
+
+## 8. The four documents
+
+The phase record — what was built, what was found, and what was left
+open. Read in order, they are the history of the repository:
+
+| Document | What it covers |
+|---|---|
+| `docs/PHASE4.md` | Handoff completion: the event side off fixtures, every route given its four states |
+| `docs/PHASE5.md` | Completing the venue dashboard: 28 tables to 63, the seam, the app contract in both directions, drinks as a configuration |
+| `docs/PHASE6.md` | The Figma export: variables, components, frames, and §5 — the écarts found by reading the code against the documents, all now closed |
+| `docs/PHASE7.md` | The worked example: one venue, every screen, populated from the seed, and §6 — six observations, four of them defects still open here |
+
+Four reference documents sit beside them:
+`docs/INTERFACE.md` (how the UI is put together) ·
+`docs/CONVERGENCE.md` (what was unified, what is still duplicated) ·
+`docs/APP_MAPPING.md` (app element → portal control) ·
+`docs/INTEGRATION.md` (the API and AI seams).
+
+`docs/SCOPE_AUDIT.md` and `docs/PHASE2_HARDCODED_AUDIT.md` are earlier
+passes, kept for provenance.
+
+**Start with `docs/TARGET_SPEC.md` if you are deciding whether something
+belongs; with `docs/PHASE7.md` §6 if you are looking for the next bug to
+fix.**
+
+---
+
+## 9. What is solid
 
 **The design system.** One `SideSheet`, one `MetricTile`, one
 `FilterTabs`, one `PageHeader`, one chart theme, one tooltip, one set of
@@ -80,18 +274,18 @@ labelled as such. `components/ui/` imports nothing from the data layer,
 which is what makes the styleguide possible and what keeps the
 components portable.
 
-**The spec engine.** Twenty-four of the venue workspace's thirty screens
-are pure functions returning JSON-serialisable `ScreenSpec` values,
+**The spec engine.** Twenty-six of the venue workspace's thirty-one
+screens are pure functions returning JSON-serialisable `ScreenSpec` values,
 painted by a block registry. Adding a screen is a builder plus an entry
 in a typed slug list; the registry is a total map over that list, so a
 missing screen or a dead link is a compile error rather than a 404 in
 production.
 
-The other six are routes rather than specs — Ma fiche, Menu, Équipe et
-rôles, Check-in, Fiche client and the workspace's own detail pages. Drag
-reordering, file upload and a live camera are not blocks, and inventing a
-block type per field would have been worse than a page. A type-level
-exclusion keeps the registry total anyway.
+The other five are routes rather than specs — Ma fiche, Menu, Équipe et
+rôles, Check-in and Fiche client. Drag reordering, file upload and a live
+camera are not blocks, and inventing a block type per field would have
+been worse than a page. A type-level exclusion keeps the registry total
+anyway.
 
 **Writes are a closed list too.** A spec is JSON, so a button carries a
 command *name*; the screen carries the form that name opens, and one
@@ -101,7 +295,7 @@ verb with no handler says so rather than doing nothing.
 
 **The data seam.** `RestaurantRepository` is the single interface every
 read and write in the venue workspace goes through. `MockRestaurantRepository`
-implements it against a real SQLite database (`db/schema.sql`, 63 tables,
+implements it against a real SQLite database (`db/schema.sql`, 65 tables,
 seeded by `db/seed.mjs`); `HttpRestaurantRepository` implements it against
 `/api/business/*`; `StaticRestaurantRepository` implements it against a
 snapshot captured from the seeded database through those same store
@@ -144,7 +338,7 @@ is 404 with no leak.
 
 ---
 
-## 3. What is deliberately not built
+## 10. What is deliberately not built
 
 These are **open, not worked around**. Nothing in the codebase pretends
 they exist.
@@ -159,7 +353,7 @@ they exist.
 
 ---
 
-## 4. What is a gap, ranked
+## 11. What is a gap, ranked
 
 | # | Gap | Consequence | Size |
 |---|---|---|---|
@@ -183,7 +377,7 @@ for a bug that was not there.
 
 ---
 
-## 5. Rules to keep
+## 12. Rules to keep
 
 Eight things that will rot quietly if nobody defends them.
 
@@ -204,8 +398,11 @@ Eight things that will rot quietly if nobody defends them.
    (one of them a violet in the palette nowhere else), twenty-six inline
    `rounded-[12px]`, four gold hero glows the token comment claimed did
    not exist, and two variants painting a second variant's colour.
-   `grep -rn 'rgba([0-9]' src` now returns one hit — a comment recording
-   the stray value. Two hits means it has started rotting again.
+   `grep -rn 'rgba([0-9]' src --include='*.ts' --include='*.tsx'` returns
+   one hit — a comment in `Pill.tsx` recording the stray value. Two hits
+   means it has started rotting again. Scope it to the code: unscoped it
+   also counts `globals.css`, where eighteen `rgba()` values are the
+   token *definitions* and so are the rule being kept, not broken.
 
    Colour holds; radius is only half done, and the sentence above should
    not be read as claiming otherwise.
@@ -239,7 +436,7 @@ Eight things that will rot quietly if nobody defends them.
 
 ---
 
-## 6. Scope, once more
+## 13. Scope, once more
 
 The venue workspace shows what LYFE delivers and nothing else. No kitchen
 management, no stock, no food costing, no suppliers, no POS, no staff
