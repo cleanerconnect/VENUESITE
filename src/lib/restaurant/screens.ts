@@ -50,6 +50,9 @@ import {
 } from "./vocabulary";
 import { formatValue } from "@/lib/dashboard/value";
 import { buildCustomersScreen } from "./crm";
+import { buildAudienceScreen } from "./audience";
+import type { AudienceInsights } from "@/lib/types/venue-operations";
+import { emptyAudience } from "@/lib/types/venue-operations";
 import {
   buildPerformanceScreen,
   buildReportsScreen,
@@ -1484,6 +1487,7 @@ export interface ScreenContext {
   availability?: VenueAvailability;
   serviceFloor?: ServiceFloor;
   guestGraph?: GuestGraph;
+  audience?: AudienceInsights;
   growth?: Growth;
   nightlife?: Nightlife;
   money?: MoneyDesk;
@@ -1503,6 +1507,7 @@ export interface ScreenContext {
 
 export type ScreenDataNeed =
   | "customers"
+  | "audience"
   | "analytics"
   | "visibility"
   | "availability"
@@ -1552,6 +1557,7 @@ export const SCREEN_NEEDS: Record<SpecSlug, ScreenDataNeed[]> = {
   briefing: ["serviceFloor"],
   clients: ["customers", "guestGraph", "spend"],
   segments: ["guestGraph", "money"],
+  audience: ["audience"],
   avis: ["survey"],
   visibilite: ["visibility", "profile"],
   offres: ["growth"],
@@ -1662,6 +1668,8 @@ export const RESTAURANT_SCREENS: Record<
       ctx.guestGraph ?? EMPTY_GRAPH,
       ctx.spendByCustomer ?? {},
     ),
+  audience: (ctx) =>
+    buildAudienceScreen(ctx.audience ?? emptyAudience(ctx.overview.restaurant.id), ctx.configuration),
   segments: (ctx) =>
     buildSegmentsScreen(
       ctx.guestGraph ?? EMPTY_GRAPH,
@@ -1796,6 +1804,7 @@ export const SCREEN_TITLES: Record<RestaurantSlug, string> = {
   briefing: "Briefing",
   clients: "Liste clients",
   segments: "Tags et segments",
+  audience: "Audience",
   "ma-fiche": "Ma fiche",
   menu: "Menu",
   avis: "Avis",

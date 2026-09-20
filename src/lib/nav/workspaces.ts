@@ -202,6 +202,12 @@ const RESTAURANT_WORKSPACE: Workspace = {
           icon: "tag",
           allow: ["owner", "admin"],
         },
+        {
+          label: "Audience",
+          href: restaurantHref("audience"),
+          icon: "users",
+          allow: ["owner", "admin"],
+        },
       ],
     },
     {

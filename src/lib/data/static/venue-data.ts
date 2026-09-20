@@ -11,6 +11,7 @@
 // (now − capturedAt), so the demo stays live however old the file is.
 
 import snapshot from "./venue-snapshot.json";
+import type { AudienceInsights } from "@/lib/types/venue-operations";
 import type {
   BusinessAccount,
   Customer,
@@ -48,6 +49,7 @@ import type { ServiceConfiguration } from "@/lib/data/repository";
 export interface OperationsBundle {
   serviceFloor: ServiceFloor;
   guestGraph: GuestGraph;
+  audience: AudienceInsights;
   growth: Growth;
   nightlife: Nightlife;
   moneyDesk: MoneyDesk;

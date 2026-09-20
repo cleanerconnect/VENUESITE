@@ -617,3 +617,142 @@ export interface SupportTicket {
   createdAt: string;
   updatedAt: string;
 }
+
+// ── Audience ─────────────────────────────────────────────────
+//
+// The cross-guest view. Fiche client answers "who is this person";
+// Audience answers "who comes here", which is the same rows read the
+// other way round.
+//
+// Every breakdown below carries its own `covered` and `withheld` counts
+// rather than a single base total, because the three dimensions the
+// consumer app collects are all optional: a guest with no city is in the
+// base and in no city row, and a screen that divided by the base would
+// quietly under-report every share.
+
+/** No breakdown renders for a group smaller than this. */
+export const AUDIENCE_MIN_GROUP = 10;
+
+/** An empty breakdown — nothing disclosed, nothing withheld. */
+export function emptyAudienceBreakdown(): AudienceBreakdown {
+  return { rows: [], covered: 0, withheld: 0, withheldGroups: 0, unknown: 0 };
+}
+
+/**
+ * A venue with no guests yet. The forced `vide` state and a brand-new
+ * establishment render the same object, which is the point: what a
+ * reviewer forces cannot drift from what a new partner sees.
+ */
+export function emptyAudience(venueId: string): AudienceInsights {
+  return {
+    venueId,
+    baseTotal: 0,
+    newSharePct: 0,
+    returnRate90Pct: 0,
+    periodDays: 90,
+    byCity: emptyAudienceBreakdown(),
+    byQuartier: emptyAudienceBreakdown(),
+    byAge: emptyAudienceBreakdown(),
+    byInterest: emptyAudienceBreakdown(),
+    sources: [],
+    byWeekday: emptyAudienceBreakdown(),
+    byService: emptyAudienceBreakdown(),
+    byBookingHour: emptyAudienceBreakdown(),
+    cohorts: [],
+    benchmarks: [],
+    minGroupSize: AUDIENCE_MIN_GROUP,
+    benchmarkCohort: "",
+  };
+}
+
+export type AudienceSourceKey =
+  | "feed"
+  | "recherche"
+  | "listes"
+  | "boost"
+  | "offre"
+  | "lien_externe";
+
+export type AudienceBenchmarkMetric =
+  | "occupancy"
+  | "no_show_rate"
+  | "review_score"
+  | "return_rate";
+
+export interface AudienceBreakdownRow {
+  label: string;
+  count: number;
+  /** Share of `covered`, not of the base total. */
+  sharePct: number;
+}
+
+export interface AudienceBreakdown {
+  /** Only groups at or above the minimum. */
+  rows: AudienceBreakdownRow[];
+  /** People represented by the rows shown. */
+  covered: number;
+  /** People whose group was too small to show. */
+  withheld: number;
+  /** How many groups the minimum removed. */
+  withheldGroups: number;
+  /** People who gave no value for this dimension at all. */
+  unknown: number;
+}
+
+export interface AudienceSourceRow {
+  source: AudienceSourceKey;
+  label: string;
+  impressions: number;
+  opens: number;
+  requests: number;
+  /** Share of requests across all sources. */
+  sharePct: number;
+}
+
+export interface AudienceCohort {
+  /** "2026-03" — the month of first visit. */
+  month: string;
+  label: string;
+  size: number;
+  /** Share of the cohort still visiting at 30, 60 and 90 days. */
+  retentionPct: [number, number, number];
+}
+
+export interface AudienceBenchmark {
+  metric: AudienceBenchmarkMetric;
+  label: string;
+  /** This venue's own value, in the metric's natural unit. */
+  venueValue: number;
+  median: number;
+  topDecile: number;
+  /** How many establishments the cohort holds. */
+  sampleSize: number;
+  format: "percent" | "score";
+  /** True where a lower number is the better one. */
+  lowerIsBetter: boolean;
+}
+
+export interface AudienceInsights {
+  venueId: string;
+  /** Every guest the venue has, whatever they disclosed. */
+  baseTotal: number;
+  /** Share of the base first seen inside the period. */
+  newSharePct: number;
+  /** Share of guests who came back within ninety days of a first visit. */
+  returnRate90Pct: number;
+  periodDays: number;
+  byCity: AudienceBreakdown;
+  byQuartier: AudienceBreakdown;
+  byAge: AudienceBreakdown;
+  byInterest: AudienceBreakdown;
+  sources: AudienceSourceRow[];
+  byWeekday: AudienceBreakdown;
+  byService: AudienceBreakdown;
+  byBookingHour: AudienceBreakdown;
+  cohorts: AudienceCohort[];
+  benchmarks: AudienceBenchmark[];
+  /** Echoed so the screen states the rule rather than hardcoding it. */
+  minGroupSize: number;
+  /** Cohort the benchmarks are drawn from, for the anonymity note. */
+  benchmarkCohort: string;
+}

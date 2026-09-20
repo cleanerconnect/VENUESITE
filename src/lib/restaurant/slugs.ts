@@ -24,6 +24,7 @@ export const RESTAURANT_SLUGS = [
   // 3. Clients
   "clients",
   "segments",
+  "audience",
   // 4. Ma présence
   "ma-fiche",
   "menu",

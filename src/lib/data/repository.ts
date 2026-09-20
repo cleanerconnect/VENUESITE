@@ -173,6 +173,7 @@ export class RepositoryError extends Error {
 
 import type {
   Growth,
+  AudienceInsights,
   GuestGraph,
   Marketing,
   MoneyDesk,
@@ -443,6 +444,8 @@ export class StaleWriteError extends Error {
 export interface VenueOperationsRepository {
   getServiceFloor(venueId: string): Promise<ServiceFloor>;
   getGuestGraph(venueId: string): Promise<GuestGraph>;
+  /** The cross-guest view. Read-only: Audience writes segments, not itself. */
+  getAudience(venueId: string): Promise<AudienceInsights>;
   getGrowth(venueId: string): Promise<Growth>;
   getNightlife(venueId: string): Promise<Nightlife>;
   getMoneyDesk(venueId: string): Promise<MoneyDesk>;

@@ -1,4 +1,5 @@
 import "server-only";
+import type { AudienceInsights } from "@/lib/types/venue-operations";
 
 // HTTP adapter — the Business Service.
 //
@@ -249,6 +250,9 @@ export class HttpRestaurantRepository implements RestaurantRepository {
   }
   getGuestGraph(venueId: string) {
     return this.request<GuestGraph>("GET", this.scoped("/guests/graph", venueId));
+  }
+  getAudience(venueId: string) {
+    return this.request<AudienceInsights>("GET", this.scoped("/audience", venueId));
   }
   getGrowth(venueId: string) {
     return this.request<Growth>("GET", this.scoped("/growth", venueId));

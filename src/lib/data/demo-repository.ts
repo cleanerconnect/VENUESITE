@@ -1,4 +1,5 @@
 import "server-only";
+import { emptyAudience } from "@/lib/types/venue-operations";
 
 // The demo state switch, on the venue side.
 //
@@ -80,6 +81,7 @@ function empty(base: RestaurantRepository): RestaurantRepository {
       segments: [],
       tagsByCustomer: {},
     }),
+    getAudience: async (venueId: string) => emptyAudience(venueId),
     getGrowth: async () => ({ offers: [], experiences: [] }),
     getNightlife: async () => ({
       guestLists: [],

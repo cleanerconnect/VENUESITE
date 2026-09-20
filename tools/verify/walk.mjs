@@ -28,6 +28,7 @@ const SCREENS = [
   ["/clients", "Liste clients"],
   ["/clients/cus_1", "Fiche client"],
   ["/segments", "Tags et segments"],
+  ["/audience", "Audience"],
   ["/ma-fiche", "Ma fiche"],
   ["/menu", "Menu"],
   ["/avis", "Avis"],

@@ -14,7 +14,7 @@ const BASE = process.env.BASE ?? "http://localhost:3210";
 const ERROR_MARKER = "Cette page n'a pas pu charger";
 
 const PATHS = ["", "/reservations", "/calendrier", "/liste-attente", "/check-in",
-  "/briefing", "/clients", "/clients/cus_1", "/segments", "/ma-fiche", "/menu",
+  "/briefing", "/clients", "/clients/cus_1", "/segments", "/audience", "/ma-fiche", "/menu",
   "/avis", "/visibilite", "/offres", "/experiences", "/guest-list", "/tables",
   "/promoteurs", "/acomptes", "/annulations", "/lyfe-pay", "/performance",
   "/bilans", "/campagnes", "/disponibilites", "/equipe", "/notifications",

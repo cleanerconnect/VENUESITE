@@ -162,6 +162,9 @@ async function loadContext(
         case "guestGraph":
           ctx.guestGraph = await repo.getGuestGraph(venueId);
           return;
+        case "audience":
+          ctx.audience = await repo.getAudience(venueId);
+          return;
         case "growth":
           ctx.growth = await repo.getGrowth(venueId);
           return;

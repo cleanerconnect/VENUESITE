@@ -259,6 +259,9 @@ export class StaticRestaurantRepository implements RestaurantRepository {
   async getGuestGraph(venueId: string) {
     return clone(this.operations(venueId).guestGraph);
   }
+  async getAudience(venueId: string) {
+    return clone(this.operations(venueId).audience);
+  }
   async getGrowth(venueId: string) {
     return clone(this.operations(venueId).growth);
   }

@@ -1350,10 +1350,164 @@ seedOperations({
   suppressed: "anas.berrada@gmail.com",
 });
 
+// ── Audience ─────────────────────────────────────────────────
+//
+// Audience profiles the guest base, and every breakdown is withheld
+// below ten people. Twelve customers at Dar Zellij and seven at Nomad
+// would put every single group under that floor, so the screen would be
+// a page of "trop peu de données" and the rule itself would be
+// untestable in the direction that matters. This section gives each
+// venue a base of a plausible size for its age, with the three
+// dimensions the consumer app actually collects.
+//
+// Deterministic on purpose: a demo that reshuffles on every seed is a
+// demo where nobody can be told what to look at, and the verify walk
+// asserts on real numbers.
+let rngState = 0x5eed1e;
+const rnd = () => {
+  rngState = (rngState * 1_664_525 + 1_013_904_223) >>> 0;
+  return rngState / 0x1_0000_0000;
+};
+const pick = (weighted) => {
+  const total = weighted.reduce((a, [, w]) => a + w, 0);
+  let r = rnd() * total;
+  for (const [value, w] of weighted) {
+    r -= w;
+    if (r <= 0) return value;
+  }
+  return weighted[weighted.length - 1][0];
+};
+
+const QUARTIERS = {
+  Casablanca: ["Gauthier", "Anfa", "Maârif", "Racine", "Ain Diab", "Bourgogne", "Oasis"],
+  Rabat: ["Agdal", "Hassan"],
+  Marrakech: ["Guéliz"],
+  Mohammedia: ["Centre"],
+};
+const INTERESTS = [
+  ["Cuisine marocaine", 9], ["Cuisine italienne", 6], ["Cuisine japonaise", 5],
+  ["Brunch", 7], ["Rooftop", 8], ["Concerts", 6], ["DJ sets", 5],
+  ["Afterwork", 7], ["Festivals", 4], ["Expositions", 3],
+];
+const SOURCES = ["feed", "recherche", "listes", "boost", "offre", "lien_externe"];
+
+const FIRST_NAMES = ["Youssef","Salma","Mehdi","Ghita","Anas","Imane","Reda","Nawal","Zakaria","Sara","Othmane","Meryem","Ayoub","Hajar","Ismail","Soukaina","Adam","Rim","Walid","Dounia","Karim","Aya","Nabil","Lina"];
+const LAST_NAMES = ["Benjelloun","El Amrani","Bouhlal","Sqalli","Tahiri","Naciri","Lamrani","Belkadi","Ouazzani","Chraibi","Benslimane","Alaoui"];
+
+/** Backfill the named guests, then extend the base. */
+function seedAudience(venueId, prefix, extra, cityWeights, startIndex) {
+  // 1 · the guests already seeded by name get the three dimensions too.
+  const existing = db
+    .prepare("SELECT id FROM customers WHERE venue_id = ? ORDER BY id")
+    .all(venueId);
+  existing.forEach((row, i) => {
+    const city = pick(cityWeights);
+    const quartiers = QUARTIERS[city];
+    db.prepare(
+      "UPDATE customers SET city = ?, quartier = ?, birth_year = ? WHERE id = ?",
+    ).run(city, quartiers[i % quartiers.length], 1968 + ((i * 7) % 36), row.id);
+  });
+
+  // 2 · the rest of the base.
+  for (let i = 0; i < extra; i += 1) {
+    const id = `${prefix}${startIndex + i}`;
+    const name = `${FIRST_NAMES[(i * 5 + startIndex) % FIRST_NAMES.length]} ${LAST_NAMES[(i * 3 + startIndex) % LAST_NAMES.length]}`;
+    const city = pick(cityWeights);
+    const quartiers = QUARTIERS[city];
+    const visits = Math.floor(rnd() * 9);
+    // First seen spread across the last twelve months, so the cohort
+    // curves have twelve rows rather than one.
+    const firstSeenDays = 20 + Math.floor(rnd() * 345);
+    const lastVisitDays = visits > 0 ? Math.floor(rnd() * Math.min(firstSeenDays, 120)) : null;
+    insert("customers", {
+      id, venue_id: venueId, app_user_id: `app_user_${id}`,
+      full_name: name,
+      phone: `+212 6${String(60 + (i % 10))} ${String(10 + (i % 80)).padStart(2, "0")} ${String(10 + (i % 70)).padStart(2, "0")} ${String(10 + (i % 60)).padStart(2, "0")}`,
+      email: rnd() > 0.45 ? `${name.toLowerCase().replace(/[^a-z]+/g, ".")}@gmail.com` : null,
+      first_seen_at: daysAgo(firstSeenDays),
+      last_visit_at: lastVisitDays === null ? null : daysAgo(lastVisitDays),
+      visit_count: visits,
+      total_spend_cents: 0,
+      loyalty_tier: null,
+      loyalty_points: null,
+      opted_out_of_marketing: rnd() > 0.88 ? 1 : 0,
+      city,
+      quartier: quartiers[Math.floor(rnd() * quartiers.length)],
+      birth_year: 1966 + Math.floor(rnd() * 40),
+    });
+
+    const interestCount = 1 + Math.floor(rnd() * 3);
+    const chosen = new Set();
+    for (let k = 0; k < interestCount; k += 1) chosen.add(pick(INTERESTS));
+    chosen.forEach((label) =>
+      insert("customer_preferences", { customer_id: id, label }),
+    );
+
+    // Completed history, always in the past, so Audience has weekday,
+    // hour and service to profile without touching today's service.
+    const past = Math.min(visits, 3);
+    for (let v = 0; v < past; v += 1) {
+      const dayOffset = 2 + Math.floor(rnd() * Math.max(2, firstSeenDays - 2));
+      const at = new Date(now.getTime() - dayOffset * 86_400_000);
+      at.setHours(12 + Math.floor(rnd() * 11), rnd() > 0.5 ? 30 : 0, 0, 0);
+      insert("reservations", {
+        id: `res_aud_${id}_${v}`, venue_id: venueId, service_id: null,
+        customer_id: id, guest_name: name,
+        guest_phone: `+212 600 00 00 ${String(10 + (i % 80)).padStart(2, "0")}`,
+        party_size: 2 + Math.floor(rnd() * 5),
+        at: iso(at), state: "completed",
+        channel: SOURCES[Math.floor(rnd() * SOURCES.length)],
+        zone_id: null, note: null, deposit_cents: null, no_show_risk: null,
+        qr_code: null, checked_in_at: iso(at),
+        created_at: iso(new Date(at.getTime() - 86_400_000)), updated_at: iso(at),
+      });
+    }
+  }
+
+  // 3 · where the requests came from, aggregated daily like analytics_daily.
+  for (let d = 0; d < 60; d += 1) {
+    SOURCES.forEach((source, si) => {
+      const weight = [0.34, 0.24, 0.14, 0.12, 0.1, 0.06][si];
+      const impressions = Math.round((260 + rnd() * 220) * weight * 6);
+      insert("audience_sources", {
+        venue_id: venueId, date: day(new Date(now.getTime() - d * 86_400_000)),
+        source,
+        impressions,
+        opens: Math.round(impressions * (0.12 + rnd() * 0.08)),
+        requests: Math.round(impressions * (0.012 + rnd() * 0.01)),
+      });
+    });
+  }
+}
+
+seedAudience(VENUE, "cus_aud_", 48, [["Casablanca", 74], ["Rabat", 13], ["Marrakech", 8], ["Mohammedia", 5]], 100);
+seedAudience(VENUE2, "cus_naud_", 22, [["Casablanca", 82], ["Rabat", 10], ["Marrakech", 4], ["Mohammedia", 4]], 200);
+
+// Anonymised platform benchmarks. A cohort, never a named competitor.
+[
+  ["restaurant_haut_de_gamme", "Casablanca", "occupancy", 0.72, 0.88, 34],
+  ["restaurant_haut_de_gamme", "Casablanca", "no_show_rate", 0.081, 0.032, 34],
+  ["restaurant_haut_de_gamme", "Casablanca", "review_score", 4.4, 4.8, 34],
+  ["restaurant_haut_de_gamme", "Casablanca", "return_rate", 0.38, 0.57, 34],
+  ["restaurant_haut_de_gamme", "Marrakech", "occupancy", 0.69, 0.86, 21],
+  ["restaurant_haut_de_gamme", "Marrakech", "no_show_rate", 0.094, 0.041, 21],
+  ["restaurant_haut_de_gamme", "Marrakech", "review_score", 4.5, 4.9, 21],
+  ["restaurant_haut_de_gamme", "Marrakech", "return_rate", 0.34, 0.52, 21],
+  ["bar_cocktails", "Casablanca", "occupancy", 0.66, 0.85, 12],
+  ["bar_cocktails", "Casablanca", "no_show_rate", 0.114, 0.048, 12],
+  ["bar_cocktails", "Casablanca", "review_score", 4.2, 4.7, 12],
+  ["bar_cocktails", "Casablanca", "return_rate", 0.29, 0.49, 12],
+].forEach(([cohort, city, metric, median, topDecile, sampleSize]) =>
+  insert("platform_benchmarks", {
+    cohort, city, metric, median, top_decile: topDecile,
+    sample_size: sampleSize, captured_on: day(new Date(now.getTime() - 7 * 86_400_000)),
+  }),
+);
+
 const count = (t) => db.prepare(`SELECT COUNT(*) c FROM ${t}`).get().c;
 console.log(`seeded ${dbPath}`);
 for (const t of ["venues","business_accounts","staff","zones","venue_tags","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_items","menu_item_dietary","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity",
-  "venue_settings","subscriptions","invoices","support_tickets","service_definitions","service_zones","pacing_rules","capacity_overrides","waitlist","waitlist_settings","shift_notes","tags","customer_tags","tag_rules","segments","offers","offer_redemptions","experiences","experience_addons","tickets","deposit_policies","deposits","cancellation_policies","cancellation_log","transactions","guest_lists","guest_list_bands","guest_list_entries","promoters","table_types","table_offers","table_reservations","campaigns","messages_log","suppression_list","survey_config"]) {
+  "venue_settings","subscriptions","invoices","support_tickets","service_definitions","service_zones","pacing_rules","capacity_overrides","waitlist","waitlist_settings","shift_notes","tags","customer_tags","tag_rules","segments","offers","offer_redemptions","experiences","experience_addons","tickets","deposit_policies","deposits","cancellation_policies","cancellation_log","transactions","guest_lists","guest_list_bands","guest_list_entries","promoters","table_types","table_offers","table_reservations","campaigns","messages_log","suppression_list","survey_config","audience_sources","platform_benchmarks"]) {
   console.log(`  ${t.padEnd(28)} ${count(t)}`);
 }
 db.close();

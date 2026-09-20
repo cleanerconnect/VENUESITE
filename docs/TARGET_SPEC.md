@@ -125,6 +125,15 @@ Sections: manual tags (name, colour, visible to staff) with usage count; automat
 
 Actions: create, edit, archive tag; edit rule thresholds; create segment.
 
+### Audience
+Purpose: who comes to this establishment and how it compares, the cross-guest view that Fiche client gives per person.
+
+Sections: hero strip (base totale, part de nouveaux sur la période, taux de retour à 90 jours); profile of guests by city and quartier, by age band, by interests captured in the LYFE app (cuisines, sorties, événements), shown only for groups of ten or more; traffic sources (feed, recherche, listes, boost, offre, lien externe); visit timing (jour de semaine, service, heure de réservation); cohort retention curves by first-visit month; benchmarks against similar establishments on the platform (occupancy, no-show rate, review score, return rate), anonymised; segment builder combining these dimensions, saved into Tags et segments and usable in Campagnes and Visibilité boost.
+
+Actions: Créer un segment, Lancer un boost sur ce segment, Créer une campagne sur ce segment, Exporter la synthèse.
+
+Reads: customers, reservations, tracking events (EP10, EP22), platform benchmarks. Writes: segments. Minimum group size of ten before any breakdown renders, matching the event side rule.
+
 ---
 
 ## 4. Ma présence

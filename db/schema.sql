@@ -190,7 +190,15 @@ CREATE TABLE IF NOT EXISTS customers (
   -- Read from the loyalty service, never derived here.
   loyalty_tier          TEXT,
   loyalty_points        INTEGER,
-  opted_out_of_marketing INTEGER NOT NULL DEFAULT 0
+  opted_out_of_marketing INTEGER NOT NULL DEFAULT 0,
+  -- Audience profiles by these three. All nullable: the consumer app asks
+  -- for none of them at signup, so a guest who never filled a profile is
+  -- counted in the base and excluded from the breakdowns, which is why
+  -- every breakdown carries its own covered count rather than assuming
+  -- the base total.
+  city                  TEXT,
+  quartier              TEXT,
+  birth_year            INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_customers_venue ON customers(venue_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_venue_phone ON customers(venue_id, phone);
@@ -374,6 +382,45 @@ CREATE TABLE IF NOT EXISTS analytics_daily (
   impressions     INTEGER NOT NULL DEFAULT 0,
   listing_views   INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (venue_id, date)
+);
+
+-- ── Audience ─────────────────────────────────────────────────
+
+-- Where a booking request came from, per day and per surface.
+--
+-- The consumer app's EP10 (impression) and EP22 (listing opened) events
+-- arrive already aggregated, exactly as analytics_daily does for the
+-- Visibilité tiles. A raw event table would be a second source of truth
+-- for a number the platform already counts, and the portal has no use
+-- for one row per impression.
+CREATE TABLE IF NOT EXISTS audience_sources (
+  venue_id     TEXT NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+  date         TEXT NOT NULL,
+  source       TEXT NOT NULL CHECK (source IN
+                 ('feed','recherche','listes','boost','offre','lien_externe')),
+  impressions  INTEGER NOT NULL DEFAULT 0,
+  opens        INTEGER NOT NULL DEFAULT 0,
+  requests     INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (venue_id, date, source)
+);
+CREATE INDEX IF NOT EXISTS idx_audience_sources_venue ON audience_sources(venue_id, date);
+
+-- Anonymised platform benchmarks for comparable establishments.
+--
+-- No venue_id on purpose: a row is a cohort, not a venue, and the portal
+-- must not be able to name a competitor. `sample_size` is carried so a
+-- benchmark drawn from four places can be withheld by the same
+-- minimum-group rule that governs the breakdowns.
+CREATE TABLE IF NOT EXISTS platform_benchmarks (
+  cohort       TEXT NOT NULL,
+  city         TEXT NOT NULL,
+  metric       TEXT NOT NULL CHECK (metric IN
+                 ('occupancy','no_show_rate','review_score','return_rate')),
+  median       REAL NOT NULL,
+  top_decile   REAL NOT NULL,
+  sample_size  INTEGER NOT NULL,
+  captured_on  TEXT NOT NULL,
+  PRIMARY KEY (cohort, city, metric)
 );
 
 -- ── Activity ─────────────────────────────────────────────────

@@ -282,6 +282,15 @@ export const ROUTES: RouteEntry[] = [
     roles: "Propriétaire, Gérant",
     status: "built",
   },
+  {
+    path: "/restaurant/audience",
+    label: "Audience",
+    purpose:
+      "Qui vient : profil par ville, quartier, âge et centres d'intérêt, sources de trafic, horaires, rétention par cohorte et comparaison anonymisée. Aucun groupe sous dix personnes n'est affiché.",
+    workspace: "venue",
+    roles: "Propriétaire, Gérant",
+    status: "built",
+  },
 
   // 4. Ma présence
   {

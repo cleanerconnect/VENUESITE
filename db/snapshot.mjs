@@ -34,6 +34,7 @@ const venue = await import("../src/lib/db/venue-store.ts");
 const write = await import("../src/lib/db/venue-write-store.ts");
 const assets = await import("../src/lib/db/asset-store.ts");
 const ops = await import("../src/lib/db/operations-store.ts");
+const audience = await import("../src/lib/db/audience-store.ts");
 const { all } = await import("../src/lib/db/store.ts");
 
 const PERIODS = ["7d", "30d", "90d", "12m"];
@@ -80,6 +81,7 @@ for (const id of venueIds) {
     operations: {
       serviceFloor: ops.serviceFloor(id),
       guestGraph: ops.guestGraph(id),
+      audience: audience.audienceInsights(id),
       growth: ops.growth(id),
       nightlife: ops.nightlife(id),
       moneyDesk: ops.moneyDesk(id),

@@ -38,6 +38,8 @@ import type {
 } from "./repository";
 
 import * as ops from "@/lib/db/operations-store";
+import { audienceInsights } from "@/lib/db/audience-store";
+import { emptyAudience } from "@/lib/types/venue-operations";
 import * as opsWrite from "@/lib/db/operations-write-store";
 import { outboundGateway } from "@/lib/integrations";
 import type {
@@ -227,6 +229,9 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
   async getGuestGraph(venueId: string) {
     return ops.guestGraph(venueId);
+  }
+  async getAudience(venueId: string) {
+    return audienceInsights(venueId) ?? emptyAudience(venueId);
   }
   async getGrowth(venueId: string) {
     return ops.growth(venueId);
