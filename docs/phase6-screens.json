@@ -1,10 +1,9 @@
 {
   "base": "http://localhost:3210",
   "venue": "",
-  "viewport": {
-    "W": 1440,
-    "H": 900
-  },
+  "account": "yassine@darzellij.ma",
+  "depth": "outline",
+  "capturedAt": "2026-09-20T19:14:06.962Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -21,7 +20,7 @@
         },
         {
           "level": "h2",
-          "text": "Petit-déjeuner"
+          "text": "Dîner"
         },
         {
           "level": "h2",
@@ -41,11 +40,11 @@
         },
         {
           "level": "h1",
-          "text": "Bon après-midi, Yassine. le service est complet."
+          "text": "Bonsoir, Yassine. le service est complet."
         },
         {
           "level": "h2",
-          "text": "Petit-déjeuner"
+          "text": "Dîner"
         },
         {
           "level": "h2",
@@ -88,7 +87,7 @@
         },
         {
           "label": "Couverts aujourd'hui",
-          "value": "66"
+          "value": "110"
         },
         {
           "label": "Ticket moyen",
@@ -100,7 +99,7 @@
         },
         {
           "label": "Absences ce service",
-          "value": "3"
+          "value": "5"
         },
         {
           "label": "Note moyenne",
@@ -120,7 +119,7 @@
         "Risque d'absence",
         "Habitué",
         "dans 3 jours",
-        "Versé le 06 sept."
+        "Versé le 23 sept."
       ],
       "buttons": [
         "Tout6",
@@ -174,7 +173,7 @@
           "text": "Carnet du service"
         }
       ],
-      "subtitle": "jeudi 3 septembre",
+      "subtitle": "dimanche 20 septembre",
       "tiles": [
         {
           "label": "Couverts réservés",
@@ -249,10 +248,9 @@
       "tiles": [],
       "pills": [
         "Offre",
-        "Terrasse ouverte en entier",
+        "Expérience",
         "Équipe réduite",
-        "Privatisation",
-        "Expérience"
+        "Terrasse ouverte en entier"
       ],
       "buttons": [
         "Semaine",
@@ -293,7 +291,7 @@
           "text": "La liste en ligne"
         }
       ],
-      "subtitle": "Espace restaurant · 0 min d'attente annoncée",
+      "subtitle": "Espace restaurant · 5 min d'attente annoncée",
       "tiles": [
         {
           "label": "Groupes en attente",
@@ -301,7 +299,7 @@
         },
         {
           "label": "Attente moyenne",
-          "value": "0 min"
+          "value": "5 min"
         },
         {
           "label": "Liste en ligne",
@@ -523,11 +521,11 @@
       "tiles": [
         {
           "label": "Clients connus",
-          "value": "12"
+          "value": "60"
         },
         {
           "label": "Clients fidèles",
-          "value": "3"
+          "value": "10"
         },
         {
           "label": "Chiffre cumulé",
@@ -539,9 +537,11 @@
         }
       ],
       "pills": [
-        "12",
+        "60",
         "2",
+        "10",
         "3",
+        "17",
         "0",
         "Nouveau",
         "HABITUÉ",
@@ -552,18 +552,16 @@
         "GROS PANIER",
         "À RISQUE",
         "Risque d'absence",
-        "INACTIF",
-        "Risque élevé",
-        "NOUVEAU"
+        "INACTIF"
       ],
       "buttons": [
         "Exporter la sélection",
-        "Tous12",
+        "Tous60",
         "VIP2",
-        "Habitués3",
-        "Nouveaux2",
+        "Habitués10",
+        "Nouveaux10",
         "À risque no-show3",
-        "Inactifs 90 jours2",
+        "Inactifs 90 jours17",
         "Anniversaire ce mois0"
       ],
       "tables": []
@@ -658,7 +656,7 @@
           "text": "Journal des messages"
         }
       ],
-      "subtitle": "Client depuis le ven. 5 juin · dernière visite le jeu. 13 août",
+      "subtitle": "Client depuis le lun. 22 juin · dernière visite le dim. 30 août",
       "tiles": [
         {
           "label": "Visites",
@@ -744,6 +742,166 @@
         "Créer une campagne"
       ],
       "tables": []
+    },
+    "/restaurant/audience": {
+      "label": "Audience",
+      "purpose": "Qui vient : profil par ville, quartier, âge et centres d'intérêt, sources de trafic, horaires, rétention par cohorte et comparaison anonymisée. Aucun groupe sous dix personnes n'est affiché.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Audience"
+        },
+        {
+          "level": "h2",
+          "text": "Profil"
+        },
+        {
+          "level": "h2",
+          "text": "Par ville"
+        },
+        {
+          "level": "h2",
+          "text": "Par quartier"
+        },
+        {
+          "level": "h2",
+          "text": "Par tranche d'âge"
+        },
+        {
+          "level": "h2",
+          "text": "Par centres d'intérêt déclarés dans LYFE"
+        },
+        {
+          "level": "h2",
+          "text": "Sources de trafic"
+        },
+        {
+          "level": "h2",
+          "text": "Quand ils viennent"
+        },
+        {
+          "level": "h2",
+          "text": "Par jour de semaine"
+        },
+        {
+          "level": "h2",
+          "text": "Par service"
+        },
+        {
+          "level": "h2",
+          "text": "Par heure de réservation"
+        },
+        {
+          "level": "h2",
+          "text": "Rétention par cohorte"
+        },
+        {
+          "level": "h2",
+          "text": "Comparaison avec des établissements similaires"
+        },
+        {
+          "level": "h2",
+          "text": "Créer un segment à partir de ces dimensions"
+        }
+      ],
+      "subtitle": "Qui vient chez vous · base de 60 couverts",
+      "tiles": [
+        {
+          "label": "Base totale",
+          "value": "60"
+        },
+        {
+          "label": "Nouveaux sur 90 jours",
+          "value": "18 %"
+        },
+        {
+          "label": "Taux de retour à 90 jours",
+          "value": "28 %"
+        }
+      ],
+      "pills": [
+        "AU-DESSUS DE LA MÉDIANE",
+        "SOUS LA MÉDIANE"
+      ],
+      "buttons": [],
+      "tables": [
+        {
+          "head": [
+            "Source",
+            "Impressions",
+            "Fiches ouvertes",
+            "Demandes",
+            "Part"
+          ],
+          "rows": [
+            [
+              "Feed",
+              "44 762",
+              "7 202",
+              "777",
+              "34 %"
+            ],
+            [
+              "Recherche",
+              "30 539",
+              "4 936",
+              "524",
+              "23 %"
+            ],
+            [
+              "Listes",
+              "18 734",
+              "2 953",
+              "317",
+              "14 %"
+            ],
+            [
+              "Boost",
+              "16 250",
+              "2 646",
+              "282",
+              "13 %"
+            ],
+            [
+              "Offre",
+              "13 154",
+              "2 107",
+              "223",
+              "10 %"
+            ],
+            [
+              "Lien externe",
+              "7 932",
+              "1 311",
+              "136",
+              "6 %"
+            ]
+          ]
+        },
+        {
+          "head": [
+            "Première visite",
+            "Cohorte",
+            "30 j",
+            "60 j",
+            "90 j"
+          ],
+          "rows": [
+            [
+              "2026-04",
+              "10",
+              "80 %",
+              "40 %",
+              "30 %"
+            ]
+          ]
+        }
+      ]
     },
     "/restaurant/ma-fiche": {
       "label": "Ma fiche",
@@ -983,7 +1141,7 @@
         },
         {
           "label": "Ouverture → réservation",
-          "value": "51,0 %"
+          "value": "53,0 %"
         }
       ],
       "pills": [
@@ -1571,11 +1729,11 @@
       "tiles": [
         {
           "label": "Taux d'occupation",
-          "value": "38 %"
+          "value": "39 %"
         },
         {
           "label": "Couverts servis",
-          "value": "2 805"
+          "value": "2 937"
         },
         {
           "label": "Taux d'absence",
@@ -1640,11 +1798,11 @@
       "tiles": [
         {
           "label": "Couverts",
-          "value": "2 805"
+          "value": "2 937"
         },
         {
           "label": "Occupation",
-          "value": "38 %"
+          "value": "39 %"
         },
         {
           "label": "Absences",
@@ -1722,7 +1880,7 @@
       "tiles": [
         {
           "label": "Clients contactables",
-          "value": "10"
+          "value": "54"
         },
         {
           "label": "Messages délivrés",
@@ -1775,12 +1933,12 @@
           "rows": [
             [
               "OK",
-              "10",
+              "54",
               "Peuvent recevoir des campagnes."
             ],
             [
               "REFUS",
-              "2",
+              "6",
               "Exclus de toute campagne, quel que soit le segment."
             ],
             [
@@ -1799,12 +1957,12 @@
           "rows": [
             [
               "OK",
-              "10",
+              "54",
               "Peuvent recevoir des campagnes."
             ],
             [
               "REFUS",
-              "2",
+              "6",
               "Exclus de toute campagne, quel que soit le segment."
             ],
             [
@@ -2025,11 +2183,11 @@
         },
         {
           "label": "Réservations",
-          "value": "14"
+          "value": "121"
         },
         {
           "label": "Clients au fichier",
-          "value": "12"
+          "value": "60"
         },
         {
           "label": "Messages envoyés",
@@ -2059,13 +2217,13 @@
           "rows": [
             [
               "LYFE-2026-0182",
-              "dim. 19 oct.",
+              "mer. 5 nov.",
               "14 400 MAD",
               "PAYÉE"
             ],
             [
               "LYFE-2025-0611",
-              "sam. 19 oct.",
+              "mar. 5 nov.",
               "12 000 MAD",
               "PAYÉE"
             ]
@@ -3371,6 +3529,10 @@
           {
             "label": "Tags et segments",
             "href": "/restaurant/segments"
+          },
+          {
+            "label": "Audience",
+            "href": "/restaurant/audience"
           }
         ]
       },

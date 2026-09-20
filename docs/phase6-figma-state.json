@@ -108,11 +108,12 @@
   "verification": {
     "tools": [
       "tools/verify/walk.mjs",
-      "tools/verify/events.mjs (new)",
+      "tools/verify/events.mjs",
       "tools/verify/states.mjs",
-      "tools/verify/configuration.mjs"
+      "tools/verify/configuration.mjs",
+      "tools/verify/audience.mjs (new)"
     ],
-    "lastRun": "all four pass: 30/30 venue at 1440x900, 19/19 event+shared at 1440x900, 3 states on 30 routes, configuration as specified",
+    "lastRun": "all five pass: 31/31 venue at 1440x900 and at 390x844, 19/19 event+shared at 1440x900, 3 states on 31 routes, configuration as specified, Audience holds the minimum group of ten in both configurations (db driver and static driver)",
     "trap": "A stale next start holding :3210 makes every check measure the old build. pkill -9 -f next-server and confirm the port is free before rebuilding."
   },
   "figmaSeatAtLastWrite": "Full on pro — 200 tool calls/day, unlimited pages",
@@ -123,7 +124,7 @@
     "effectStyles": 3,
     "components": 29,
     "variants": 175,
-    "frames": 62
+    "frames": 63
   },
   "keyComponentIds": {
     "sidebarRestaurant": "26:2",

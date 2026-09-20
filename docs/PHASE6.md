@@ -9,7 +9,7 @@ File key `fztoNaEvTrZrWDaLy1MEWg`. A new design file; the existing mobile
 file was not touched.
 
 **Status — complete.** Eight pages, 131 variables, 29 components,
-175 variants, 62 frames. Everything was read from the running portal on
+175 variants, 63 frames. Everything was read from the running portal on
 `:3210` and from the code, never from memory or an earlier phase report.
 
 ---
@@ -141,7 +141,7 @@ from `components/organizer/` (`Sidebar.tsx`, `Topbar.tsx`,
 
 ---
 
-## 3. Frames — 62, by page
+## 3. Frames — 63, by page
 
 Eight real pages, in the brief's order. Frame name is the route path then
 the French title, so a designer finds any screen by searching its path.
@@ -152,7 +152,7 @@ the French title, so a designer finds any screen by searching its path.
 | `01 Fondations` | 1 board, 14 specimen blocks |
 | `02 Composants` | 29 components + 3 reference frames |
 | `03 Entrée` | 3 |
-| `04 Espace partenaire` | 30 + 1 annotated delta, in 10 sections |
+| `04 Espace partenaire` | 31 + 1 annotated delta, in 10 sections |
 | `05 Espace organisateur` | 16, in 2 sections |
 | `06 États` | 4 |
 | `07 Téléphone` | 9 |
@@ -160,7 +160,7 @@ the French title, so a designer finds any screen by searching its path.
 **`03 Entrée`** — `/login`, `/splash`, `/contact`. Built without the
 shell, because the code puts them outside it.
 
-**`04 Espace partenaire`** — the thirty screens, wrapped in ten Figma
+**`04 Espace partenaire`** — the thirty-one screens, wrapped in ten Figma
 sections named for the ten nav groups of `src/lib/nav/workspaces.ts`, in
 its order: Aujourd'hui, En service, Clients, Ma présence, Croissance, Vie
 nocturne, Paiements, Pilotage, Établissement, Compte.
@@ -176,7 +176,7 @@ three Vie nocturne screens are drawn in the lounge configuration (marked
 `[lounge]`, with the ten-group sidebar), plus one annotated frame —
 *Configuration lounge · le delta, et rien de plus* — covering the group
 that appears, the vocabulary swap and the two extra Ma fiche fields.
-Thirty screens are not duplicated.
+Thirty-one screens are not duplicated.
 
 **`05 Espace organisateur`** — the sixteen event screens in two sections,
 Organisation and Compte. The six `partial` rows carry their `gap` text

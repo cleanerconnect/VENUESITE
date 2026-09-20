@@ -20,7 +20,7 @@
 //                             → docs/phase7-dar-zellij.json
 //
 //   node tools/verify/extract.mjs
-//   DEPTH=full VENUE=res_dar_zellij OUT=docs/phase7-dar-zellij.json node tools/verify/extract.mjs
+//   DEPTH=full VENUE=rst_dar_zellij OUT=docs/phase7-dar-zellij.json node tools/verify/extract.mjs
 //   DEPTH=full SHOTS=docs/phase7-reference node tools/verify/extract.mjs
 //
 // Needs a server on BASE and `npm install --no-save playwright`.

@@ -21,18 +21,26 @@ pill on the page came out of the running portal through two tools:
 
 ```bash
 node tools/verify/extract.mjs                        # outline → docs/phase6-screens.json
-DEPTH=full VENUE=res_dar_zellij node tools/verify/extract.mjs
+DEPTH=full VENUE=rst_dar_zellij node tools/verify/extract.mjs
                                                      # → docs/phase7-dar-zellij.json
 DEPTH=full SHOTS=docs/phase7-reference node tools/verify/extract.mjs
-                                                     # + 63 reference PNGs at 1440 and 390
+                                                     # + 67 reference PNGs at 1440 and 390
 ```
 
-Those 63 captures are also browsable as a single page, grouped the way
+Those 67 captures are also browsable as a single page, grouped the way
 the sidebar groups them, at desktop and phone width:
 <https://claude.ai/code/artifact/c1cda4df-57bd-4384-97a1-49c040af01a8>.
 It is built from `docs/phase7-reference/` and adds nothing to it, so the
 built file is not committed — the captures are the artefact, the browser
 is a way of reading them.
+
+**One capture is a coin flip.** `/splash` animates in and settles, and
+the extractor's 2 600 ms wait lands either side of that depending on the
+machine: three consecutive runs here gave blank, correct, blank. It is the
+only route with this behaviour — every other capture is deterministic —
+and a blank `splash@1440.png` of about 6 KB against a correct one of about
+100 KB is how to spot it. Re-run until the file is large, or keep the
+committed one, which is the same screen.
 
 `extract.mjs` was extended for this phase to capture what a screen
 actually renders rather than its outline. Four capture bugs were found
@@ -73,7 +81,7 @@ Frames are named `‹route› · ‹French title›`; a surface adds
 | `Entrée` | 3 | `/login` filled with Dar Zellij's owner account · the establishment switcher open on Dar Zellij and Nomad Rooftop · the resolved shell |
 | `1 · Aujourd'hui` | 4 | Accueil · Réservations · Réservations · Détail réservation · Calendrier |
 | `2 · En service` | 3 | Liste d'attente · Check-in · Briefing |
-| `3 · Clients` | 4 | Liste clients · Liste clients · Fiche client · Fiche client (`cus_1`) · Tags et segments |
+| `3 · Clients` | 5 | Liste clients · Liste clients · Fiche client · Fiche client (`cus_1`) · Tags et segments · Audience |
 | `4 · Ma présence` | 3 | Ma fiche · Menu · Avis |
 | `5 · Croissance` | 3 | Visibilité · Offres · Expériences |
 | `6 · Vie nocturne` | 3 | Guest list · Tables minimums · Promoteurs |
@@ -82,15 +90,19 @@ Frames are named `‹route› · ‹French title›`; a surface adds
 | `9 · Établissement` | 3 | Disponibilités · Équipe et rôles · Notifications |
 | `10 · Compte` | 3 | Paramètres · Abonnement · Support |
 | `Téléphone` | 9 | Accueil · Réservations · Liste d'attente · Check-in · Briefing · Guest list · Tables minimums, at 390 · plus the Check-in sheet and the Détail réservation drawer as phone surfaces |
-| **Total** | **44** | 30 venue screens · 2 desktop surfaces · 3 entry · 9 phone |
+| **Total** | **45** | 31 venue screens · 2 desktop surfaces · 3 entry · 9 phone |
 
 Seven **margin notes** sit beside the frames that reproduce an empty
 state (§4). They are page furniture, not screens, and are not counted
 above.
 
-The thirty venue screens are the thirty of `docs/TARGET_SPEC.md`: the
-twenty-nine nav entries plus Fiche client, which the specification lists
-under Clients but the sidebar reaches through a row rather than a link.
+The thirty-one venue screens are the thirty-one of
+`docs/TARGET_SPEC.md`: the thirty nav entries plus Fiche client, which the
+specification lists under Clients but the sidebar reaches through a row
+rather than a link. Audience is the most recent of them, added to the
+Clients group after this page was first built, and it is the only frame
+here captured at 1440 alone — its phone lane is the same spec and adds no
+reading the other phone frames do not already give.
 
 ---
 
@@ -247,6 +259,20 @@ caption and its engagement chip.
 | Avatar corner radius 12px vs 14px | every row with an avatar | §6.5 |
 | Sidebar and topbar are the library's, not the portal's | every desktop frame | `Chrome / Sidebar` and `Chrome / Topbar` are `02 Composants` instances. The portal's venue switcher card, notification bell and the account card at the foot of the sidebar are not in those components. Changing them is a library change, and the brief keeps the library as the source for components |
 
+**The Audience frame.** Added after the rest, and compared the same way
+against `docs/phase7-reference/restaurant_audience@1440.png`. Four
+differences were found and fixed in Figma rather than recorded here: the
+four Profil breakdowns and the three timing breakdowns were one card each
+in the portal and had been drawn as rule-separated sections of a single
+card; the charts were missing their axis ticks and gridlines; the bars
+filled their slot instead of being drawn at a fixed width, which made a
+single-group breakdown read as a full-width slab; and the benchmark rows
+were missing the `VOUS` eyebrow above the establishment's own figure. What
+remains on that frame is the icon row and the sidebar row of the table
+above, nothing else. One artefact of the capture is not a difference: the
+reference shot caught a chart tooltip open on *Par ville*, because the
+extractor moves the cursor before it shoots.
+
 Nothing in that list is a difference of copy, of number, or of the order
 of anything.
 
@@ -255,7 +281,7 @@ of anything.
 ## 8. Confirmations
 
 - **Every screen in the schema is present.** Ten groups in the
-  specification's order, one Section each, thirty venue screens, plus the
+  specification's order, one Section each, thirty-one venue screens, plus the
   entry flow before group one and the phone sub-section after group ten.
 - **Every screen is populated.** No section is left as a titled
   container: every table has its rows, every list its entries, every
