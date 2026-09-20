@@ -192,7 +192,7 @@
         "service_slot_load.covers"
       ],
       "seamChange": "listCustomerBookings(venueId, customerId) added to RestaurantRepository and to all three drivers, plus bookingsByCustomer in the static snapshot — the Fiche client's Historique block had no source at all",
-      "framesTouched": "all of them: every desktop frame, every surface and every phone frame was re-rendered from the re-captured JSON, because the corrected numbers and the French times run through the whole page",
+      "framesTouched": "the stable half of the page: Accueil (and its phone frame), Réservations (and its phone frame), Ma fiche, Disponibilités, Avis, Bilans, Abonnement, Audience, Performance, Visibilité, Fiche client, plus the seven hover rows. Labels, captions, scope words, French time forms, derived counters and the elements removed or added — not the clock-relative values.",
       "hover": "one row per list whose rows carry actions, in --shadow-soft, the elevation EntityListBlock gives a row card on hover; the actions are always visible in the portal, so hover changes the shadow and not the content",
       "leftAsDesigned": [
         "the :15 and :45 ticks of Accueil's four-hour band — the spec asks for arrivals per fifteen minutes",
@@ -202,6 +202,17 @@
         "Liste d'attente's 'Tout 6' against four rows — the default filter is 'En cours'",
         "Briefing's 100 couverts against the service's 104 — the briefing excludes the six no-show covers",
         "the six oddities of PHASE7 §6 — none of them is a contradiction between two numbers"
+      ],
+      "captureDrift": "page 08 carries an early-September capture: Accueil's band reads 10h58 – 15h28, Performance's axis 4 août – 3 sept., the Notifications journal jeu. 3 sept. Most of the page is clock- or date-relative, not the two blocks PHASE7 §6.6 named. Syncing those values would match one capture and no other.",
+      "rendererGap": "the Phase 7 block-registry renderer was parked in a TEXT node on the page, is no longer there and was never committed. Four blocks are missing from the frames as a result and cannot be filled by editing text: Réservations' carnet (7 rows against 26), Briefing's nine lists (counters, no rows), Check-in's expected list, and the timing badges on Notifications' message rows. Rebuilding it as a committed tool is the next piece of work on this page.",
+      "hoverRows": [
+        "Accueil · À traiter",
+        "Calendrier · créneaux creux",
+        "Liste d'attente · À la porte",
+        "Tags et segments · segments enregistrés",
+        "Visibilité · Ce qui pèse sur le classement",
+        "Acomptes · Registre des acomptes",
+        "Performance · créneaux creux à venir"
       ]
     }
   },

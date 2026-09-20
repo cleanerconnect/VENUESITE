@@ -370,15 +370,26 @@ The first two are now derived, so they cannot drift again.
 | `/restaurant/abonnement` | Four counters with no label beyond their name, two of them colliding with words Campagnes and Clients use differently. Each says what it counts | *Campagnes 6* against the list's *Toutes 3*: the list splits one-off campaigns from automations, and this counts both |
 | `/restaurant/support` | — | — |
 | `/restaurant/calendrier` | An offer marked every day inside its date range, ignoring the weekdays it runs on; it marks the days it runs. The two months ahead were flat at 0 % under a dashboard announcing a full house — a fortnight of forward bookings sits behind them now, tapering the further out it goes | four weeks back and two months forward, per its own subtitle |
-| Surfaces and phone frames | Every one re-rendered from the re-captured JSON, so the phone lanes carry the same corrected numbers and copy as their desktop frames | the lane orders themselves, which are a layout decision and unchanged |
+| `/restaurant · Accueil · 390`, `/restaurant/reservations · Réservations · 390` | The derived arrival count and the day-plus-service header carried into the phone lanes, so a phone frame cannot disagree with its desktop frame | the lane orders, which are a layout decision and unchanged |
+| The other phone frames and all four surfaces | — | nothing the pass changed appears on them: the drawers and the check-in sheet carry times and party sizes, not the counters or the labels that moved |
 
 ### Hover
 
-Every list whose rows carry actions now shows its first row in the hover
-paint — `--shadow-soft`, the elevation `EntityListBlock` gives a row card
-on hover, and nothing else: the actions are always visible in the portal,
-so hover changes the card's shadow and not its content. One row per
-frame, so the frame reads as interactive without implying a selection.
+Seven lists on the page render row actions, and they are exactly the
+seven the portal draws action buttons on: Accueil's *À traiter*,
+Calendrier's and Performance's quiet-slot lists, Liste d'attente's *À la
+porte*, Tags et segments' saved segments, Visibilité's ranking checklist
+and Acomptes' *Registre*. The first row of each is now named
+`ligne · survol` and carries the paint `EntityListBlock` gives a row card
+on hover: the `surface` fill, the `line` stroke, `rayon/lg` and the
+`shadow-soft` effect style. Nothing about the content changes — the
+actions are always visible in the portal, so hover changes the card and
+not what is in it. One row per list, so the frame reads as interactive
+without implying a selection.
+
+The other lists' rows do have menus and actions in the portal; the
+renderer never drew them, which §7 already records for kebab menus and
+which the row below extends to action buttons.
 
 ### What this pass did not touch
 
@@ -387,3 +398,35 @@ change and all five pass: 31/31 screens, 19/19 event-side routes, three
 forceable states on all 31, both configurations, and the minimum group of
 ten in both. The six oddities of §6 are still reproduced rather than
 fixed; none of them is a contradiction between two numbers.
+
+**The frames were not re-rendered wholesale, and here is why.** Reading
+them for this pass turned up something §7 does not say: page 08 carries
+an **early-September capture**, not the current one. Accueil's service
+band runs `10h58 – 15h28`, Performance's axis reads `4 août – 3 sept.`,
+the Notifications journal is dated `jeu. 3 sept.`, and the activity feed
+says *il y a 6 heures*. Every clock-relative and date-relative value on
+the page drifts with the hour the extractor runs — §6.6 named two blocks
+where that happens; it is in fact most of the page. Chasing those values
+would make the frames match this capture and no other.
+
+So the pass changed, in Figma, what does **not** drift: the labels, the
+captions, the scope words, the French time forms, the derived counters
+and the elements that were removed or added. Frame by frame that is:
+Accueil (ten edits, one node removed, three captions added), Réservations
+and both of their phone frames, Ma fiche, Disponibilités, Avis, Bilans,
+Abonnement, Audience, Performance, Visibilité (the duplicated hero grid
+removed and the hero restored without it), Fiche client (the Historique
+block built, six rows, and the tabs taken off the block they had been
+drawn on), and the seven hover rows.
+
+**What a full re-render needs.** The Phase 7 renderer — the block
+registry that walked `docs/phase7-dar-zellij.json` — was parked in a TEXT
+node on the page and is no longer there, and it was never committed. Four
+blocks the portal renders are missing from the frames as a result, and
+none of them can be filled by editing text: Réservations' carnet has
+seven rows against the portal's twenty-six, Briefing's nine lists have
+their counters but no rows, Check-in has no list of the five guests it
+says are expected, and Notifications has no timing badges on its message
+rows. Rebuilding that renderer as a committed tool is the next piece of
+work on this page, and it is the only way the frames stop drifting from
+the portal between captures.
