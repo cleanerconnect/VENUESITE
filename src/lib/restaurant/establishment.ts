@@ -26,7 +26,7 @@ import type {
 import type { ServiceConfiguration } from "@/lib/data/repository";
 import { CONFIGURATION_LABEL, configFor } from "@/lib/venue/config";
 import { RESTAURANT_SETTINGS_PATH, restaurantHref } from "./slugs";
-import { money, shortDay } from "./format";
+import { clock, money, shortDay } from "./format";
 
 const WEEKDAY_SHORT = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
 const weekdayLabel = (days: number[]) =>
@@ -252,7 +252,7 @@ export function buildAvailabilityScreen(
       ? "Réservation ouverte"
       : "Réservation fermée",
     body: pacing.onlineBookingOpen
-      ? `Réservable jusqu'à ${pacing.bookingWindowDays} jours à l'avance, de ${pacing.minPartyOnline} à ${pacing.maxPartyOnline} personnes, au plus tard ${pacing.minLeadMinutes} minutes avant. Le jour même, jusqu'à ${pacing.sameDayCutoff}. Au-delà de ${pacing.requestOnlyAbove} personnes, la demande est envoyée à l'établissement.`
+      ? `Réservable jusqu'à ${pacing.bookingWindowDays} jours à l'avance, de ${pacing.minPartyOnline} à ${pacing.maxPartyOnline} personnes, au plus tard ${pacing.minLeadMinutes} minutes avant. Le jour même, jusqu'à ${clock(pacing.sameDayCutoff)}. Au-delà de ${pacing.requestOnlyAbove} personnes, la demande est envoyée à l'établissement.`
       : "L'établissement apparaît dans l'application mais aucun créneau n'est proposé.",
     actions: [
       {
@@ -283,8 +283,8 @@ function serviceRow(service: ServiceDefinition, configuration: VenueConfiguratio
     icon: "sunset" as const,
     meta: [
       weekdayLabel(service.weekdays),
-      `${service.startsAt} – ${service.endsAt}`,
-      `dernière réservation ${service.lastBookingAt}`,
+      `${clock(service.startsAt)} – ${clock(service.endsAt)}`,
+      `dernière réservation ${clock(service.lastBookingAt)}`,
       `${service.capacityCovers} ${vocabulary.cover.many}`,
       `${service.coversPerQuarter} par quart d'heure`,
     ].join(" · "),
@@ -350,7 +350,7 @@ const GUEST_MESSAGES: {
     id: "reminder_j1",
     label: "Rappel la veille",
     hint: "Le rappel qui fait le plus baisser les absences.",
-    timing: "J-1 à 18:00",
+    timing: "J-1 à 18h00",
   },
   {
     id: "reminder_h3",
@@ -802,6 +802,7 @@ export function buildSubscriptionScreen(subscription: Subscription): ScreenSpec 
         tone: "surface",
         icon: "calendar-clock",
         metric: { value: subscription.usage.reservations, format: COUNT, animate: true },
+        hint: "Toutes celles enregistrées depuis l'ouverture du compte."
       },
       {
         id: "guests",
@@ -809,6 +810,7 @@ export function buildSubscriptionScreen(subscription: Subscription): ScreenSpec 
         tone: "surface",
         icon: "users",
         metric: { value: subscription.usage.guests, format: COUNT, animate: true },
+        hint: "Le total affiché par Clients."
       },
       {
         id: "messages",
@@ -816,6 +818,10 @@ export function buildSubscriptionScreen(subscription: Subscription): ScreenSpec 
         tone: "surface",
         icon: "message-square",
         metric: { value: subscription.usage.messagesSent, format: COUNT, animate: true },
+        // The journal counts one row per guest message. Campaign sends
+        // are counted per campaign in Campagnes, which is why the two
+        // screens quote different totals for the word "messages".
+        hint: "Messages de service. Les envois de campagne sont comptés dans Campagnes."
       },
       {
         id: "campaigns",
@@ -823,6 +829,7 @@ export function buildSubscriptionScreen(subscription: Subscription): ScreenSpec 
         tone: "surface",
         icon: "megaphone",
         metric: { value: subscription.usage.campaigns, format: COUNT, animate: true },
+        hint: "Campagnes ponctuelles et automatisations confondues."
       },
     ],
   };

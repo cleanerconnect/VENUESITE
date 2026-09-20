@@ -32,6 +32,31 @@ import { shortDay } from "./format";
 
 const PCT = { kind: "percent" as const, decimals: 1 };
 
+const PERIOD_DAYS: Record<AnalyticsPeriod, number> = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+  "12m": 365,
+};
+
+/**
+ * Lyfe Pay takings inside the selected period.
+ *
+ * The desk carries every transaction the venue ever settled. Summing all
+ * of them under a heading that says "sur la période" put a number on
+ * screen that no chart beside it could reproduce.
+ */
+function takingsIn(desk: MoneyDesk | undefined, period: AnalyticsPeriod) {
+  const since = Date.now() - PERIOD_DAYS[period] * 86_400_000;
+  const settled = (desk?.transactions ?? []).filter(
+    (t) => t.status === "reussie" && Date.parse(t.at) >= since,
+  );
+  return {
+    count: settled.length,
+    amountMad: settled.reduce((sum, t) => sum + t.amountMad, 0),
+  };
+}
+
 const WEEKDAYS = [
   "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche",
 ];
@@ -78,8 +103,7 @@ export function buildPerformanceScreen(
   const hasSpend = Boolean(desk?.hasTransactionSource);
   const baseline = COMPARISON_LABEL[comparison].toLowerCase();
 
-  const successful = (desk?.transactions ?? []).filter((t) => t.status === "reussie");
-  const takings = successful.reduce((s, t) => s + t.amountMad, 0);
+  const settled = takingsIn(desk, period);
 
   const periodPicker: Block = {
     id: "period",
@@ -173,7 +197,8 @@ export function buildPerformanceScreen(
         format: PCT,
         animate: true,
       },
-      delta: { value: 0, period: `vs ${baseline}`, invert: true },
+      // No delta: the cancellation series is not stored, and a chip that
+      // always reads 0 % is a claim, not a missing value.
     },
     {
       id: "party",
@@ -203,20 +228,25 @@ export function buildPerformanceScreen(
             label: "Encaissé",
             tone: "surface",
             icon: "coins",
-            metric: { value: takings, format: MAD, animate: true },
-            hint: "Transactions Lyfe Pay sur la période.",
+            metric: { value: settled.amountMad, format: MAD, animate: true },
+            hint: `${settled.count} transactions Lyfe Pay sur la période.`,
             action: { kind: "link", href: restaurantHref("lyfe-pay"), label: "Détail" },
           },
           {
             id: "ticket",
-            label: "Ticket moyen",
+            label: "Ticket moyen par transaction",
             tone: "surface",
             icon: "receipt",
+            // Named by its denominator. Accueil divides revenue by
+            // covers and calls its answer the same thing, and two
+            // different numbers under one label is how a partner stops
+            // trusting both.
             metric: {
-              value: successful.length ? Math.round(takings / successful.length) : 0,
+              value: settled.count ? Math.round(settled.amountMad / settled.count) : 0,
               format: MAD,
               animate: true,
             },
+            hint: "Encaissé Lyfe Pay divisé par le nombre de transactions.",
           },
         ] satisfies KpiTile[])
       : []),
@@ -472,21 +502,9 @@ export function buildVisibilityScreen(
           centerLabel: `${done}/${checklist.length}`,
           bottomLabel: "complète",
         },
-        stats: [
-          {
-            label: "Impressions",
-            metric: { value: metrics.impressions, format: COUNT, animate: true },
-            accent: true,
-          },
-          {
-            label: "Ouvertures de fiche",
-            metric: { value: metrics.listingViews, format: COUNT, animate: true },
-          },
-          { label: "Portée", metric: { value: metrics.reach, format: COUNT, animate: true } },
-        ],
-        footnote: {
-          text: `${metrics.conversionPct} % des ouvertures deviennent une demande de réservation.`,
-        },
+        // No stats here: the grid immediately below carries the same
+        // four numbers with their deltas. The hero's job on this screen
+        // is the boost state and how complete the listing is.
       },
       {
         id: "visibility-kpis",
@@ -598,6 +616,13 @@ export function buildReportsScreen(
 ): ScreenSpec {
   const vocabulary = configFor(configuration);
   const hasSpend = Boolean(desk?.hasTransactionSource);
+  // Bilans has no period selector of its own: it reports whatever window
+  // the context resolved. Naming that window, instead of calling it "le
+  // mois" regardless, is the difference between a report and a caption.
+  const periodLabel = analytics
+    ? ANALYTICS_PERIOD[analytics.period].toLowerCase()
+    : "";
+  const settled = analytics ? takingsIn(desk, analytics.period) : null;
 
   if (!analytics) {
     return {
@@ -662,7 +687,7 @@ export function buildReportsScreen(
         tone: "sand",
         icon: "users",
         metric: { value: analytics.coversServed, format: COUNT, animate: true },
-        delta: { value: analytics.coversDeltaPct, period: "vs mois précédent" },
+        delta: { value: analytics.coversDeltaPct, period: "vs période précédente" },
       },
       {
         id: "occupancy",
@@ -670,7 +695,7 @@ export function buildReportsScreen(
         tone: "surface",
         icon: "gauge",
         metric: { value: analytics.occupancyRate, format: { kind: "percent" }, animate: true },
-        delta: { value: analytics.occupancyDeltaPct, period: "vs mois précédent" },
+        delta: { value: analytics.occupancyDeltaPct, period: "vs période précédente" },
       },
       {
         id: "no-show",
@@ -678,7 +703,7 @@ export function buildReportsScreen(
         tone: "surface",
         icon: "user-x",
         metric: { value: analytics.noShowRate, format: PCT, animate: true },
-        delta: { value: analytics.noShowDeltaPct, period: "vs mois précédent", invert: true },
+        delta: { value: analytics.noShowDeltaPct, period: "vs période précédente", invert: true },
       },
       ...(hasSpend
         ? ([
@@ -688,12 +713,11 @@ export function buildReportsScreen(
               tone: "surface",
               icon: "coins",
               metric: {
-                value: (desk?.transactions ?? [])
-                  .filter((t) => t.status === "reussie")
-                  .reduce((s, t) => s + t.amountMad, 0),
+                value: settled?.amountMad ?? 0,
                 format: MAD,
                 animate: true,
               },
+              hint: `${settled?.count ?? 0} transactions Lyfe Pay`,
             },
           ] satisfies KpiTile[])
         : []),
@@ -706,13 +730,13 @@ export function buildReportsScreen(
   return {
     slug: "bilans",
     title: "Bilans",
-    subtitle: "Le mois en deux minutes",
+    subtitle: `${ANALYTICS_PERIOD[analytics.period]} en deux minutes`,
     blocks: [
       {
         id: "head",
         type: "greeting",
-        eyebrow: "Rapport mensuel",
-        title: "Ce mois-ci,",
+        eyebrow: "Rapport",
+        title: `Sur les ${periodLabel},`,
         emphasis: "en deux minutes",
         subline: "Généré à partir des mêmes chiffres que Performance.",
         actions: [

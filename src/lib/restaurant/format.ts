@@ -17,6 +17,17 @@ import type { VenueConfiguration } from "@/lib/types/venue-operations";
 
 export const hm = formatTimeFR;
 
+/**
+ * "14h15", from a bare clock string.
+ *
+ * `hm` takes an instant; availability, services and pacing store a wall
+ * clock — "14:15" with no day attached. Both end up in the same French
+ * sentence, and a screen that renders one of them with a colon is the
+ * only place in the portal that does.
+ */
+export const clock = (value: string) =>
+  /^\d{1,2}:\d{2}$/.test(value) ? value.replace(":", "h") : value;
+
 /** "vendredi 14 mars", from an instant or a bare calendar day. */
 export const dayLabel = (value: string) => {
   const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value);

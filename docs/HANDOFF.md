@@ -210,6 +210,14 @@ store. It is written on the Postgres/SQLite intersection precisely so it
 ports without translation, and `db/seed.mjs` fills it with a dataset the
 whole portal renders from.
 
+**A counter is never typed beside its rows.** `services.booked_covers`,
+`arrived_covers`, `no_show_covers`, `revenue_cents` and every
+`service_slot_load` bar are `UPDATE`d from the reservations at the end of
+the seed, and a customer's `visit_count` has one completed booking behind
+each visit. Four frames used to contradict themselves because those
+columns were written by hand; a Business Service that maintains them owes
+the same discipline. `docs/PHASE7.md` §9 has the detail.
+
 Four properties the specification names, and where they live:
 
 - **Every row is venue-scoped.** Every table carries `venue_id`, every
@@ -247,7 +255,7 @@ open. Read in order, they are the history of the repository:
 | `docs/PHASE4.md` | Handoff completion: the event side off fixtures, every route given its four states |
 | `docs/PHASE5.md` | Completing the venue dashboard: 28 tables to 63, the seam, the app contract in both directions, drinks as a configuration |
 | `docs/PHASE6.md` | The Figma export: variables, components, frames, and §5 — the écarts found by reading the code against the documents, all now closed |
-| `docs/PHASE7.md` | The worked example: one venue, every screen, populated from the seed, and §6 — six observations, four of them defects still open here |
+| `docs/PHASE7.md` | The worked example: one venue, every screen, populated from the seed; §6 — six observations, four of them defects still open here; §9 — the coherence pass, frame by frame |
 
 Four reference documents sit beside them:
 `docs/INTERFACE.md` (how the UI is put together) ·

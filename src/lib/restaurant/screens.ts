@@ -201,10 +201,6 @@ export function buildDashboardScreen(
         configuration,
         service.noShowCovers,
       )} ${coverAgreement(vocabulary, "absent")}.`,
-      badge: {
-        label: `${Math.round((service.bookedCovers / Math.max(1, service.capacity)) * 100)} % engagé`,
-        tone: "violet",
-      },
     },
   };
 
@@ -304,6 +300,9 @@ export function buildDashboardScreen(
               label: "Ticket moyen",
               tone: "surface",
               metric: { value: data.averageTicket.amountMad, format: MAD, animate: true },
+              // A seven-day average in a grid whose other tiles are
+              // today's. Two scopes on one screen, so both say so.
+              hint: "7 derniers jours",
               delta: {
                 value: data.averageTicket.deltaPctVsLastWeek,
                 period: "vs sem. dernière",
@@ -316,15 +315,18 @@ export function buildDashboardScreen(
         label: "Taux d'occupation",
         tone: "surface",
         icon: "gauge",
+        // The spec asks Accueil for the occupancy of the service in
+        // hand, and the hero three lines above already draws that
+        // service. A seven-day average here disagreed with it on every
+        // screen — same word, different question.
         metric: {
-          value: data.occupancy.pct,
+          value: Math.round(
+            (service.bookedCovers / Math.max(1, service.capacity)) * 100,
+          ),
           format: { kind: "percent" },
           animate: true,
         },
-        delta: {
-          value: data.occupancy.deltaPctVsLastWeek,
-          period: "vs sem. dernière",
-        },
+        hint: service.label,
       },
       {
         id: "payout",
@@ -354,13 +356,11 @@ export function buildDashboardScreen(
         tone: "surface",
         icon: "user-x",
         metric: { value: data.noShows.count, format: COUNT, animate: true },
-        // Down is good here — the delta chip flips its colour, and no
-        // component had to be told that absences are the bad kind.
-        delta: {
-          value: data.noShows.deltaPctVsLastWeek,
-          period: "vs sem. dernière",
-          invert: true,
-        },
+        // Counted over this service, like the label says and like the
+        // footnote under the hero. The week-over-week delta that used to
+        // sit here was measured over whole days, so the tile carried one
+        // scope in its label and another in its chip.
+        hint: service.label,
       },
       {
         id: "rating",
@@ -372,9 +372,15 @@ export function buildDashboardScreen(
           format: { kind: "rating", max: 5 },
           animate: false,
         },
-        hint: `${data.rating.reviewCount} avis · ${
-          data.rating.deltaVsLastMonth >= 0 ? "+" : ""
-        }${data.rating.deltaVsLastMonth.toFixed(1).replace(".", ",")} ce mois-ci`,
+        // The delta is dropped rather than shown as a full-value jump
+        // when nothing was reviewed before this month: "+4,3 ce mois-ci"
+        // on a 4,3 average is the absence of a baseline, not a rise.
+        hint:
+          data.rating.deltaVsLastMonth === null
+            ? `${data.rating.reviewCount} avis · premier mois d'avis`
+            : `${data.rating.reviewCount} avis · ${
+                data.rating.deltaVsLastMonth >= 0 ? "+" : ""
+              }${data.rating.deltaVsLastMonth.toFixed(1).replace(".", ",")} ce mois-ci`,
         action: { kind: "link", label: "Voir les avis", href: restaurantHref("avis") },
       },
     ],
@@ -389,9 +395,13 @@ export function buildDashboardScreen(
       label: "Tout voir →",
       href: restaurantHref("reservations"),
     },
-    rows: data.upcomingReservations.map((r) =>
-      reservationRow(r, data.zones, configuration),
-    ),
+    // Still expected, which is what the heading says: a party already
+    // seated is not an arrival to come, and the whole carnet — seated
+    // parties included — is one tap away behind "Tout voir".
+    rows: data.upcomingReservations
+      .filter((r) => r.state !== "arrived" && Date.parse(r.at) >= Date.now())
+      .slice(0, 6)
+      .map((r) => reservationRow(r, data.zones, configuration)),
     empty: {
       title: "Plus personne d'attendu",
       body: "Le carnet est vide pour la fin de ce service.",
@@ -819,7 +829,10 @@ export function buildReservationsScreen(
   return {
     slug: "reservations",
     title: "Réservations",
-    subtitle: dayLabel(data.currentService.opensAt),
+    // The day and the service both scope this screen — the picker sets
+    // one, the book below reads the other — so the header names both
+    // rather than leaving the tiles to be read as the whole day's.
+    subtitle: `${dayLabel(data.currentService.opensAt)} · ${data.currentService.label}`,
     blocks: [dayPicker, kpiBlock, serviceLoadBlock(data, configuration), bookBlock],
     // Phone lane: the book first.
     //
@@ -1104,10 +1117,19 @@ export function buildReviewsScreen(
             // The stored delta is a change in rating *points* (+0.2 of 5),
             // not a percentage. Express it against last month's average
             // rather than scaling it by ten and calling it a percent.
-            delta: {
-              value: ratingDeltaPct(data.rating.average, data.rating.deltaVsLastMonth),
-              period: "vs mois dernier",
-            },
+            // Null where nothing was reviewed before this month: there
+            // is no baseline to have moved from.
+            ...(data.rating.deltaVsLastMonth === null
+              ? {}
+              : {
+                  delta: {
+                    value: ratingDeltaPct(
+                      data.rating.average,
+                      data.rating.deltaVsLastMonth,
+                    ),
+                    period: "vs mois dernier",
+                  },
+                }),
           },
           {
             id: "count",

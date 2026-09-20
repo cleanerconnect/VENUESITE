@@ -95,6 +95,11 @@ for (const id of venueIds) {
       subscription: ops.subscription(id),
       supportTickets: ops.supportTickets(id),
       spendByCustomer: ops.spendByCustomer(id),
+      // One entry per guest, so the Fiche client's Historique has the
+      // same rows without a database.
+      bookingsByCustomer: Object.fromEntries(
+        venue.customers(id).map((c) => [c.id, overview.customerBookings(id, c.id)]),
+      ),
     },
   };
 }

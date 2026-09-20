@@ -32,7 +32,7 @@ import {
   type RestaurantRepository,
   type ReviewReplyInput,
 } from "./repository";
-import type { MenuItem, RestaurantProfile } from "@/lib/types/restaurant";
+import type { MenuItem, Reservation, RestaurantProfile } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
 import type {
@@ -288,6 +288,13 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     return this.request<Record<string, number>>(
       "GET",
       this.scoped("/payments/spend-by-customer", venueId),
+    );
+  }
+
+  listCustomerBookings(venueId: string, customerId: string) {
+    return this.request<Reservation[]>(
+      "GET",
+      this.scoped(`/customers/${encodeURIComponent(customerId)}/bookings`, venueId),
     );
   }
 

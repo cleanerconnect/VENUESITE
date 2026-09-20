@@ -21,7 +21,7 @@ import type {
   VenueAvailability,
   VisibilityMetrics,
 } from "@/lib/types/business";
-import type { MenuItem, RestaurantOverview, RestaurantProfile } from "@/lib/types/restaurant";
+import type { MenuItem, Reservation, RestaurantOverview, RestaurantProfile } from "@/lib/types/restaurant";
 import type { VenueAsset } from "@/lib/assets/types";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
 import type {
@@ -60,6 +60,8 @@ export interface OperationsBundle {
   subscription: Subscription;
   supportTickets: SupportTicket[];
   spendByCustomer: Record<string, number>;
+  /** One guest's whole booking history, keyed by customer id. */
+  bookingsByCustomer: Record<string, Reservation[]>;
 }
 
 export interface DirectoryUser {

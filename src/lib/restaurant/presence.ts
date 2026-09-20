@@ -17,6 +17,7 @@ import type { RestaurantProfile, Zone } from "@/lib/types/restaurant";
 import type { VenueConfiguration, VenueSettings } from "@/lib/types/venue-operations";
 import { PRICE_RANGE_LABEL, VENUE_FEATURE } from "@/lib/types/restaurant";
 import { hasNightlife } from "@/lib/venue/config";
+import { clock } from "./format";
 import { restaurantHref } from "./slugs";
 
 const WEEKDAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -118,7 +119,7 @@ export function buildPresenceScreen(input: {
           hours: {
             value:
               open.length > 0
-                ? open.map((s) => `${s.opensAt} – ${s.closesAt}`).join(" · ")
+                ? open.map((s) => `${clock(s.opensAt)} – ${clock(s.closesAt)}`).join(" · ")
                 : "—",
           },
           state: {

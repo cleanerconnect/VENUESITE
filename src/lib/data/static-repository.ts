@@ -293,6 +293,10 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     return clone(this.operations(venueId).spendByCustomer);
   }
 
+  async listCustomerBookings(venueId: string, customerId: string) {
+    return clone(this.operations(venueId).bookingsByCustomer?.[customerId] ?? []);
+  }
+
   async runServiceFloorAction(venueId: string, action: ServiceFloorAction) {
     const bundle = this.operations(venueId);
     const result = reduce.applyServiceFloor(bundle.serviceFloor, action);

@@ -18,6 +18,7 @@ import { listAssets as listAssetRows } from "@/lib/db/asset-store";
 import type { AssetKind } from "@/lib/assets/types";
 import {
   analytics as analyticsFromStore,
+  customerBookings,
   menuItems,
   venueProfile,
   overview as overviewFromStore,
@@ -265,6 +266,10 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
   async getSpendByCustomer(venueId: string) {
     return ops.spendByCustomer(venueId);
+  }
+
+  async listCustomerBookings(venueId: string, customerId: string) {
+    return customerBookings(venueId, customerId);
   }
 
   async runServiceFloorAction(venueId: string, action: ServiceFloorAction) {

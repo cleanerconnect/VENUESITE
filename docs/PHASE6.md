@@ -261,7 +261,7 @@ and the lounge delta annotation are updated, and nothing in §5 is open.
    `src/lib/db/overview-store.ts` hardcoded `"${bookedCovers} couverts
    réservés, …"`. It now reads `venue_settings.configuration` and renders
    through the venue vocabulary, so Nomad Rooftop says "38 personnes
-   réservées" and Dar Zellij still says "120 couverts réservés".
+   réservées" and Dar Zellij still says "104 couverts réservés".
 2. **French agreement was wrong in the feminine plural.**
    `cover.many` was concatenated with a masculine participle, yielding
    "Personnes arrivés" and "Personnes réservés". `VenueConfig.cover` now

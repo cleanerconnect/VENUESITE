@@ -165,19 +165,70 @@ const BOOKING_SELECT = `
     LEFT JOIN customers c ON c.id = r.customer_id
    WHERE r.venue_id = ?`;
 
-function upcomingReservations(venueId: string): Reservation[] {
+/**
+ * The book for one day.
+ *
+ * Scoped to a date rather than open-ended: Réservations calls itself the
+ * working list "for a chosen day", Accueil reads the same array for the
+ * service in hand, and an unscoped query put every future booking the
+ * venue holds into both.
+ */
+function upcomingReservations(venueId: string, date: string): Reservation[] {
   return all(
     `${BOOKING_SELECT} AND r.state IN ('requested','confirmed','modified','arrived')
+       AND date(r.at) = ?
        ORDER BY r.at`,
     venueId,
+    date,
+  ).map(reservationRow);
+}
+
+/**
+ * The queue at the door, read from `waitlist`.
+ *
+ * There is one queue, and this is the table that models it — with the
+ * promised delay, the notification and the door's own statuses. Reading
+ * `reservations` in state `waitlisted` instead gave the dashboard a
+ * second, shorter queue than Liste d'attente showed, for the same
+ * guests, on two screens a manager reads within one minute of each
+ * other.
+ */
+/**
+ * Every booking a customer ever made at this venue, newest first.
+ *
+ * The Fiche client's Historique had no source: the page handed the
+ * builder the live carnet, which by definition holds no past visit, so a
+ * guest with six visits read "Aucune visite" directly under the tile
+ * counting them.
+ */
+export function customerBookings(venueId: string, customerId: string): Reservation[] {
+  return all(
+    `${BOOKING_SELECT} AND r.customer_id = ? ORDER BY r.at DESC`,
+    venueId,
+    customerId,
   ).map(reservationRow);
 }
 
 function waitlist(venueId: string): Reservation[] {
   return all(
-    `${BOOKING_SELECT} AND r.state = 'waitlisted' ORDER BY r.at`,
+    `SELECT w.*, c.visit_count
+       FROM waitlist w
+       LEFT JOIN customers c ON c.id = w.customer_id
+      WHERE w.venue_id = ? AND w.status IN ('waiting', 'notified')
+      ORDER BY w.added_at`,
     venueId,
-  ).map(reservationRow);
+  ).map((r) => ({
+    id: String(r.id),
+    serviceId: "",
+    guestName: String(r.guest_name),
+    guestPhone: String(r.guest_phone),
+    partySize: Number(r.party_size),
+    at: String(r.added_at),
+    state: "waitlisted" as const,
+    channel: (r.source === "app" ? "lyfe" : "walk_in") as Reservation["channel"],
+    visits: Number(r.visit_count ?? 0),
+    vip: Number(r.visit_count ?? 0) >= 8,
+  }));
 }
 
 // ── Menu, reviews, activity, payouts ─────────────────────────
@@ -315,8 +366,10 @@ function aggregates(venueId: string, service: Service | null) {
     "SELECT AVG(rating) avg, COUNT(*) n FROM reviews WHERE venue_id = ?",
     venueId,
   );
+  // AVG over an empty set is NULL, and coercing that to zero turned "no
+  // month to compare with" into a jump of the whole average.
   const ratingPrior = one(
-    "SELECT AVG(rating) avg FROM reviews WHERE venue_id = ? AND at < ?",
+    "SELECT AVG(rating) avg, COUNT(*) n FROM reviews WHERE venue_id = ? AND at < ?",
     venueId,
     subDays(today, 30).toISOString(),
   );
@@ -335,8 +388,11 @@ function aggregates(venueId: string, service: Service | null) {
     service.slotLoad[0],
   );
 
-  const noShowsToday = Number(todayRow?.no_shows ?? service?.noShowCovers ?? 0);
-  const noShowsPrior = Number(yesterdayRow?.no_shows ?? 0);
+  // The service's own count, because that is what the dashboard labels
+  // it and what `no-show` writes increment. The daily rollup is a whole
+  // day across every service and disagreed with the hero footnote beside
+  // it; it stays the fallback for a venue with no service in hand.
+  const noShowsService = Number(service?.noShowCovers ?? todayRow?.no_shows ?? 0);
 
   return {
     coversToday: {
@@ -356,9 +412,8 @@ function aggregates(venueId: string, service: Service | null) {
       deltaPctVsLastWeek: pctChange(occupancy, occupancyPrior),
     },
     noShows: {
-      count: noShowsToday,
-      deltaPctVsLastWeek: pctChange(noShowsToday, noShowsPrior),
-      lostRevenueMad: Math.round(noShowsToday * ticket),
+      count: noShowsService,
+      lostRevenueMad: Math.round(noShowsService * ticket),
     },
     revenueWeek: {
       amountMad: Math.round(revenueWeek),
@@ -371,9 +426,12 @@ function aggregates(venueId: string, service: Service | null) {
     rating: {
       average: Number(Number(ratingRow?.avg ?? 0).toFixed(1)),
       reviewCount: Number(ratingRow?.n ?? 0),
-      deltaVsLastMonth: Number(
-        (Number(ratingRow?.avg ?? 0) - Number(ratingPrior?.avg ?? 0)).toFixed(1),
-      ),
+      deltaVsLastMonth:
+        Number(ratingPrior?.n ?? 0) === 0
+          ? null
+          : Number(
+              (Number(ratingRow?.avg ?? 0) - Number(ratingPrior?.avg ?? 0)).toFixed(1),
+            ),
     },
   };
 }
@@ -457,7 +515,7 @@ export function overview(venueId: string, viewerFirstName: string): RestaurantOv
       amountMad: toMad(Number(nextPayout?.amount_cents ?? 0)),
       scheduledFor: String(nextPayout?.scheduled_for ?? new Date().toISOString()),
     },
-    upcomingReservations: upcomingReservations(venueId),
+    upcomingReservations: upcomingReservations(venueId, day(new Date())),
     waitlist: queue,
     activity: activity(venueId),
     topItems: menuItems(venueId),

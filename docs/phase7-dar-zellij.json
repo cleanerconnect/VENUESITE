@@ -3,7 +3,7 @@
   "venue": "",
   "account": "yassine@darzellij.ma",
   "depth": "full",
-  "capturedAt": "2026-09-20T19:17:52.344Z",
+  "capturedAt": "2026-09-20T21:51:30.852Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -35,11 +35,11 @@
             "texts": [
               "Bonsoir",
               "le service est complet.",
-              "104 couverts réservés, 6 en liste d'attente, 16 encore disponibles.",
+              "104 couverts réservés, 11 en liste d'attente, 16 encore disponibles.",
               "Ouvrir le carnet →",
               "Suggestion",
-              "6 couverts en liste d'attente.",
-              "16 couverts encore disponibles sur ce service. Les confirmer récupère 6 couverts, soit ≈ 4 422 MAD.",
+              "11 couverts en liste d'attente.",
+              "16 couverts encore disponibles sur ce service. Les confirmer récupère 11 couverts, soit ≈ 8 107 MAD.",
               "Traiter la liste d'attente →",
               "Ignorer"
             ],
@@ -48,7 +48,7 @@
                 "lines": [
                   "Bonsoir",
                   "le service est complet.",
-                  "104 couverts réservés, 6 en liste d'attente, 16 encore disponibles."
+                  "104 couverts réservés, 11 en liste d'attente, 16 encore disponibles."
                 ],
                 "pills": [],
                 "actions": []
@@ -69,39 +69,38 @@
           "right": {
             "kind": "kpi-grid",
             "heading": "Dîner",
-            "subheading": "17h11 – 21h41 · Dar Zellij",
+            "subheading": "20h00 – 00h30 · Dar Zellij",
             "actions": [],
             "facets": [],
             "texts": [
               "DÎNER · EN COURS",
               "Dîner",
-              "17h11 – 21h41 · Dar Zellij",
+              "20h00 – 00h30 · Dar Zellij",
               "Arrivés",
-              "72%",
-              "86 / 120",
+              "66%",
+              "79 / 120",
               "Encaissé ce service",
-              "63 400 MAD",
+              "58 223 MAD",
               "Couverts arrivés",
-              "86",
+              "79",
               "/ 104",
               "Couverts disponibles",
               "16",
               "Arrivés",
-              "72%",
-              "86 / 120",
-              "104 couverts réservés sur 120 · 6 couverts absents.",
-              "87 % engagé"
+              "66%",
+              "79 / 120",
+              "104 couverts réservés sur 120 · 6 couverts absents."
             ],
             "tiles": [
               {
                 "label": "Encaissé ce service",
-                "value": "63 400 MAD",
+                "value": "58 223 MAD",
                 "meta": [],
                 "pills": []
               },
               {
                 "label": "Couverts arrivés",
-                "value": "86",
+                "value": "79",
                 "meta": [],
                 "pills": []
               },
@@ -117,7 +116,7 @@
         {
           "kind": "list",
           "heading": "À traiter",
-          "subheading": "20h11 · 2 couverts · demande en attente",
+          "subheading": "23h00 · 2 couverts · demande en attente",
           "actions": [
             "Accepter",
             "Refuser",
@@ -156,11 +155,11 @@
             "NC",
             "Nabil Cherkaoui",
             "À CONFIRMER",
-            "20h11 · 2 couverts · demande en attente",
+            "23h00 · 2 couverts · demande en attente",
             "YE",
             "Yasmine El Alaoui",
             "RISQUE ÉLEVÉ",
-            "19h41 · 4 couverts · risque d'absence élevé",
+            "22h30 · 4 couverts · risque d'absence élevé",
             "Groupe Filali",
             "ACOMPTE ÉCHOUÉ",
             "Acompte échoué · Carte refusée par l'émetteur",
@@ -180,7 +179,7 @@
           "items": [
             {
               "title": "Nabil Cherkaoui",
-              "meta": "20h11 · 2 couverts · demande en attente",
+              "meta": "23h00 · 2 couverts · demande en attente",
               "initials": "NC",
               "trailing": null,
               "pills": [
@@ -196,7 +195,7 @@
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "19h41 · 4 couverts · risque d'absence élevé",
+              "meta": "22h30 · 4 couverts · risque d'absence élevé",
               "initials": "YE",
               "trailing": null,
               "pills": [
@@ -268,37 +267,37 @@
         {
           "kind": "kpi-grid",
           "heading": null,
-          "subheading": "Pic à 18h",
+          "subheading": "Pic à 21h",
           "actions": [],
           "facets": [],
           "texts": [
             "Couverts aujourd'hui",
             "110",
             "· vs hier",
-            "Pic à 18h",
+            "Pic à 21h",
             "Ticket moyen",
             "737 MAD",
             "· vs sem. dernière",
             "Taux d'occupation",
-            "38 %",
-            "· vs sem. dernière",
+            "87 %",
+            "Dîner",
             "Prochain versement",
             "291 700 MAD",
             "dans 3 jours",
             "Versé le 23 sept.",
             "Absences ce service",
-            "5",
-            "· vs sem. dernière",
+            "6",
+            "Dîner",
             "Note moyenne",
             "4,3 / 5",
-            "4 avis · +4,3 ce mois-ci"
+            "4 avis · premier mois d'avis"
           ],
           "tiles": [
             {
               "label": "Couverts aujourd'hui",
               "value": "110",
               "meta": [
-                "Pic à 18h"
+                "Pic à 21h"
               ],
               "pills": []
             },
@@ -310,8 +309,10 @@
             },
             {
               "label": "Taux d'occupation",
-              "value": "38 %",
-              "meta": [],
+              "value": "87 %",
+              "meta": [
+                "Dîner"
+              ],
               "pills": []
             },
             {
@@ -331,15 +332,17 @@
             },
             {
               "label": "Absences ce service",
-              "value": "5",
-              "meta": [],
+              "value": "6",
+              "meta": [
+                "Dîner"
+              ],
               "pills": []
             },
             {
               "label": "Note moyenne",
               "value": "4,3 / 5",
               "meta": [
-                "4 avis · +4,3 ce mois-ci"
+                "4 avis · premier mois d'avis"
               ],
               "pills": []
             }
@@ -355,8 +358,10 @@
             "Les quatre prochaines heures",
             "Couverts attendus par quart d'heure, à partir de maintenant.",
             "8 couverts / 15 min",
-            "6",
+            "0",
             "4",
+            "0",
+            "10",
             "0",
             "2",
             "0",
@@ -369,85 +374,33 @@
             "0",
             "0",
             "0",
-            "0",
-            "0",
-            "19h15",
-            "19h30",
-            "19h45",
-            "20h00",
-            "20h15",
-            "20h30",
-            "20h45",
-            "21h00",
-            "21h15",
-            "21h30",
             "21h45",
             "22h00",
             "22h15",
             "22h30",
             "22h45",
-            "23h00"
+            "23h00",
+            "23h15",
+            "23h30",
+            "23h45",
+            "00h00",
+            "00h15",
+            "00h30",
+            "00h45",
+            "01h00",
+            "01h15",
+            "01h30"
           ],
           "bars": [
-            {
-              "height": "75",
-              "color": "var(--color-violet-deep)",
-              "label": "19h15 · 6 couverts"
-            },
-            {
-              "height": "50",
-              "color": "var(--color-violet-deep)",
-              "label": "19h30 · 4 couverts"
-            },
-            {
-              "height": "1",
-              "color": "var(--color-violet-deep)",
-              "label": "19h45 · 0 couverts"
-            },
-            {
-              "height": "25",
-              "color": "var(--color-violet-deep)",
-              "label": "20h00 · 2 couverts"
-            },
-            {
-              "height": "1",
-              "color": "var(--color-violet-deep)",
-              "label": "20h15 · 0 couverts"
-            },
-            {
-              "height": "62.5",
-              "color": "var(--color-violet-deep)",
-              "label": "20h30 · 5 couverts"
-            },
-            {
-              "height": "1",
-              "color": "var(--color-violet-deep)",
-              "label": "20h45 · 0 couverts"
-            },
-            {
-              "height": "1",
-              "color": "var(--color-violet-deep)",
-              "label": "21h00 · 0 couverts"
-            },
-            {
-              "height": "1",
-              "color": "var(--color-violet-deep)",
-              "label": "21h15 · 0 couverts"
-            },
-            {
-              "height": "1",
-              "color": "var(--color-violet-deep)",
-              "label": "21h30 · 0 couverts"
-            },
             {
               "height": "1",
               "color": "var(--color-violet-deep)",
               "label": "21h45 · 0 couverts"
             },
             {
-              "height": "1",
+              "height": "40",
               "color": "var(--color-violet-deep)",
-              "label": "22h00 · 0 couverts"
+              "label": "22h00 · 4 couverts"
             },
             {
               "height": "1",
@@ -455,9 +408,9 @@
               "label": "22h15 · 0 couverts"
             },
             {
-              "height": "1",
-              "color": "var(--color-violet-deep)",
-              "label": "22h30 · 0 couverts"
+              "height": "100",
+              "color": "var(--color-warning)",
+              "label": "22h30 · 10 couverts"
             },
             {
               "height": "1",
@@ -465,34 +418,86 @@
               "label": "22h45 · 0 couverts"
             },
             {
+              "height": "20",
+              "color": "var(--color-violet-deep)",
+              "label": "23h00 · 2 couverts"
+            },
+            {
               "height": "1",
               "color": "var(--color-violet-deep)",
-              "label": "23h00 · 0 couverts"
+              "label": "23h15 · 0 couverts"
+            },
+            {
+              "height": "50",
+              "color": "var(--color-violet-deep)",
+              "label": "23h30 · 5 couverts"
+            },
+            {
+              "height": "1",
+              "color": "var(--color-violet-deep)",
+              "label": "23h45 · 0 couverts"
+            },
+            {
+              "height": "1",
+              "color": "var(--color-violet-deep)",
+              "label": "00h00 · 0 couverts"
+            },
+            {
+              "height": "1",
+              "color": "var(--color-violet-deep)",
+              "label": "00h15 · 0 couverts"
+            },
+            {
+              "height": "1",
+              "color": "var(--color-violet-deep)",
+              "label": "00h30 · 0 couverts"
+            },
+            {
+              "height": "1",
+              "color": "var(--color-violet-deep)",
+              "label": "00h45 · 0 couverts"
+            },
+            {
+              "height": "1",
+              "color": "var(--color-violet-deep)",
+              "label": "01h00 · 0 couverts"
+            },
+            {
+              "height": "1",
+              "color": "var(--color-violet-deep)",
+              "label": "01h15 · 0 couverts"
+            },
+            {
+              "height": "1",
+              "color": "var(--color-violet-deep)",
+              "label": "01h30 · 0 couverts"
             }
           ],
           "axis": [
-            "19h15",
-            "19h30",
-            "19h45",
-            "20h00",
-            "20h15",
-            "20h30",
-            "20h45",
-            "21h00",
-            "21h15",
-            "21h30",
             "21h45",
             "22h00",
             "22h15",
             "22h30",
             "22h45",
-            "23h00"
+            "23h00",
+            "23h15",
+            "23h30",
+            "23h45",
+            "00h00",
+            "00h15",
+            "00h30",
+            "00h45",
+            "01h00",
+            "01h15",
+            "01h30"
           ],
           "svgs": [],
           "values": [
             "8 couverts / 15 min",
-            "6",
+            "0",
             "4",
+            "0",
+            "10",
             "0",
             "2",
             "0",
@@ -505,24 +510,22 @@
             "0",
             "0",
             "0",
-            "0",
-            "0",
-            "19h15",
-            "19h30",
-            "19h45",
-            "20h00",
-            "20h15",
-            "20h30",
-            "20h45",
-            "21h00",
-            "21h15",
-            "21h30",
             "21h45",
             "22h00",
             "22h15",
             "22h30",
             "22h45",
-            "23h00"
+            "23h00",
+            "23h15",
+            "23h30",
+            "23h45",
+            "00h00",
+            "00h15",
+            "00h30",
+            "00h45",
+            "01h00",
+            "01h15",
+            "01h30"
           ]
         },
         {
@@ -534,115 +537,105 @@
           "texts": [
             "Charge du service",
             "Couverts réservés par créneau de 30 min. La ligne marque ce que la salle peut tourner.",
-            "24 couverts / créneau",
-            "10",
-            "19",
-            "28",
-            "34",
-            "32",
-            "26",
-            "20",
-            "14",
-            "9",
+            "27 couverts / créneau",
             "5",
-            "17h11",
-            "17h41",
-            "18h11",
-            "18h41",
-            "19h11",
-            "19h41",
-            "20h11",
-            "20h41",
-            "21h11",
-            "21h41"
+            "10",
+            "15",
+            "19",
+            "17",
+            "14",
+            "11",
+            "7",
+            "6",
+            "20h00",
+            "20h30",
+            "21h00",
+            "21h30",
+            "22h00",
+            "22h30",
+            "23h00",
+            "23h30",
+            "00h00"
           ],
           "bars": [
             {
-              "height": "29.4118",
+              "height": "18.5185",
               "color": "var(--color-violet-deep)",
-              "label": "17h11 · 10 couverts"
+              "label": "20h00 · 5 couverts"
             },
             {
-              "height": "55.8824",
+              "height": "37.037",
               "color": "var(--color-violet-deep)",
-              "label": "17h41 · 19 couverts"
+              "label": "20h30 · 10 couverts"
             },
             {
-              "height": "82.3529",
-              "color": "var(--color-warning)",
-              "label": "18h11 · 28 couverts"
-            },
-            {
-              "height": "100",
-              "color": "var(--color-warning)",
-              "label": "18h41 · 34 couverts"
-            },
-            {
-              "height": "94.1176",
-              "color": "var(--color-warning)",
-              "label": "19h11 · 32 couverts"
-            },
-            {
-              "height": "76.4706",
-              "color": "var(--color-warning)",
-              "label": "19h41 · 26 couverts"
-            },
-            {
-              "height": "58.8235",
+              "height": "55.5556",
               "color": "var(--color-violet-deep)",
-              "label": "20h11 · 20 couverts"
+              "label": "21h00 · 15 couverts"
             },
             {
-              "height": "41.1765",
+              "height": "70.3704",
               "color": "var(--color-violet-deep)",
-              "label": "20h41 · 14 couverts"
+              "label": "21h30 · 19 couverts"
             },
             {
-              "height": "26.4706",
+              "height": "62.963",
               "color": "var(--color-violet-deep)",
-              "label": "21h11 · 9 couverts"
+              "label": "22h00 · 17 couverts"
             },
             {
-              "height": "14.7059",
+              "height": "51.8518",
               "color": "var(--color-violet-deep)",
-              "label": "21h41 · 5 couverts"
+              "label": "22h30 · 14 couverts"
+            },
+            {
+              "height": "40.7407",
+              "color": "var(--color-violet-deep)",
+              "label": "23h00 · 11 couverts"
+            },
+            {
+              "height": "25.9259",
+              "color": "var(--color-violet-deep)",
+              "label": "23h30 · 7 couverts"
+            },
+            {
+              "height": "22.2222",
+              "color": "var(--color-violet-deep)",
+              "label": "00h00 · 6 couverts"
             }
           ],
           "axis": [
-            "17h11",
-            "17h41",
-            "18h11",
-            "18h41",
-            "19h11",
-            "19h41",
-            "20h11",
-            "20h41",
-            "21h11",
-            "21h41"
+            "20h00",
+            "20h30",
+            "21h00",
+            "21h30",
+            "22h00",
+            "22h30",
+            "23h00",
+            "23h30",
+            "00h00"
           ],
           "svgs": [],
           "values": [
-            "24 couverts / créneau",
-            "10",
-            "19",
-            "28",
-            "34",
-            "32",
-            "26",
-            "20",
-            "14",
-            "9",
+            "27 couverts / créneau",
             "5",
-            "17h11",
-            "17h41",
-            "18h11",
-            "18h41",
-            "19h11",
-            "19h41",
-            "20h11",
-            "20h41",
-            "21h11",
-            "21h41"
+            "10",
+            "15",
+            "19",
+            "17",
+            "14",
+            "11",
+            "7",
+            "6",
+            "20h00",
+            "20h30",
+            "21h00",
+            "21h30",
+            "22h00",
+            "22h30",
+            "23h00",
+            "23h30",
+            "00h00"
           ]
         },
         {
@@ -650,7 +643,7 @@
           "left": {
             "kind": "list",
             "heading": "Prochaines arrivées",
-            "subheading": "19h11 · 4 couverts · Patio · LYFE",
+            "subheading": "22h00 · 4 couverts · Patio · LYFE",
             "actions": [],
             "facets": [],
             "texts": [
@@ -658,37 +651,37 @@
               "Tout voir →",
               "SB",
               "Salma Bennani",
-              "19h11 · 4 couverts · Patio · LYFE",
+              "22h00 · 4 couverts · Patio · LYFE",
               "Anniversaire, dessert avec bougie",
               "Acompte",
               "400 MAD",
               "GK",
               "Groupe Karam",
-              "19h26 · 6 couverts · Grande salle · Téléphone",
+              "22h30 · 6 couverts · Grande salle · Téléphone",
               "Sans gluten pour deux couverts",
               "Visites",
               "2",
               "YE",
               "Yasmine El Alaoui",
-              "19h41 · 4 couverts · Terrasse · Instagram",
+              "22h30 · 4 couverts · Terrasse · Instagram",
               "Visites",
               "1",
               "NC",
               "Nabil Cherkaoui",
-              "20h11 · 2 couverts · LYFE",
+              "23h00 · 2 couverts · LYFE",
               "Demande une table près de la fontaine",
               "Visites",
               "0",
               "HT",
               "Hind Tazi",
-              "20h36 · 5 couverts · Grande salle · Partenaire",
+              "23h30 · 5 couverts · Grande salle · Partenaire",
               "Acompte",
               "500 MAD"
             ],
             "items": [
               {
                 "title": "Salma Bennani",
-                "meta": "19h11 · 4 couverts · Patio · LYFE",
+                "meta": "22h00 · 4 couverts · Patio · LYFE",
                 "initials": "SB",
                 "trailing": [
                   "Acompte",
@@ -704,7 +697,7 @@
               },
               {
                 "title": "Groupe Karam",
-                "meta": "19h26 · 6 couverts · Grande salle · Téléphone",
+                "meta": "22h30 · 6 couverts · Grande salle · Téléphone",
                 "initials": "GK",
                 "trailing": [
                   "Visites",
@@ -720,7 +713,7 @@
               },
               {
                 "title": "Yasmine El Alaoui",
-                "meta": "19h41 · 4 couverts · Terrasse · Instagram",
+                "meta": "22h30 · 4 couverts · Terrasse · Instagram",
                 "initials": "YE",
                 "trailing": [
                   "Visites",
@@ -740,7 +733,7 @@
               },
               {
                 "title": "Nabil Cherkaoui",
-                "meta": "20h11 · 2 couverts · LYFE",
+                "meta": "23h00 · 2 couverts · LYFE",
                 "initials": "NC",
                 "trailing": [
                   "Visites",
@@ -756,7 +749,7 @@
               },
               {
                 "title": "Hind Tazi",
-                "meta": "20h36 · 5 couverts · Grande salle · Partenaire",
+                "meta": "23h30 · 5 couverts · Grande salle · Partenaire",
                 "initials": "HT",
                 "trailing": [
                   "Acompte",
@@ -786,27 +779,27 @@
               "Activité du service",
               "LIVE",
               "Dix dernières actions, en direct.",
-              "Salma Bennani",
-              "est arrivée · 4 couverts",
-              "il y a 27 minutes",
+              "Famille Alami",
+              "est arrivée · 2 couverts",
+              "il y a 9 minutes",
               "Nabil Cherkaoui",
               "a demandé une table pour 2",
-              "il y a 30 minutes",
+              "il y a 12 minutes",
               "LYFE",
               "détecte 3 annulations sur le même créneau",
-              "il y a 35 minutes",
-              "Hind Tazi",
-              "est arrivée · 5 couverts",
-              "il y a 38 minutes",
+              "il y a 17 minutes",
+              "Rachid Benjelloun",
+              "est arrivé · 4 couverts",
+              "il y a 20 minutes",
               "Famille Berrada",
               "rejoint la liste d'attente · 4 couverts",
-              "il y a 49 minutes",
-              "Réservation précédente",
-              "notée absente après 25 min · 3 couverts",
-              "il y a 1 heure",
+              "il y a 31 minutes",
+              "Hakim Sbaï",
+              "noté absent après 25 min · 4 couverts",
+              "il y a 48 minutes",
               "Sofia Lahlou",
               "a annulé sa table de 2",
-              "il y a 1 heure",
+              "il y a 55 minutes",
               "Leïla M.",
               "a laissé un avis 5 étoiles",
               "il y a 3 heures",
@@ -817,9 +810,9 @@
             "rows": [
               {
                 "lines": [
-                  "Salma Bennani",
-                  "est arrivée · 4 couverts",
-                  "il y a 27 minutes"
+                  "Famille Alami",
+                  "est arrivée · 2 couverts",
+                  "il y a 9 minutes"
                 ],
                 "pills": [],
                 "actions": []
@@ -828,7 +821,7 @@
                 "lines": [
                   "Nabil Cherkaoui",
                   "a demandé une table pour 2",
-                  "il y a 30 minutes"
+                  "il y a 12 minutes"
                 ],
                 "pills": [],
                 "actions": []
@@ -837,16 +830,16 @@
                 "lines": [
                   "LYFE",
                   "détecte 3 annulations sur le même créneau",
-                  "il y a 35 minutes"
+                  "il y a 17 minutes"
                 ],
                 "pills": [],
                 "actions": []
               },
               {
                 "lines": [
-                  "Hind Tazi",
-                  "est arrivée · 5 couverts",
-                  "il y a 38 minutes"
+                  "Rachid Benjelloun",
+                  "est arrivé · 4 couverts",
+                  "il y a 20 minutes"
                 ],
                 "pills": [],
                 "actions": []
@@ -855,16 +848,16 @@
                 "lines": [
                   "Famille Berrada",
                   "rejoint la liste d'attente · 4 couverts",
-                  "il y a 49 minutes"
+                  "il y a 31 minutes"
                 ],
                 "pills": [],
                 "actions": []
               },
               {
                 "lines": [
-                  "Réservation précédente",
-                  "notée absente après 25 min · 3 couverts",
-                  "il y a 1 heure"
+                  "Hakim Sbaï",
+                  "noté absent après 25 min · 4 couverts",
+                  "il y a 48 minutes"
                 ],
                 "pills": [],
                 "actions": []
@@ -873,7 +866,7 @@
                 "lines": [
                   "Sofia Lahlou",
                   "a annulé sa table de 2",
-                  "il y a 1 heure"
+                  "il y a 55 minutes"
                 ],
                 "pills": [],
                 "actions": []
@@ -984,7 +977,7 @@
       "workspace": "venue",
       "title": "Réservations",
       "eyebrow": null,
-      "subtitle": "dimanche 20 septembre",
+      "subtitle": "dimanche 20 septembre · Dîner",
       "venue": "YA",
       "blocks": [
         {
@@ -1031,7 +1024,7 @@
             "/ 120",
             "87 % de la salle engagée",
             "Déjà arrivés",
-            "86",
+            "79",
             "À confirmer",
             "1",
             "À traiter avant le coup de feu",
@@ -1050,7 +1043,7 @@
             },
             {
               "label": "Déjà arrivés",
-              "value": "86",
+              "value": "79",
               "meta": [],
               "pills": []
             },
@@ -1081,128 +1074,118 @@
           "texts": [
             "Charge du service",
             "Couverts réservés par créneau de 30 min. La ligne marque ce que la salle peut tourner.",
-            "24 couverts / créneau",
-            "10",
-            "19",
-            "28",
-            "34",
-            "32",
-            "26",
-            "20",
-            "14",
-            "9",
+            "27 couverts / créneau",
             "5",
-            "17h11",
-            "17h41",
-            "18h11",
-            "18h41",
-            "19h11",
-            "19h41",
-            "20h11",
-            "20h41",
-            "21h11",
-            "21h41"
+            "10",
+            "15",
+            "19",
+            "17",
+            "14",
+            "11",
+            "7",
+            "6",
+            "20h00",
+            "20h30",
+            "21h00",
+            "21h30",
+            "22h00",
+            "22h30",
+            "23h00",
+            "23h30",
+            "00h00"
           ],
           "bars": [
             {
-              "height": "29.4118",
+              "height": "18.5185",
               "color": "var(--color-violet-deep)",
-              "label": "17h11 · 10 couverts"
+              "label": "20h00 · 5 couverts"
             },
             {
-              "height": "55.8824",
+              "height": "37.037",
               "color": "var(--color-violet-deep)",
-              "label": "17h41 · 19 couverts"
+              "label": "20h30 · 10 couverts"
             },
             {
-              "height": "82.3529",
-              "color": "var(--color-warning)",
-              "label": "18h11 · 28 couverts"
-            },
-            {
-              "height": "100",
-              "color": "var(--color-warning)",
-              "label": "18h41 · 34 couverts"
-            },
-            {
-              "height": "94.1176",
-              "color": "var(--color-warning)",
-              "label": "19h11 · 32 couverts"
-            },
-            {
-              "height": "76.4706",
-              "color": "var(--color-warning)",
-              "label": "19h41 · 26 couverts"
-            },
-            {
-              "height": "58.8235",
+              "height": "55.5556",
               "color": "var(--color-violet-deep)",
-              "label": "20h11 · 20 couverts"
+              "label": "21h00 · 15 couverts"
             },
             {
-              "height": "41.1765",
+              "height": "70.3704",
               "color": "var(--color-violet-deep)",
-              "label": "20h41 · 14 couverts"
+              "label": "21h30 · 19 couverts"
             },
             {
-              "height": "26.4706",
+              "height": "62.963",
               "color": "var(--color-violet-deep)",
-              "label": "21h11 · 9 couverts"
+              "label": "22h00 · 17 couverts"
             },
             {
-              "height": "14.7059",
+              "height": "51.8518",
               "color": "var(--color-violet-deep)",
-              "label": "21h41 · 5 couverts"
+              "label": "22h30 · 14 couverts"
+            },
+            {
+              "height": "40.7407",
+              "color": "var(--color-violet-deep)",
+              "label": "23h00 · 11 couverts"
+            },
+            {
+              "height": "25.9259",
+              "color": "var(--color-violet-deep)",
+              "label": "23h30 · 7 couverts"
+            },
+            {
+              "height": "22.2222",
+              "color": "var(--color-violet-deep)",
+              "label": "00h00 · 6 couverts"
             }
           ],
           "axis": [
-            "17h11",
-            "17h41",
-            "18h11",
-            "18h41",
-            "19h11",
-            "19h41",
-            "20h11",
-            "20h41",
-            "21h11",
-            "21h41"
+            "20h00",
+            "20h30",
+            "21h00",
+            "21h30",
+            "22h00",
+            "22h30",
+            "23h00",
+            "23h30",
+            "00h00"
           ],
           "svgs": [],
           "values": [
-            "24 couverts / créneau",
-            "10",
-            "19",
-            "28",
-            "34",
-            "32",
-            "26",
-            "20",
-            "14",
-            "9",
+            "27 couverts / créneau",
             "5",
-            "17h11",
-            "17h41",
-            "18h11",
-            "18h41",
-            "19h11",
-            "19h41",
-            "20h11",
-            "20h41",
-            "21h11",
-            "21h41"
+            "10",
+            "15",
+            "19",
+            "17",
+            "14",
+            "11",
+            "7",
+            "6",
+            "20h00",
+            "20h30",
+            "21h00",
+            "21h30",
+            "22h00",
+            "22h30",
+            "23h00",
+            "23h30",
+            "00h00"
           ]
         },
         {
           "kind": "list",
           "heading": "Carnet du service",
-          "subheading": "19h06 · 2 couverts · Walk-in",
+          "subheading": "20h00 · 2 couverts · Grande salle · LYFE",
           "actions": [
             "Nouvelle réservation"
           ],
           "facets": [
             {
               "label": "Tous",
-              "count": "7"
+              "count": "30"
             },
             {
               "label": "À confirmer",
@@ -1214,11 +1197,11 @@
             },
             {
               "label": "Arrivés",
-              "count": "0"
+              "count": "21"
             },
             {
               "label": "Liste d'attente",
-              "count": "2"
+              "count": "4"
             },
             {
               "label": "No-show",
@@ -1240,57 +1223,381 @@
             "Couverts",
             "Fidélité",
             "Nom",
-            "7",
+            "30",
             "1",
             "4",
-            "0",
-            "2",
+            "21",
+            "4",
             "0",
             "0",
             "1",
+            "FA",
+            "Famille Alami",
+            "20h00 · 2 couverts · Grande salle · LYFE",
+            "Visites",
+            "0",
+            "KN",
+            "Khalid Naciri",
+            "20h00 · 4 couverts · Patio · LYFE",
+            "Visites",
+            "0",
+            "CL",
+            "Couple Lambert",
+            "20h00 · 2 couverts · Terrasse · LYFE",
+            "Visites",
+            "0",
+            "KB",
+            "Karim Belmekki",
+            "20h00 · 4 couverts · Grande salle · LYFE",
+            "Visites",
+            "0",
+            "GM",
+            "Groupe Majorelle",
+            "20h00 · 4 couverts · Patio · LYFE",
+            "Visites",
+            "0",
+            "HS",
+            "Hakim Sbaï",
+            "20h00 · 4 couverts · Terrasse · LYFE",
+            "Visites",
+            "0",
+            "RB",
+            "Rachid Benjelloun",
+            "20h30 · 4 couverts · Patio · Téléphone",
+            "Visites",
+            "0",
+            "IS",
+            "Imane Sefrioui",
+            "20h30 · 2 couverts · Terrasse · Téléphone",
+            "Visites",
+            "0",
+            "GA",
+            "Groupe Atlas",
+            "20h30 · 4 couverts · Grande salle · Téléphone",
+            "Visites",
+            "0",
+            "FT",
+            "Famille Tazi",
+            "20h30 · 6 couverts · Patio · Téléphone",
+            "Visites",
+            "0",
+            "LZ",
+            "Laila Zniber",
+            "20h30 · 2 couverts · Terrasse · Téléphone",
+            "Visites",
+            "0",
+            "SM",
+            "Sanaa Mourad",
+            "21h00 · 2 couverts · Terrasse · Walk-in",
+            "Visites",
+            "0",
+            "TO",
+            "Table Ourika",
+            "21h00 · 3 couverts · Grande salle · Walk-in",
+            "Visites",
+            "0",
+            "AC",
+            "Anniversaire Chraïbi",
+            "21h00 · 8 couverts · Patio · Walk-in",
+            "Visites",
+            "0",
+            "SG",
+            "Sofia Guessous",
+            "21h00 · 2 couverts · Terrasse · Walk-in",
+            "Visites",
+            "0",
+            "TK",
+            "Table Koutoubia",
+            "21h00 · 6 couverts · Grande salle · Walk-in",
+            "Visites",
+            "0",
             "OI",
             "Omar Idrissi",
-            "19h06 · 2 couverts · Walk-in",
+            "21h09 · 2 couverts · Walk-in",
             "Visites",
             "0",
-            "SB",
-            "Salma Bennani",
-            "19h11 · 4 couverts · Patio · LYFE",
-            "Anniversaire, dessert avec bougie",
-            "Acompte",
-            "400 MAD",
             "FB",
             "Famille Berrada",
-            "19h16 · 4 couverts · Walk-in",
+            "21h21 · 4 couverts · Walk-in",
             "Visites",
             "3",
-            "GK",
-            "Groupe Karam",
-            "19h26 · 6 couverts · Grande salle · Téléphone",
-            "Sans gluten pour deux couverts",
-            "Visites",
-            "2",
-            "YE",
-            "Yasmine El Alaoui",
-            "19h41 · 4 couverts · Terrasse · Instagram",
-            "Visites",
-            "1",
-            "NC",
-            "Nabil Cherkaoui",
-            "20h11 · 2 couverts · LYFE",
-            "Demande une table près de la fontaine",
+            "SL",
+            "Sofia Lahlou",
+            "21h29 · 3 couverts · LYFE",
             "Visites",
             "0",
-            "HT",
-            "Hind Tazi",
-            "20h36 · 5 couverts · Grande salle · Partenaire",
-            "Acompte",
-            "500 MAD"
+            "GZ",
+            "Groupe Ziyad",
+            "21h30 · 6 couverts · Grande salle",
+            "Visites",
+            "0",
+            "MB",
+            "Mehdi Bouzoubaa",
+            "21h30 · 5 couverts · Patio",
+            "Visites",
+            "0",
+            "NR"
           ],
           "items": [
             {
+              "title": "Famille Alami",
+              "meta": "20h00 · 2 couverts · Grande salle · LYFE",
+              "initials": "FA",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Khalid Naciri",
+              "meta": "20h00 · 4 couverts · Patio · LYFE",
+              "initials": "KN",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Couple Lambert",
+              "meta": "20h00 · 2 couverts · Terrasse · LYFE",
+              "initials": "CL",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Karim Belmekki",
+              "meta": "20h00 · 4 couverts · Grande salle · LYFE",
+              "initials": "KB",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Groupe Majorelle",
+              "meta": "20h00 · 4 couverts · Patio · LYFE",
+              "initials": "GM",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Hakim Sbaï",
+              "meta": "20h00 · 4 couverts · Terrasse · LYFE",
+              "initials": "HS",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Rachid Benjelloun",
+              "meta": "20h30 · 4 couverts · Patio · Téléphone",
+              "initials": "RB",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Imane Sefrioui",
+              "meta": "20h30 · 2 couverts · Terrasse · Téléphone",
+              "initials": "IS",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Groupe Atlas",
+              "meta": "20h30 · 4 couverts · Grande salle · Téléphone",
+              "initials": "GA",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Famille Tazi",
+              "meta": "20h30 · 6 couverts · Patio · Téléphone",
+              "initials": "FT",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Laila Zniber",
+              "meta": "20h30 · 2 couverts · Terrasse · Téléphone",
+              "initials": "LZ",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sanaa Mourad",
+              "meta": "21h00 · 2 couverts · Terrasse · Walk-in",
+              "initials": "SM",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Table Ourika",
+              "meta": "21h00 · 3 couverts · Grande salle · Walk-in",
+              "initials": "TO",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Anniversaire Chraïbi",
+              "meta": "21h00 · 8 couverts · Patio · Walk-in",
+              "initials": "AC",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sofia Guessous",
+              "meta": "21h00 · 2 couverts · Terrasse · Walk-in",
+              "initials": "SG",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Table Koutoubia",
+              "meta": "21h00 · 6 couverts · Grande salle · Walk-in",
+              "initials": "TK",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
               "title": "Omar Idrissi",
-              "meta": "19h06 · 2 couverts · Walk-in",
+              "meta": "21h09 · 2 couverts · Walk-in",
               "initials": "OI",
               "trailing": [
                 "Visites",
@@ -1305,8 +1612,136 @@
               "actions": []
             },
             {
+              "title": "Famille Berrada",
+              "meta": "21h21 · 4 couverts · Walk-in",
+              "initials": "FB",
+              "trailing": [
+                "Visites",
+                "3"
+              ],
+              "pills": [
+                {
+                  "label": "LISTE D'ATTENTE",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sofia Lahlou",
+              "meta": "21h29 · 3 couverts · LYFE",
+              "initials": "SL",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "LISTE D'ATTENTE",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Groupe Ziyad",
+              "meta": "21h30 · 6 couverts · Grande salle",
+              "initials": "GZ",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Mehdi Bouzoubaa",
+              "meta": "21h30 · 5 couverts · Patio",
+              "initials": "MB",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Nawal Rifai",
+              "meta": "21h30 · 2 couverts · Terrasse",
+              "initials": "NR",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Réda Amrani",
+              "meta": "21h30 · 3 couverts · Grande salle",
+              "initials": "RA",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Adil Berrechid",
+              "meta": "21h30 · 4 couverts · Patio",
+              "initials": "AB",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Couple Renaud",
+              "meta": "21h35 · 2 couverts · LYFE",
+              "initials": "CR",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "LISTE D'ATTENTE",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
               "title": "Salma Bennani",
-              "meta": "19h11 · 4 couverts · Patio · LYFE",
+              "meta": "22h00 · 4 couverts · Patio · LYFE",
               "initials": "SB",
               "trailing": [
                 "Acompte",
@@ -1325,24 +1760,8 @@
               "actions": []
             },
             {
-              "title": "Famille Berrada",
-              "meta": "19h16 · 4 couverts · Walk-in",
-              "initials": "FB",
-              "trailing": [
-                "Visites",
-                "3"
-              ],
-              "pills": [
-                {
-                  "label": "LISTE D'ATTENTE",
-                  "tone": "ink-mute-12"
-                }
-              ],
-              "actions": []
-            },
-            {
               "title": "Groupe Karam",
-              "meta": "19h26 · 6 couverts · Grande salle · Téléphone",
+              "meta": "22h30 · 6 couverts · Grande salle · Téléphone",
               "initials": "GK",
               "trailing": [
                 "Visites",
@@ -1358,7 +1777,7 @@
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "19h41 · 4 couverts · Terrasse · Instagram",
+              "meta": "22h30 · 4 couverts · Terrasse · Instagram",
               "initials": "YE",
               "trailing": [
                 "Visites",
@@ -1378,7 +1797,7 @@
             },
             {
               "title": "Nabil Cherkaoui",
-              "meta": "20h11 · 2 couverts · LYFE",
+              "meta": "23h00 · 2 couverts · LYFE",
               "initials": "NC",
               "trailing": [
                 "Visites",
@@ -1394,7 +1813,7 @@
             },
             {
               "title": "Hind Tazi",
-              "meta": "20h36 · 5 couverts · Grande salle · Partenaire",
+              "meta": "23h30 · 5 couverts · Grande salle · Partenaire",
               "initials": "HT",
               "trailing": [
                 "Acompte",
@@ -1422,22 +1841,22 @@
       "surfaces": [
         {
           "name": "Détail réservation",
-          "title": "Omar Idrissi",
+          "title": "Famille Alami",
           "lines": [
-            "Omar Idrissi",
-            "19h06 · 2 couverts · Sans réservation",
+            "Famille Alami",
+            "20h00 · 2 couverts · LYFE",
             "La réservation",
             "Heure",
-            "19h06",
+            "20h00",
             "Personnes",
             "2",
             "Espace",
-            "Sans préférence",
+            "Grande salle",
             "Canal",
-            "Sans réservation",
+            "LYFE",
             "Le client",
             "Téléphone",
-            "+212 667 74 21 08",
+            "+212 610000000",
             "Visites",
             "0",
             "Risque d'absence",
@@ -1445,7 +1864,7 @@
             "Rappel SMS"
           ],
           "pills": [
-            "LISTE D'ATTENTE"
+            "ARRIVÉ"
           ],
           "buttons": [
             "Marquer comme arrivé",
@@ -1506,13 +1925,10 @@
             "Offre",
             "4",
             "/120",
-            "Offre",
             "5",
             "/120",
-            "Offre",
             "6",
             "/120",
-            "Offre",
             "Expérience",
             "7",
             "/120",
@@ -1589,20 +2005,8 @@
             "/120",
             "Offre"
           ],
-          "body": "Charge par jourcouverts réservés sur la capacité du jour. Cliquez un jour pour l'ouvrir dans le carnet.Modifier les services →SemaineMois‹septembre 2026›lunmarmerjeuvensamdim14/120Offre25/120Offre33/120Offre45/120Offre50/120Offre67/120OffreExpérience70/120Offre80/120Offre93/120Offre104/120Offre110/120Offre122/120Offre137/120Offre145/120Offre150/120Offre166/120Offre170/120Offre185/120Offre190/120Of",
+          "body": "Charge par jourcouverts réservés sur la capacité du jour. Cliquez un jour pour l'ouvrir dans le carnet.Modifier les services →SemaineMois‹septembre 2026›lunmarmerjeuvensamdim14/120Offre25/120Offre35/120Offre49/12050/12067/120Expérience70/120Offre80/120Offre93/120Offre104/120Offre113/120Offre122/120Offre137/120Offre145/120Offre152/120Offre1611/120Offre170/120Offre185/120Offre190/120Offre20100/120Of",
           "pills": [
-            {
-              "label": "Offre",
-              "tone": "ink-6"
-            },
-            {
-              "label": "Offre",
-              "tone": "ink-6"
-            },
-            {
-              "label": "Offre",
-              "tone": "ink-6"
-            },
             {
               "label": "Offre",
               "tone": "ink-6"
@@ -1743,7 +2147,7 @@
           "right": {
             "kind": "list",
             "heading": null,
-            "subheading": "0 / 72 couverts · 0 % de la salle",
+            "subheading": "0 / 120 couverts · 0 % de la salle",
             "actions": [
               "Créer une offre",
               "Créer une offre",
@@ -1752,32 +2156,22 @@
             ],
             "facets": [],
             "texts": [
-              "lun. 21 sept.",
-              "0 / 72 couverts · 0 % de la salle",
-              "72 couverts libres",
-              "mar. 22 sept.",
+              "lun. 5 oct.",
               "0 / 120 couverts · 0 % de la salle",
               "120 couverts libres",
-              "mer. 23 sept.",
+              "mar. 6 oct.",
               "0 / 120 couverts · 0 % de la salle",
               "120 couverts libres",
-              "jeu. 24 sept.",
+              "mer. 7 oct.",
+              "0 / 120 couverts · 0 % de la salle",
+              "120 couverts libres",
+              "jeu. 8 oct.",
               "0 / 120 couverts · 0 % de la salle",
               "120 couverts libres"
             ],
             "items": [
               {
-                "title": "lun. 21 sept.",
-                "meta": "0 / 72 couverts · 0 % de la salle",
-                "initials": null,
-                "trailing": null,
-                "pills": [],
-                "actions": [
-                  "Créer une offre"
-                ]
-              },
-              {
-                "title": "mar. 22 sept.",
+                "title": "lun. 5 oct.",
                 "meta": "0 / 120 couverts · 0 % de la salle",
                 "initials": null,
                 "trailing": null,
@@ -1787,7 +2181,7 @@
                 ]
               },
               {
-                "title": "mer. 23 sept.",
+                "title": "mar. 6 oct.",
                 "meta": "0 / 120 couverts · 0 % de la salle",
                 "initials": null,
                 "trailing": null,
@@ -1797,7 +2191,17 @@
                 ]
               },
               {
-                "title": "jeu. 24 sept.",
+                "title": "mer. 7 oct.",
+                "meta": "0 / 120 couverts · 0 % de la salle",
+                "initials": null,
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Créer une offre"
+                ]
+              },
+              {
+                "title": "jeu. 8 oct.",
                 "meta": "0 / 120 couverts · 0 % de la salle",
                 "initials": null,
                 "trailing": null,
@@ -1821,7 +2225,7 @@
       "workspace": "venue",
       "title": "Liste d'attente",
       "eyebrow": null,
-      "subtitle": "Espace restaurant · 3 min d'attente annoncée",
+      "subtitle": "Espace restaurant · 12 min d'attente annoncée",
       "venue": "YA",
       "blocks": [
         {
@@ -1835,7 +2239,7 @@
             "4",
             "11 couverts",
             "Attente moyenne",
-            "3 min",
+            "12 min",
             "Délai restant sur les groupes encore en attente.",
             "Liste en ligne",
             "Ouverte",
@@ -1852,7 +2256,7 @@
             },
             {
               "label": "Attente moyenne",
-              "value": "3 min",
+              "value": "12 min",
               "meta": [
                 "Délai restant sur les groupes encore en attente."
               ],
@@ -1871,7 +2275,7 @@
         {
           "kind": "list",
           "heading": "À la porte",
-          "subheading": "2 couverts · +212 667 74 21 08 · inscrit à 18h17 · promis 20 min · 41 min de retard",
+          "subheading": "2 couverts · +212 667 74 21 08 · inscrit à 21h09 · promis 20 min · 23 min de retard",
           "actions": [
             "Ajouter",
             "Installer",
@@ -1914,29 +2318,27 @@
             "PRÉVENU",
             "SUR PLACE",
             "EN RETARD",
-            "2 couverts · +212 667 74 21 08 · inscrit à 18h17 · promis 20 min · 41 min de retard",
+            "2 couverts · +212 667 74 21 08 · inscrit à 21h09 · promis 20 min · 23 min de retard",
             "FB",
             "Famille Berrada",
             "EN ATTENTE",
             "SUR PLACE",
-            "EN RETARD",
-            "4 couverts · +212 668 30 90 55 · inscrit à 18h29 · promis 35 min · 14 min de retard",
+            "4 couverts · +212 668 30 90 55 · inscrit à 21h21 · 4 min restantes sur 35 min",
             "SL",
             "Sofia Lahlou",
             "EN ATTENTE",
             "APP",
-            "EN RETARD",
-            "3 couverts · +212 666 70 15 29 · inscrit à 18h37 · promis 40 min · 1 min de retard",
+            "3 couverts · +212 666 70 15 29 · inscrit à 21h29 · 17 min restantes sur 40 min",
             "CR",
             "Couple Renaud",
             "EN ATTENTE",
             "APP",
-            "2 couverts · +33 6 12 44 90 21 · inscrit à 18h43 · 10 min restantes sur 45 min"
+            "2 couverts · +33 6 12 44 90 21 · inscrit à 21h35 · 28 min restantes sur 45 min"
           ],
           "items": [
             {
               "title": "Omar Idrissi",
-              "meta": "2 couverts · +212 667 74 21 08 · inscrit à 18h17 · promis 20 min · 41 min de retard",
+              "meta": "2 couverts · +212 667 74 21 08 · inscrit à 21h09 · promis 20 min · 23 min de retard",
               "initials": "OI",
               "trailing": null,
               "pills": [
@@ -1959,7 +2361,7 @@
             },
             {
               "title": "Famille Berrada",
-              "meta": "4 couverts · +212 668 30 90 55 · inscrit à 18h29 · promis 35 min · 14 min de retard",
+              "meta": "4 couverts · +212 668 30 90 55 · inscrit à 21h21 · 4 min restantes sur 35 min",
               "initials": "FB",
               "trailing": null,
               "pills": [
@@ -1970,10 +2372,6 @@
                 {
                   "label": "SUR PLACE",
                   "tone": "ink-6"
-                },
-                {
-                  "label": "EN RETARD",
-                  "tone": "danger-10"
                 }
               ],
               "actions": [
@@ -1983,7 +2381,7 @@
             },
             {
               "title": "Sofia Lahlou",
-              "meta": "3 couverts · +212 666 70 15 29 · inscrit à 18h37 · promis 40 min · 1 min de retard",
+              "meta": "3 couverts · +212 666 70 15 29 · inscrit à 21h29 · 17 min restantes sur 40 min",
               "initials": "SL",
               "trailing": null,
               "pills": [
@@ -1994,10 +2392,6 @@
                 {
                   "label": "APP",
                   "tone": "ink-6"
-                },
-                {
-                  "label": "EN RETARD",
-                  "tone": "danger-10"
                 }
               ],
               "actions": [
@@ -2007,7 +2401,7 @@
             },
             {
               "title": "Couple Renaud",
-              "meta": "2 couverts · +33 6 12 44 90 21 · inscrit à 18h43 · 10 min restantes sur 45 min",
+              "meta": "2 couverts · +33 6 12 44 90 21 · inscrit à 21h35 · 28 min restantes sur 45 min",
               "initials": "CR",
               "trailing": null,
               "pills": [
@@ -2143,24 +2537,24 @@
               "Nom du client",
               "Salma Bennani",
               "Acompte 400 MAD",
-              "19h11 · 4 couverts · Patio",
+              "22h00 · 4 couverts · Patio",
               "Anniversaire, dessert avec bougie",
               "Confirmer",
               "Groupe Karam",
-              "19h26 · 6 couverts · Grande salle",
+              "22h30 · 6 couverts · Grande salle",
               "Sans gluten pour deux couverts",
               "Confirmer",
               "Yasmine El Alaoui",
-              "19h41 · 4 couverts · Terrasse",
+              "22h30 · 4 couverts · Terrasse",
               "Confirmer",
               "Nabil Cherkaoui",
-              "20h11 · 2 couverts",
+              "23h00 · 2 couverts",
               "Demande une table près de la fontaine",
               "Confirmer",
               "Hind Tazi",
               "Habitué",
               "Acompte 500 MAD",
-              "20h36 · 5 couverts · Grande salle",
+              "23h30 · 5 couverts · Grande salle",
               "Confirmer"
             ],
             "fields": [
@@ -2201,14 +2595,14 @@
           "texts": [
             "Dîner",
             "ce que l'équipe doit savoir",
-            "5 réservations · 21 couverts"
+            "26 réservations · 100 couverts"
           ],
           "rows": [
             {
               "lines": [
                 "Dîner",
                 "ce que l'équipe doit savoir",
-                "5 réservations · 21 couverts"
+                "26 réservations · 100 couverts"
               ],
               "pills": [],
               "actions": []
@@ -2218,13 +2612,13 @@
         {
           "kind": "kpi-grid",
           "heading": null,
-          "subheading": "5 réservations",
+          "subheading": "26 réservations",
           "actions": [],
           "facets": [],
           "texts": [
             "couverts",
-            "21",
-            "5 réservations",
+            "100",
+            "26 réservations",
             "VIP et habitués",
             "2",
             "Allergies signalées",
@@ -2235,9 +2629,9 @@
           "tiles": [
             {
               "label": "couverts",
-              "value": "21",
+              "value": "100",
               "meta": [
-                "5 réservations"
+                "26 réservations"
               ],
               "pills": []
             },
@@ -2301,7 +2695,7 @@
         {
           "kind": "list",
           "heading": "VIP et habitués",
-          "subheading": "19h11 · 4 couverts · Patio · 6 visites",
+          "subheading": "22h00 · 4 couverts · Patio · 6 visites",
           "actions": [],
           "facets": [],
           "texts": [
@@ -2310,19 +2704,19 @@
             "Salma Bennani",
             "VIP",
             "HABITUÉ",
-            "19h11 · 4 couverts · Patio · 6 visites",
+            "22h00 · 4 couverts · Patio · 6 visites",
             "Anniversaire, dessert avec bougie",
             "HT",
             "Hind Tazi",
             "ALLERGIE",
             "HABITUÉ",
             "ACOMPTE EN ATTENTE",
-            "20h36 · 5 couverts · Grande salle · 9 visites"
+            "23h30 · 5 couverts · Grande salle · 9 visites"
           ],
           "items": [
             {
               "title": "Salma Bennani",
-              "meta": "19h11 · 4 couverts · Patio · 6 visites",
+              "meta": "22h00 · 4 couverts · Patio · 6 visites",
               "initials": "SB",
               "trailing": null,
               "pills": [
@@ -2339,7 +2733,7 @@
             },
             {
               "title": "Hind Tazi",
-              "meta": "20h36 · 5 couverts · Grande salle · 9 visites",
+              "meta": "23h30 · 5 couverts · Grande salle · 9 visites",
               "initials": "HT",
               "trailing": null,
               "pills": [
@@ -2363,7 +2757,7 @@
         {
           "kind": "list",
           "heading": "Allergies et régimes",
-          "subheading": "19h11 · 4 couverts · Patio · 6 visites",
+          "subheading": "22h00 · 4 couverts · Patio · 6 visites",
           "actions": [],
           "facets": [],
           "texts": [
@@ -2372,25 +2766,25 @@
             "Salma Bennani",
             "VIP",
             "HABITUÉ",
-            "19h11 · 4 couverts · Patio · 6 visites",
+            "22h00 · 4 couverts · Patio · 6 visites",
             "Anniversaire, dessert avec bougie",
             "GK",
             "Groupe Karam",
             "ALLERGIE",
             "1 ABSENCE",
-            "19h26 · 6 couverts · Grande salle · 2 visites",
+            "22h30 · 6 couverts · Grande salle · 2 visites",
             "Sans gluten pour deux couverts",
             "HT",
             "Hind Tazi",
             "ALLERGIE",
             "HABITUÉ",
             "ACOMPTE EN ATTENTE",
-            "20h36 · 5 couverts · Grande salle · 9 visites"
+            "23h30 · 5 couverts · Grande salle · 9 visites"
           ],
           "items": [
             {
               "title": "Salma Bennani",
-              "meta": "19h11 · 4 couverts · Patio · 6 visites",
+              "meta": "22h00 · 4 couverts · Patio · 6 visites",
               "initials": "SB",
               "trailing": null,
               "pills": [
@@ -2407,7 +2801,7 @@
             },
             {
               "title": "Groupe Karam",
-              "meta": "19h26 · 6 couverts · Grande salle · 2 visites",
+              "meta": "22h30 · 6 couverts · Grande salle · 2 visites",
               "initials": "GK",
               "trailing": null,
               "pills": [
@@ -2424,7 +2818,7 @@
             },
             {
               "title": "Hind Tazi",
-              "meta": "20h36 · 5 couverts · Grande salle · 9 visites",
+              "meta": "23h30 · 5 couverts · Grande salle · 9 visites",
               "initials": "HT",
               "trailing": null,
               "pills": [
@@ -2448,7 +2842,7 @@
         {
           "kind": "list",
           "heading": "Anniversaires et occasions",
-          "subheading": "19h11 · 4 couverts · Patio · 6 visites",
+          "subheading": "22h00 · 4 couverts · Patio · 6 visites",
           "actions": [],
           "facets": [],
           "texts": [
@@ -2457,19 +2851,19 @@
             "Salma Bennani",
             "VIP",
             "HABITUÉ",
-            "19h11 · 4 couverts · Patio · 6 visites",
+            "22h00 · 4 couverts · Patio · 6 visites",
             "Anniversaire, dessert avec bougie",
             "HT",
             "Hind Tazi",
             "ALLERGIE",
             "HABITUÉ",
             "ACOMPTE EN ATTENTE",
-            "20h36 · 5 couverts · Grande salle · 9 visites"
+            "23h30 · 5 couverts · Grande salle · 9 visites"
           ],
           "items": [
             {
               "title": "Salma Bennani",
-              "meta": "19h11 · 4 couverts · Patio · 6 visites",
+              "meta": "22h00 · 4 couverts · Patio · 6 visites",
               "initials": "SB",
               "trailing": null,
               "pills": [
@@ -2486,7 +2880,7 @@
             },
             {
               "title": "Hind Tazi",
-              "meta": "20h36 · 5 couverts · Grande salle · 9 visites",
+              "meta": "23h30 · 5 couverts · Grande salle · 9 visites",
               "initials": "HT",
               "trailing": null,
               "pills": [
@@ -2510,22 +2904,66 @@
         {
           "kind": "list",
           "heading": "Grandes tables",
-          "subheading": "19h26 · 6 couverts · Grande salle · 2 visites",
+          "subheading": "20h30 · 6 couverts · Patio · première visite",
           "actions": [],
           "facets": [],
           "texts": [
             "Grandes tables",
+            "FT",
+            "Famille Tazi",
+            "20h30 · 6 couverts · Patio · première visite",
+            "AC",
+            "Anniversaire Chraïbi",
+            "21h00 · 8 couverts · Patio · première visite",
+            "TK",
+            "Table Koutoubia",
+            "21h00 · 6 couverts · Grande salle · première visite",
+            "GZ",
+            "Groupe Ziyad",
+            "21h30 · 6 couverts · Grande salle · première visite",
             "GK",
             "Groupe Karam",
             "ALLERGIE",
             "1 ABSENCE",
-            "19h26 · 6 couverts · Grande salle · 2 visites",
+            "22h30 · 6 couverts · Grande salle · 2 visites",
             "Sans gluten pour deux couverts"
           ],
           "items": [
             {
+              "title": "Famille Tazi",
+              "meta": "20h30 · 6 couverts · Patio · première visite",
+              "initials": "FT",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Anniversaire Chraïbi",
+              "meta": "21h00 · 8 couverts · Patio · première visite",
+              "initials": "AC",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Table Koutoubia",
+              "meta": "21h00 · 6 couverts · Grande salle · première visite",
+              "initials": "TK",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Ziyad",
+              "meta": "21h30 · 6 couverts · Grande salle · première visite",
+              "initials": "GZ",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
               "title": "Groupe Karam",
-              "meta": "19h26 · 6 couverts · Grande salle · 2 visites",
+              "meta": "22h30 · 6 couverts · Grande salle · 2 visites",
               "initials": "GK",
               "trailing": null,
               "pills": [
@@ -2545,27 +2983,258 @@
         {
           "kind": "list",
           "heading": "Première visite",
-          "subheading": "19h41 · 4 couverts · Terrasse · 1 visites",
+          "subheading": "20h00 · 2 couverts · Grande salle · première visite",
           "actions": [],
           "facets": [],
           "texts": [
             "Première visite",
+            "FA",
+            "Famille Alami",
+            "20h00 · 2 couverts · Grande salle · première visite",
+            "KN",
+            "Khalid Naciri",
+            "20h00 · 4 couverts · Patio · première visite",
+            "CL",
+            "Couple Lambert",
+            "20h00 · 2 couverts · Terrasse · première visite",
+            "KB",
+            "Karim Belmekki",
+            "20h00 · 4 couverts · Grande salle · première visite",
+            "GM",
+            "Groupe Majorelle",
+            "20h00 · 4 couverts · Patio · première visite",
+            "HS",
+            "Hakim Sbaï",
+            "20h00 · 4 couverts · Terrasse · première visite",
+            "RB",
+            "Rachid Benjelloun",
+            "20h30 · 4 couverts · Patio · première visite",
+            "IS",
+            "Imane Sefrioui",
+            "20h30 · 2 couverts · Terrasse · première visite",
+            "GA",
+            "Groupe Atlas",
+            "20h30 · 4 couverts · Grande salle · première visite",
+            "FT",
+            "Famille Tazi",
+            "20h30 · 6 couverts · Patio · première visite",
+            "LZ",
+            "Laila Zniber",
+            "20h30 · 2 couverts · Terrasse · première visite",
+            "SM",
+            "Sanaa Mourad",
+            "21h00 · 2 couverts · Terrasse · première visite",
+            "TO",
+            "Table Ourika",
+            "21h00 · 3 couverts · Grande salle · première visite",
+            "AC",
+            "Anniversaire Chraïbi",
+            "21h00 · 8 couverts · Patio · première visite",
+            "SG",
+            "Sofia Guessous",
+            "21h00 · 2 couverts · Terrasse · première visite",
+            "TK",
+            "Table Koutoubia",
+            "21h00 · 6 couverts · Grande salle · première visite",
+            "GZ",
+            "Groupe Ziyad",
+            "21h30 · 6 couverts · Grande salle · première visite",
+            "MB",
+            "Mehdi Bouzoubaa",
+            "21h30 · 5 couverts · Patio · première visite",
+            "NR",
+            "Nawal Rifai",
+            "21h30 · 2 couverts · Terrasse · première visite",
+            "RA",
+            "Réda Amrani",
+            "21h30 · 3 couverts · Grande salle · première visite",
+            "AB",
+            "Adil Berrechid",
+            "21h30 · 4 couverts · Patio · première visite",
             "YE",
             "Yasmine El Alaoui",
             "À RISQUE",
             "INACTIF",
             "2 ABSENCES",
-            "19h41 · 4 couverts · Terrasse · 1 visites",
+            "22h30 · 4 couverts · Terrasse · 1 visites",
             "NC",
             "Nabil Cherkaoui",
             "NOUVEAU",
-            "20h11 · 2 couverts · zone à définir · première visite",
+            "23h00 · 2 couverts · zone à définir · première visite",
             "Demande une table près de la fontaine"
           ],
           "items": [
             {
+              "title": "Famille Alami",
+              "meta": "20h00 · 2 couverts · Grande salle · première visite",
+              "initials": "FA",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Khalid Naciri",
+              "meta": "20h00 · 4 couverts · Patio · première visite",
+              "initials": "KN",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Couple Lambert",
+              "meta": "20h00 · 2 couverts · Terrasse · première visite",
+              "initials": "CL",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Karim Belmekki",
+              "meta": "20h00 · 4 couverts · Grande salle · première visite",
+              "initials": "KB",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Majorelle",
+              "meta": "20h00 · 4 couverts · Patio · première visite",
+              "initials": "GM",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Hakim Sbaï",
+              "meta": "20h00 · 4 couverts · Terrasse · première visite",
+              "initials": "HS",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Rachid Benjelloun",
+              "meta": "20h30 · 4 couverts · Patio · première visite",
+              "initials": "RB",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Imane Sefrioui",
+              "meta": "20h30 · 2 couverts · Terrasse · première visite",
+              "initials": "IS",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Atlas",
+              "meta": "20h30 · 4 couverts · Grande salle · première visite",
+              "initials": "GA",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Famille Tazi",
+              "meta": "20h30 · 6 couverts · Patio · première visite",
+              "initials": "FT",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Laila Zniber",
+              "meta": "20h30 · 2 couverts · Terrasse · première visite",
+              "initials": "LZ",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Sanaa Mourad",
+              "meta": "21h00 · 2 couverts · Terrasse · première visite",
+              "initials": "SM",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Table Ourika",
+              "meta": "21h00 · 3 couverts · Grande salle · première visite",
+              "initials": "TO",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Anniversaire Chraïbi",
+              "meta": "21h00 · 8 couverts · Patio · première visite",
+              "initials": "AC",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Sofia Guessous",
+              "meta": "21h00 · 2 couverts · Terrasse · première visite",
+              "initials": "SG",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Table Koutoubia",
+              "meta": "21h00 · 6 couverts · Grande salle · première visite",
+              "initials": "TK",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Ziyad",
+              "meta": "21h30 · 6 couverts · Grande salle · première visite",
+              "initials": "GZ",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Mehdi Bouzoubaa",
+              "meta": "21h30 · 5 couverts · Patio · première visite",
+              "initials": "MB",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Nawal Rifai",
+              "meta": "21h30 · 2 couverts · Terrasse · première visite",
+              "initials": "NR",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Réda Amrani",
+              "meta": "21h30 · 3 couverts · Grande salle · première visite",
+              "initials": "RA",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Adil Berrechid",
+              "meta": "21h30 · 4 couverts · Patio · première visite",
+              "initials": "AB",
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
               "title": "Yasmine El Alaoui",
-              "meta": "19h41 · 4 couverts · Terrasse · 1 visites",
+              "meta": "22h30 · 4 couverts · Terrasse · 1 visites",
               "initials": "YE",
               "trailing": null,
               "pills": [
@@ -2586,7 +3255,7 @@
             },
             {
               "title": "Nabil Cherkaoui",
-              "meta": "20h11 · 2 couverts · zone à définir · première visite",
+              "meta": "23h00 · 2 couverts · zone à définir · première visite",
               "initials": "NC",
               "trailing": null,
               "pills": [
@@ -2602,7 +3271,7 @@
         {
           "kind": "list",
           "heading": "Historique d'absence",
-          "subheading": "19h26 · 6 couverts · Grande salle · 2 visites",
+          "subheading": "22h30 · 6 couverts · Grande salle · 2 visites",
           "actions": [],
           "facets": [],
           "texts": [
@@ -2611,19 +3280,19 @@
             "Groupe Karam",
             "ALLERGIE",
             "1 ABSENCE",
-            "19h26 · 6 couverts · Grande salle · 2 visites",
+            "22h30 · 6 couverts · Grande salle · 2 visites",
             "Sans gluten pour deux couverts",
             "YE",
             "Yasmine El Alaoui",
             "À RISQUE",
             "INACTIF",
             "2 ABSENCES",
-            "19h41 · 4 couverts · Terrasse · 1 visites"
+            "22h30 · 4 couverts · Terrasse · 1 visites"
           ],
           "items": [
             {
               "title": "Groupe Karam",
-              "meta": "19h26 · 6 couverts · Grande salle · 2 visites",
+              "meta": "22h30 · 6 couverts · Grande salle · 2 visites",
               "initials": "GK",
               "trailing": null,
               "pills": [
@@ -2640,7 +3309,7 @@
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "19h41 · 4 couverts · Terrasse · 1 visites",
+              "meta": "22h30 · 4 couverts · Terrasse · 1 visites",
               "initials": "YE",
               "trailing": null,
               "pills": [
@@ -2664,7 +3333,7 @@
         {
           "kind": "list",
           "heading": "Demandes particulières",
-          "subheading": "19h11 · 4 couverts · Patio · 6 visites",
+          "subheading": "22h00 · 4 couverts · Patio · 6 visites",
           "actions": [],
           "facets": [],
           "texts": [
@@ -2673,24 +3342,24 @@
             "Salma Bennani",
             "VIP",
             "HABITUÉ",
-            "19h11 · 4 couverts · Patio · 6 visites",
+            "22h00 · 4 couverts · Patio · 6 visites",
             "Anniversaire, dessert avec bougie",
             "GK",
             "Groupe Karam",
             "ALLERGIE",
             "1 ABSENCE",
-            "19h26 · 6 couverts · Grande salle · 2 visites",
+            "22h30 · 6 couverts · Grande salle · 2 visites",
             "Sans gluten pour deux couverts",
             "NC",
             "Nabil Cherkaoui",
             "NOUVEAU",
-            "20h11 · 2 couverts · zone à définir · première visite",
+            "23h00 · 2 couverts · zone à définir · première visite",
             "Demande une table près de la fontaine"
           ],
           "items": [
             {
               "title": "Salma Bennani",
-              "meta": "19h11 · 4 couverts · Patio · 6 visites",
+              "meta": "22h00 · 4 couverts · Patio · 6 visites",
               "initials": "SB",
               "trailing": null,
               "pills": [
@@ -2707,7 +3376,7 @@
             },
             {
               "title": "Groupe Karam",
-              "meta": "19h26 · 6 couverts · Grande salle · 2 visites",
+              "meta": "22h30 · 6 couverts · Grande salle · 2 visites",
               "initials": "GK",
               "trailing": null,
               "pills": [
@@ -2724,7 +3393,7 @@
             },
             {
               "title": "Nabil Cherkaoui",
-              "meta": "20h11 · 2 couverts · zone à définir · première visite",
+              "meta": "23h00 · 2 couverts · zone à définir · première visite",
               "initials": "NC",
               "trailing": null,
               "pills": [
@@ -2740,7 +3409,7 @@
         {
           "kind": "list",
           "heading": "Acomptes en attente",
-          "subheading": "20h36 · 5 couverts · Grande salle · 9 visites",
+          "subheading": "23h30 · 5 couverts · Grande salle · 9 visites",
           "actions": [],
           "facets": [],
           "texts": [
@@ -2750,12 +3419,12 @@
             "ALLERGIE",
             "HABITUÉ",
             "ACOMPTE EN ATTENTE",
-            "20h36 · 5 couverts · Grande salle · 9 visites"
+            "23h30 · 5 couverts · Grande salle · 9 visites"
           ],
           "items": [
             {
               "title": "Hind Tazi",
-              "meta": "20h36 · 5 couverts · Grande salle · 9 visites",
+              "meta": "23h30 · 5 couverts · Grande salle · 9 visites",
               "initials": "HT",
               "trailing": null,
               "pills": [
@@ -3314,27 +3983,6 @@
               "actions": []
             },
             {
-              "title": "Sofia Lahlou",
-              "meta": "5 visites · dernière le 24 août 2026 · +212 666 70 15 29",
-              "initials": "SL",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
-                {
-                  "label": "À RISQUE",
-                  "tone": "violet-12"
-                },
-                {
-                  "label": "Risque d'absence",
-                  "tone": "warning-12"
-                }
-              ],
-              "actions": []
-            },
-            {
               "title": "Rim Belkadi",
               "meta": "6 visites · dernière le 24 août 2026 · +212 667 27 27 27",
               "initials": "RB",
@@ -3356,6 +4004,27 @@
                 {
                   "label": "Nouveau",
                   "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sofia Lahlou",
+              "meta": "5 visites · dernière le 24 août 2026 · +212 666 70 15 29",
+              "initials": "SL",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "À RISQUE",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "Risque d'absence",
+                  "tone": "warning-12"
                 }
               ],
               "actions": []
@@ -4086,7 +4755,7 @@
             "facets": [
               {
                 "label": "Tout",
-                "count": "1"
+                "count": "6"
               },
               {
                 "label": "Absences",
@@ -4100,14 +4769,30 @@
               "Table au patio",
               "Reportée automatiquement sur chaque réservation",
               "Réservations à venir",
-              "Rien de prévu",
-              "Ce client n'a aucune réservation à venir.",
+              "SB",
+              "dimanche 20 septembre à 22h00",
+              "4 couverts · Anniversaire, dessert avec bougie · acompte 400 MAD",
               "Historique",
-              "1",
+              "6",
               "0",
               "SB",
-              "dimanche 20 septembre à 19h11",
-              "4 couverts · Anniversaire, dessert avec bougie · acompte 400 MAD"
+              "dimanche 30 août à 21h00",
+              "2 couverts · sans note",
+              "SB",
+              "dimanche 16 août à 13h30",
+              "3 couverts · sans note",
+              "SB",
+              "dimanche 2 août à 21h30",
+              "4 couverts · sans note",
+              "SB",
+              "lundi 20 juillet à 13h00",
+              "5 couverts · sans note",
+              "SB",
+              "lundi 6 juillet à 21h30",
+              "2 couverts · sans note",
+              "SB",
+              "lundi 22 juin à 13h30",
+              "3 couverts · sans note"
             ],
             "items": [
               {
@@ -4127,7 +4812,7 @@
                 "actions": []
               },
               {
-                "title": "dimanche 20 septembre à 19h11",
+                "title": "dimanche 20 septembre à 22h00",
                 "meta": "4 couverts · Anniversaire, dessert avec bougie · acompte 400 MAD",
                 "initials": "SB",
                 "trailing": null,
@@ -4135,6 +4820,84 @@
                   {
                     "label": "CONFIRMÉE",
                     "tone": "info-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "dimanche 30 août à 21h00",
+                "meta": "2 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "dimanche 16 août à 13h30",
+                "meta": "3 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "dimanche 2 août à 21h30",
+                "meta": "4 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "lundi 20 juillet à 13h00",
+                "meta": "5 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "lundi 6 juillet à 21h30",
+                "meta": "2 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "lundi 22 juin à 13h30",
+                "meta": "3 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
                   }
                 ],
                 "actions": []
@@ -4690,7 +5453,7 @@
             "Couverts connus de l'établissement, toutes sources confondues.",
             "Nouveaux sur 90 jours",
             "18 %",
-            "Part de la base vue pour la première fois dans la période.",
+            "Part de la base vue pour la première fois dans ces 90 jours.",
             "Taux de retour à 90 jours",
             "28 %",
             "Part des clients revenus dans les quatre-vingt-dix jours suivant leur première visite."
@@ -4708,7 +5471,7 @@
               "label": "Nouveaux sur 90 jours",
               "value": "18 %",
               "meta": [
-                "Part de la base vue pour la première fois dans la période."
+                "Part de la base vue pour la première fois dans ces 90 jours."
               ],
               "pills": []
             },
@@ -4724,12 +5487,12 @@
         },
         {
           "kind": "chart",
-          "heading": "Profil",
+          "heading": "Profil · toute la base",
           "subheading": "51 couverts dans les groupes affichés · 2 groupes sous le seuil de 10 (9 personnes) non affichés.",
           "actions": [],
           "facets": [],
           "texts": [
-            "Profil",
+            "Profil · toute la base",
             "Par ville",
             "51 couverts dans les groupes affichés · 2 groupes sous le seuil de 10 (9 personnes) non affichés.",
             "Casablanca",
@@ -4820,46 +5583,46 @@
         },
         {
           "kind": "table",
-          "heading": "Sources de trafic",
+          "heading": "Sources de trafic · 90 derniers jours",
           "subheading": null,
           "actions": [],
           "facets": [],
           "texts": [
-            "Sources de trafic",
+            "Sources de trafic · 90 derniers jours",
             "Source",
             "Impressions",
             "Fiches ouvertes",
             "Demandes",
             "Part",
             "Feed",
-            "44 762",
-            "7 202",
-            "777",
+            "261 105",
+            "41 996",
+            "2 124",
             "34 %",
             "Recherche",
-            "30 539",
-            "4 936",
-            "524",
-            "23 %",
+            "178 148",
+            "28 786",
+            "1 456",
+            "24 %",
             "Listes",
-            "18 734",
-            "2 953",
-            "317",
+            "109 266",
+            "17 232",
+            "873",
             "14 %",
             "Boost",
-            "16 250",
-            "2 646",
-            "282",
-            "13 %",
+            "94 796",
+            "15 439",
+            "769",
+            "12 %",
             "Offre",
-            "13 154",
-            "2 107",
-            "223",
+            "76 763",
+            "12 305",
+            "615",
             "10 %",
             "Lien externe",
-            "7 932",
-            "1 311",
-            "136",
+            "46 250",
+            "7 629",
+            "368",
             "6 %"
           ],
           "head": [
@@ -4876,15 +5639,15 @@
                 "pills": []
               },
               {
-                "text": "44 762",
+                "text": "261 105",
                 "pills": []
               },
               {
-                "text": "7 202",
+                "text": "41 996",
                 "pills": []
               },
               {
-                "text": "777",
+                "text": "2 124",
                 "pills": []
               },
               {
@@ -4898,19 +5661,19 @@
                 "pills": []
               },
               {
-                "text": "30 539",
+                "text": "178 148",
                 "pills": []
               },
               {
-                "text": "4 936",
+                "text": "28 786",
                 "pills": []
               },
               {
-                "text": "524",
+                "text": "1 456",
                 "pills": []
               },
               {
-                "text": "23 %",
+                "text": "24 %",
                 "pills": []
               }
             ],
@@ -4920,15 +5683,15 @@
                 "pills": []
               },
               {
-                "text": "18 734",
+                "text": "109 266",
                 "pills": []
               },
               {
-                "text": "2 953",
+                "text": "17 232",
                 "pills": []
               },
               {
-                "text": "317",
+                "text": "873",
                 "pills": []
               },
               {
@@ -4942,19 +5705,19 @@
                 "pills": []
               },
               {
-                "text": "16 250",
+                "text": "94 796",
                 "pills": []
               },
               {
-                "text": "2 646",
+                "text": "15 439",
                 "pills": []
               },
               {
-                "text": "282",
+                "text": "769",
                 "pills": []
               },
               {
-                "text": "13 %",
+                "text": "12 %",
                 "pills": []
               }
             ],
@@ -4964,15 +5727,15 @@
                 "pills": []
               },
               {
-                "text": "13 154",
+                "text": "76 763",
                 "pills": []
               },
               {
-                "text": "2 107",
+                "text": "12 305",
                 "pills": []
               },
               {
-                "text": "223",
+                "text": "615",
                 "pills": []
               },
               {
@@ -4986,15 +5749,15 @@
                 "pills": []
               },
               {
-                "text": "7 932",
+                "text": "46 250",
                 "pills": []
               },
               {
-                "text": "1 311",
+                "text": "7 629",
                 "pills": []
               },
               {
-                "text": "136",
+                "text": "368",
                 "pills": []
               },
               {
@@ -5005,86 +5768,101 @@
           ]
         },
         {
-          "kind": "chart",
-          "heading": "Quand ils viennent",
-          "subheading": "107 couverts dans les groupes affichés.",
-          "actions": [],
-          "facets": [],
-          "texts": [
-            "Quand ils viennent",
-            "Par jour de semaine",
-            "107 couverts dans les groupes affichés.",
-            "Vendredi",
-            "Mercredi",
-            "Samedi",
-            "Lundi",
-            "Mardi",
-            "Jeudi",
-            "Dimanche",
-            "0",
-            "6",
-            "12",
-            "18",
-            "24",
-            "Par service",
-            "107 couverts dans les groupes affichés.",
-            "Dîner",
-            "Déjeuner",
-            "0",
-            "20",
-            "40",
-            "60",
-            "80",
-            "Par heure de réservation",
-            "79 couverts dans les groupes affichés · 4 groupes sous le seuil de 10 (28 personnes) non affichés.",
-            "18h",
-            "19h",
-            "14h",
-            "22h",
-            "13h",
-            "16h",
-            "17h",
-            "0",
-            "4",
-            "8",
-            "12",
-            "16"
-          ],
-          "bars": [
-            {
-              "height": "100",
-              "color": null,
-              "label": ""
-            },
-            {
-              "height": "100",
-              "color": null,
-              "label": ""
-            },
-            {
-              "height": "100",
-              "color": null,
-              "label": ""
-            },
-            {
-              "height": "100",
-              "color": null,
-              "label": ""
-            },
-            {
-              "height": "100",
-              "color": null,
-              "label": ""
-            },
-            {
-              "height": "100",
-              "color": null,
-              "label": ""
-            }
-          ],
-          "axis": [],
-          "svgs": [],
-          "values": []
+          "kind": "split",
+          "left": {
+            "kind": "prose",
+            "heading": "Quand ils viennent · 90 derniers jours",
+            "subheading": null,
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Quand ils viennent · 90 derniers jours"
+            ],
+            "body": "Quand ils viennent · 90 derniers jours",
+            "pills": []
+          },
+          "right": {
+            "kind": "chart",
+            "heading": "Par jour de semaine",
+            "subheading": "164 couverts dans les groupes affichés.",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Par jour de semaine",
+              "164 couverts dans les groupes affichés.",
+              "Vendredi",
+              "Lundi",
+              "Mercredi",
+              "Dimanche",
+              "Samedi",
+              "Mardi",
+              "Jeudi",
+              "0",
+              "8",
+              "16",
+              "24",
+              "32",
+              "Par service",
+              "164 couverts dans les groupes affichés.",
+              "Dîner",
+              "Déjeuner",
+              "0",
+              "25",
+              "50",
+              "75",
+              "100",
+              "Par heure de réservation",
+              "139 couverts dans les groupes affichés · 3 groupes sous le seuil de 10 (25 personnes) non affichés.",
+              "13h",
+              "21h",
+              "18h",
+              "19h",
+              "14h",
+              "22h",
+              "16h",
+              "17h",
+              "0",
+              "9",
+              "18",
+              "27",
+              "36"
+            ],
+            "bars": [
+              {
+                "height": "100",
+                "color": null,
+                "label": ""
+              },
+              {
+                "height": "100",
+                "color": null,
+                "label": ""
+              },
+              {
+                "height": "100",
+                "color": null,
+                "label": ""
+              },
+              {
+                "height": "100",
+                "color": null,
+                "label": ""
+              },
+              {
+                "height": "100",
+                "color": null,
+                "label": ""
+              },
+              {
+                "height": "100",
+                "color": null,
+                "label": ""
+              }
+            ],
+            "axis": [],
+            "svgs": [],
+            "values": []
+          }
         },
         {
           "kind": "table",
@@ -5099,7 +5877,7 @@
             "30 j",
             "60 j",
             "90 j",
-            "2026-04",
+            "avril 2026",
             "10",
             "80 %",
             "40 %",
@@ -5115,7 +5893,7 @@
           "rows": [
             [
               {
-                "text": "2026-04",
+                "text": "avril 2026",
                 "pills": []
               },
               {
@@ -5500,25 +6278,25 @@
             "Ouverture",
             "État",
             "Lundi",
-            "12:00 – 15:00 · 19:00 – 23:30",
+            "12h00 – 15h00 · 19h00 – 23h30",
             "OUVERT",
             "Mardi",
-            "12:00 – 15:00 · 19:00 – 23:30",
+            "12h00 – 15h00 · 19h00 – 23h30",
             "OUVERT",
             "Mercredi",
-            "12:00 – 15:00 · 19:00 – 23:30",
+            "12h00 – 15h00 · 19h00 – 23h30",
             "OUVERT",
             "Jeudi",
-            "12:00 – 15:00 · 19:00 – 23:30",
+            "12h00 – 15h00 · 19h00 – 23h30",
             "OUVERT",
             "Vendredi",
-            "12:00 – 15:30 · 19:00 – 00:30",
+            "12h00 – 15h30 · 19h00 – 00h30",
             "OUVERT",
             "Samedi",
-            "12:00 – 15:30 · 19:00 – 00:30",
+            "12h00 – 15h30 · 19h00 – 00h30",
             "OUVERT",
             "Dimanche",
-            "12:00 – 16:00",
+            "12h00 – 16h00",
             "OUVERT"
           ],
           "head": [
@@ -5533,7 +6311,7 @@
                 "pills": []
               },
               {
-                "text": "12:00 – 15:00 · 19:00 – 23:30",
+                "text": "12h00 – 15h00 · 19h00 – 23h30",
                 "pills": []
               },
               {
@@ -5552,7 +6330,7 @@
                 "pills": []
               },
               {
-                "text": "12:00 – 15:00 · 19:00 – 23:30",
+                "text": "12h00 – 15h00 · 19h00 – 23h30",
                 "pills": []
               },
               {
@@ -5571,7 +6349,7 @@
                 "pills": []
               },
               {
-                "text": "12:00 – 15:00 · 19:00 – 23:30",
+                "text": "12h00 – 15h00 · 19h00 – 23h30",
                 "pills": []
               },
               {
@@ -5590,7 +6368,7 @@
                 "pills": []
               },
               {
-                "text": "12:00 – 15:00 · 19:00 – 23:30",
+                "text": "12h00 – 15h00 · 19h00 – 23h30",
                 "pills": []
               },
               {
@@ -5609,7 +6387,7 @@
                 "pills": []
               },
               {
-                "text": "12:00 – 15:30 · 19:00 – 00:30",
+                "text": "12h00 – 15h30 · 19h00 – 00h30",
                 "pills": []
               },
               {
@@ -5628,7 +6406,7 @@
                 "pills": []
               },
               {
-                "text": "12:00 – 15:30 · 19:00 – 00:30",
+                "text": "12h00 – 15h30 · 19h00 – 00h30",
                 "pills": []
               },
               {
@@ -5647,7 +6425,7 @@
                 "pills": []
               },
               {
-                "text": "12:00 – 16:00",
+                "text": "12h00 – 16h00",
                 "pills": []
               },
               {
@@ -5834,7 +6612,6 @@
           "texts": [
             "Note moyenne",
             "4,3 / 5",
-            "· vs mois dernier",
             "Avis reçus",
             "4",
             "Sans réponse",
@@ -5867,35 +6644,35 @@
         {
           "kind": "list",
           "heading": "Derniers avis",
-          "subheading": "20 sept. · 15h51 · LYFE",
+          "subheading": "20 sept. · 18h43 · LYFE",
           "actions": [],
           "facets": [],
           "texts": [
             "Derniers avis",
             "LM",
             "Leïla M.",
-            "20 sept. · 15h51 · LYFE",
+            "20 sept. · 18h43 · LYFE",
             "Le patio au coucher du soleil, rien à redire. Service attentif sans être pesant.",
             "TR",
             "Thomas R.",
             "Sans réponse",
-            "20 sept. · 11h51 · GOOGLE",
+            "20 sept. · 14h43 · GOOGLE",
             "Cuisine excellente. Vingt minutes d'attente malgré la réservation à 21h.",
             "AB",
             "Amina B.",
             "Sans réponse",
-            "19 sept. · 17h51 · LYFE",
+            "19 sept. · 20h43 · LYFE",
             "La pastilla vaut le détour à elle seule.",
             "KH",
             "Karim H.",
             "Sans réponse",
-            "18 sept. · 23h31 · GOOGLE",
+            "19 sept. · 02h23 · GOOGLE",
             "Table en terrasse bruyante, on s'entendait à peine."
           ],
           "items": [
             {
               "title": "Leïla M.",
-              "meta": "20 sept. · 15h51 · LYFE",
+              "meta": "20 sept. · 18h43 · LYFE",
               "initials": "LM",
               "trailing": null,
               "pills": [
@@ -5908,7 +6685,7 @@
             },
             {
               "title": "Thomas R.",
-              "meta": "20 sept. · 11h51 · GOOGLE",
+              "meta": "20 sept. · 14h43 · GOOGLE",
               "initials": "TR",
               "trailing": null,
               "pills": [
@@ -5925,7 +6702,7 @@
             },
             {
               "title": "Amina B.",
-              "meta": "19 sept. · 17h51 · LYFE",
+              "meta": "19 sept. · 20h43 · LYFE",
               "initials": "AB",
               "trailing": null,
               "pills": [
@@ -5942,7 +6719,7 @@
             },
             {
               "title": "Karim H.",
-              "meta": "18 sept. · 23h31 · GOOGLE",
+              "meta": "19 sept. · 02h23 · GOOGLE",
               "initials": "KH",
               "trailing": null,
               "pills": [
@@ -5975,7 +6752,7 @@
       "venue": "YA",
       "blocks": [
         {
-          "kind": "kpi-grid",
+          "kind": "empty",
           "heading": "Mettre votre établissement en avant",
           "subheading": "complète",
           "actions": [],
@@ -5986,37 +6763,12 @@
             "Fiche",
             "3/6",
             "complète",
-            "Impressions",
-            "45 285",
-            "Ouvertures de fiche",
-            "6 295",
-            "Portée",
-            "25 360",
             "Fiche",
             "3/6",
-            "complète",
-            "52.6 % des ouvertures deviennent une demande de réservation."
+            "complète"
           ],
-          "tiles": [
-            {
-              "label": "Impressions",
-              "value": "45 285",
-              "meta": [],
-              "pills": []
-            },
-            {
-              "label": "Ouvertures de fiche",
-              "value": "6 295",
-              "meta": [],
-              "pills": []
-            },
-            {
-              "label": "Portée",
-              "value": "25 360",
-              "meta": [],
-              "pills": []
-            }
-          ]
+          "body": "AUCUN BOOST EN COURSMettre votre établissement en avantFiche3/6complèteFiche3/6complète",
+          "pills": []
         },
         {
           "kind": "kpi-grid",
@@ -6026,33 +6778,33 @@
           "facets": [],
           "texts": [
             "Impressions dans le fil",
-            "45 285",
+            "414 005",
             "· vs période précédente",
             "Ouvertures de la fiche",
-            "6 295",
+            "44 795",
             "· vs période précédente",
             "Portée",
-            "25 360",
+            "231 843",
             "Comptes distincts ayant vu la fiche.",
             "Ouverture → réservation",
-            "53,0 %"
+            "7,0 %"
           ],
           "tiles": [
             {
               "label": "Impressions dans le fil",
-              "value": "45 285",
+              "value": "414 005",
               "meta": [],
               "pills": []
             },
             {
               "label": "Ouvertures de la fiche",
-              "value": "6 295",
+              "value": "44 795",
               "meta": [],
               "pills": []
             },
             {
               "label": "Portée",
-              "value": "25 360",
+              "value": "231 843",
               "meta": [
                 "Comptes distincts ayant vu la fiche."
               ],
@@ -6060,7 +6812,7 @@
             },
             {
               "label": "Ouverture → réservation",
-              "value": "53,0 %",
+              "value": "7,0 %",
               "meta": [],
               "pills": []
             }
@@ -7536,24 +8288,24 @@
             "sam. 19 sept.",
             "dim. 20 sept.",
             "0 MAD",
-            "1 500",
+            "800",
             "MAD",
-            "3 000",
+            "1 600",
             "MAD",
-            "4 500",
+            "2 400",
             "MAD",
-            "6 000",
+            "3 200",
             "MAD",
             "dim. 13 sept.",
-            "4 706 MAD"
+            "2 133 MAD"
           ],
-          "body": "Encaissements par jourTransactions réussies passées par Lyfe Pay.lun. 7 sept.mar. 8 sept.mer. 9 sept.jeu. 10 sept.ven. 11 sept.sam. 12 sept.dim. 13 sept.lun. 14 sept.mar. 15 sept.mer. 16 sept.jeu. 17 sept.ven. 18 sept.sam. 19 sept.dim. 20 sept.0 MAD1 500MAD3 000MAD4 500MAD6 000MADdim. 13 sept.4 706 MAD",
+          "body": "Encaissements par jourTransactions réussies passées par Lyfe Pay.lun. 7 sept.mar. 8 sept.mer. 9 sept.jeu. 10 sept.ven. 11 sept.sam. 12 sept.dim. 13 sept.lun. 14 sept.mar. 15 sept.mer. 16 sept.jeu. 17 sept.ven. 18 sept.sam. 19 sept.dim. 20 sept.0 MAD800MAD1 600MAD2 400MAD3 200MADdim. 13 sept.2 133 MAD",
           "pills": []
         },
         {
           "kind": "list",
           "heading": "Transactions",
-          "subheading": "dimanche 20 septembre à 16h51 · PZ-80400 · non rattachée à une réservation",
+          "subheading": "dimanche 20 septembre à 21h10 · PZ-80401 · non rattachée à une réservation",
           "actions": [],
           "facets": [
             {
@@ -7586,139 +8338,123 @@
             "15",
             "15",
             "2",
-            "Portefeuille · 340 MAD",
-            "RÉUSSIE",
-            "dimanche 20 septembre à 16h51 · PZ-80400 · non rattachée à une réservation",
-            "Commission",
-            "14 MAD",
             "Carte · 477 MAD",
             "RÉUSSIE",
-            "dimanche 20 septembre à 09h51 · PZ-80401 · non rattachée à une réservation",
+            "dimanche 20 septembre à 21h10 · PZ-80401 · non rattachée à une réservation",
             "Commission",
             "19 MAD",
-            "TPE · 614 MAD",
+            "Portefeuille · 340 MAD",
             "RÉUSSIE",
-            "dimanche 20 septembre à 02h51 · PZ-80402 · non rattachée à une réservation",
+            "dimanche 20 septembre à 13h10 · PZ-80400 · non rattachée à une réservation",
             "Commission",
-            "25 MAD",
+            "14 MAD",
             "Portefeuille · 751 MAD",
             "RÉUSSIE",
-            "samedi 19 septembre à 19h51 · PZ-80403 · non rattachée à une réservation",
+            "samedi 19 septembre à 21h40 · PZ-80403 · non rattachée à une réservation",
             "Commission",
             "30 MAD",
-            "Carte · 888 MAD",
+            "TPE · 614 MAD",
             "RÉUSSIE",
-            "samedi 19 septembre à 12h51 · PZ-80404 · non rattachée à une réservation",
+            "samedi 19 septembre à 13h40 · PZ-80402 · non rattachée à une réservation",
             "Commission",
-            "36 MAD",
+            "25 MAD",
             "TPE · 1 025 MAD",
             "RÉUSSIE",
-            "samedi 19 septembre à 05h51 · PZ-80405 · non rattachée à une réservation",
+            "vendredi 18 septembre à 21h10 · PZ-80405 · non rattachée à une réservation",
             "Commission",
             "41 MAD",
-            "Portefeuille · 1 162 MAD",
+            "Carte · 888 MAD",
             "RÉUSSIE",
-            "vendredi 18 septembre à 22h51 · PZ-80406 · non rattachée à une réservation",
+            "vendredi 18 septembre à 13h10 · PZ-80404 · non rattachée à une réservation",
             "Commission",
-            "46 MAD",
+            "36 MAD",
             "Carte · 1 299 MAD",
             "RÉUSSIE",
-            "vendredi 18 septembre à 15h51 · PZ-80407 · non rattachée à une réservation",
+            "jeudi 17 septembre à 21h40 · PZ-80407 · non rattachée à une réservation",
             "Commission",
             "52 MAD",
-            "TPE · 1 436 MAD",
+            "Portefeuille · 1 162 MAD",
             "RÉUSSIE",
-            "vendredi 18 septembre à 08h51 · PZ-80408 · non rattachée à une réservation",
+            "jeudi 17 septembre à 13h40 · PZ-80406 · non rattachée à une réservation",
             "Commission",
-            "57 MAD",
+            "46 MAD",
             "Portefeuille · 1 573 MAD",
             "RÉUSSIE",
-            "vendredi 18 septembre à 01h51 · PZ-80409 · non rattachée à une réservation",
+            "mercredi 16 septembre à 21h10 · PZ-80409 · non rattachée à une réservation",
             "Commission",
             "63 MAD",
-            "Carte · 450 MAD",
+            "TPE · 1 436 MAD",
             "RÉUSSIE",
-            "jeudi 17 septembre à 18h51 · PZ-80410 · non rattachée à une réservation",
+            "mercredi 16 septembre à 13h10 · PZ-80408 · non rattachée à une réservation",
             "Commission",
-            "18 MAD",
+            "57 MAD",
             "TPE · 587 MAD",
             "REMBOURSÉE",
-            "jeudi 17 septembre à 11h51 · PZ-80411 · non rattachée à une réservation",
+            "mardi 15 septembre à 21h40 · PZ-80411 · non rattachée à une réservation",
             "Commission",
             "23 MAD",
-            "Portefeuille · 724 MAD",
+            "Carte · 450 MAD",
             "RÉUSSIE",
-            "jeudi 17 septembre à 04h51 · PZ-80412 · non rattachée à une réservation",
+            "mardi 15 septembre à 13h40 · PZ-80410 · non rattachée à une réservation",
             "Commission",
-            "29 MAD",
+            "18 MAD",
             "Carte · 861 MAD",
             "RÉUSSIE",
-            "mercredi 16 septembre à 21h51 · PZ-80413 · non rattachée à une réservation",
+            "lundi 14 septembre à 21h10 · PZ-80413 · non rattachée à une réservation",
             "Commission",
             "34 MAD",
-            "TPE · 998 MAD",
+            "Portefeuille · 724 MAD",
             "RÉUSSIE",
-            "mercredi 16 septembre à 14h51 · PZ-80414 · non rattachée à une réservation",
+            "lundi 14 septembre à 13h10 · PZ-80412 · non rattachée à une réservation",
             "Commission",
-            "40 MAD",
+            "29 MAD",
             "Portefeuille · 1 135 MAD",
             "RÉUSSIE",
-            "mercredi 16 septembre à 07h51 · PZ-80415 · non rattachée à une réservation",
+            "dimanche 13 septembre à 21h40 · PZ-80415 · non rattachée à une réservation",
             "Commission",
             "45 MAD",
-            "Carte · 1 272 MAD",
+            "TPE · 998 MAD",
             "RÉUSSIE",
-            "mercredi 16 septembre à 00h51 · PZ-80416 · non rattachée à une réservation",
+            "dimanche 13 septembre à 13h40 · PZ-80414 · non rattachée à une réservation",
             "Commission",
-            "51 MAD",
+            "40 MAD",
             "TPE · 1 409 MAD",
             "RÉUSSIE",
-            "mardi 15 septembre à 17h51 · PZ-80417 · non rattachée à une réservation",
+            "samedi 12 septembre à 21h10 · PZ-80417 · non rattachée à une réservation",
             "Commission",
             "56 MAD",
-            "Portefeuille · 1 546 MAD",
+            "Carte · 1 272 MAD",
             "RÉUSSIE",
-            "mardi 15 septembre à 10h51 · PZ-80418 · non rattachée à une réservation",
+            "samedi 12 septembre à 13h10 · PZ-80416 · non rattachée à une réservation",
             "Commission",
-            "62 MAD",
+            "51 MAD",
             "Carte · 423 MAD",
             "RÉUSSIE",
-            "mardi 15 septembre à 03h51 · PZ-80419 · non rattachée à une réservation",
+            "vendredi 11 septembre à 21h40 · PZ-80419 · non rattachée à une réservation",
             "Commission",
             "17 MAD",
-            "TPE · 560 MAD",
+            "Portefeuille · 1 546 MAD",
             "RÉUSSIE",
-            "lundi 14 septembre à 20h51 · PZ-80420 · non rattachée à une réservation",
+            "vendredi 11 septembre à 13h40 · PZ-80418 · non rattachée à une réservation",
             "Commission",
-            "22 MAD",
+            "62 MAD",
             "Portefeuille · 697 MAD",
             "RÉUSSIE",
-            "lundi 14 septembre à 13h51 · PZ-80421 · non rattachée à une réservation",
+            "jeudi 10 septembre à 21h10 · PZ-80421 · non rattachée à une réservation",
             "Commission",
             "28 MAD",
-            "Carte · 834 MAD",
+            "TPE · 560 MAD",
+            "RÉUSSIE",
+            "jeudi 10 septembre à 13h10 · PZ-80420 · non rattachée à une réservation",
+            "Commission",
+            "22 MAD",
+            "TPE · 971 MAD",
             "RÉUSSIE"
           ],
           "items": [
             {
-              "title": "Portefeuille · 340 MAD",
-              "meta": "dimanche 20 septembre à 16h51 · PZ-80400 · non rattachée à une réservation",
-              "initials": null,
-              "trailing": [
-                "Commission",
-                "14 MAD"
-              ],
-              "pills": [
-                {
-                  "label": "RÉUSSIE",
-                  "tone": "success-10"
-                }
-              ],
-              "actions": []
-            },
-            {
               "title": "Carte · 477 MAD",
-              "meta": "dimanche 20 septembre à 09h51 · PZ-80401 · non rattachée à une réservation",
+              "meta": "dimanche 20 septembre à 21h10 · PZ-80401 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -7733,12 +8469,12 @@
               "actions": []
             },
             {
-              "title": "TPE · 614 MAD",
-              "meta": "dimanche 20 septembre à 02h51 · PZ-80402 · non rattachée à une réservation",
+              "title": "Portefeuille · 340 MAD",
+              "meta": "dimanche 20 septembre à 13h10 · PZ-80400 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "25 MAD"
+                "14 MAD"
               ],
               "pills": [
                 {
@@ -7750,7 +8486,7 @@
             },
             {
               "title": "Portefeuille · 751 MAD",
-              "meta": "samedi 19 septembre à 19h51 · PZ-80403 · non rattachée à une réservation",
+              "meta": "samedi 19 septembre à 21h40 · PZ-80403 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -7765,12 +8501,12 @@
               "actions": []
             },
             {
-              "title": "Carte · 888 MAD",
-              "meta": "samedi 19 septembre à 12h51 · PZ-80404 · non rattachée à une réservation",
+              "title": "TPE · 614 MAD",
+              "meta": "samedi 19 septembre à 13h40 · PZ-80402 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "36 MAD"
+                "25 MAD"
               ],
               "pills": [
                 {
@@ -7782,7 +8518,7 @@
             },
             {
               "title": "TPE · 1 025 MAD",
-              "meta": "samedi 19 septembre à 05h51 · PZ-80405 · non rattachée à une réservation",
+              "meta": "vendredi 18 septembre à 21h10 · PZ-80405 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -7797,12 +8533,12 @@
               "actions": []
             },
             {
-              "title": "Portefeuille · 1 162 MAD",
-              "meta": "vendredi 18 septembre à 22h51 · PZ-80406 · non rattachée à une réservation",
+              "title": "Carte · 888 MAD",
+              "meta": "vendredi 18 septembre à 13h10 · PZ-80404 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "46 MAD"
+                "36 MAD"
               ],
               "pills": [
                 {
@@ -7814,7 +8550,7 @@
             },
             {
               "title": "Carte · 1 299 MAD",
-              "meta": "vendredi 18 septembre à 15h51 · PZ-80407 · non rattachée à une réservation",
+              "meta": "jeudi 17 septembre à 21h40 · PZ-80407 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -7829,12 +8565,12 @@
               "actions": []
             },
             {
-              "title": "TPE · 1 436 MAD",
-              "meta": "vendredi 18 septembre à 08h51 · PZ-80408 · non rattachée à une réservation",
+              "title": "Portefeuille · 1 162 MAD",
+              "meta": "jeudi 17 septembre à 13h40 · PZ-80406 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "57 MAD"
+                "46 MAD"
               ],
               "pills": [
                 {
@@ -7846,7 +8582,7 @@
             },
             {
               "title": "Portefeuille · 1 573 MAD",
-              "meta": "vendredi 18 septembre à 01h51 · PZ-80409 · non rattachée à une réservation",
+              "meta": "mercredi 16 septembre à 21h10 · PZ-80409 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -7861,12 +8597,12 @@
               "actions": []
             },
             {
-              "title": "Carte · 450 MAD",
-              "meta": "jeudi 17 septembre à 18h51 · PZ-80410 · non rattachée à une réservation",
+              "title": "TPE · 1 436 MAD",
+              "meta": "mercredi 16 septembre à 13h10 · PZ-80408 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "18 MAD"
+                "57 MAD"
               ],
               "pills": [
                 {
@@ -7878,7 +8614,7 @@
             },
             {
               "title": "TPE · 587 MAD",
-              "meta": "jeudi 17 septembre à 11h51 · PZ-80411 · non rattachée à une réservation",
+              "meta": "mardi 15 septembre à 21h40 · PZ-80411 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -7893,12 +8629,12 @@
               "actions": []
             },
             {
-              "title": "Portefeuille · 724 MAD",
-              "meta": "jeudi 17 septembre à 04h51 · PZ-80412 · non rattachée à une réservation",
+              "title": "Carte · 450 MAD",
+              "meta": "mardi 15 septembre à 13h40 · PZ-80410 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "29 MAD"
+                "18 MAD"
               ],
               "pills": [
                 {
@@ -7910,7 +8646,7 @@
             },
             {
               "title": "Carte · 861 MAD",
-              "meta": "mercredi 16 septembre à 21h51 · PZ-80413 · non rattachée à une réservation",
+              "meta": "lundi 14 septembre à 21h10 · PZ-80413 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -7925,12 +8661,12 @@
               "actions": []
             },
             {
-              "title": "TPE · 998 MAD",
-              "meta": "mercredi 16 septembre à 14h51 · PZ-80414 · non rattachée à une réservation",
+              "title": "Portefeuille · 724 MAD",
+              "meta": "lundi 14 septembre à 13h10 · PZ-80412 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "40 MAD"
+                "29 MAD"
               ],
               "pills": [
                 {
@@ -7942,7 +8678,7 @@
             },
             {
               "title": "Portefeuille · 1 135 MAD",
-              "meta": "mercredi 16 septembre à 07h51 · PZ-80415 · non rattachée à une réservation",
+              "meta": "dimanche 13 septembre à 21h40 · PZ-80415 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -7957,12 +8693,12 @@
               "actions": []
             },
             {
-              "title": "Carte · 1 272 MAD",
-              "meta": "mercredi 16 septembre à 00h51 · PZ-80416 · non rattachée à une réservation",
+              "title": "TPE · 998 MAD",
+              "meta": "dimanche 13 septembre à 13h40 · PZ-80414 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "51 MAD"
+                "40 MAD"
               ],
               "pills": [
                 {
@@ -7974,7 +8710,7 @@
             },
             {
               "title": "TPE · 1 409 MAD",
-              "meta": "mardi 15 septembre à 17h51 · PZ-80417 · non rattachée à une réservation",
+              "meta": "samedi 12 septembre à 21h10 · PZ-80417 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -7989,12 +8725,12 @@
               "actions": []
             },
             {
-              "title": "Portefeuille · 1 546 MAD",
-              "meta": "mardi 15 septembre à 10h51 · PZ-80418 · non rattachée à une réservation",
+              "title": "Carte · 1 272 MAD",
+              "meta": "samedi 12 septembre à 13h10 · PZ-80416 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "62 MAD"
+                "51 MAD"
               ],
               "pills": [
                 {
@@ -8006,7 +8742,7 @@
             },
             {
               "title": "Carte · 423 MAD",
-              "meta": "mardi 15 septembre à 03h51 · PZ-80419 · non rattachée à une réservation",
+              "meta": "vendredi 11 septembre à 21h40 · PZ-80419 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8021,12 +8757,12 @@
               "actions": []
             },
             {
-              "title": "TPE · 560 MAD",
-              "meta": "lundi 14 septembre à 20h51 · PZ-80420 · non rattachée à une réservation",
+              "title": "Portefeuille · 1 546 MAD",
+              "meta": "vendredi 11 septembre à 13h40 · PZ-80418 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "22 MAD"
+                "62 MAD"
               ],
               "pills": [
                 {
@@ -8038,7 +8774,7 @@
             },
             {
               "title": "Portefeuille · 697 MAD",
-              "meta": "lundi 14 septembre à 13h51 · PZ-80421 · non rattachée à une réservation",
+              "meta": "jeudi 10 septembre à 21h10 · PZ-80421 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8053,12 +8789,12 @@
               "actions": []
             },
             {
-              "title": "Carte · 834 MAD",
-              "meta": "lundi 14 septembre à 06h51 · PZ-80422 · non rattachée à une réservation",
+              "title": "TPE · 560 MAD",
+              "meta": "jeudi 10 septembre à 13h10 · PZ-80420 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "33 MAD"
+                "22 MAD"
               ],
               "pills": [
                 {
@@ -8070,7 +8806,7 @@
             },
             {
               "title": "TPE · 971 MAD",
-              "meta": "dimanche 13 septembre à 23h51 · PZ-80423 · non rattachée à une réservation",
+              "meta": "mercredi 9 septembre à 21h40 · PZ-80423 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8085,12 +8821,12 @@
               "actions": []
             },
             {
-              "title": "Portefeuille · 1 108 MAD",
-              "meta": "dimanche 13 septembre à 16h51 · PZ-80424 · non rattachée à une réservation",
+              "title": "Carte · 834 MAD",
+              "meta": "mercredi 9 septembre à 13h40 · PZ-80422 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "44 MAD"
+                "33 MAD"
               ],
               "pills": [
                 {
@@ -8102,7 +8838,7 @@
             },
             {
               "title": "Carte · 1 245 MAD",
-              "meta": "dimanche 13 septembre à 09h51 · PZ-80425 · non rattachée à une réservation",
+              "meta": "mardi 8 septembre à 21h10 · PZ-80425 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8117,12 +8853,12 @@
               "actions": []
             },
             {
-              "title": "TPE · 1 382 MAD",
-              "meta": "dimanche 13 septembre à 02h51 · PZ-80426 · non rattachée à une réservation",
+              "title": "Portefeuille · 1 108 MAD",
+              "meta": "mardi 8 septembre à 13h10 · PZ-80424 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "55 MAD"
+                "44 MAD"
               ],
               "pills": [
                 {
@@ -8134,7 +8870,7 @@
             },
             {
               "title": "Portefeuille · 1 519 MAD",
-              "meta": "samedi 12 septembre à 19h51 · PZ-80427 · non rattachée à une réservation",
+              "meta": "lundi 7 septembre à 21h40 · PZ-80427 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8149,12 +8885,12 @@
               "actions": []
             },
             {
-              "title": "Carte · 396 MAD",
-              "meta": "samedi 12 septembre à 12h51 · PZ-80428 · non rattachée à une réservation",
+              "title": "TPE · 1 382 MAD",
+              "meta": "lundi 7 septembre à 13h40 · PZ-80426 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "16 MAD"
+                "55 MAD"
               ],
               "pills": [
                 {
@@ -8166,7 +8902,7 @@
             },
             {
               "title": "TPE · 533 MAD",
-              "meta": "samedi 12 septembre à 05h51 · PZ-80429 · non rattachée à une réservation",
+              "meta": "dimanche 6 septembre à 21h10 · PZ-80429 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8181,12 +8917,12 @@
               "actions": []
             },
             {
-              "title": "Portefeuille · 670 MAD",
-              "meta": "vendredi 11 septembre à 22h51 · PZ-80430 · non rattachée à une réservation",
+              "title": "Carte · 396 MAD",
+              "meta": "dimanche 6 septembre à 13h10 · PZ-80428 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "27 MAD"
+                "16 MAD"
               ],
               "pills": [
                 {
@@ -8198,7 +8934,7 @@
             },
             {
               "title": "Carte · 807 MAD",
-              "meta": "vendredi 11 septembre à 15h51 · PZ-80431 · non rattachée à une réservation",
+              "meta": "samedi 5 septembre à 21h40 · PZ-80431 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8213,12 +8949,12 @@
               "actions": []
             },
             {
-              "title": "TPE · 944 MAD",
-              "meta": "vendredi 11 septembre à 08h51 · PZ-80432 · non rattachée à une réservation",
+              "title": "Portefeuille · 670 MAD",
+              "meta": "samedi 5 septembre à 13h40 · PZ-80430 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "38 MAD"
+                "27 MAD"
               ],
               "pills": [
                 {
@@ -8230,7 +8966,7 @@
             },
             {
               "title": "Portefeuille · 1 081 MAD",
-              "meta": "vendredi 11 septembre à 01h51 · PZ-80433 · non rattachée à une réservation",
+              "meta": "vendredi 4 septembre à 21h10 · PZ-80433 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8245,12 +8981,12 @@
               "actions": []
             },
             {
-              "title": "Carte · 1 218 MAD",
-              "meta": "jeudi 10 septembre à 18h51 · PZ-80434 · non rattachée à une réservation",
+              "title": "TPE · 944 MAD",
+              "meta": "vendredi 4 septembre à 13h10 · PZ-80432 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "49 MAD"
+                "38 MAD"
               ],
               "pills": [
                 {
@@ -8262,7 +8998,7 @@
             },
             {
               "title": "TPE · 1 355 MAD",
-              "meta": "jeudi 10 septembre à 11h51 · PZ-80435 · non rattachée à une réservation",
+              "meta": "jeudi 3 septembre à 21h40 · PZ-80435 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8277,12 +9013,12 @@
               "actions": []
             },
             {
-              "title": "Portefeuille · 1 492 MAD",
-              "meta": "jeudi 10 septembre à 04h51 · PZ-80436 · non rattachée à une réservation",
+              "title": "Carte · 1 218 MAD",
+              "meta": "jeudi 3 septembre à 13h40 · PZ-80434 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "60 MAD"
+                "49 MAD"
               ],
               "pills": [
                 {
@@ -8294,7 +9030,7 @@
             },
             {
               "title": "Carte · 369 MAD",
-              "meta": "mercredi 9 septembre à 21h51 · PZ-80437 · non rattachée à une réservation",
+              "meta": "mercredi 2 septembre à 21h10 · PZ-80437 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8309,12 +9045,12 @@
               "actions": []
             },
             {
-              "title": "TPE · 506 MAD",
-              "meta": "mercredi 9 septembre à 14h51 · PZ-80438 · non rattachée à une réservation",
+              "title": "Portefeuille · 1 492 MAD",
+              "meta": "mercredi 2 septembre à 13h10 · PZ-80436 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "20 MAD"
+                "60 MAD"
               ],
               "pills": [
                 {
@@ -8326,7 +9062,7 @@
             },
             {
               "title": "Portefeuille · 643 MAD",
-              "meta": "mercredi 9 septembre à 07h51 · PZ-80439 · non rattachée à une réservation",
+              "meta": "mardi 1 septembre à 21h40 · PZ-80439 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8341,12 +9077,12 @@
               "actions": []
             },
             {
-              "title": "Carte · 780 MAD",
-              "meta": "mercredi 9 septembre à 00h51 · PZ-80440 · non rattachée à une réservation",
+              "title": "TPE · 506 MAD",
+              "meta": "mardi 1 septembre à 13h40 · PZ-80438 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "31 MAD"
+                "20 MAD"
               ],
               "pills": [
                 {
@@ -8358,7 +9094,7 @@
             },
             {
               "title": "TPE · 917 MAD",
-              "meta": "mardi 8 septembre à 17h51 · PZ-80441 · non rattachée à une réservation",
+              "meta": "lundi 31 août à 21h10 · PZ-80441 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8373,12 +9109,12 @@
               "actions": []
             },
             {
-              "title": "Portefeuille · 1 054 MAD",
-              "meta": "mardi 8 septembre à 10h51 · PZ-80442 · non rattachée à une réservation",
+              "title": "Carte · 780 MAD",
+              "meta": "lundi 31 août à 13h10 · PZ-80440 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "42 MAD"
+                "31 MAD"
               ],
               "pills": [
                 {
@@ -8390,7 +9126,7 @@
             },
             {
               "title": "Carte · 1 191 MAD",
-              "meta": "mardi 8 septembre à 03h51 · PZ-80443 · non rattachée à une réservation",
+              "meta": "dimanche 30 août à 21h40 · PZ-80443 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
@@ -8405,12 +9141,12 @@
               "actions": []
             },
             {
-              "title": "TPE · 1 328 MAD",
-              "meta": "lundi 7 septembre à 20h51 · PZ-80444 · non rattachée à une réservation",
+              "title": "Portefeuille · 1 054 MAD",
+              "meta": "dimanche 30 août à 13h40 · PZ-80442 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
-                "53 MAD"
+                "42 MAD"
               ],
               "pills": [
                 {
@@ -8422,11 +9158,27 @@
             },
             {
               "title": "Portefeuille · 1 465 MAD",
-              "meta": "lundi 7 septembre à 13h51 · PZ-80445 · non rattachée à une réservation",
+              "meta": "samedi 29 août à 21h10 · PZ-80445 · non rattachée à une réservation",
               "initials": null,
               "trailing": [
                 "Commission",
                 "59 MAD"
+              ],
+              "pills": [
+                {
+                  "label": "RÉUSSIE",
+                  "tone": "success-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "TPE · 1 328 MAD",
+              "meta": "samedi 29 août à 13h10 · PZ-80444 · non rattachée à une réservation",
+              "initials": null,
+              "trailing": [
+                "Commission",
+                "53 MAD"
               ],
               "pills": [
                 {
@@ -8566,7 +9318,7 @@
         {
           "kind": "kpi-grid",
           "heading": null,
-          "subheading": "Transactions Lyfe Pay sur la période.",
+          "subheading": "44 transactions Lyfe Pay sur la période.",
           "actions": [],
           "facets": [],
           "texts": [
@@ -8581,14 +9333,14 @@
             "· vs période précédente",
             "Taux d'annulation",
             "0,0 %",
-            "· vs période précédente",
             "Taille moyenne des groupes",
             "3,0",
             "Encaissé",
             "42 915 MAD",
-            "Transactions Lyfe Pay sur la période.",
-            "Ticket moyen",
-            "975 MAD"
+            "44 transactions Lyfe Pay sur la période.",
+            "Ticket moyen par transaction",
+            "975 MAD",
+            "Encaissé Lyfe Pay divisé par le nombre de transactions."
           ],
           "tiles": [
             {
@@ -8625,14 +9377,16 @@
               "label": "Encaissé",
               "value": "42 915 MAD",
               "meta": [
-                "Transactions Lyfe Pay sur la période."
+                "44 transactions Lyfe Pay sur la période."
               ],
               "pills": []
             },
             {
-              "label": "Ticket moyen",
+              "label": "Ticket moyen par transaction",
               "value": "975 MAD",
-              "meta": [],
+              "meta": [
+                "Encaissé Lyfe Pay divisé par le nombre de transactions."
+              ],
               "pills": []
             }
           ]
@@ -8839,7 +9593,7 @@
           "right": {
             "kind": "list",
             "heading": null,
-            "subheading": "0 / 72 couverts · 0 %",
+            "subheading": "0 / 120 couverts · 0 %",
             "actions": [
               "Créer une offre",
               "Créer une offre",
@@ -8850,32 +9604,22 @@
             ],
             "facets": [],
             "texts": [
-              "lun. 21 sept.",
-              "0 / 72 couverts · 0 %",
-              "mar. 22 sept.",
+              "lun. 5 oct.",
               "0 / 120 couverts · 0 %",
-              "mer. 23 sept.",
+              "mar. 6 oct.",
               "0 / 120 couverts · 0 %",
-              "jeu. 24 sept.",
+              "mer. 7 oct.",
               "0 / 120 couverts · 0 %",
-              "ven. 25 sept.",
+              "jeu. 8 oct.",
               "0 / 120 couverts · 0 %",
-              "sam. 26 sept.",
-              "0 / 138 couverts · 0 %"
+              "ven. 9 oct.",
+              "0 / 120 couverts · 0 %",
+              "sam. 10 oct.",
+              "0 / 120 couverts · 0 %"
             ],
             "items": [
               {
-                "title": "lun. 21 sept.",
-                "meta": "0 / 72 couverts · 0 %",
-                "initials": null,
-                "trailing": null,
-                "pills": [],
-                "actions": [
-                  "Créer une offre"
-                ]
-              },
-              {
-                "title": "mar. 22 sept.",
+                "title": "lun. 5 oct.",
                 "meta": "0 / 120 couverts · 0 %",
                 "initials": null,
                 "trailing": null,
@@ -8885,7 +9629,7 @@
                 ]
               },
               {
-                "title": "mer. 23 sept.",
+                "title": "mar. 6 oct.",
                 "meta": "0 / 120 couverts · 0 %",
                 "initials": null,
                 "trailing": null,
@@ -8895,7 +9639,7 @@
                 ]
               },
               {
-                "title": "jeu. 24 sept.",
+                "title": "mer. 7 oct.",
                 "meta": "0 / 120 couverts · 0 %",
                 "initials": null,
                 "trailing": null,
@@ -8905,7 +9649,7 @@
                 ]
               },
               {
-                "title": "ven. 25 sept.",
+                "title": "jeu. 8 oct.",
                 "meta": "0 / 120 couverts · 0 %",
                 "initials": null,
                 "trailing": null,
@@ -8915,8 +9659,18 @@
                 ]
               },
               {
-                "title": "sam. 26 sept.",
-                "meta": "0 / 138 couverts · 0 %",
+                "title": "ven. 9 oct.",
+                "meta": "0 / 120 couverts · 0 %",
+                "initials": null,
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Créer une offre"
+                ]
+              },
+              {
+                "title": "sam. 10 oct.",
+                "meta": "0 / 120 couverts · 0 %",
                 "initials": null,
                 "trailing": null,
                 "pills": [],
@@ -8937,8 +9691,8 @@
       "dependsOn": "L'export PDF passe par l'impression du navigateur, qui rend correctement. Un rendu serveur attend un service de composition.",
       "roles": "Propriétaire",
       "workspace": "venue",
-      "title": "Ce mois-ci, en deux minutes",
-      "eyebrow": "Rapport mensuel",
+      "title": "Sur les 30 derniers jours, en deux minutes",
+      "eyebrow": "Rapport",
       "subtitle": "Généré à partir des mêmes chiffres que Performance.",
       "venue": "YA",
       "blocks": [
@@ -8953,14 +9707,14 @@
           ],
           "facets": [],
           "texts": [
-            "Rapport mensuel",
+            "Rapport",
             "en deux minutes",
             "Généré à partir des mêmes chiffres que Performance."
           ],
           "rows": [
             {
               "lines": [
-                "Rapport mensuel",
+                "Rapport",
                 "en deux minutes",
                 "Généré à partir des mêmes chiffres que Performance."
               ],
@@ -8972,21 +9726,22 @@
         {
           "kind": "kpi-grid",
           "heading": null,
-          "subheading": null,
+          "subheading": "44 transactions Lyfe Pay",
           "actions": [],
           "facets": [],
           "texts": [
             "Couverts",
             "2 937",
-            "· vs mois précédent",
+            "· vs période précédente",
             "Occupation",
             "39 %",
-            "· vs mois précédent",
+            "· vs période précédente",
             "Absences",
             "3,0 %",
-            "· vs mois précédent",
+            "· vs période précédente",
             "Encaissé",
-            "42 915 MAD"
+            "42 915 MAD",
+            "44 transactions Lyfe Pay"
           ],
           "tiles": [
             {
@@ -9010,7 +9765,9 @@
             {
               "label": "Encaissé",
               "value": "42 915 MAD",
-              "meta": [],
+              "meta": [
+                "44 transactions Lyfe Pay"
+              ],
               "pills": []
             }
           ]
@@ -9554,7 +10311,7 @@
         {
           "kind": "list",
           "heading": "Journal des envois",
-          "subheading": "table_prete · dim. 20 sept. à 18h45 · Votre table est prête, présentez-vous à l'accueil.",
+          "subheading": "table_prete · dim. 20 sept. à 21h37 · Votre table est prête, présentez-vous à l'accueil.",
           "actions": [],
           "facets": [
             {
@@ -9573,33 +10330,33 @@
             "+212 667 74 21 08",
             "SMS",
             "DELIVRE",
-            "table_prete · dim. 20 sept. à 18h45 · Votre table est prête, présentez-vous à l'accueil.",
+            "table_prete · dim. 20 sept. à 21h37 · Votre table est prête, présentez-vous à l'accueil.",
             "+212 661 20 44 18",
             "WHATSAPP",
             "LU",
-            "confirmation · dim. 20 sept. à 15h51 · Votre table de 4 est confirmée pour ce soir 20h30.",
+            "confirmation · dim. 20 sept. à 18h43 · Votre table de 4 est confirmée pour ce soir 20h30.",
             "+212 663 41 77 92",
             "WHATSAPP",
             "ÉCHEC",
-            "reconfirmation · dim. 20 sept. à 13h51 · Confirmez-vous votre venue de ce soir ?",
+            "reconfirmation · dim. 20 sept. à 16h43 · Confirmez-vous votre venue de ce soir ?",
             "Numéro non joignable sur WhatsApp",
             "+212 660 15 62 40",
             "WHATSAPP",
             "DELIVRE",
-            "rappel_j1 · sam. 19 sept. à 22h51 · À demain ! Votre table de 5 vous attend à 21h15.",
+            "rappel_j1 · sam. 19 sept. à 18h00 · À demain ! Votre table de 5 vous attend à 21h00.",
             "leila.m@gmail.com",
             "EMAIL",
             "LU",
-            "remerciement · ven. 18 sept. à 20h11 · Merci de votre visite — dites-nous tout en une minute.",
+            "remerciement · ven. 18 sept. à 23h03 · Merci de votre visite — dites-nous tout en une minute.",
             "app_user_11",
             "PUSH",
             "ENVOYE",
-            "avis_invitation · jeu. 17 sept. à 17h31 · Votre avis compte : notez votre soirée."
+            "avis_invitation · jeu. 17 sept. à 20h23 · Votre avis compte : notez votre soirée."
           ],
           "items": [
             {
               "title": "+212 667 74 21 08",
-              "meta": "table_prete · dim. 20 sept. à 18h45 · Votre table est prête, présentez-vous à l'accueil.",
+              "meta": "table_prete · dim. 20 sept. à 21h37 · Votre table est prête, présentez-vous à l'accueil.",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -9616,7 +10373,7 @@
             },
             {
               "title": "+212 661 20 44 18",
-              "meta": "confirmation · dim. 20 sept. à 15h51 · Votre table de 4 est confirmée pour ce soir 20h30.",
+              "meta": "confirmation · dim. 20 sept. à 18h43 · Votre table de 4 est confirmée pour ce soir 20h30.",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -9633,7 +10390,7 @@
             },
             {
               "title": "+212 663 41 77 92",
-              "meta": "reconfirmation · dim. 20 sept. à 13h51 · Confirmez-vous votre venue de ce soir ?",
+              "meta": "reconfirmation · dim. 20 sept. à 16h43 · Confirmez-vous votre venue de ce soir ?",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -9650,7 +10407,7 @@
             },
             {
               "title": "+212 660 15 62 40",
-              "meta": "rappel_j1 · sam. 19 sept. à 22h51 · À demain ! Votre table de 5 vous attend à 21h15.",
+              "meta": "rappel_j1 · sam. 19 sept. à 18h00 · À demain ! Votre table de 5 vous attend à 21h00.",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -9667,7 +10424,7 @@
             },
             {
               "title": "leila.m@gmail.com",
-              "meta": "remerciement · ven. 18 sept. à 20h11 · Merci de votre visite — dites-nous tout en une minute.",
+              "meta": "remerciement · ven. 18 sept. à 23h03 · Merci de votre visite — dites-nous tout en une minute.",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -9684,7 +10441,7 @@
             },
             {
               "title": "app_user_11",
-              "meta": "avis_invitation · jeu. 17 sept. à 17h31 · Votre avis compte : notez votre soirée.",
+              "meta": "avis_invitation · jeu. 17 sept. à 20h23 · Votre avis compte : notez votre soirée.",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -9747,7 +10504,7 @@
         {
           "kind": "list",
           "heading": "Services",
-          "subheading": "tous les jours · 12:00 – 15:00 · dernière réservation 14:15 · 72 couverts · 10 par quart d'heure",
+          "subheading": "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
           "actions": [
             "Ajouter un service"
           ],
@@ -9757,18 +10514,18 @@
             "Déjeuner",
             "ACTIF",
             "V1",
-            "tous les jours · 12:00 – 15:00 · dernière réservation 14:15 · 72 couverts · 10 par quart d'heure",
+            "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
             "3 zones réservables sur ce service.",
             "Dîner",
             "ACTIF",
             "V1",
-            "tous les jours · 19:00 – 23:30 · dernière réservation 22:30 · 120 couverts · 14 par quart d'heure",
+            "tous les jours · 19h00 – 23h30 · dernière réservation 22h30 · 120 couverts · 14 par quart d'heure",
             "3 zones réservables sur ce service."
           ],
           "items": [
             {
               "title": "Déjeuner",
-              "meta": "tous les jours · 12:00 – 15:00 · dernière réservation 14:15 · 72 couverts · 10 par quart d'heure",
+              "meta": "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -9785,7 +10542,7 @@
             },
             {
               "title": "Dîner",
-              "meta": "tous les jours · 19:00 – 23:30 · dernière réservation 22:30 · 120 couverts · 14 par quart d'heure",
+              "meta": "tous les jours · 19h00 – 23h30 · dernière réservation 22h30 · 120 couverts · 14 par quart d'heure",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -9910,7 +10667,7 @@
             "Réservation ouverte",
             "Voir la charge par jour"
           ],
-          "body": "Ce que voit un clientRéservation ouverte Réservable jusqu'à 60 jours à l'avance, de 1 à 8 personnes, au plus tard 60 minutes avant. Le jour même, jusqu'à 18:00. Au-delà de 8 personnes, la demande est envoyée à l'établissement.Voir la charge par jour",
+          "body": "Ce que voit un clientRéservation ouverte Réservable jusqu'à 60 jours à l'avance, de 1 à 8 personnes, au plus tard 60 minutes avant. Le jour même, jusqu'à 18h00. Au-delà de 8 personnes, la demande est envoyée à l'établissement.Voir la charge par jour",
           "pills": []
         }
       ]
@@ -10110,7 +10867,7 @@
             "WhatsApp",
             "Aucun",
             "Rappel la veille",
-            "J-1 À 18:00",
+            "J-1 À 18H00",
             "Le rappel qui fait le plus baisser les absences.",
             "Push",
             "E-mail",
@@ -10614,42 +11371,54 @@
         {
           "kind": "kpi-grid",
           "heading": null,
-          "subheading": null,
+          "subheading": "Toutes celles enregistrées depuis l'ouverture du compte.",
           "actions": [],
           "facets": [],
           "texts": [
             "Réservations",
-            "121",
+            "359",
+            "Toutes celles enregistrées depuis l'ouverture du compte.",
             "Clients au fichier",
             "60",
+            "Le total affiché par Clients.",
             "Messages envoyés",
             "6",
+            "Messages de service. Les envois de campagne sont comptés dans Campagnes.",
             "Campagnes",
-            "6"
+            "6",
+            "Campagnes ponctuelles et automatisations confondues."
           ],
           "tiles": [
             {
               "label": "Réservations",
-              "value": "121",
-              "meta": [],
+              "value": "359",
+              "meta": [
+                "Toutes celles enregistrées depuis l'ouverture du compte."
+              ],
               "pills": []
             },
             {
               "label": "Clients au fichier",
               "value": "60",
-              "meta": [],
+              "meta": [
+                "Le total affiché par Clients."
+              ],
               "pills": []
             },
             {
               "label": "Messages envoyés",
               "value": "6",
-              "meta": [],
+              "meta": [
+                "Messages de service. Les envois de campagne sont comptés dans Campagnes."
+              ],
               "pills": []
             },
             {
               "label": "Campagnes",
               "value": "6",
-              "meta": [],
+              "meta": [
+                "Campagnes ponctuelles et automatisations confondues."
+              ],
               "pills": []
             }
           ]

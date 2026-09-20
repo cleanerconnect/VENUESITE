@@ -113,7 +113,7 @@
       "tools/verify/configuration.mjs",
       "tools/verify/audience.mjs (new)"
     ],
-    "lastRun": "all five pass: 31/31 venue at 1440x900 and at 390x844, 19/19 event+shared at 1440x900, 3 states on 31 routes, configuration as specified, Audience holds the minimum group of ten in both configurations (db driver and static driver)",
+    "lastRun": "all five pass after the coherence pass: 31/31 venue at 1440x900 and at 390x844, 19/19 event+shared at 1440x900, 3 states on 31 routes, configuration as specified, Audience holds the minimum group of ten in both configurations (db driver and static driver). Re-run against a production build after every change.",
     "trap": "A stale next start holding :3210 makes every check measure the old build. pkill -9 -f next-server and confirm the port is free before rebuilding."
   },
   "figmaSeatAtLastWrite": "Full on pro — 200 tool calls/day, unlimited pages",
@@ -179,7 +179,31 @@
       "eval and new Function both work in the plugin sandbox — a long renderer can be parked in a TEXT node once and re-run from later calls instead of being re-sent.",
       "figma.createNodeFromSvg imports recharts path geometry; the imported wrapper frame carries a white fill that must be cleared or the no-literals audit fails.",
       "Applying a text style then setting fontName clears textStyleId — the Fraunces italic clause in the Accueil title is the one node on the page without a style."
-    ]
+    ],
+    "coherencePass": {
+      "scope": "every frame of page 08 read against six questions: numbers reconcile with the list or chart beside them; scope named wherever two scopes share a screen; the current service resolves from the clock; French dates and times with bookable slots on :00 or :30; copy verbatim from the portal; one row in hover on any list with actions",
+      "rule": "fixed in the portal first, then re-captured and re-rendered — nothing was patched in Figma alone",
+      "rootCause": "four of the findings were one mistake made four times: a headline number typed beside its rows instead of summed from them (services.booked_covers/arrived_covers/no_show_covers, service_slot_load, customers.visit_count, and today's analytics_daily.no_shows under a label saying 'ce service')",
+      "derivedNow": [
+        "services.booked_covers",
+        "services.arrived_covers",
+        "services.no_show_covers",
+        "services.revenue_cents",
+        "service_slot_load.covers"
+      ],
+      "seamChange": "listCustomerBookings(venueId, customerId) added to RestaurantRepository and to all three drivers, plus bookingsByCustomer in the static snapshot — the Fiche client's Historique block had no source at all",
+      "framesTouched": "all of them: every desktop frame, every surface and every phone frame was re-rendered from the re-captured JSON, because the corrected numbers and the French times run through the whole page",
+      "hover": "one row per list whose rows carry actions, in --shadow-soft, the elevation EntityListBlock gives a row card on hover; the actions are always visible in the portal, so hover changes the shadow and not the content",
+      "leftAsDesigned": [
+        "the :15 and :45 ticks of Accueil's four-hour band — the spec asks for arrivals per fifteen minutes",
+        "input type=date and input type=time values (2026-09-20, 18:00) — native control values",
+        "waitlist join times, review timestamps and message-log send times — event times, not bookable slots",
+        "'base de 60 couverts' on Audience — the configuration vocabulary rule outranks the reading",
+        "Liste d'attente's 'Tout 6' against four rows — the default filter is 'En cours'",
+        "Briefing's 100 couverts against the service's 104 — the briefing excludes the six no-show covers",
+        "the six oddities of PHASE7 §6 — none of them is a contradiction between two numbers"
+      ]
+    }
   },
   "closedFindings": [
     "src/lib/db/overview-store.ts — Accueil subtitle now reads venue_settings.configuration via configFor()/covers(); lounge says 'personnes réservées'.",

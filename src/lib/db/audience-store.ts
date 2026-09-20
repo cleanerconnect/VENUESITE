@@ -23,6 +23,9 @@ import type {
   AudienceSourceRow,
 } from "@/lib/types/venue-operations";
 import { AUDIENCE_MIN_GROUP } from "@/lib/types/venue-operations";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
 import { all, one } from "./store";
 
 const PERIOD_DAYS = 90;
@@ -162,7 +165,9 @@ function cohorts(venueId: string): AudienceCohort[] {
       const month = String(r.month ?? "");
       return {
         month,
-        label: month,
+        // "avril 2026", not "2026-04". The month key is a sort key; it
+        // has no business being the thing a manager reads.
+        label: format(new Date(`${month}-01T12:00:00Z`), "MMMM yyyy", { locale: fr }),
         size,
         retentionPct: [
           pct(Number(r.d30 ?? 0), size),

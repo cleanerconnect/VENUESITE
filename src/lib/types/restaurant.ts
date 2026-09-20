@@ -288,8 +288,8 @@ export interface RestaurantOverview {
     deltaPctVsLastWeek: number;
   };
   noShows: {
+    /** Counted over `currentService`, which is the scope the tile names. */
     count: number;
-    deltaPctVsLastWeek: number;
     /** Covers lost, used for the money framing of the nudge. */
     lostRevenueMad: number;
   };
@@ -301,7 +301,8 @@ export interface RestaurantOverview {
   rating: {
     average: number;
     reviewCount: number;
-    deltaVsLastMonth: number;
+    /** Rating points versus the month before; null where there is no month before. */
+    deltaVsLastMonth: number | null;
   };
   nextPayout: {
     amountMad: number;

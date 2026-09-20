@@ -12,6 +12,7 @@
 
 import type {
   MenuItem,
+  Reservation,
   RestaurantOverview,
   RestaurantProfile,
 } from "@/lib/types/restaurant";
@@ -461,6 +462,8 @@ export interface VenueOperationsRepository {
    * spend tile in the portal hides on.
    */
   getSpendByCustomer(venueId: string): Promise<Record<string, number>>;
+  /** One guest's whole booking history, for the Fiche client. */
+  listCustomerBookings(venueId: string, customerId: string): Promise<Reservation[]>;
 
   runServiceFloorAction(
     venueId: string,

@@ -134,9 +134,20 @@ export function shiftNotes(venueId: string, date: string) {
  * preferences, history and deposit state of one guest arrive together.
  */
 export function briefing(venueId: string): Briefing {
+  // The same service Accueil leads with: the one running, else the next
+  // due, else the last one held. Ordering by nearest midpoint instead
+  // briefed the team on a service that had already closed.
   const service = one(
     `SELECT id, label, date FROM services
-      WHERE venue_id = ? ORDER BY ABS(julianday(opens_at) - julianday('now'))
+      WHERE venue_id = ?
+      ORDER BY
+        CASE
+          WHEN datetime(opens_at) <= datetime('now')
+           AND datetime(closes_at) >= datetime('now') THEN 0
+          WHEN datetime(opens_at) > datetime('now') THEN 1
+          ELSE 2
+        END,
+        ABS(julianday(opens_at) - julianday('now'))
       LIMIT 1`,
     venueId,
   );
@@ -233,10 +244,22 @@ export function calendar(venueId: string): CalendarDay[] {
   }
 
   // Markers. An offer or an experience on a day is why a manager opens it.
+  // An offer marks a day only when it actually runs that day: the range
+  // says which fortnight, the weekdays say which evenings inside it.
   const offerDays = all(
-    "SELECT id, starts_on, ends_on FROM offers WHERE venue_id = ? AND status IN ('active','scheduled')",
+    "SELECT id, starts_on, ends_on, weekdays FROM offers WHERE venue_id = ? AND status IN ('active','scheduled')",
     venueId,
-  );
+  ).map((o) => ({
+    id: String(o.id),
+    startsOn: String(o.starts_on),
+    endsOn: String(o.ends_on),
+    weekdays: new Set(
+      text(o.weekdays)
+        .split(",")
+        .map((n) => Number(n.trim()))
+        .filter((n) => n >= 1 && n <= 7),
+    ),
+  }));
   const experienceDays = new Map<string, string[]>();
   for (const r of all(
     "SELECT id, date(starts_at) AS d FROM experiences WHERE venue_id = ? AND status <> 'brouillon'",
@@ -266,8 +289,13 @@ export function calendar(venueId: string): CalendarDay[] {
       capacityOverride: override?.capacity ?? null,
       capacityNote: override?.note ?? "",
       offerIds: offerDays
-        .filter((o) => String(o.starts_on) <= date && date <= String(o.ends_on))
-        .map((o) => String(o.id)),
+        .filter(
+          (o) =>
+            o.startsOn <= date &&
+            date <= o.endsOn &&
+            (o.weekdays.size === 0 || o.weekdays.has(((d.getDay() + 6) % 7) + 1)),
+        )
+        .map((o) => o.id),
       experienceIds: experienceDays.get(date) ?? [],
     });
   }

@@ -152,7 +152,7 @@ export function buildAudienceScreen(
         label: `Nouveaux sur ${insights.periodDays} jours`,
         icon: "user-check",
         metric: { value: insights.newSharePct, format: PERCENT, animate: true },
-        hint: "Part de la base vue pour la première fois dans la période.",
+        hint: `Part de la base vue pour la première fois dans ces ${insights.periodDays} jours.`,
       },
       {
         id: "return-90",
@@ -167,7 +167,7 @@ export function buildAudienceScreen(
   const profile: Block = {
     id: "audience-profile",
     type: "group",
-    heading: "Profil",
+    heading: "Profil · toute la base",
     gap: "md",
     children: [
       breakdownBlock("by-city", "Par ville", insights.byCity, insights, configuration),
@@ -188,7 +188,7 @@ export function buildAudienceScreen(
       ? {
           id: "audience-sources",
           type: "entity-list",
-          heading: "Sources de trafic",
+          heading: `Sources de trafic · ${insights.periodDays} derniers jours`,
           rows: [],
           empty: {
             title: "Aucune donnée de trafic",
@@ -199,7 +199,7 @@ export function buildAudienceScreen(
       : {
           id: "audience-sources",
           type: "table",
-          heading: "Sources de trafic",
+          heading: `Sources de trafic · ${insights.periodDays} derniers jours`,
           columns: [
             { key: "source", label: "Source" },
             { key: "impressions", label: "Impressions", align: "right" },
@@ -222,7 +222,7 @@ export function buildAudienceScreen(
   const timing: Block = {
     id: "audience-timing",
     type: "group",
-    heading: "Quand ils viennent",
+    heading: `Quand ils viennent · ${insights.periodDays} derniers jours`,
     gap: "md",
     children: [
       breakdownBlock("by-weekday", "Par jour de semaine", insights.byWeekday, insights, configuration),

@@ -3,7 +3,7 @@
   "venue": "",
   "account": "yassine@darzellij.ma",
   "depth": "outline",
-  "capturedAt": "2026-09-20T19:14:06.962Z",
+  "capturedAt": "2026-09-20T21:47:59.962Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -71,15 +71,15 @@
           "text": "Recette de la semaine"
         }
       ],
-      "subtitle": "104 couverts réservés, 6 en liste d'attente, 16 encore disponibles.",
+      "subtitle": "104 couverts réservés, 11 en liste d'attente, 16 encore disponibles.",
       "tiles": [
         {
           "label": "Encaissé ce service",
-          "value": "63 400 MAD"
+          "value": "58 223 MAD"
         },
         {
           "label": "Couverts arrivés",
-          "value": "86"
+          "value": "79"
         },
         {
           "label": "Couverts disponibles",
@@ -95,11 +95,11 @@
         },
         {
           "label": "Taux d'occupation",
-          "value": "38 %"
+          "value": "87 %"
         },
         {
           "label": "Absences ce service",
-          "value": "5"
+          "value": "6"
         },
         {
           "label": "Note moyenne",
@@ -114,7 +114,6 @@
         "RISQUE ÉLEVÉ",
         "ACOMPTE ÉCHOUÉ",
         "AVIS SANS RÉPONSE",
-        "87 % engagé",
         "CONFIRMÉE",
         "Risque d'absence",
         "Habitué",
@@ -173,7 +172,7 @@
           "text": "Carnet du service"
         }
       ],
-      "subtitle": "dimanche 20 septembre",
+      "subtitle": "dimanche 20 septembre · Dîner",
       "tiles": [
         {
           "label": "Couverts réservés",
@@ -181,7 +180,7 @@
         },
         {
           "label": "Déjà arrivés",
-          "value": "86"
+          "value": "79"
         },
         {
           "label": "À confirmer",
@@ -193,11 +192,12 @@
         }
       ],
       "pills": [
-        "7",
+        "30",
         "1",
         "4",
+        "21",
         "0",
-        "2",
+        "ARRIVÉ",
         "LISTE D'ATTENTE",
         "CONFIRMÉE",
         "ACOMPTE PAYE",
@@ -208,11 +208,11 @@
       ],
       "buttons": [
         "Nouvelle réservation",
-        "Tous7",
+        "Tous30",
         "À confirmer1",
         "Confirmées4",
-        "Arrivés0",
-        "Liste d'attente2",
+        "Arrivés21",
+        "Liste d'attente4",
         "No-show0",
         "Annulées0",
         "À risque1",
@@ -291,7 +291,7 @@
           "text": "La liste en ligne"
         }
       ],
-      "subtitle": "Espace restaurant · 5 min d'attente annoncée",
+      "subtitle": "Espace restaurant · 15 min d'attente annoncée",
       "tiles": [
         {
           "label": "Groupes en attente",
@@ -299,7 +299,7 @@
         },
         {
           "label": "Attente moyenne",
-          "value": "5 min"
+          "value": "15 min"
         },
         {
           "label": "Liste en ligne",
@@ -458,11 +458,11 @@
           "text": "Acomptes en attente"
         }
       ],
-      "subtitle": "5 réservations · 21 couverts",
+      "subtitle": "26 réservations · 100 couverts",
       "tiles": [
         {
           "label": "couverts",
-          "value": "21"
+          "value": "100"
         },
         {
           "label": "VIP et habitués",
@@ -596,10 +596,6 @@
           "text": "Réservations à venir"
         },
         {
-          "level": "h3",
-          "text": "Rien de prévu"
-        },
-        {
           "level": "h2",
           "text": "Historique"
         },
@@ -626,10 +622,6 @@
         {
           "level": "h2",
           "text": "Réservations à venir"
-        },
-        {
-          "level": "h3",
-          "text": "Rien de prévu"
         },
         {
           "level": "h2",
@@ -678,9 +670,10 @@
       "pills": [
         "SAGE",
         "VIOLET",
-        "1",
+        "CONFIRMÉE",
+        "6",
         "0",
-        "CONFIRMÉE"
+        "TERMINÉE"
       ],
       "buttons": [
         "Créer une réservation",
@@ -689,7 +682,7 @@
         "Exporter la fiche",
         "Anonymiser (droit à l'effacement)",
         "Modifier les notes",
-        "Tout1",
+        "Tout6",
         "Absences0"
       ],
       "tables": []
@@ -758,7 +751,7 @@
         },
         {
           "level": "h2",
-          "text": "Profil"
+          "text": "Profil · toute la base"
         },
         {
           "level": "h2",
@@ -778,11 +771,11 @@
         },
         {
           "level": "h2",
-          "text": "Sources de trafic"
+          "text": "Sources de trafic · 90 derniers jours"
         },
         {
           "level": "h2",
-          "text": "Quand ils viennent"
+          "text": "Quand ils viennent · 90 derniers jours"
         },
         {
           "level": "h2",
@@ -841,44 +834,44 @@
           "rows": [
             [
               "Feed",
-              "44 762",
-              "7 202",
-              "777",
+              "261 105",
+              "41 996",
+              "2 124",
               "34 %"
             ],
             [
               "Recherche",
-              "30 539",
-              "4 936",
-              "524",
-              "23 %"
+              "178 148",
+              "28 786",
+              "1 456",
+              "24 %"
             ],
             [
               "Listes",
-              "18 734",
-              "2 953",
-              "317",
+              "109 266",
+              "17 232",
+              "873",
               "14 %"
             ],
             [
               "Boost",
-              "16 250",
-              "2 646",
-              "282",
-              "13 %"
+              "94 796",
+              "15 439",
+              "769",
+              "12 %"
             ],
             [
               "Offre",
-              "13 154",
-              "2 107",
-              "223",
+              "76 763",
+              "12 305",
+              "615",
               "10 %"
             ],
             [
               "Lien externe",
-              "7 932",
-              "1 311",
-              "136",
+              "46 250",
+              "7 629",
+              "368",
               "6 %"
             ]
           ]
@@ -893,7 +886,7 @@
           ],
           "rows": [
             [
-              "2026-04",
+              "avril 2026",
               "10",
               "80 %",
               "40 %",
@@ -988,32 +981,32 @@
           "rows": [
             [
               "Lundi",
-              "12:00 – 15:00 · 19:00 – 23:30",
+              "12h00 – 15h00 · 19h00 – 23h30",
               "OUVERT"
             ],
             [
               "Mardi",
-              "12:00 – 15:00 · 19:00 – 23:30",
+              "12h00 – 15h00 · 19h00 – 23h30",
               "OUVERT"
             ],
             [
               "Mercredi",
-              "12:00 – 15:00 · 19:00 – 23:30",
+              "12h00 – 15h00 · 19h00 – 23h30",
               "OUVERT"
             ],
             [
               "Jeudi",
-              "12:00 – 15:00 · 19:00 – 23:30",
+              "12h00 – 15h00 · 19h00 – 23h30",
               "OUVERT"
             ],
             [
               "Vendredi",
-              "12:00 – 15:30 · 19:00 – 00:30",
+              "12h00 – 15h30 · 19h00 – 00h30",
               "OUVERT"
             ],
             [
               "Samedi",
-              "12:00 – 15:30 · 19:00 – 00:30",
+              "12h00 – 15h30 · 19h00 – 00h30",
               "OUVERT"
             ]
           ]
@@ -1120,28 +1113,20 @@
       "subtitle": "30 derniers jours",
       "tiles": [
         {
-          "label": "Impressions",
-          "value": "45 285"
-        },
-        {
-          "label": "Ouvertures de fiche",
-          "value": "6 295"
-        },
-        {
-          "label": "Portée",
-          "value": "25 360"
-        },
-        {
           "label": "Impressions dans le fil",
-          "value": "45 285"
+          "value": "414 005"
         },
         {
           "label": "Ouvertures de la fiche",
-          "value": "6 295"
+          "value": "44 795"
+        },
+        {
+          "label": "Portée",
+          "value": "231 843"
         },
         {
           "label": "Ouverture → réservation",
-          "value": "53,0 %"
+          "value": "7,0 %"
         }
       ],
       "pills": [
@@ -1752,7 +1737,7 @@
           "value": "42 915 MAD"
         },
         {
-          "label": "Ticket moyen",
+          "label": "Ticket moyen par transaction",
           "value": "975 MAD"
         }
       ],
@@ -1775,7 +1760,7 @@
       "headings": [
         {
           "level": "h1",
-          "text": "Ce mois-ci, en deux minutes"
+          "text": "Sur les 30 derniers jours, en deux minutes"
         },
         {
           "level": "h2",
@@ -2081,7 +2066,7 @@
       "tiles": [],
       "pills": [
         "IMMÉDIAT",
-        "J-1 À 18:00",
+        "J-1 À 18H00",
         "H-3",
         "H-4",
         "H+3",
@@ -2183,7 +2168,7 @@
         },
         {
           "label": "Réservations",
-          "value": "121"
+          "value": "359"
         },
         {
           "label": "Clients au fichier",

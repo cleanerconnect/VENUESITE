@@ -18,6 +18,12 @@ import { RestaurantSpecScreen } from "@/components/restaurant/RestaurantSpecScre
 
 export const dynamic = "force-dynamic";
 
+/** Today's bookings reach the sheet twice — once live, once as history. */
+function dedupeById<T extends { id: string }>(rows: T[]): T[] {
+  const seen = new Set<string>();
+  return rows.filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)));
+}
+
 interface Props {
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -48,7 +54,7 @@ export default async function CustomerPage({ params, searchParams }: Props) {
   const venueId = session.venueId;
 
   try {
-  const [customer, overview, graph, spend, desk, marketing, settings] =
+  const [customer, overview, graph, spend, desk, marketing, settings, history] =
     await Promise.all([
       repo.getCustomer(venueId, id),
       repo.getOverview(venueId),
@@ -57,6 +63,7 @@ export default async function CustomerPage({ params, searchParams }: Props) {
       repo.getMoneyDesk(venueId),
       repo.getMarketing(venueId),
       repo.getVenueSettings(venueId),
+      repo.listCustomerBookings(venueId, id),
     ]);
 
   // Unknown id inside a venue the user does hold is a 404, not an empty
@@ -67,7 +74,14 @@ export default async function CustomerPage({ params, searchParams }: Props) {
   const spec = buildCustomerScreen({
     customer,
     reviews: overview.reviews,
-    reservations: [...overview.upcomingReservations, ...overview.waitlist],
+    // The live carnet plus this guest's own history — the second half
+    // is what fills Historique, and without it the sheet counted visits
+    // it could not list.
+    reservations: dedupeById([
+      ...history,
+      ...overview.upcomingReservations,
+      ...overview.waitlist,
+    ]),
     tagIds: graph.tagsByCustomer[customer.id] ?? [],
     tags: graph.tags,
     spendMad: spend[customer.id],
