@@ -21,6 +21,8 @@
 // There is no "planned" — a screen that does not exist does not get a
 // row here, and it does not get a nav entry either.
 
+import type { Lot } from "@/lib/restaurant/slugs";
+
 export type RouteStatus = "built" | "partial" | "service";
 
 export interface RouteEntry {
@@ -36,12 +38,22 @@ export interface RouteEntry {
   gap?: string;
   /** Which service is not connected, when status is `service`. */
   dependsOn?: string;
+  /**
+   * Which lot registers this route.
+   *
+   * 1 is what a Lot 1 deployment ships — the contracted venue dashboard,
+   * plus the entry flow, the styleguide and the event workspace, which
+   * are not part of the split and exist in both. 2 is a venue screen
+   * this repo renders but Lot 1 does not register.
+   */
+  lot: Lot;
 }
 
 export const ROUTES: RouteEntry[] = [
   // ── Entry ──
   {
     path: "/login",
+    lot: 1,
     label: "Connexion",
     purpose:
       "Le seul point d'entrée. Résout le compte vers son espace ; propose de choisir le lieu quand il y en a plusieurs.",
@@ -50,6 +62,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/splash",
+    lot: 1,
     label: "Splash",
     purpose: "Écran de lancement de l'application mobile.",
     workspace: "entry",
@@ -57,6 +70,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/contact",
+    lot: 1,
     label: "Demander une démo",
     purpose: "Formulaire public pour un partenaire sans accès.",
     workspace: "entry",
@@ -64,6 +78,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/styleguide",
+    lot: 1,
     label: "Styleguide",
     purpose:
       "Chaque composant dans chacun de ses états, plus cet index. Aucune session requise.",
@@ -74,6 +89,7 @@ export const ROUTES: RouteEntry[] = [
   // ── Event workspace ──
   {
     path: "/dashboard",
+    lot: 1,
     label: "Vue d'ensemble",
     purpose:
       "L'état de l'organisation : événement en cours, ventes du jour, prochain versement, activité.",
@@ -82,6 +98,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/events",
+    lot: 1,
     label: "Mes événements",
     purpose: "Tous les événements, filtrés par état du cycle de vie.",
     workspace: "event",
@@ -89,6 +106,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/events/new",
+    lot: 1,
     label: "Créer un événement",
     purpose: "Assistant en cinq étapes : info, média, tarifs, remboursement, vérification.",
     workspace: "event",
@@ -98,6 +116,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/events/evt_jzb_robbie",
+    lot: 1,
     label: "Détail d'un événement",
     purpose:
       "Ventes, analyses, participants, invitations, remboursements, régie, promotion, bilan.",
@@ -106,6 +125,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/events/evt_jzb_robbie/edit",
+    lot: 1,
     label: "Édition d'un événement",
     purpose: "Corriger un événement, notamment après un refus de modération.",
     workspace: "event",
@@ -115,6 +135,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/bilans",
+    lot: 1,
     label: "Bilans",
     purpose: "Les rapports post-événement, prêts à partager ou imprimer.",
     workspace: "event",
@@ -122,6 +143,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/audiences",
+    lot: 1,
     label: "Audiences",
     purpose:
       "Qui achète : segments, cohortes, géographie, comparaison au marché.",
@@ -130,6 +152,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/audiences/details",
+    lot: 1,
     label: "Audiences · détail",
     purpose: "La version complète des panneaux que le mobile résume.",
     workspace: "event",
@@ -137,6 +160,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/visibilite",
+    lot: 1,
     label: "Visibilité",
     purpose: "Campagnes de mise en avant, budget, ROAS.",
     workspace: "event",
@@ -145,6 +169,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/promo-codes",
+    lot: 1,
     label: "Codes promo",
     purpose: "Réductions ciblées et suivi des utilisations.",
     workspace: "event",
@@ -153,6 +178,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/scanner",
+    lot: 1,
     label: "Scanner",
     purpose:
       "Contrôle des billets à l'entrée, plein écran sombre, pensé pour une main.",
@@ -162,6 +188,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/settlements",
+    lot: 1,
     label: "Versements",
     purpose: "Prochain versement, historique, factures, dépenses de boost.",
     workspace: "event",
@@ -169,6 +196,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/activity",
+    lot: 1,
     label: "Activité",
     purpose: "Le flux complet, promu en écran sur mobile.",
     workspace: "event",
@@ -176,6 +204,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/team",
+    lot: 1,
     label: "Équipe",
     purpose: "Qui a accès, à quel rôle, et le journal d'audit.",
     workspace: "event",
@@ -184,6 +213,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/settings",
+    lot: 1,
     label: "Réglages",
     purpose: "Profil de l'organisation, versements, préférences.",
     workspace: "event",
@@ -191,6 +221,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/onboarding",
+    lot: 1,
     label: "Onboarding",
     purpose: "Quatre étapes : bienvenue, profil, banque, équipe.",
     workspace: "event",
@@ -207,6 +238,7 @@ export const ROUTES: RouteEntry[] = [
   // 1. Aujourd'hui
   {
     path: "/restaurant",
+    lot: 1,
     label: "Accueil",
     purpose:
       "Ce qui se passe aujourd'hui : chiffres du jour, file d'attente à traiter, bande des quatre prochaines heures.",
@@ -215,6 +247,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/reservations",
+    lot: 1,
     label: "Réservations",
     purpose:
       "Le carnet d'une journée : accepter, refuser avec motif, modifier, marquer arrivé, absent, annuler.",
@@ -223,6 +256,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/calendrier",
+    lot: 2,
     label: "Calendrier",
     purpose:
       "La charge par jour, en semaine ou en mois. Fermer une journée, forcer une capacité, repérer un service creux.",
@@ -233,6 +267,7 @@ export const ROUTES: RouteEntry[] = [
   // 2. En service
   {
     path: "/restaurant/liste-attente",
+    lot: 2,
     label: "Liste d'attente",
     purpose:
       "La porte quand la salle est pleine. Prévenir, installer, retirer avec motif ; installer crée la réservation.",
@@ -241,6 +276,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/check-in",
+    lot: 1,
     label: "Check-in",
     purpose:
       "Valider une arrivée : caméra, code saisi, recherche par nom, annulation dans les cinq minutes.",
@@ -249,6 +285,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/briefing",
+    lot: 2,
     label: "Briefing",
     purpose:
       "Ce que l'équipe lit avant l'ouverture : VIP, allergies, occasions, grandes tables, acomptes en attente, notes de service.",
@@ -259,6 +296,7 @@ export const ROUTES: RouteEntry[] = [
   // 3. Clients
   {
     path: "/restaurant/clients",
+    lot: 1,
     label: "Liste clients",
     purpose:
       "La base, alimentée par les réservations, les walk-ins et les installations depuis la liste d'attente.",
@@ -267,6 +305,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/clients/cus_1",
+    lot: 1,
     label: "Fiche client",
     purpose:
       "Tout ce que le lieu sait d'un client : visites, risque d'absence sur douze mois, préférences, avis, messages, anonymisation.",
@@ -275,6 +314,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/segments",
+    lot: 2,
     label: "Tags et segments",
     purpose:
       "Le vocabulaire de la base : étiquettes manuelles, règles automatiques et leurs seuils, segments enregistrés.",
@@ -284,6 +324,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/audience",
+    lot: 2,
     label: "Audience",
     purpose:
       "Qui vient : profil par ville, quartier, âge et centres d'intérêt, sources de trafic, horaires, rétention par cohorte et comparaison anonymisée. Aucun groupe sous dix personnes n'est affiché.",
@@ -295,6 +336,7 @@ export const ROUTES: RouteEntry[] = [
   // 4. Ma présence
   {
     path: "/restaurant/ma-fiche",
+    lot: 1,
     label: "Ma fiche",
     purpose:
       "Ce que l'application montre de l'établissement : identité, fiche, photos. Enregistré pour de vrai.",
@@ -304,6 +346,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/menu",
+    lot: 1,
     label: "Menu",
     purpose: "La carte telle que l'application l'affiche. Ajouter, masquer, réordonner.",
     workspace: "venue",
@@ -314,6 +357,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/avis",
+    lot: 1,
     label: "Avis",
     purpose:
       "Les avis, le sondage après visite et la redirection des clients satisfaits vers Google ou Tripadvisor.",
@@ -327,6 +371,7 @@ export const ROUTES: RouteEntry[] = [
   // 5. Croissance
   {
     path: "/restaurant/visibilite",
+    lot: 1,
     label: "Visibilité",
     purpose:
       "Impressions, ouvertures de fiche, conversion, et la liste honnête de ce qui pèse sur le classement.",
@@ -336,6 +381,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/offres",
+    lot: 2,
     label: "Offres",
     purpose:
       "Remplir un service creux sans toucher aux prix. Attribution comptée sur les offres appliquées.",
@@ -345,6 +391,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/experiences",
+    lot: 2,
     label: "Expériences",
     purpose:
       "Vendre autre chose qu'une table : soirée, atelier, brunch, avec billetterie et recette.",
@@ -356,6 +403,7 @@ export const ROUTES: RouteEntry[] = [
   // 6. Vie nocturne — configuration lounge uniquement
   {
     path: "/restaurant/guest-list",
+    lot: 2,
     label: "Guest list",
     purpose:
       "Les listes d'entrée par nuit, leurs tranches tarifaires et la vue porte à une validation par entrée.",
@@ -365,6 +413,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/tables",
+    lot: 2,
     label: "Tables minimums",
     purpose:
       "Vendre une banquette avec un minimum de consommation : types, minimums par nuit, demandes, acomptes.",
@@ -374,6 +423,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/promoteurs",
+    lot: 2,
     label: "Promoteurs",
     purpose:
       "Qui amène qui : entrées, tables, taux de présentation, lien de partage par promoteur.",
@@ -385,6 +435,7 @@ export const ROUTES: RouteEntry[] = [
   // 7. Paiements
   {
     path: "/restaurant/acomptes",
+    lot: 2,
     label: "Acomptes",
     purpose:
       "Quand un client paie d'avance, et l'état de chaque acompte. Capture et remboursement sont idempotents.",
@@ -396,6 +447,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/annulations",
+    lot: 2,
     label: "Annulations",
     purpose:
       "Les conditions montrées au client, et le journal de ce qui s'est passé, frais compris.",
@@ -405,6 +457,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/lyfe-pay",
+    lot: 2,
     label: "Lyfe Pay",
     purpose:
       "Les transactions passées par LYFE, et la seule source légitime de « dépense » du tableau de bord.",
@@ -416,6 +469,7 @@ export const ROUTES: RouteEntry[] = [
   // 8. Pilotage
   {
     path: "/restaurant/performance",
+    lot: 1,
     label: "Performance",
     purpose:
       "Les chiffres avec une période et une comparaison, plus le repérage des créneaux creux.",
@@ -425,6 +479,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/bilans",
+    lot: 1,
     label: "Bilans",
     purpose:
       "Le mois en deux minutes : chiffres, meilleurs et pires services, trois recommandations tirées des données.",
@@ -436,6 +491,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/campagnes",
+    lot: 2,
     label: "Campagnes",
     purpose:
       "Écrire à ses clients dans les limites du consentement, avec le coût par destinataire avant l'envoi.",
@@ -449,6 +505,7 @@ export const ROUTES: RouteEntry[] = [
   // 9. Établissement
   {
     path: "/restaurant/disponibilites",
+    lot: 1,
     label: "Disponibilités",
     purpose:
       "Ce qui décide de ce que l'application propose : services, cadence, fenêtre de réservation, jours exceptionnels.",
@@ -458,6 +515,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/equipe",
+    lot: 1,
     label: "Équipe et rôles",
     purpose:
       "Qui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré.",
@@ -467,6 +525,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/notifications",
+    lot: 1,
     label: "Notifications",
     purpose:
       "Les alertes de l'équipe et les messages aux clients, avec leur canal, leur moment et leur journal de délivrance.",
@@ -480,6 +539,7 @@ export const ROUTES: RouteEntry[] = [
   // 10. Compte
   {
     path: "/restaurant/parametres",
+    lot: 1,
     label: "Paramètres",
     purpose:
       "Entité juridique, banque, type de configuration — l'interrupteur qui fait apparaître Vie nocturne —, langue, données, intégrations.",
@@ -489,6 +549,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/abonnement",
+    lot: 1,
     label: "Abonnement",
     purpose: "Le plan, son état, les factures et l'usage de la période.",
     workspace: "venue",
@@ -497,6 +558,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/support",
+    lot: 1,
     label: "Support",
     purpose:
       "Guides, formulaire de contact, tickets et leur état, lien WhatsApp avec ses horaires.",
@@ -507,6 +569,7 @@ export const ROUTES: RouteEntry[] = [
   // ── Shared ──
   {
     path: "/plus",
+    lot: 1,
     label: "Plus",
     purpose: "Le menu de débordement du mobile.",
     workspace: "shared",
@@ -514,6 +577,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/more",
+    lot: 1,
     label: "Plus (compte)",
     purpose: "Équipe, réglages et déconnexion sur mobile.",
     workspace: "shared",
@@ -527,3 +591,32 @@ export const WORKSPACE_LABEL: Record<RouteEntry["workspace"], string> = {
   venue: "Espace lieux",
   shared: "Partagé",
 };
+
+/**
+ * Which lot a path belongs to.
+ *
+ * Reads the index rather than re-deriving the split, so the table the
+ * styleguide prints and the gate the router applies cannot disagree.
+ * Query strings and trailing detail segments resolve to their screen —
+ * `/restaurant/clients/cus_1` is Liste clients' detail route, and a
+ * `?nouvelle=1` is still the screen it hangs off.
+ */
+export function lotOfPath(path: string): Lot {
+  const clean = path.split("?")[0].split("#")[0].replace(/\/+$/, "") || "/";
+  const exact = ROUTES.find((r) => r.path === clean);
+  if (exact) return exact.lot;
+  const prefix = ROUTES.filter(
+    (r) => r.path !== "/" && clean.startsWith(`${r.path}/`),
+  ).sort((a, b) => b.path.length - a.path.length)[0];
+  return prefix?.lot ?? 1;
+}
+
+/** Whether a deployment running `lot` registers `path`. */
+export function pathInLot(path: string, lot: Lot): boolean {
+  return lot === 2 || lotOfPath(path) === 1;
+}
+
+/** The index as a deployment running `lot` ships it. */
+export function routesInLot(lot: Lot): RouteEntry[] {
+  return lot === 2 ? ROUTES : ROUTES.filter((r) => r.lot === 1);
+}

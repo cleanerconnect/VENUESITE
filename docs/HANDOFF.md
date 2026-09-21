@@ -5,17 +5,92 @@ linked from here.
 
 ---
 
-## 1. What this is
+## 1. What DigiNegoce wires: Lot 1
+
+The portal ships in **two lots**, and only the first is being wired.
+
+**Lot 1 is the dashboard DigiNegoce connects to the Business Service** —
+the screens priced on **row 39 of ChiffrageV3.0** and confirmed in the
+**September scope email**. Eighteen screens, listed below. This is the
+product a partner is sold, and the only scope against which "is it
+finished?" is a fair question.
+
+**Lot 2 is the rest of the venue dashboard.** Fourteen further screens,
+designed, built and rendered in this repository — but handed over as
+**front-end and design only, for a later phase**. Nothing in Lot 2 is
+being connected now, nothing in Lot 2 should be demonstrated as
+available, and no Lot 1 screen links into one.
+
+The split is a setting, not a branch. `LYFE_LOT` decides which product a
+running instance is, and it **defaults to 1**:
+
+```bash
+npm run dev                 # Lot 1 — the contracted dashboard
+LYFE_LOT=2 npm run dev      # Lot 2 — everything this repo renders
+```
+
+At `LYFE_LOT=1` the fourteen Lot 2 routes are not registered — they 404,
+the way they would in a build that never had them — their nav entries do
+not render, and the sidebar shows only the groups holding Lot 1 screens.
+`GET /api/health` reports the lot in force. The field lives on every row
+of the route index (`lib/nav/routes.ts`), which is what the styleguide
+table, the navigation and the capture tools all read.
+
+### The eighteen Lot 1 screens
+
+| # | Screen | Route | What Lot 1 buys |
+|---:|---|---|---|
+| 1 | Connexion | `/login` | The one entry point: resolve the account to its venue. |
+| 2 | Accueil | `/restaurant` | Today's reservations, the attention queue, and three numbers — taux de remplissage, revenu estimé, taux de no-show. |
+| 3 | Réservations | `/restaurant/reservations` | The day's book: view, accepter, refuser with a coded reason, check-in, no-show. |
+| 4 | Check-in | `/restaurant/check-in` | Validate a booking at the door, by code or by name. |
+| 5 | Disponibilités | `/restaurant/disponibilites` | Services, capacity, pacing and the booking window — what the app is allowed to offer. |
+| 6 | Performance | `/restaurant/performance` | The same three numbers over a chosen period, and nothing else. |
+| 7 | Visibilité | `/restaurant/visibilite` | The boost, and the boost only. |
+| 8 | Avis | `/restaurant/avis` | Reviews and replies. |
+| 9 | Liste clients | `/restaurant/clients` | The guest base, filtered and exportable. |
+| 10 | Fiche client | `/restaurant/clients/:id` | Identity, visits, preferences, no-show history, reviews. |
+| 11 | Équipe et rôles | `/restaurant/equipe` | Who can open what. |
+| 12 | Notifications | `/restaurant/notifications` | One team alert — a new booking — and one guest message — the confirmation. |
+| 13 | Paramètres | `/restaurant/parametres` | Legal entity, bank details, language, privacy. |
+| 14 | Abonnement | `/restaurant/abonnement` | One annual plan, its invoices, and what it has been used for. |
+| 15 | Support | `/restaurant/support` | Guides and a ticket. |
+| 16 | Bilans | `/restaurant/bilans` | The period in two minutes, from Performance's figures. |
+| 17 | Ma fiche | `/restaurant/ma-fiche` | The listing a guest sees. |
+| 18 | Menu | `/restaurant/menu` | The card, as the app displays it. |
+
+### The fourteen Lot 2 screens
+
+Calendrier · Liste d'attente · Briefing · Tags et segments · Audience ·
+Offres · Expériences · Guest list · Tables minimums · Promoteurs ·
+Acomptes · Annulations · Lyfe Pay · Campagnes.
+
+Front-end and design are complete for all fourteen and are the deliverable
+for them. `docs/PHASE7.md` is the worked example of the whole dashboard,
+both lots, and `08 Exemple complet · Dar Zellij` in Figma is its design;
+`09 Lot 1 · Dar Zellij` is the Lot 1 product on its own.
+
+**Where the two sources are.** Row 39 of ChiffrageV3.0 and the September
+scope email are the contract for the list above; they are held by LYFE
+and DigiNegoce, not in this repository. The screen list, the per-screen
+feature set and the wording of this section were given by LYFE against
+those two documents — treat them, not this file, as authoritative if
+they ever disagree.
+
+---
+
+## 2. What this is
 
 The partner portal for **LYFE**, Morocco's lifestyle discovery platform.
 Two workspaces behind one login:
 
-- **Espace partenaire** — the venue side: thirty-one screens for a
-  restaurant or a bar, from tonight's service to the monthly payout.
-  Complete, and the worked example for everything else.
+- **Espace partenaire** — the venue side: eighteen screens in Lot 1,
+  thirty-one across both lots, from tonight's service to the monthly
+  payout. The worked example for everything else.
 - **Espace organisateur** — the event side: sixteen screens for a
-  promoter selling tickets. Reads are real; writes have no backend to
-  shape them against yet (§11, gap 1).
+  promoter selling tickets. Outside the lot split, and unchanged by it.
+  Reads are real; writes have no backend to shape them against yet
+  (§12, gap 1).
 
 It is a **front end with a seam**, not a product with a database. Every
 read and write goes through one interface with three drivers, so
@@ -26,11 +101,11 @@ before anyone stands a service up.
 
 Scope is deliberate and narrow: the portal shows what LYFE delivers and
 nothing else. No kitchen management, no stock, no POS, no staff
-scheduling. See §13.
+scheduling. See §14.
 
 ---
 
-## 2. Run it cold
+## 3. Run it cold
 
 No database, no services, no credentials:
 
@@ -73,13 +148,33 @@ skipped in CI and then deleted.
 npm install --no-save playwright          # once
 npm run build && npx next start -p 3210   # in one terminal
 
-node tools/verify/walk.mjs            # the 31 venue screens (W/H/VENUE overridable)
+node tools/verify/walk.mjs            # the venue screens this lot registers (W/H/VENUE overridable)
 node tools/verify/events.mjs          # the 19 event + shared routes
-node tools/verify/states.mjs          # ?etat= forceable on all 31 venue routes
+node tools/verify/states.mjs          # ?etat= forceable on every venue route in the lot
 node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
 node tools/verify/audience.mjs        # the minimum group of ten, both configurations
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
 ```
+
+**Set `LYFE_LOT` on the server and on the tool, or the run is
+meaningless.** The tools derive their screen list from the route index
+and filter it by the same variable the build filters routes with; set it
+on one side only and the tool asks for screens the server does not
+register, then calls the 404s failures.
+
+```bash
+LYFE_LOT=1 npx next start -p 3210     # 17 venue screens
+LYFE_LOT=1 node tools/verify/walk.mjs
+
+LYFE_LOT=2 npx next start -p 3210     # 31
+LYFE_LOT=2 node tools/verify/walk.mjs
+```
+
+Both modes pass. Under Lot 1 `audience.mjs` reports that its screen is
+not registered and exits clean rather than failing on a 404 it asked for
+itself, and `configuration.mjs` expects eight sidebar groups rather than
+ten — Vie nocturne and Paiements are entirely Lot 2, so a lounge does not
+see Vie nocturne either.
 
 Run them against a **production build**, not `npm run dev`. Three of them
 fill the login form before React has hydrated in dev, and the submit gate
@@ -101,7 +196,7 @@ rebuilding.
 
 ---
 
-## 3. The styleguide
+## 4. The styleguide
 
 Open **`/styleguide`**. It needs no session and no seeded database —
 every specimen renders from literal props — and it is the fastest way to
@@ -125,7 +220,7 @@ layer, so if the styleguide renders, that rule still holds.
 
 ---
 
-## 4. The Figma file, and how its pages map to the repo
+## 5. The Figma file, and how its pages map to the repo
 
 **`LYFE Portail Partenaire`** —
 <https://www.figma.com/design/fztoNaEvTrZrWDaLy1MEWg>
@@ -142,23 +237,31 @@ follow.
 | `01 Fondations` | `src/app/globals.css` | the token block, 1:1 |
 | `02 Composants` | `src/components/ui/` | 29 components, 175 variants; a component is named for its file |
 | `03 Entrée` | `/login`, `/splash`, `/contact` | built without the shell, as the code renders them |
-| `04 Espace partenaire` | the 31 venue screens | structure, in ten Sections named for the ten nav groups of `src/lib/nav/workspaces.ts` |
+| `04 Espace partenaire` | the 31 venue screens | structure, in ten Sections named for the ten nav groups of `src/lib/nav/workspaces.ts`. Every screen frame carries its lot in the frame name — `[lot 1]` or `[lot 2]`, 17 and 14 |
 | `05 Espace organisateur` | the 16 event screens | structure, in two Sections |
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
-| `08 Exemple complet · Dar Zellij` | every screen, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
+| `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
+| `09 Lot 1 · Dar Zellij` | the eighteen Lot 1 screens, cut to the contracted feature set | `docs/lot1-dar-zellij.json` and the 39 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
 
 Two rules the file keeps, and a designer extending it should keep too:
 the library on `02 Composants` is the source for components, and `08` is
 the **only** page where detaching from it is allowed — because a Figma
 instance cannot be given rows.
 
+`09` keeps that rule. Its eighteen frames are clones of `08`'s, cut to
+the contracted feature set, and their sidebars are swapped to a second
+library component — `Chrome / Sidebar · Lot 1`, holding the eight Lot 1
+groups — rather than detached. The lot changes which screens exist, and
+which screens exist is exactly what that component draws, so it earns a
+component of its own.
+
 Page and component ids, the variable collections and the verification
 record live in `docs/phase6-figma-state.json`.
 
 ---
 
-## 5. The spec
+## 6. The spec
 
 **`docs/TARGET_SPEC.md`** is the screen-by-screen target the venue side is
 built against, and the document to read first when deciding whether
@@ -173,11 +276,18 @@ does not exist cannot be written.
 
 ---
 
-## 6. The route index
+## 7. The route index
 
 `src/lib/nav/routes.ts` is the one list of what the portal ships — 53
 rows: 31 venue, 16 event, 3 entry, 3 shared. The styleguide's `Écrans`
-section renders it, linked, with roles and status. Three statuses:
+section renders it, linked, with roles, status and lot.
+
+**Every row carries a `lot`.** 39 rows are lot 1 — the seventeen venue
+screens of §1 plus the entry flow, the styleguide and the whole event
+workspace, none of which the split touches — and 14 are lot 2, the venue
+screens a Lot 1 deployment does not register. The gate reads this field,
+so the table the styleguide prints and the routes the router serves
+cannot disagree. Three statuses:
 
 - **`built`** (41) — complete.
 - **`partial`** (6) — work *this repo* owes: `/events/new`,
@@ -202,7 +312,7 @@ was not there.
 
 ---
 
-## 7. The schema is the Business Service contract
+## 8. The schema is the Business Service contract
 
 `db/schema.sql` — **65 tables**. It is not an implementation detail of
 the demo; it is the specification of what the Business Service must
@@ -245,7 +355,7 @@ secure, and every action returns the refreshed bundle.
 
 ---
 
-## 8. The four documents
+## 9. The four documents
 
 The phase record — what was built, what was found, and what was left
 open. Read in order, they are the history of the repository:
@@ -272,7 +382,7 @@ fix.**
 
 ---
 
-## 9. What is solid
+## 10. What is solid
 
 **The design system.** One `SideSheet`, one `MetricTile`, one
 `FilterTabs`, one `PageHeader`, one chart theme, one tooltip, one set of
@@ -346,7 +456,7 @@ is 404 with no leak.
 
 ---
 
-## 10. What is deliberately not built
+## 11. What is deliberately not built
 
 These are **open, not worked around**. Nothing in the codebase pretends
 they exist.
@@ -361,7 +471,7 @@ they exist.
 
 ---
 
-## 11. What is a gap, ranked
+## 12. What is a gap, ranked
 
 | # | Gap | Consequence | Size |
 |---|---|---|---|
@@ -385,7 +495,7 @@ for a bug that was not there.
 
 ---
 
-## 12. Rules to keep
+## 13. Rules to keep
 
 Eight things that will rot quietly if nobody defends them.
 
@@ -444,7 +554,7 @@ Eight things that will rot quietly if nobody defends them.
 
 ---
 
-## 13. Scope, once more
+## 14. Scope, once more
 
 The venue workspace shows what LYFE delivers and nothing else. No kitchen
 management, no stock, no food costing, no suppliers, no POS, no staff

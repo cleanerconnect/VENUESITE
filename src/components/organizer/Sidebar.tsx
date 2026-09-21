@@ -90,11 +90,12 @@ export function Sidebar({
   // caption, identity card, nav groups. Nothing below knows the names of
   // any of them.
   const workspace = resolveWorkspace(pathname);
-  // Two filters, in order: the establishment's configuration decides
-  // which groups exist at all (Vie nocturne appears only for a lounge),
+  // Three filters, in order: the lot decides which screens this
+  // deployment registers at all, the establishment's configuration
+  // decides which groups exist (Vie nocturne appears only for a lounge),
   // then the role decides which of their items are visible.
-  const { configuration } = useWorkspaceAccess();
-  const groups = visibleGroups(workspace, configuration)
+  const { configuration, lot } = useWorkspaceAccess();
+  const groups = visibleGroups(workspace, configuration, lot)
     .map((group) => ({ ...group, items: visibleItems(group.items, role) }))
     .filter((group) => group.items.length > 0);
 

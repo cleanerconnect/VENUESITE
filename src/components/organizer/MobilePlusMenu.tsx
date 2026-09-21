@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import { Icon } from "@/components/dashboard/primitives";
 import type { IconKey } from "@/lib/dashboard/icons";
-import { resolveWorkspace, visibleItems } from "@/lib/nav/workspaces";
+import { itemsInLot, resolveWorkspace, visibleItems } from "@/lib/nav/workspaces";
+import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
 import { emitSessionChanged, useProfile, useRole, useUser } from "@/lib/auth/role";
@@ -68,6 +69,7 @@ export function MobilePlusMenu({
   const profile = useProfile();
   const role = useRole();
   const user = useUser();
+  const { lot } = useWorkspaceAccess();
   const workspace = resolveWorkspace(pathname);
   const orgName = workspace.entity?.shortName ?? profile?.shortName ?? "";
   const closeDrawer = useMobileNavStore((s) => s.setDrawerOpen);
@@ -85,7 +87,7 @@ export function MobilePlusMenu({
   // Product rows come from the active workspace; help and logout are
   // chrome and belong to every workspace, so they are appended here.
   const items: MenuItem[] = [
-    ...visibleItems(workspace.secondary, role),
+    ...visibleItems(itemsInLot(workspace.secondary, lot), role),
     {
       label: "Aide & FAQ",
       href: "https://lyfe.ma/aide",

@@ -8,6 +8,7 @@ import { BlocksSection } from "./sections/blocks";
 import { VocabularySection } from "./sections/vocabulary";
 import { StatesSection } from "./sections/states";
 import { RoutesSection } from "./sections/routes";
+import { activeLot } from "@/lib/lot";
 
 // The styleguide.
 //
@@ -69,7 +70,7 @@ const SECTIONS: SectionDef[] = [
     title: "Écrans",
     blurb:
       "Tous les écrans du portail, avec un lien vers chacun, ce qu'il sert, qui peut l'ouvrir et ce qui lui manque encore.",
-    content: <RoutesSection />,
+    content: <RoutesSection lot={activeLot()} />,
   },
 ];
 

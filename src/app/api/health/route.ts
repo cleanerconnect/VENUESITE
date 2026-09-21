@@ -1,6 +1,7 @@
 import { dataMode, dataModeReason } from "@/lib/data";
 import { CAPTURED_AT } from "@/lib/data/static/venue-data";
 import { isLiveAi } from "@/lib/ai";
+import { activeLot, activeLotReason } from "@/lib/lot";
 
 // Which adapters are live.
 //
@@ -19,6 +20,11 @@ export function GET() {
 
   return Response.json({
     status: "ok",
+    // Which product this instance is serving. A deploy that means to
+    // show the contracted dashboard and reads 2 here is showing
+    // fourteen screens nobody bought.
+    lot: activeLot(),
+    lotReason: activeLotReason(),
     adapters: {
       // http = real backend · db = seeded SQLite · static = the snapshot
       data: mode,

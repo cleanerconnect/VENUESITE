@@ -11,7 +11,7 @@
 // derived here from the last twelve months, not stored: a number that
 // stops moving is a number that stops being true.
 
-import type { Block, DetailSpec, ScreenSpec } from "@/lib/dashboard/spec";
+import type { Block, DetailSpec, KpiTile, ScreenSpec } from "@/lib/dashboard/spec";
 import { COUNT, MAD, PERCENT } from "@/lib/dashboard/formats";
 import type { Customer } from "@/lib/types/business";
 import { LOYALTY_TIER } from "@/lib/types/business";
@@ -22,7 +22,7 @@ import type {
   VenueConfiguration,
 } from "@/lib/types/venue-operations";
 import { RESERVATION_STATE } from "./vocabulary";
-import { restaurantHref } from "./slugs";
+import { restaurantHref, type Lot } from "./slugs";
 import { coversIn, dayLabel, hm, initialsOf, money, shortDay } from "./format";
 
 export type RiskLevel = "none" | "faible" | "eleve";
@@ -59,6 +59,7 @@ export function buildCustomerScreen(input: {
   hasSpendSource: boolean;
   messages: LoggedMessage[];
   configuration: VenueConfiguration;
+  lot?: Lot;
 }): ScreenSpec {
   const {
     customer,
@@ -70,7 +71,9 @@ export function buildCustomerScreen(input: {
     hasSpendSource,
     messages,
     configuration,
+    lot = 2,
   } = input;
+  const lot1 = lot === 1;
 
   const labels = tagIds
     .map((id) => tags.find((t) => t.id === id))
@@ -165,18 +168,24 @@ export function buildCustomerScreen(input: {
           ).length
         } sur douze mois`,
       },
-      {
-        id: "loyalty",
-        label: "Palier fidélité",
-        tone: "surface",
-        icon: "star",
-        metric: { value: loyalty.label },
-        // Read from the loyalty service, never computed here.
-        hint: "Fourni par le service de fidélité.",
-      },
-      // Spend only where Lyfe Pay says so. Elsewhere the tile is absent,
-      // which is the rule the whole portal follows.
-      ...(hasSpendSource && spendMad !== undefined
+      // Two tiles read from services Lot 1 does not wire: the loyalty
+      // tier comes from the loyalty service, the total from Lyfe Pay.
+      // Both are absent rather than blank, which is the rule the whole
+      // portal follows for a figure it cannot source.
+      ...(lot1
+        ? []
+        : ([
+            {
+              id: "loyalty",
+              label: "Palier fidélité",
+              tone: "surface" as const,
+              icon: "star" as const,
+              metric: { value: loyalty.label },
+              // Read from the loyalty service, never computed here.
+              hint: "Fourni par le service de fidélité.",
+            },
+          ] satisfies KpiTile[])),
+      ...(!lot1 && hasSpendSource && spendMad !== undefined
         ? [
             {
               id: "spend",
@@ -279,11 +288,15 @@ export function buildCustomerScreen(input: {
     id: "tags",
     type: "entity-list",
     heading: "Étiquettes",
-    headingAction: {
-      kind: "link",
-      href: restaurantHref("segments"),
-      label: "Gérer les étiquettes →",
-    },
+    // Tags et segments is Lot 2, so under Lot 1 the chips are shown and
+    // the way to manage them is not offered.
+    headingAction: lot1
+      ? undefined
+      : {
+          kind: "link",
+          href: restaurantHref("segments"),
+          label: "Gérer les étiquettes →",
+        },
     rows: labels.map((tag) => ({
       id: tag.id,
       title: tag.label,
@@ -397,12 +410,15 @@ export function buildCustomerScreen(input: {
     slug: `clients/${customer.id}`,
     title: customer.fullName,
     subtitle: `${customer.visitCount} visites · ${RISK_LABEL[risk].toLowerCase()}`,
+    // Lot 1 keeps identity, visits, preferences, no-show history and
+    // reviews. The message journal is the record of a campaign and
+    // reminder cadence Lot 2 buys, so it goes with it.
     blocks: [
       header,
       summary,
       { id: "split", type: "split", railWidth: 400, main: [preferences, upcomingBlock, historyBlock], rail: [contact, tagBlock] },
       reviewBlock,
-      messageBlock,
+      ...(lot1 ? [] : [messageBlock]),
     ],
     mobileBlocks: [
       header,
@@ -413,7 +429,7 @@ export function buildCustomerScreen(input: {
       upcomingBlock,
       historyBlock,
       reviewBlock,
-      messageBlock,
+      ...(lot1 ? [] : [messageBlock]),
     ],
   };
 }

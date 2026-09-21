@@ -12,9 +12,11 @@ import type {
   EntityRow,
   KpiTile,
   ScreenSpec,
+  SettingRow,
 } from "@/lib/dashboard/spec";
 import type { GuestGraph } from "@/lib/types/venue-operations";
 import { initialsOf } from "./format";
+import type { Lot } from "./slugs";
 import type { Customer, LoyaltyTier } from "@/lib/types/business";
 import { CUSTOMER_SEGMENT, LOYALTY_TIER } from "@/lib/types/business";
 import type { GuestReview } from "@/lib/types/restaurant";
@@ -46,7 +48,9 @@ export function buildCustomersScreen(
   reviews: GuestReview[],
   graph: GuestGraph,
   spendByCustomer: Record<string, number>,
+  lot: Lot = 2,
 ): ScreenSpec {
+  const lot1 = lot === 1;
   const loyal = customers.filter(
     (c) => c.visitCount >= LOYALTY_TIER.fidele.minVisits,
   );
@@ -188,16 +192,23 @@ export function buildCustomersScreen(
             control: { kind: "readonly", value: "Exporter" },
             command: "customers.export",
           },
-          {
-            id: "bulk-campaign",
-            label: "Créer une campagne à partir de la sélection",
-            control: {
-              kind: "readonly",
-              value: "Ouvrir Campagnes",
-              href: "/restaurant/campagnes",
-            },
-            command: "customers.campaign",
-          },
+          // Campagnes is Lot 2, so the row that hands a selection to it
+          // is not offered — the export below is what Lot 1 does with a
+          // selection instead.
+          ...(lot1
+            ? []
+            : ([
+                {
+                  id: "bulk-campaign",
+                  label: "Créer une campagne à partir de la sélection",
+                  control: {
+                    kind: "readonly" as const,
+                    value: "Ouvrir Campagnes",
+                    href: "/restaurant/campagnes",
+                  },
+                  command: "customers.campaign",
+                },
+              ] satisfies SettingRow[])),
           {
             id: "bulk-merge",
             label: "Fusionner des doublons",

@@ -17,6 +17,7 @@
 
 import { chromium } from "playwright";
 import { ROUTES } from "../../src/lib/nav/routes.ts";
+import { LOT_LABEL, inLot } from "./lot.mjs";
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const W = Number(process.env.W ?? 1440);
@@ -26,7 +27,7 @@ const ACCOUNT = process.env.ACCOUNT ?? "mido@jazzablanca.com";
 // The event workspace plus the two shared overflow sheets. Venue routes are
 // walk.mjs's job; entry routes need no session.
 const PATHS = ROUTES.filter(
-  (r) => r.workspace === "event" || r.workspace === "shared",
+  (r) => (r.workspace === "event" || r.workspace === "shared") && inLot(r),
 ).map((r) => [r.path, r.label]);
 
 // Noise a healthy page still emits in this sandbox: the React devtools
@@ -90,7 +91,7 @@ for (const [path, label] of PATHS) {
 
 console.log(
   failed === 0
-    ? `\n${PATHS.length}/${PATHS.length} event-side routes clean at ${W}×${H}`
+    ? `\n${PATHS.length}/${PATHS.length} event-side routes clean at ${W}×${H} · ${LOT_LABEL}`
     : `\n${failed} of ${PATHS.length} FAILED at ${W}×${H}`,
 );
 

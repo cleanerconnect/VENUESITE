@@ -1,0 +1,5132 @@
+{
+  "base": "http://localhost:3210",
+  "venue": "",
+  "account": "yassine@darzellij.ma",
+  "depth": "full",
+  "lot": 1,
+  "capturedAt": "2026-09-21T01:35:40.378Z",
+  "screens": {
+    "/restaurant": {
+      "label": "Accueil",
+      "purpose": "Ce qui se passe aujourd'hui : chiffres du jour, file d'attente à traiter, bande des quatre prochaines heures.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "title": "Bonjour, Yassine. le service est complet.",
+      "eyebrow": "Taux de remplissage",
+      "subtitle": "104 couverts réservés, 11 en liste d'attente, 16 encore disponibles.",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "rows",
+          "heading": null,
+          "subheading": null,
+          "actions": [
+            "Ouvrir le carnet →"
+          ],
+          "facets": [],
+          "texts": [
+            "Bonjour",
+            "le service est complet.",
+            "104 couverts réservés, 11 en liste d'attente, 16 encore disponibles.",
+            "Ouvrir le carnet →"
+          ],
+          "rows": [
+            {
+              "lines": [
+                "Bonjour",
+                "le service est complet.",
+                "104 couverts réservés, 11 en liste d'attente, 16 encore disponibles."
+              ],
+              "pills": [],
+              "actions": []
+            },
+            {
+              "lines": [
+                "Ouvrir le carnet →"
+              ],
+              "pills": [],
+              "actions": [
+                "Ouvrir le carnet →"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "list",
+          "heading": "À traiter",
+          "subheading": "02h30 · 2 couverts · demande en attente",
+          "actions": [
+            "Accepter",
+            "Refuser",
+            "Demander une reconfirmation"
+          ],
+          "facets": [
+            {
+              "label": "Tout",
+              "count": "5"
+            },
+            {
+              "label": "Demandes",
+              "count": "1"
+            },
+            {
+              "label": "Risque",
+              "count": "1"
+            },
+            {
+              "label": "Avis",
+              "count": "3"
+            }
+          ],
+          "texts": [
+            "À traiter",
+            "5",
+            "1",
+            "1",
+            "3",
+            "NC",
+            "Nabil Cherkaoui",
+            "À CONFIRMER",
+            "02h30 · 2 couverts · demande en attente",
+            "YE",
+            "Yasmine El Alaoui",
+            "RISQUE ÉLEVÉ",
+            "02h00 · 4 couverts · risque d'absence élevé",
+            "TR",
+            "Thomas R.",
+            "AVIS SANS RÉPONSE",
+            "Avis 4/5 sans réponse · Cuisine excellente. Vingt minutes d'attente malgré la réservation à 21",
+            "AB",
+            "Amina B.",
+            "AVIS SANS RÉPONSE",
+            "Avis 5/5 sans réponse · La pastilla vaut le détour à elle seule.",
+            "KH",
+            "Karim H.",
+            "AVIS SANS RÉPONSE",
+            "Avis 3/5 sans réponse · Table en terrasse bruyante, on s'entendait à peine."
+          ],
+          "items": [
+            {
+              "title": "Nabil Cherkaoui",
+              "meta": "02h30 · 2 couverts · demande en attente",
+              "initials": "NC",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "À CONFIRMER",
+                  "tone": "warning-12"
+                }
+              ],
+              "actions": [
+                "Accepter",
+                "Refuser"
+              ]
+            },
+            {
+              "title": "Yasmine El Alaoui",
+              "meta": "02h00 · 4 couverts · risque d'absence élevé",
+              "initials": "YE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "RISQUE ÉLEVÉ",
+                  "tone": "danger-10"
+                }
+              ],
+              "actions": [
+                "Demander une reconfirmation"
+              ]
+            },
+            {
+              "title": "Thomas R.",
+              "meta": "Avis 4/5 sans réponse · Cuisine excellente. Vingt minutes d'attente malgré la réservation à 21",
+              "initials": "TR",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "AVIS SANS RÉPONSE",
+                  "tone": "warning-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Amina B.",
+              "meta": "Avis 5/5 sans réponse · La pastilla vaut le détour à elle seule.",
+              "initials": "AB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "AVIS SANS RÉPONSE",
+                  "tone": "warning-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Karim H.",
+              "meta": "Avis 3/5 sans réponse · Table en terrasse bruyante, on s'entendait à peine.",
+              "initials": "KH",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "AVIS SANS RÉPONSE",
+                  "tone": "warning-12"
+                }
+              ],
+              "actions": []
+            }
+          ]
+        },
+        {
+          "kind": "kpi-grid",
+          "heading": null,
+          "subheading": "Service tardif",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Taux de remplissage",
+            "87 %",
+            "Service tardif",
+            "Revenu estimé",
+            "48 642 MAD",
+            "Couverts du jour × ticket moyen des 7 derniers jours.",
+            "Taux de no-show",
+            "6,0 %",
+            "Service tardif"
+          ],
+          "tiles": [
+            {
+              "label": "Taux de remplissage",
+              "value": "87 %",
+              "meta": [
+                "Service tardif"
+              ],
+              "pills": []
+            },
+            {
+              "label": "Revenu estimé",
+              "value": "48 642 MAD",
+              "meta": [
+                "Couverts du jour × ticket moyen des 7 derniers jours."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Taux de no-show",
+              "value": "6,0 %",
+              "meta": [
+                "Service tardif"
+              ],
+              "pills": []
+            }
+          ]
+        },
+        {
+          "kind": "split",
+          "left": {
+            "kind": "prose",
+            "heading": "Réservations du jour",
+            "subheading": null,
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Réservations du jour",
+              "Tout voir →"
+            ],
+            "body": "Réservations du jourTout voir →",
+            "pills": []
+          },
+          "right": {
+            "kind": "list",
+            "heading": null,
+            "subheading": "00h00 · 4 couverts · Patio · Téléphone",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "RB",
+              "Rachid Benjelloun",
+              "00h00 · 4 couverts · Patio · Téléphone",
+              "Visites",
+              "0",
+              "IS",
+              "Imane Sefrioui",
+              "00h00 · 2 couverts · Terrasse · Téléphone",
+              "Visites",
+              "0",
+              "GA",
+              "Groupe Atlas",
+              "00h00 · 4 couverts · Grande salle · Téléphone",
+              "Visites",
+              "0",
+              "FT",
+              "Famille Tazi",
+              "00h00 · 6 couverts · Patio · Téléphone",
+              "Visites",
+              "0",
+              "LZ",
+              "Laila Zniber",
+              "00h00 · 2 couverts · Terrasse · Téléphone",
+              "Visites",
+              "0",
+              "SM",
+              "Sanaa Mourad",
+              "00h30 · 2 couverts · Terrasse · Walk-in",
+              "Visites",
+              "0"
+            ],
+            "items": [
+              {
+                "title": "Rachid Benjelloun",
+                "meta": "00h00 · 4 couverts · Patio · Téléphone",
+                "initials": "RB",
+                "trailing": [
+                  "Visites",
+                  "0"
+                ],
+                "pills": [
+                  {
+                    "label": "ARRIVÉ",
+                    "tone": "violet-12"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "Imane Sefrioui",
+                "meta": "00h00 · 2 couverts · Terrasse · Téléphone",
+                "initials": "IS",
+                "trailing": [
+                  "Visites",
+                  "0"
+                ],
+                "pills": [
+                  {
+                    "label": "ARRIVÉ",
+                    "tone": "violet-12"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "Groupe Atlas",
+                "meta": "00h00 · 4 couverts · Grande salle · Téléphone",
+                "initials": "GA",
+                "trailing": [
+                  "Visites",
+                  "0"
+                ],
+                "pills": [
+                  {
+                    "label": "ARRIVÉ",
+                    "tone": "violet-12"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "Famille Tazi",
+                "meta": "00h00 · 6 couverts · Patio · Téléphone",
+                "initials": "FT",
+                "trailing": [
+                  "Visites",
+                  "0"
+                ],
+                "pills": [
+                  {
+                    "label": "ARRIVÉ",
+                    "tone": "violet-12"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "Laila Zniber",
+                "meta": "00h00 · 2 couverts · Terrasse · Téléphone",
+                "initials": "LZ",
+                "trailing": [
+                  "Visites",
+                  "0"
+                ],
+                "pills": [
+                  {
+                    "label": "ARRIVÉ",
+                    "tone": "violet-12"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "Sanaa Mourad",
+                "meta": "00h30 · 2 couverts · Terrasse · Walk-in",
+                "initials": "SM",
+                "trailing": [
+                  "Visites",
+                  "0"
+                ],
+                "pills": [
+                  {
+                    "label": "ARRIVÉ",
+                    "tone": "violet-12"
+                  }
+                ],
+                "actions": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "/restaurant/reservations": {
+      "label": "Réservations",
+      "purpose": "Le carnet d'une journée : accepter, refuser avec motif, modifier, marquer arrivé, absent, annuler.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "title": "Réservations",
+      "eyebrow": null,
+      "subtitle": "dimanche 20 septembre · Service tardif",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Journée",
+          "subheading": "Les services se définissent dans Disponibilités.",
+          "actions": [
+            "Exporter la journée",
+            "Imprimer"
+          ],
+          "facets": [],
+          "texts": [
+            "Journée",
+            "Date",
+            "Service",
+            "Les services se définissent dans Disponibilités.",
+            "Service tardif"
+          ],
+          "fields": [
+            {
+              "label": "Date",
+              "value": "2026-09-20",
+              "type": "date"
+            },
+            {
+              "label": "Service",
+              "value": "Service tardif",
+              "type": "select-one"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "kpi-grid",
+          "heading": null,
+          "subheading": "87 % de la salle engagée",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Couverts réservés",
+            "104",
+            "/ 120",
+            "87 % de la salle engagée",
+            "Déjà arrivés",
+            "79",
+            "À confirmer",
+            "1",
+            "À traiter avant le coup de feu",
+            "Risque d'absence",
+            "1",
+            "Un rappel SMS réduit le risque de moitié"
+          ],
+          "tiles": [
+            {
+              "label": "Couverts réservés",
+              "value": "104",
+              "meta": [
+                "87 % de la salle engagée"
+              ],
+              "pills": []
+            },
+            {
+              "label": "Déjà arrivés",
+              "value": "79",
+              "meta": [],
+              "pills": []
+            },
+            {
+              "label": "À confirmer",
+              "value": "1",
+              "meta": [
+                "À traiter avant le coup de feu"
+              ],
+              "pills": []
+            },
+            {
+              "label": "Risque d'absence",
+              "value": "1",
+              "meta": [
+                "Un rappel SMS réduit le risque de moitié"
+              ],
+              "pills": []
+            }
+          ]
+        },
+        {
+          "kind": "chart",
+          "heading": "Charge du service",
+          "subheading": "Couverts réservés par créneau de 30 min. La ligne marque ce que la salle peut tourner.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Charge du service",
+            "Couverts réservés par créneau de 30 min. La ligne marque ce que la salle peut tourner.",
+            "27 couverts / créneau",
+            "5",
+            "10",
+            "15",
+            "19",
+            "17",
+            "14",
+            "11",
+            "7",
+            "6",
+            "23h30",
+            "00h00",
+            "00h30",
+            "01h00",
+            "01h30",
+            "02h00",
+            "02h30",
+            "03h00",
+            "03h30"
+          ],
+          "bars": [
+            {
+              "height": "18.5185",
+              "color": "var(--color-violet-deep)",
+              "label": "23h30 · 5 couverts"
+            },
+            {
+              "height": "37.037",
+              "color": "var(--color-violet-deep)",
+              "label": "00h00 · 10 couverts"
+            },
+            {
+              "height": "55.5556",
+              "color": "var(--color-violet-deep)",
+              "label": "00h30 · 15 couverts"
+            },
+            {
+              "height": "70.3704",
+              "color": "var(--color-violet-deep)",
+              "label": "01h00 · 19 couverts"
+            },
+            {
+              "height": "62.963",
+              "color": "var(--color-violet-deep)",
+              "label": "01h30 · 17 couverts"
+            },
+            {
+              "height": "51.8518",
+              "color": "var(--color-violet-deep)",
+              "label": "02h00 · 14 couverts"
+            },
+            {
+              "height": "40.7407",
+              "color": "var(--color-violet-deep)",
+              "label": "02h30 · 11 couverts"
+            },
+            {
+              "height": "25.9259",
+              "color": "var(--color-violet-deep)",
+              "label": "03h00 · 7 couverts"
+            },
+            {
+              "height": "22.2222",
+              "color": "var(--color-violet-deep)",
+              "label": "03h30 · 6 couverts"
+            }
+          ],
+          "axis": [
+            "23h30",
+            "00h00",
+            "00h30",
+            "01h00",
+            "01h30",
+            "02h00",
+            "02h30",
+            "03h00",
+            "03h30"
+          ],
+          "svgs": [],
+          "values": [
+            "27 couverts / créneau",
+            "5",
+            "10",
+            "15",
+            "19",
+            "17",
+            "14",
+            "11",
+            "7",
+            "6",
+            "23h30",
+            "00h00",
+            "00h30",
+            "01h00",
+            "01h30",
+            "02h00",
+            "02h30",
+            "03h00",
+            "03h30"
+          ]
+        },
+        {
+          "kind": "list",
+          "heading": "Carnet du service",
+          "subheading": "00h00 · 4 couverts · Patio · Téléphone",
+          "actions": [],
+          "facets": [
+            {
+              "label": "Tous",
+              "count": "24"
+            },
+            {
+              "label": "À confirmer",
+              "count": "1"
+            },
+            {
+              "label": "Confirmées",
+              "count": "4"
+            },
+            {
+              "label": "Arrivés",
+              "count": "15"
+            },
+            {
+              "label": "Liste d'attente",
+              "count": "4"
+            },
+            {
+              "label": "No-show",
+              "count": "0"
+            },
+            {
+              "label": "Annulées",
+              "count": "0"
+            },
+            {
+              "label": "À risque",
+              "count": "1"
+            }
+          ],
+          "texts": [
+            "Carnet du service",
+            "Heure · tôt → tard",
+            "Heure · tard → tôt",
+            "Couverts",
+            "Fidélité",
+            "Nom",
+            "24",
+            "1",
+            "4",
+            "15",
+            "4",
+            "0",
+            "0",
+            "1",
+            "RB",
+            "Rachid Benjelloun",
+            "00h00 · 4 couverts · Patio · Téléphone",
+            "Visites",
+            "0",
+            "IS",
+            "Imane Sefrioui",
+            "00h00 · 2 couverts · Terrasse · Téléphone",
+            "Visites",
+            "0",
+            "GA",
+            "Groupe Atlas",
+            "00h00 · 4 couverts · Grande salle · Téléphone",
+            "Visites",
+            "0",
+            "FT",
+            "Famille Tazi",
+            "00h00 · 6 couverts · Patio · Téléphone",
+            "Visites",
+            "0",
+            "LZ",
+            "Laila Zniber",
+            "00h00 · 2 couverts · Terrasse · Téléphone",
+            "Visites",
+            "0",
+            "SM",
+            "Sanaa Mourad",
+            "00h30 · 2 couverts · Terrasse · Walk-in",
+            "Visites",
+            "0",
+            "TO",
+            "Table Ourika",
+            "00h30 · 3 couverts · Grande salle · Walk-in",
+            "Visites",
+            "0",
+            "AC",
+            "Anniversaire Chraïbi",
+            "00h30 · 8 couverts · Patio · Walk-in",
+            "Visites",
+            "0",
+            "SG",
+            "Sofia Guessous",
+            "00h30 · 2 couverts · Terrasse · Walk-in",
+            "Visites",
+            "0",
+            "TK",
+            "Table Koutoubia",
+            "00h30 · 6 couverts · Grande salle · Walk-in",
+            "Visites",
+            "0",
+            "OI",
+            "Omar Idrissi",
+            "00h53 · 2 couverts · Walk-in",
+            "Visites",
+            "0",
+            "GZ",
+            "Groupe Ziyad",
+            "01h00 · 6 couverts · Grande salle",
+            "Visites",
+            "0",
+            "MB",
+            "Mehdi Bouzoubaa",
+            "01h00 · 5 couverts · Patio",
+            "Visites",
+            "0",
+            "NR",
+            "Nawal Rifai",
+            "01h00 · 2 couverts · Terrasse",
+            "Visites",
+            "0",
+            "RA",
+            "Réda Amrani",
+            "01h00 · 3 couverts · Grande salle",
+            "Visites",
+            "0",
+            "AB",
+            "Adil Berrechid",
+            "01h00 · 4 couverts · Patio",
+            "Visites",
+            "0",
+            "FB",
+            "Famille Berrada",
+            "01h05 · 4 couverts · Walk-in",
+            "Visites",
+            "3",
+            "SL",
+            "Sofia Lahlou",
+            "01h13 · 3 couverts · LYFE",
+            "Visites",
+            "0",
+            "CR",
+            "Couple Renaud",
+            "01h19 · 2 couverts · LYFE",
+            "Visites",
+            "0",
+            "SB",
+            "Salma Bennani",
+            "01h30 · 4 couverts · Patio · LYFE",
+            "Anniversaire, dessert avec bougie",
+            "Acompte",
+            "400 MAD",
+            "GK",
+            "Groupe Karam",
+            "02h00 · 6 couverts · Grande salle · Téléphone",
+            "Sans gluten pour deux couverts",
+            "Visites"
+          ],
+          "items": [
+            {
+              "title": "Rachid Benjelloun",
+              "meta": "00h00 · 4 couverts · Patio · Téléphone",
+              "initials": "RB",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Imane Sefrioui",
+              "meta": "00h00 · 2 couverts · Terrasse · Téléphone",
+              "initials": "IS",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Groupe Atlas",
+              "meta": "00h00 · 4 couverts · Grande salle · Téléphone",
+              "initials": "GA",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Famille Tazi",
+              "meta": "00h00 · 6 couverts · Patio · Téléphone",
+              "initials": "FT",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Laila Zniber",
+              "meta": "00h00 · 2 couverts · Terrasse · Téléphone",
+              "initials": "LZ",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sanaa Mourad",
+              "meta": "00h30 · 2 couverts · Terrasse · Walk-in",
+              "initials": "SM",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Table Ourika",
+              "meta": "00h30 · 3 couverts · Grande salle · Walk-in",
+              "initials": "TO",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Anniversaire Chraïbi",
+              "meta": "00h30 · 8 couverts · Patio · Walk-in",
+              "initials": "AC",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sofia Guessous",
+              "meta": "00h30 · 2 couverts · Terrasse · Walk-in",
+              "initials": "SG",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Table Koutoubia",
+              "meta": "00h30 · 6 couverts · Grande salle · Walk-in",
+              "initials": "TK",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Omar Idrissi",
+              "meta": "00h53 · 2 couverts · Walk-in",
+              "initials": "OI",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "LISTE D'ATTENTE",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Groupe Ziyad",
+              "meta": "01h00 · 6 couverts · Grande salle",
+              "initials": "GZ",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Mehdi Bouzoubaa",
+              "meta": "01h00 · 5 couverts · Patio",
+              "initials": "MB",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Nawal Rifai",
+              "meta": "01h00 · 2 couverts · Terrasse",
+              "initials": "NR",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Réda Amrani",
+              "meta": "01h00 · 3 couverts · Grande salle",
+              "initials": "RA",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Adil Berrechid",
+              "meta": "01h00 · 4 couverts · Patio",
+              "initials": "AB",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Famille Berrada",
+              "meta": "01h05 · 4 couverts · Walk-in",
+              "initials": "FB",
+              "trailing": [
+                "Visites",
+                "3"
+              ],
+              "pills": [
+                {
+                  "label": "LISTE D'ATTENTE",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sofia Lahlou",
+              "meta": "01h13 · 3 couverts · LYFE",
+              "initials": "SL",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "LISTE D'ATTENTE",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Couple Renaud",
+              "meta": "01h19 · 2 couverts · LYFE",
+              "initials": "CR",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "LISTE D'ATTENTE",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Salma Bennani",
+              "meta": "01h30 · 4 couverts · Patio · LYFE",
+              "initials": "SB",
+              "trailing": [
+                "Acompte",
+                "400 MAD"
+              ],
+              "pills": [
+                {
+                  "label": "CONFIRMÉE",
+                  "tone": "info-10"
+                },
+                {
+                  "label": "ACOMPTE PAYE",
+                  "tone": "success-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Groupe Karam",
+              "meta": "02h00 · 6 couverts · Grande salle · Téléphone",
+              "initials": "GK",
+              "trailing": [
+                "Visites",
+                "2"
+              ],
+              "pills": [
+                {
+                  "label": "CONFIRMÉE",
+                  "tone": "info-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Yasmine El Alaoui",
+              "meta": "02h00 · 4 couverts · Terrasse · Instagram",
+              "initials": "YE",
+              "trailing": [
+                "Visites",
+                "1"
+              ],
+              "pills": [
+                {
+                  "label": "CONFIRMÉE",
+                  "tone": "info-10"
+                },
+                {
+                  "label": "Risque d'absence",
+                  "tone": "warning-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Nabil Cherkaoui",
+              "meta": "02h30 · 2 couverts · LYFE",
+              "initials": "NC",
+              "trailing": [
+                "Visites",
+                "0"
+              ],
+              "pills": [
+                {
+                  "label": "À CONFIRMER",
+                  "tone": "warning-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Hind Tazi",
+              "meta": "03h00 · 5 couverts · Grande salle · Partenaire",
+              "initials": "HT",
+              "trailing": [
+                "Acompte",
+                "500 MAD"
+              ],
+              "pills": [
+                {
+                  "label": "CONFIRMÉE",
+                  "tone": "info-10"
+                },
+                {
+                  "label": "Habitué",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "ACOMPTE DEMANDE",
+                  "tone": "warning-12"
+                }
+              ],
+              "actions": []
+            }
+          ]
+        }
+      ],
+      "surfaces": [
+        {
+          "name": "Détail réservation",
+          "title": "Rachid Benjelloun",
+          "lines": [
+            "Rachid Benjelloun",
+            "00h00 · 4 couverts · Téléphone",
+            "La réservation",
+            "Heure",
+            "00h00",
+            "Personnes",
+            "4",
+            "Espace",
+            "Patio",
+            "Canal",
+            "Téléphone",
+            "Le client",
+            "Téléphone",
+            "+212 610137911",
+            "Visites",
+            "0",
+            "Risque d'absence",
+            "0 %",
+            "Rappel SMS"
+          ],
+          "pills": [
+            "ARRIVÉ"
+          ],
+          "buttons": [
+            "Marquer comme arrivé",
+            "Rappel SMS"
+          ],
+          "width": 460
+        }
+      ]
+    },
+    "/restaurant/check-in": {
+      "label": "Check-in",
+      "purpose": "Valider une arrivée : caméra, code saisi, recherche par nom, annulation dans les cinq minutes.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "title": "Check-in",
+      "eyebrow": null,
+      "subtitle": "Dar Zellij · 5 arrivées encore attendues",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Check-in",
+            "Dar Zellij · 5 arrivées encore attendues"
+          ],
+          "body": "Check-inDar Zellij · 5 arrivées encore attendues",
+          "pills": []
+        },
+        {
+          "kind": "split",
+          "left": {
+            "kind": "settings",
+            "heading": "Scanner le code",
+            "subheading": "Le code vient de l'application du client. Le portail le valide, il ne le fabrique jamais.",
+            "actions": [
+              "Allumer la caméra",
+              "Valider"
+            ],
+            "facets": [],
+            "texts": [
+              "Scanner le code",
+              "Le code vient de l'application du client. Le portail le valide, il ne le fabrique jamais.",
+              "Allumer la caméra",
+              "La caméra est éteinte. La saisie manuelle et la recherche par nom fonctionnent sans elle.",
+              "Code de réservation",
+              "Valider"
+            ],
+            "fields": [
+              {
+                "label": "Code de réservation",
+                "value": "",
+                "type": "text"
+              }
+            ],
+            "toggles": []
+          },
+          "right": {
+            "kind": "settings",
+            "heading": "Chercher par nom",
+            "subheading": "Pour un client qui a réservé par téléphone et n'a pas de code.",
+            "actions": [
+              "Confirmer",
+              "Confirmer",
+              "Confirmer",
+              "Confirmer",
+              "Confirmer"
+            ],
+            "facets": [],
+            "texts": [
+              "Chercher par nom",
+              "Pour un client qui a réservé par téléphone et n'a pas de code.",
+              "Nom du client",
+              "Salma Bennani",
+              "Acompte 400 MAD",
+              "01h30 · 4 couverts · Patio",
+              "Anniversaire, dessert avec bougie",
+              "Confirmer",
+              "Groupe Karam",
+              "02h00 · 6 couverts · Grande salle",
+              "Sans gluten pour deux couverts",
+              "Confirmer",
+              "Yasmine El Alaoui",
+              "02h00 · 4 couverts · Terrasse",
+              "Confirmer",
+              "Nabil Cherkaoui",
+              "02h30 · 2 couverts",
+              "Demande une table près de la fontaine",
+              "Confirmer",
+              "Hind Tazi",
+              "Habitué",
+              "Acompte 500 MAD",
+              "03h00 · 5 couverts · Grande salle",
+              "Confirmer"
+            ],
+            "fields": [
+              {
+                "label": "Nom du client",
+                "value": "",
+                "type": "text"
+              }
+            ],
+            "toggles": []
+          }
+        }
+      ]
+    },
+    "/restaurant/clients": {
+      "label": "Liste clients",
+      "purpose": "La base, alimentée par les réservations, les walk-ins et les installations depuis la liste d'attente.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "title": "Clients",
+      "eyebrow": null,
+      "subtitle": "Base alimentée automatiquement par les réservations — aucune saisie manuelle.",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "kpi-grid",
+          "heading": null,
+          "subheading": "Créés à la première réservation confirmée",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Clients connus",
+            "60",
+            "Créés à la première réservation confirmée",
+            "Clients fidèles",
+            "10",
+            "8 visites ou plus",
+            "Chiffre cumulé",
+            "16 960 MAD",
+            "Transactions Lyfe Pay rattachées à un client.",
+            "À risque d'absence",
+            "3",
+            "Demander un acompte à la prochaine réservation"
+          ],
+          "tiles": [
+            {
+              "label": "Clients connus",
+              "value": "60",
+              "meta": [
+                "Créés à la première réservation confirmée"
+              ],
+              "pills": []
+            },
+            {
+              "label": "Clients fidèles",
+              "value": "10",
+              "meta": [
+                "8 visites ou plus"
+              ],
+              "pills": []
+            },
+            {
+              "label": "Chiffre cumulé",
+              "value": "16 960 MAD",
+              "meta": [
+                "Transactions Lyfe Pay rattachées à un client."
+              ],
+              "pills": []
+            },
+            {
+              "label": "À risque d'absence",
+              "value": "3",
+              "meta": [
+                "Demander un acompte à la prochaine réservation"
+              ],
+              "pills": []
+            }
+          ]
+        },
+        {
+          "kind": "list",
+          "heading": "Base clients",
+          "subheading": "1 visite · dernière le 21 sept. 2026 · +212 667 57 57 57",
+          "actions": [
+            "Exporter la sélection"
+          ],
+          "facets": [
+            {
+              "label": "Tous",
+              "count": "60"
+            },
+            {
+              "label": "VIP",
+              "count": "2"
+            },
+            {
+              "label": "Habitués",
+              "count": "10"
+            },
+            {
+              "label": "Nouveaux",
+              "count": "10"
+            },
+            {
+              "label": "À risque no-show",
+              "count": "3"
+            },
+            {
+              "label": "Inactifs 90 jours",
+              "count": "16"
+            },
+            {
+              "label": "Anniversaire ce mois",
+              "count": "0"
+            }
+          ],
+          "texts": [
+            "Base clients",
+            "Dernière visite",
+            "Nombre de visites",
+            "Dépense moyenne",
+            "Risque d'absence",
+            "Nom",
+            "60",
+            "2",
+            "10",
+            "10",
+            "3",
+            "16",
+            "0",
+            "LE",
+            "Lina El Amrani",
+            "Nouveau",
+            "1 visite · dernière le 21 sept. 2026 · +212 667 57 57 57",
+            "Cuisine japonaise",
+            "MB",
+            "Mehdi Benslimane",
+            "Nouveau",
+            "4 visites · dernière le 19 sept. 2026 · +212 664 24 24 24",
+            "Brunch · Cuisine marocaine",
+            "LM",
+            "Leïla Mansouri",
+            "Nouveau",
+            "HABITUÉ",
+            "VIP",
+            "Sans démarchage",
+            "14 visites · dernière le 17 sept. 2026 · +212 664 51 12 87",
+            "Terrasse · Végétarienne",
+            "Dépensé",
+            "3 378 MAD",
+            "TR",
+            "Thomas Renaud",
+            "Nouveau",
+            "PRESSE",
+            "2 visites · dernière le 16 sept. 2026 · +33 6 12 44 90 21",
+            "YT",
+            "Youssef Tahiri",
+            "Nouveau",
+            "6 visites · dernière le 14 sept. 2026 · +212 668 38 38 38",
+            "Cuisine marocaine",
+            "RB",
+            "Reda Benslimane",
+            "Nouveau",
+            "3 visites · dernière le 14 sept. 2026 · +212 664 44 44 44",
+            "Brunch",
+            "HT",
+            "Hind Tazi",
+            "Nouveau",
+            "ALLERGIE",
+            "HABITUÉ",
+            "9 visites · dernière le 12 sept. 2026 · +212 660 15 62 40",
+            "Allergie fruits de mer · Anniversaire en mai",
+            "Dépensé",
+            "3 351 MAD",
+            "ME",
+            "Meryem El Amrani",
+            "Nouveau",
+            "3 visites · dernière le 11 sept. 2026 · +212 661 21 21 21",
+            "Cuisine japonaise · Cuisine marocaine",
+            "AT",
+            "Adam Tahiri",
+            "Nouveau",
+            "Sans démarchage",
+            "8 visites · dernière le 11 sept. 2026 · +212 666 46 46 46",
+            "Afterwork",
+            "NE",
+            "Nawal El Amrani",
+            "Nouveau",
+            "8 visites · dernière le 10 sept. 2026 · +212 669 49 49 49",
+            "Cuisine japonaise · Festivals",
+            "RB",
+            "Reda Benslimane",
+            "Nouveau",
+            "6 visites · dernière le 6 sept. 2026 · +212 660 20 20 20",
+            "Festivals",
+            "WB",
+            "Walid Benslimane",
+            "Nouveau",
+            "6 visites · dernière le 6 sept. 2026 · +212 666 56 56 56",
+            "Afterwork · Brunch · Cuisine marocaine",
+            "AB",
+            "Amina Bouzid",
+            "Nouveau",
+            "HABITUÉ",
+            "GROS PANIER",
+            "11 visites · dernière le 5 sept. 2026 · +212 661 88 03 45",
+            "Sans alcool",
+            "Dépensé",
+            "3 324 MAD",
+            "KT",
+            "Karim Tahiri",
+            "Nouveau",
+            "5 visites · dernière le 3 sept. 2026 · +212 668 18 18 18",
+            "Cuisine italienne · Cuisine marocaine · Festivals",
+            "SB",
+            "Salma Bennani",
+            "Nouveau",
+            "HABITUÉ",
+            "VIP",
+            "Sans démarchage",
+            "6 visites · dernière le 31 août 2026 · +212 661 20 44 18",
+            "Sans porc · Table au patio",
+            "Dépensé",
+            "3 610 MAD",
+            "IB",
+            "Imane Belkadi",
+            "Nouveau",
+            "7 visites · dernière le 30 août 2026 · +212 669 39 39 39",
+            "Concerts",
+            "SE",
+            "Soukaina El Amrani",
+            "Nouveau",
+            "1 visite · dernière le 27 août 2026 · +212 667 17 17 17",
+            "Afterwork",
+            "AT",
+            "Anas Tahiri",
+            "Nouveau"
+          ],
+          "items": [
+            {
+              "title": "Lina El Amrani",
+              "meta": "1 visite · dernière le 21 sept. 2026 · +212 667 57 57 57",
+              "initials": "LE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Mehdi Benslimane",
+              "meta": "4 visites · dernière le 19 sept. 2026 · +212 664 24 24 24",
+              "initials": "MB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Leïla Mansouri",
+              "meta": "14 visites · dernière le 17 sept. 2026 · +212 664 51 12 87",
+              "initials": "LM",
+              "trailing": [
+                "Dépensé",
+                "3 378 MAD"
+              ],
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "HABITUÉ",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "VIP",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "Sans démarchage",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Thomas Renaud",
+              "meta": "2 visites · dernière le 16 sept. 2026 · +33 6 12 44 90 21",
+              "initials": "TR",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "PRESSE",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Youssef Tahiri",
+              "meta": "6 visites · dernière le 14 sept. 2026 · +212 668 38 38 38",
+              "initials": "YT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Reda Benslimane",
+              "meta": "3 visites · dernière le 14 sept. 2026 · +212 664 44 44 44",
+              "initials": "RB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Hind Tazi",
+              "meta": "9 visites · dernière le 12 sept. 2026 · +212 660 15 62 40",
+              "initials": "HT",
+              "trailing": [
+                "Dépensé",
+                "3 351 MAD"
+              ],
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "ALLERGIE",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "HABITUÉ",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Meryem El Amrani",
+              "meta": "3 visites · dernière le 11 sept. 2026 · +212 661 21 21 21",
+              "initials": "ME",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Adam Tahiri",
+              "meta": "8 visites · dernière le 11 sept. 2026 · +212 666 46 46 46",
+              "initials": "AT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "Sans démarchage",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Nawal El Amrani",
+              "meta": "8 visites · dernière le 10 sept. 2026 · +212 669 49 49 49",
+              "initials": "NE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Reda Benslimane",
+              "meta": "6 visites · dernière le 6 sept. 2026 · +212 660 20 20 20",
+              "initials": "RB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Walid Benslimane",
+              "meta": "6 visites · dernière le 6 sept. 2026 · +212 666 56 56 56",
+              "initials": "WB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Amina Bouzid",
+              "meta": "11 visites · dernière le 5 sept. 2026 · +212 661 88 03 45",
+              "initials": "AB",
+              "trailing": [
+                "Dépensé",
+                "3 324 MAD"
+              ],
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "HABITUÉ",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "GROS PANIER",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Karim Tahiri",
+              "meta": "5 visites · dernière le 3 sept. 2026 · +212 668 18 18 18",
+              "initials": "KT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Salma Bennani",
+              "meta": "6 visites · dernière le 31 août 2026 · +212 661 20 44 18",
+              "initials": "SB",
+              "trailing": [
+                "Dépensé",
+                "3 610 MAD"
+              ],
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "HABITUÉ",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "VIP",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "Sans démarchage",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Imane Belkadi",
+              "meta": "7 visites · dernière le 30 août 2026 · +212 669 39 39 39",
+              "initials": "IB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Soukaina El Amrani",
+              "meta": "1 visite · dernière le 27 août 2026 · +212 667 17 17 17",
+              "initials": "SE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Anas Tahiri",
+              "meta": "2 visites · dernière le 27 août 2026 · +212 664 34 34 34",
+              "initials": "AT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Nabil Benslimane",
+              "meta": "4 visites · dernière le 27 août 2026 · +212 662 52 52 52",
+              "initials": "NB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sofia Lahlou",
+              "meta": "5 visites · dernière le 25 août 2026 · +212 666 70 15 29",
+              "initials": "SL",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "À RISQUE",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "Risque d'absence",
+                  "tone": "warning-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Rim Belkadi",
+              "meta": "6 visites · dernière le 25 août 2026 · +212 667 27 27 27",
+              "initials": "RB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Soukaina El Amrani",
+              "meta": "5 visites · dernière le 25 août 2026 · +212 661 41 41 41",
+              "initials": "SE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Famille Berrada",
+              "meta": "3 visites · dernière le 19 août 2026 · +212 668 30 90 55",
+              "initials": "FB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Othmane Benslimane",
+              "meta": "5 visites · dernière le 18 août 2026 · +212 666 16 16 16",
+              "initials": "OB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Salma Belkadi",
+              "meta": "8 visites · dernière le 18 août 2026 · +212 669 19 19 19",
+              "initials": "SB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Nabil Benslimane",
+              "meta": "8 visites · dernière le 13 août 2026 · +212 668 28 28 28",
+              "initials": "NB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Hajar Belkadi",
+              "meta": "7 visites · dernière le 13 août 2026 · +212 661 31 31 31",
+              "initials": "HB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Adam Tahiri",
+              "meta": "8 visites · dernière le 11 août 2026 · +212 662 22 22 22",
+              "initials": "AT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "Sans démarchage",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Salma Belkadi",
+              "meta": "7 visites · dernière le 10 août 2026 · +212 663 43 43 43",
+              "initials": "SB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Dounia El Amrani",
+              "meta": "6 visites · dernière le 9 août 2026 · +212 667 37 37 37",
+              "initials": "DE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Dounia El Amrani",
+              "meta": "5 visites · dernière le 7 août 2026 · +212 663 13 13 13",
+              "initials": "DE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "Sans démarchage",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Groupe Karam",
+              "meta": "2 visites · dernière le 4 août 2026 · +212 662 88 10 03",
+              "initials": "GK",
+              "trailing": [
+                "Dépensé",
+                "3 297 MAD"
+              ],
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "ALLERGIE",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "Risque d'absence",
+                  "tone": "warning-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Ghita El Amrani",
+              "meta": "6 visites · dernière le 29 juil. 2026 · +212 663 53 53 53",
+              "initials": "GE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Karim Hakimi",
+              "meta": "4 visites · dernière le 23 juil. 2026 · +212 669 22 41 06",
+              "initials": "KH",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Aya Belkadi",
+              "meta": "8 visites · dernière le 19 juil. 2026 · +212 663 23 23 23",
+              "initials": "AB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Yasmine El Alaoui",
+              "meta": "1 visite · dernière le 9 juil. 2026 · +212 663 41 77 92",
+              "initials": "YE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "INACTIF",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "À RISQUE",
+                  "tone": "violet-12"
+                },
+                {
+                  "label": "Risque élevé",
+                  "tone": "danger-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Ismail Benslimane",
+              "meta": "6 visites · dernière le 8 juil. 2026 · +212 666 36 36 36",
+              "initials": "IB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Rim Belkadi",
+              "meta": "3 visites · dernière le 2 juil. 2026 · +212 661 51 51 51",
+              "initials": "RB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Youssef Tahiri",
+              "meta": "3 visites · dernière le 30 juin 2026 · +212 664 14 14 14",
+              "initials": "YT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Imane Belkadi",
+              "meta": "7 visites · dernière le 21 juin 2026 · +212 665 15 15 15",
+              "initials": "IB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Ismail Benslimane",
+              "meta": "1 visite · dernière le 14 juin 2026 · +212 662 12 12 12",
+              "initials": "IB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Ghita El Amrani",
+              "meta": "1 visite · dernière le 13 juin 2026 · +212 669 29 29 29",
+              "initials": "GE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Aya Belkadi",
+              "meta": "8 visites · dernière le 9 juin 2026 · +212 667 47 47 47",
+              "initials": "AB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Nawal El Amrani",
+              "meta": "3 visites · dernière le 8 juin 2026 · +212 665 25 25 25",
+              "initials": "NE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sara Belkadi",
+              "meta": "7 visites · dernière le 6 juin 2026 · +212 661 11 11 11",
+              "initials": "SB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Lina El Amrani",
+              "meta": "5 visites · dernière le 6 juin 2026 · +212 663 33 33 33",
+              "initials": "LE",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Walid Benslimane",
+              "meta": "3 visites · dernière le 31 mai 2026 · +212 662 32 32 32",
+              "initials": "WB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Hajar Belkadi",
+              "meta": "1 visite · dernière le 28 mai 2026 · +212 665 55 55 55",
+              "initials": "HB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Meryem El Amrani",
+              "meta": "7 visites · dernière le 27 mai 2026 · +212 665 45 45 45",
+              "initials": "ME",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Anas Tahiri",
+              "meta": "1 visite · dernière le 26 mai 2026 · +212 660 10 10 10",
+              "initials": "AT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Nabil Cherkaoui",
+              "meta": "Aucune visite · +212 665 09 33 71",
+              "initials": "NC",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "NOUVEAU",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Omar Idrissi",
+              "meta": "Aucune visite · +212 667 74 21 08",
+              "initials": "OI",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "NOUVEAU",
+                  "tone": "violet-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Ayoub Tahiri",
+              "meta": "Aucune visite · +212 666 26 26 26",
+              "initials": "AT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Zakaria Tahiri",
+              "meta": "Aucune visite · +212 660 30 30 30",
+              "initials": "ZT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                },
+                {
+                  "label": "Sans démarchage",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Sara Belkadi",
+              "meta": "Aucune visite · +212 665 35 35 35",
+              "initials": "SB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Othmane Benslimane",
+              "meta": "Aucune visite · +212 660 40 40 40",
+              "initials": "OB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Karim Tahiri",
+              "meta": "Aucune visite · +212 662 42 42 42",
+              "initials": "KT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Mehdi Benslimane",
+              "meta": "Aucune visite · +212 668 48 48 48",
+              "initials": "MB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Ayoub Tahiri",
+              "meta": "Aucune visite · +212 660 50 50 50",
+              "initials": "AT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Zakaria Tahiri",
+              "meta": "Aucune visite · +212 664 54 54 54",
+              "initials": "ZT",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "Nouveau",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            }
+          ]
+        },
+        {
+          "kind": "settings",
+          "heading": "Actions groupées",
+          "subheading": "S'appliquent à la sélection courante de la liste, filtres et recherche compris.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Actions groupées",
+            "S'appliquent à la sélection courante de la liste, filtres et recherche compris.",
+            "Ajouter une étiquette en masse",
+            "Les étiquettes se définissent dans Tags et segments.",
+            "VIP",
+            "Allergie",
+            "Presse",
+            "Habitué",
+            "Nouveau",
+            "À risque",
+            "Inactif",
+            "Gros panier",
+            "Exporter en CSV",
+            "Les clients ayant refusé le démarchage sont exclus de l'export.",
+            "Exporter",
+            "Fusionner des doublons",
+            "Deux fiches au même numéro sont proposées à la fusion.",
+            "Rechercher les doublons"
+          ],
+          "fields": [
+            {
+              "label": "Ajouter une étiquette en masse",
+              "value": "VIP",
+              "type": "select-one"
+            }
+          ],
+          "toggles": []
+        }
+      ],
+      "surfaces": [
+        {
+          "name": "Fiche client",
+          "title": "Lina El Amrani",
+          "lines": [
+            "Lina El Amrani",
+            "Client depuis le 7 mars 2026 · dernière visite le 21 sept. 2026",
+            "Nouveau",
+            "Contact",
+            "Téléphone",
+            "+212 667 57 57 57",
+            "E-mail",
+            "lina.el.amrani@gmail.com",
+            "Démarchage",
+            "Accepté",
+            "Fréquentation",
+            "Visites",
+            "1",
+            "Dernière visite",
+            "21 sept. 2026",
+            "Palier fidélité",
+            "Nouveau",
+            "Absences",
+            "No-shows enregistrés",
+            "0",
+            "Indicateur de risque",
+            "0 %",
+            "Préférences et demandes",
+            "Cuisine japonaise"
+          ],
+          "pills": [
+            "Nouveau"
+          ],
+          "buttons": [
+            "Appeler",
+            "Ouvrir la fiche"
+          ],
+          "width": 460
+        }
+      ]
+    },
+    "/restaurant/clients/cus_1": {
+      "label": "Fiche client",
+      "purpose": "Tout ce que le lieu sait d'un client : visites, risque d'absence sur douze mois, préférences, avis, messages, anonymisation.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "title": "Salma Bennani Habitué · VIP",
+      "eyebrow": "Nouveau",
+      "subtitle": "Client depuis le mar. 23 juin · dernière visite le lun. 31 août",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "rows",
+          "heading": null,
+          "subheading": null,
+          "actions": [
+            "Créer une réservation",
+            "Appeler",
+            "Envoyer un message",
+            "Exporter la fiche"
+          ],
+          "facets": [],
+          "texts": [
+            "Nouveau",
+            "Habitué · VIP",
+            "Client depuis le mar. 23 juin · dernière visite le lun. 31 août"
+          ],
+          "rows": [
+            {
+              "lines": [
+                "Nouveau",
+                "Habitué · VIP",
+                "Client depuis le mar. 23 juin · dernière visite le lun. 31 août"
+              ],
+              "pills": [],
+              "actions": []
+            }
+          ]
+        },
+        {
+          "kind": "split",
+          "left": {
+            "kind": "prose",
+            "heading": null,
+            "subheading": "Dernière le lun. 31 août",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Visites",
+              "6",
+              "Dernière le lun. 31 août"
+            ],
+            "body": "Visites6Dernière le lun. 31 août",
+            "pills": []
+          },
+          "right": {
+            "kind": "empty",
+            "heading": null,
+            "subheading": "0 absences enregistrées, dont 0 sur douze mois",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Risque d'absence",
+              "Aucun risque",
+              "0 absences enregistrées, dont 0 sur douze mois"
+            ],
+            "body": "Risque d'absenceAucun risque0 absences enregistrées, dont 0 sur douze mois",
+            "pills": []
+          }
+        },
+        {
+          "kind": "split",
+          "left": {
+            "kind": "list",
+            "heading": "Préférences et demandes",
+            "subheading": "Reportée automatiquement sur chaque réservation",
+            "actions": [
+              "Modifier les notes"
+            ],
+            "facets": [
+              {
+                "label": "Tout",
+                "count": "7"
+              },
+              {
+                "label": "Absences",
+                "count": "0"
+              }
+            ],
+            "texts": [
+              "Préférences et demandes",
+              "Sans porc",
+              "Reportée automatiquement sur chaque réservation",
+              "Table au patio",
+              "Reportée automatiquement sur chaque réservation",
+              "Réservations à venir",
+              "Rien de prévu",
+              "Ce client n'a aucune réservation à venir.",
+              "Historique",
+              "7",
+              "0",
+              "SB",
+              "lundi 21 septembre à 01h30",
+              "4 couverts · Anniversaire, dessert avec bougie · acompte 400 MAD",
+              "SB",
+              "lundi 31 août à 21h00",
+              "2 couverts · sans note",
+              "SB",
+              "lundi 17 août à 13h30",
+              "3 couverts · sans note",
+              "SB",
+              "lundi 3 août à 21h30",
+              "4 couverts · sans note",
+              "SB",
+              "mardi 21 juillet à 13h00",
+              "5 couverts · sans note",
+              "SB",
+              "mardi 7 juillet à 21h30",
+              "2 couverts · sans note",
+              "SB",
+              "mardi 23 juin à 13h30",
+              "3 couverts · sans note"
+            ],
+            "items": [
+              {
+                "title": "Sans porc",
+                "meta": "Reportée automatiquement sur chaque réservation",
+                "initials": null,
+                "trailing": null,
+                "pills": [],
+                "actions": []
+              },
+              {
+                "title": "Table au patio",
+                "meta": "Reportée automatiquement sur chaque réservation",
+                "initials": null,
+                "trailing": null,
+                "pills": [],
+                "actions": []
+              },
+              {
+                "title": "lundi 21 septembre à 01h30",
+                "meta": "4 couverts · Anniversaire, dessert avec bougie · acompte 400 MAD",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "CONFIRMÉE",
+                    "tone": "info-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "lundi 31 août à 21h00",
+                "meta": "2 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "lundi 17 août à 13h30",
+                "meta": "3 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "lundi 3 août à 21h30",
+                "meta": "4 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "mardi 21 juillet à 13h00",
+                "meta": "5 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "mardi 7 juillet à 21h30",
+                "meta": "2 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "mardi 23 juin à 13h30",
+                "meta": "3 couverts · sans note",
+                "initials": "SB",
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "TERMINÉE",
+                    "tone": "success-10"
+                  }
+                ],
+                "actions": []
+              }
+            ]
+          },
+          "right": {
+            "kind": "list",
+            "heading": "Contact et consentement",
+            "subheading": "Il est exclu de toute campagne, quel que soit le segment. Les messages de service — confirmation, rappel, table prête — continuent de partir.",
+            "actions": [
+              "Anonymiser (droit à l'effacement)"
+            ],
+            "facets": [],
+            "texts": [
+              "Contact et consentement",
+              "Ce client refuse le démarchage",
+              "Il est exclu de toute campagne, quel que soit le segment. Les messages de service — confirmation, rappel, table prête — continuent de partir.",
+              "Téléphone",
+              "+212 661 20 44 18",
+              "E-mail",
+              "salma.bennani@gmail.com",
+              "Marquer VIP",
+              "Visible par l'équipe en salle et au briefing.",
+              "Accepte le démarchage",
+              "Le client peut retirer son consentement depuis l'application à tout moment.",
+              "Non",
+              "Étiquettes",
+              "Habitué",
+              "SAGE",
+              "Posée automatiquement",
+              "VIP",
+              "VIOLET",
+              "Posée à la main"
+            ],
+            "items": [
+              {
+                "title": "Habitué",
+                "meta": "Posée automatiquement",
+                "initials": null,
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "SAGE",
+                    "tone": "violet-12"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "VIP",
+                "meta": "Posée à la main",
+                "initials": null,
+                "trailing": null,
+                "pills": [
+                  {
+                    "label": "VIOLET",
+                    "tone": "violet-12"
+                  }
+                ],
+                "actions": []
+              }
+            ]
+          }
+        },
+        {
+          "kind": "empty",
+          "heading": "Avis laissés",
+          "subheading": "Ce client n'a pas encore laissé d'avis.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Avis laissés",
+            "Aucun avis",
+            "Ce client n'a pas encore laissé d'avis."
+          ],
+          "body": "Avis laissésAucun avisCe client n'a pas encore laissé d'avis.",
+          "pills": []
+        }
+      ]
+    },
+    "/restaurant/ma-fiche": {
+      "label": "Ma fiche",
+      "purpose": "Ce que l'application montre de l'établissement : identité, fiche, photos. Enregistré pour de vrai.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Ma fiche",
+      "eyebrow": null,
+      "subtitle": "Miroir de la fiche que voit le client. Rien de plus.",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Identité",
+          "subheading": "Ce que les clients voient dans l'application.",
+          "actions": [
+            "Identité",
+            "Fiche",
+            "Photos",
+            "Restaurant",
+            "Bar",
+            "Enregistrer"
+          ],
+          "facets": [],
+          "texts": [
+            "Ma fiche",
+            "Tout ce que l'application montre de l'établissement, modifiable ici. Miroir de la fiche, rien de plus.",
+            "Fiche",
+            "Photos",
+            "Identité",
+            "Ce que les clients voient dans l'application.",
+            "Nom du lieu",
+            "Nom court",
+            "Affiché dans les listes et la navigation.",
+            "Description",
+            "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
+            "Catégorie",
+            "Ex. Marocaine contemporaine",
+            "Type d'établissement",
+            "Restaurant",
+            "Bar",
+            "Adresse et contact",
+            "Adresse",
+            "Ville",
+            "Latitude",
+            "Facultatif — pour la carte.",
+            "Longitude",
+            "Téléphone",
+            "E-mail",
+            "Site web",
+            "https://…",
+            "À jour",
+            "Enregistrer"
+          ],
+          "fields": [
+            {
+              "label": "Nom du lieu",
+              "value": "Dar Zellij",
+              "type": "text"
+            },
+            {
+              "label": "Nom court",
+              "value": "Dar Zellij",
+              "type": "text"
+            },
+            {
+              "label": "Description",
+              "value": "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
+              "type": "textarea"
+            },
+            {
+              "label": "Catégorie",
+              "value": "Marocaine contemporaine",
+              "type": "text"
+            },
+            {
+              "label": "Adresse",
+              "value": "12 derb Sidi Ahmed Soussi, Médina",
+              "type": "text"
+            },
+            {
+              "label": "Ville",
+              "value": "Marrakech",
+              "type": "text"
+            },
+            {
+              "label": "Latitude",
+              "value": "31.6295",
+              "type": "text"
+            },
+            {
+              "label": "Longitude",
+              "value": "-7.9811",
+              "type": "text"
+            },
+            {
+              "label": "Téléphone",
+              "value": "+212 524 38 26 00",
+              "type": "text"
+            },
+            {
+              "label": "E-mail",
+              "value": "reservations@darzellij.ma",
+              "type": "text"
+            },
+            {
+              "label": "Site web",
+              "value": "https://darzellij.ma",
+              "type": "text"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "empty",
+          "heading": null,
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Ma fiche",
+            "Miroir de la fiche que voit le client. Rien de plus."
+          ],
+          "body": "Ma ficheMiroir de la fiche que voit le client. Rien de plus.",
+          "pills": []
+        },
+        {
+          "kind": "table",
+          "heading": "Dar Zellij",
+          "subheading": "Marocaine contemporaine · Marrakech · €€ · modéré",
+          "actions": [
+            "Retirer de l'app",
+            "Retirer de l'app",
+            "Retirer de l'app"
+          ],
+          "facets": [],
+          "texts": [
+            "APERÇU DANS L'APPLICATION",
+            "Dar Zellij",
+            "Marocaine contemporaine · Marrakech · €€ · modéré",
+            "Photos",
+            "0",
+            "Mots-clés",
+            "5",
+            "Zones proposées",
+            "3",
+            "Moins de trois photos : la fiche est publiée mais apparaît plus bas dans le fil.",
+            "À COMPLÉTER",
+            "Zones réservables",
+            "Patio",
+            "OUVERTE",
+            "48 places · proposée à la réservation",
+            "Places",
+            "48",
+            "Grande salle",
+            "OUVERTE",
+            "44 places · proposée à la réservation",
+            "Places",
+            "44",
+            "Terrasse",
+            "OUVERTE",
+            "28 places · proposée à la réservation",
+            "Places",
+            "28",
+            "Tenue et accès",
+            "Renseigné surtout en configuration lounge. Affiché sur la fiche s'il est rempli.",
+            "Dress code",
+            "Âge minimum",
+            "0 pour aucune restriction.",
+            "Équipements affichés",
+            "Terrasse",
+            "Affiché en icône sur la fiche",
+            "Climatisation",
+            "Affiché en icône sur la fiche",
+            "Accès PMR",
+            "Affiché en icône sur la fiche",
+            "Wi-Fi",
+            "Affiché en icône sur la fiche",
+            "Vue",
+            "Affiché en icône sur la fiche",
+            "Musique live",
+            "Affiché en icône sur la fiche",
+            "Horaires",
+            "Modifier dans Disponibilités →",
+            "Jour",
+            "Ouverture",
+            "État",
+            "Lundi",
+            "12h00 – 15h00 · 19h00 – 23h30",
+            "OUVERT",
+            "Mardi",
+            "12h00 – 15h00 · 19h00 – 23h30",
+            "OUVERT",
+            "Mercredi",
+            "12h00 – 15h00 · 19h00 – 23h30",
+            "OUVERT",
+            "Jeudi",
+            "12h00 – 15h00 · 19h00 – 23h30",
+            "OUVERT",
+            "Vendredi",
+            "12h00 – 15h30 · 19h00 – 00h30",
+            "OUVERT",
+            "Samedi",
+            "12h00 – 15h30 · 19h00 – 00h30",
+            "OUVERT",
+            "Dimanche",
+            "12h00 – 16h00",
+            "OUVERT"
+          ],
+          "head": [
+            "Jour",
+            "Ouverture",
+            "État"
+          ],
+          "rows": [
+            [
+              {
+                "text": "Lundi",
+                "pills": []
+              },
+              {
+                "text": "12h00 – 15h00 · 19h00 – 23h30",
+                "pills": []
+              },
+              {
+                "text": "OUVERT",
+                "pills": [
+                  {
+                    "label": "OUVERT",
+                    "tone": "success-10"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "text": "Mardi",
+                "pills": []
+              },
+              {
+                "text": "12h00 – 15h00 · 19h00 – 23h30",
+                "pills": []
+              },
+              {
+                "text": "OUVERT",
+                "pills": [
+                  {
+                    "label": "OUVERT",
+                    "tone": "success-10"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "text": "Mercredi",
+                "pills": []
+              },
+              {
+                "text": "12h00 – 15h00 · 19h00 – 23h30",
+                "pills": []
+              },
+              {
+                "text": "OUVERT",
+                "pills": [
+                  {
+                    "label": "OUVERT",
+                    "tone": "success-10"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "text": "Jeudi",
+                "pills": []
+              },
+              {
+                "text": "12h00 – 15h00 · 19h00 – 23h30",
+                "pills": []
+              },
+              {
+                "text": "OUVERT",
+                "pills": [
+                  {
+                    "label": "OUVERT",
+                    "tone": "success-10"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "text": "Vendredi",
+                "pills": []
+              },
+              {
+                "text": "12h00 – 15h30 · 19h00 – 00h30",
+                "pills": []
+              },
+              {
+                "text": "OUVERT",
+                "pills": [
+                  {
+                    "label": "OUVERT",
+                    "tone": "success-10"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "text": "Samedi",
+                "pills": []
+              },
+              {
+                "text": "12h00 – 15h30 · 19h00 – 00h30",
+                "pills": []
+              },
+              {
+                "text": "OUVERT",
+                "pills": [
+                  {
+                    "label": "OUVERT",
+                    "tone": "success-10"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "text": "Dimanche",
+                "pills": []
+              },
+              {
+                "text": "12h00 – 16h00",
+                "pills": []
+              },
+              {
+                "text": "OUVERT",
+                "pills": [
+                  {
+                    "label": "OUVERT",
+                    "tone": "success-10"
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    "/restaurant/menu": {
+      "label": "Menu",
+      "purpose": "La carte telle que l'application l'affiche. Ajouter, masquer, réordonner.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "L'import assisté d'un PDF en articles structurés attend un service d'extraction. Le téléversement du PDF, lui, fonctionne : la carte fichier est publiée sur la fiche.",
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Menu",
+      "eyebrow": null,
+      "subtitle": "La carte telle que l'application l'affiche. Ni coût matière ni stock : ce n'est pas un outil de cuisine.",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Menu",
+            "La carte telle que l'application l'affiche. Ni coût matière ni stock : ce n'est pas un outil de cuisine."
+          ],
+          "body": "MenuLa carte telle que l'application l'affiche. Ni coût matière ni stock : ce n'est pas un outil de cuisine.",
+          "pills": []
+        },
+        {
+          "kind": "split",
+          "left": {
+            "kind": "prose",
+            "heading": "Carte",
+            "subheading": "Ce que le client lit avant de réserver. Un plat masqué reste ici mais disparaît de l'application.",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Carte",
+              "Ce que le client lit avant de réserver. Un plat masqué reste ici mais disparaît de l'application."
+            ],
+            "body": "CarteCe que le client lit avant de réserver. Un plat masqué reste ici mais disparaît de l'application.",
+            "pills": []
+          },
+          "right": {
+            "kind": "prose",
+            "heading": null,
+            "subheading": "Entrée",
+            "actions": [
+              "Loup de mer chermoulaPlat320 MAD",
+              "Couscous royal du vendrediPlat240 MAD",
+              "Zaalouk d'auberginesEntrée80 MAD",
+              "Negroni safranéSignatureCocktail140 MAD"
+            ],
+            "facets": [],
+            "texts": [
+              "Pastilla de pigeon",
+              "Signature",
+              "Entrée",
+              "180 MAD",
+              "Tajine d'agneau aux pruneaux",
+              "Signature",
+              "Plat",
+              "260 MAD",
+              "Loup de mer chermoula",
+              "Plat",
+              "320 MAD",
+              "Couscous royal du vendredi",
+              "Plat",
+              "240 MAD",
+              "Zaalouk d'aubergines",
+              "Entrée",
+              "80 MAD",
+              "Salade d'orange à la cannelle",
+              "Dessert",
+              "90 MAD",
+              "Negroni safrané",
+              "Signature",
+              "Cocktail",
+              "140 MAD"
+            ],
+            "body": "Pastilla de pigeonSignatureEntrée180 MADTajine d'agneau aux pruneauxSignaturePlat260 MADLoup de mer chermoulaPlat320 MADCouscous royal du vendrediPlat240 MADZaalouk d'auberginesEntrée80 MADSalade d'orange à la cannelleDessert90 MADNegroni safranéSignatureCocktail140 MAD",
+            "pills": [
+              {
+                "label": "Signature",
+                "tone": "violet-12"
+              },
+              {
+                "label": "Signature",
+                "tone": "violet-12"
+              },
+              {
+                "label": "Signature",
+                "tone": "violet-12"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "/restaurant/avis": {
+      "label": "Avis",
+      "purpose": "Les avis, le sondage après visite et la redirection des clients satisfaits vers Google ou Tripadvisor.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "Les réponses publiques et la redirection vers Google ou Tripadvisor attendent la connexion des plateformes. Le sondage, les liens et le seuil de redirection s'enregistrent.",
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Avis",
+      "eyebrow": null,
+      "subtitle": "4 avis · note moyenne 4,3 / 5",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Sondage après visite",
+          "subheading": "Envoyé après la venue. Les clients satisfaits peuvent ensuite être invités à publier ailleurs.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Sondage après visite",
+            "Envoyé après la venue. Les clients satisfaits peuvent ensuite être invités à publier ailleurs.",
+            "Envoyer le sondage",
+            "Un message court, dans l'application, après la visite.",
+            "Délai d'envoi",
+            "Heures après la fin du service.",
+            "Questions posées",
+            "3 questions",
+            "Inviter à publier à partir de",
+            "Les clients notant au moins ce score se voient proposer Google ou Tripadvisor.",
+            "4 étoiles et plus",
+            "5 étoiles uniquement",
+            "Lien Google",
+            "Lien Tripadvisor"
+          ],
+          "fields": [
+            {
+              "label": "Délai d'envoi",
+              "value": "3",
+              "type": "number"
+            },
+            {
+              "label": "Inviter à publier à partir de",
+              "value": "4 étoiles et plus",
+              "type": "select-one"
+            },
+            {
+              "label": "Lien Google",
+              "value": "https://g.page/dar-zellij",
+              "type": "text"
+            },
+            {
+              "label": "Lien Tripadvisor",
+              "value": "https://www.tripadvisor.fr/dar-zellij",
+              "type": "text"
+            }
+          ],
+          "toggles": [
+            {
+              "label": "",
+              "on": true
+            }
+          ]
+        },
+        {
+          "kind": "kpi-grid",
+          "heading": null,
+          "subheading": "Répondre sous 48h double la probabilité d'un retour",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Note moyenne",
+            "4,3 / 5",
+            "Avis reçus",
+            "4",
+            "Sans réponse",
+            "3",
+            "Répondre sous 48h double la probabilité d'un retour"
+          ],
+          "tiles": [
+            {
+              "label": "Note moyenne",
+              "value": "4,3 / 5",
+              "meta": [],
+              "pills": []
+            },
+            {
+              "label": "Avis reçus",
+              "value": "4",
+              "meta": [],
+              "pills": []
+            },
+            {
+              "label": "Sans réponse",
+              "value": "3",
+              "meta": [
+                "Répondre sous 48h double la probabilité d'un retour"
+              ],
+              "pills": []
+            }
+          ]
+        },
+        {
+          "kind": "list",
+          "heading": "Derniers avis",
+          "subheading": "20 sept. · 22h27 · LYFE",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Derniers avis",
+            "LM",
+            "Leïla M.",
+            "20 sept. · 22h27 · LYFE",
+            "Le patio au coucher du soleil, rien à redire. Service attentif sans être pesant.",
+            "TR",
+            "Thomas R.",
+            "Sans réponse",
+            "20 sept. · 18h27 · GOOGLE",
+            "Cuisine excellente. Vingt minutes d'attente malgré la réservation à 21h.",
+            "AB",
+            "Amina B.",
+            "Sans réponse",
+            "20 sept. · 00h27 · LYFE",
+            "La pastilla vaut le détour à elle seule.",
+            "KH",
+            "Karim H.",
+            "Sans réponse",
+            "19 sept. · 06h07 · GOOGLE",
+            "Table en terrasse bruyante, on s'entendait à peine."
+          ],
+          "items": [
+            {
+              "title": "Leïla M.",
+              "meta": "20 sept. · 22h27 · LYFE",
+              "initials": "LM",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "5 / 5",
+                  "tone": "success-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Thomas R.",
+              "meta": "20 sept. · 18h27 · GOOGLE",
+              "initials": "TR",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "4 / 5",
+                  "tone": "success-10"
+                },
+                {
+                  "label": "Sans réponse",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Amina B.",
+              "meta": "20 sept. · 00h27 · LYFE",
+              "initials": "AB",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "5 / 5",
+                  "tone": "success-10"
+                },
+                {
+                  "label": "Sans réponse",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Karim H.",
+              "meta": "19 sept. · 06h07 · GOOGLE",
+              "initials": "KH",
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "3 / 5",
+                  "tone": "warning-12"
+                },
+                {
+                  "label": "Sans réponse",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            }
+          ]
+        }
+      ]
+    },
+    "/restaurant/visibilite": {
+      "label": "Visibilité",
+      "purpose": "Impressions, ouvertures de fiche, conversion, et la liste honnête de ce qui pèse sur le classement.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Visibilité",
+      "eyebrow": null,
+      "subtitle": "30 derniers jours",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "empty",
+          "heading": "Mettre votre établissement en avant",
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "AUCUN BOOST EN COURS",
+            "Mettre votre établissement en avant"
+          ],
+          "body": "AUCUN BOOST EN COURSMettre votre établissement en avant",
+          "pills": []
+        },
+        {
+          "kind": "empty",
+          "heading": null,
+          "subheading": "Créer un boost",
+          "actions": [
+            "Créer un boost"
+          ],
+          "facets": [],
+          "texts": [
+            "Boost",
+            "Aucun boost en cours.",
+            "Un boost place votre fiche en tête du fil de l'application pour les utilisateurs de votre ville, sur une période et un budget que vous choisissez.",
+            "Créer un boost"
+          ],
+          "body": "BoostAucun boost en cours. Un boost place votre fiche en tête du fil de l'application pour les utilisateurs de votre ville, sur une période et un budget que vous choisissez.Créer un boost",
+          "pills": []
+        }
+      ]
+    },
+    "/restaurant/performance": {
+      "label": "Performance",
+      "purpose": "Les chiffres avec une période et une comparaison, plus le repérage des créneaux creux.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "title": "Performance",
+      "eyebrow": null,
+      "subtitle": "30 derniers jours",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Période et comparaison",
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Période et comparaison",
+            "Période",
+            "7 derniers jours",
+            "30 derniers jours",
+            "90 derniers jours",
+            "12 derniers mois"
+          ],
+          "fields": [
+            {
+              "label": "Période",
+              "value": "30 derniers jours",
+              "type": "select-one"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "kpi-grid",
+          "heading": null,
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Taux de remplissage",
+            "39 %",
+            "· vs période précédente",
+            "Revenu estimé",
+            "2 132 878 MAD",
+            "· vs période précédente",
+            "Taux de no-show",
+            "4,0 %",
+            "· vs période précédente"
+          ],
+          "tiles": [
+            {
+              "label": "Taux de remplissage",
+              "value": "39 %",
+              "meta": [],
+              "pills": []
+            },
+            {
+              "label": "Revenu estimé",
+              "value": "2 132 878 MAD",
+              "meta": [],
+              "pills": []
+            },
+            {
+              "label": "Taux de no-show",
+              "value": "4,0 %",
+              "meta": [],
+              "pills": []
+            }
+          ]
+        }
+      ]
+    },
+    "/restaurant/bilans": {
+      "label": "Bilans",
+      "purpose": "Le mois en deux minutes : chiffres, meilleurs et pires services, trois recommandations tirées des données.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "L'export PDF passe par l'impression du navigateur, qui rend correctement. Un rendu serveur attend un service de composition.",
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "title": "Sur les 30 derniers jours, en deux minutes",
+      "eyebrow": "Rapport",
+      "subtitle": "Généré à partir des mêmes chiffres que Performance.",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "rows",
+          "heading": null,
+          "subheading": null,
+          "actions": [
+            "Générer maintenant",
+            "Télécharger en PDF",
+            "Planifier l'envoi"
+          ],
+          "facets": [],
+          "texts": [
+            "Rapport",
+            "en deux minutes",
+            "Généré à partir des mêmes chiffres que Performance."
+          ],
+          "rows": [
+            {
+              "lines": [
+                "Rapport",
+                "en deux minutes",
+                "Généré à partir des mêmes chiffres que Performance."
+              ],
+              "pills": [],
+              "actions": []
+            }
+          ]
+        },
+        {
+          "kind": "kpi-grid",
+          "heading": null,
+          "subheading": "44 transactions Lyfe Pay",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Couverts",
+            "2 894",
+            "· vs période précédente",
+            "Occupation",
+            "39 %",
+            "· vs période précédente",
+            "Absences",
+            "4,0 %",
+            "· vs période précédente",
+            "Encaissé",
+            "42 915 MAD",
+            "44 transactions Lyfe Pay"
+          ],
+          "tiles": [
+            {
+              "label": "Couverts",
+              "value": "2 894",
+              "meta": [],
+              "pills": []
+            },
+            {
+              "label": "Occupation",
+              "value": "39 %",
+              "meta": [],
+              "pills": []
+            },
+            {
+              "label": "Absences",
+              "value": "4,0 %",
+              "meta": [],
+              "pills": []
+            },
+            {
+              "label": "Encaissé",
+              "value": "42 915 MAD",
+              "meta": [
+                "44 transactions Lyfe Pay"
+              ],
+              "pills": []
+            }
+          ]
+        },
+        {
+          "kind": "prose",
+          "heading": "Recommandations",
+          "subheading": "Ouvrir Visibilité",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Recommandations",
+            "Recommandation 1",
+            "La salle tourne à 39 % de sa capacité. Un boost met la fiche en tête du fil sur la ville.",
+            "Ouvrir Visibilité"
+          ],
+          "body": "RecommandationsRecommandation 1La salle tourne à 39 % de sa capacité. Un boost met la fiche en tête du fil sur la ville.Ouvrir Visibilité",
+          "pills": []
+        },
+        {
+          "kind": "split",
+          "left": {
+            "kind": "list",
+            "heading": "Meilleurs services",
+            "subheading": "125 couverts",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Meilleurs services",
+              "22 août",
+              "125 couverts",
+              "couverts",
+              "125",
+              "12 sept.",
+              "125 couverts",
+              "couverts",
+              "125",
+              "30 août",
+              "123 couverts",
+              "couverts",
+              "123"
+            ],
+            "items": [
+              {
+                "title": "22 août",
+                "meta": "125 couverts",
+                "initials": null,
+                "trailing": [
+                  "couverts",
+                  "125"
+                ],
+                "pills": [],
+                "actions": []
+              },
+              {
+                "title": "12 sept.",
+                "meta": "125 couverts",
+                "initials": null,
+                "trailing": [
+                  "couverts",
+                  "125"
+                ],
+                "pills": [],
+                "actions": []
+              },
+              {
+                "title": "30 août",
+                "meta": "123 couverts",
+                "initials": null,
+                "trailing": [
+                  "couverts",
+                  "123"
+                ],
+                "pills": [],
+                "actions": []
+              }
+            ]
+          },
+          "right": {
+            "kind": "list",
+            "heading": "Services les plus creux",
+            "subheading": "66 couverts",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Services les plus creux",
+              "31 août",
+              "66 couverts",
+              "couverts",
+              "66",
+              "21 sept.",
+              "66 couverts",
+              "couverts",
+              "66",
+              "27 août",
+              "67 couverts",
+              "couverts",
+              "67"
+            ],
+            "items": [
+              {
+                "title": "31 août",
+                "meta": "66 couverts",
+                "initials": null,
+                "trailing": [
+                  "couverts",
+                  "66"
+                ],
+                "pills": [],
+                "actions": []
+              },
+              {
+                "title": "21 sept.",
+                "meta": "66 couverts",
+                "initials": null,
+                "trailing": [
+                  "couverts",
+                  "66"
+                ],
+                "pills": [],
+                "actions": []
+              },
+              {
+                "title": "27 août",
+                "meta": "67 couverts",
+                "initials": null,
+                "trailing": [
+                  "couverts",
+                  "67"
+                ],
+                "pills": [],
+                "actions": []
+              }
+            ]
+          }
+        },
+        {
+          "kind": "settings",
+          "heading": "Envoi automatique",
+          "subheading": "Le bilan part par e-mail, sans que personne ait à l'ouvrir.",
+          "actions": [
+            "Partager un lien"
+          ],
+          "facets": [],
+          "texts": [
+            "Envoi automatique",
+            "Le bilan part par e-mail, sans que personne ait à l'ouvrir.",
+            "Bilan hebdomadaire",
+            "Tous les lundis matin.",
+            "Bilan mensuel",
+            "Le premier de chaque mois."
+          ],
+          "fields": [],
+          "toggles": [
+            {
+              "label": "",
+              "on": true
+            },
+            {
+              "label": "",
+              "on": true
+            }
+          ]
+        }
+      ]
+    },
+    "/restaurant/disponibilites": {
+      "label": "Disponibilités",
+      "purpose": "Ce qui décide de ce que l'application propose : services, cadence, fenêtre de réservation, jours exceptionnels.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Disponibilités",
+      "eyebrow": null,
+      "subtitle": "Ce qui décide de ce que l'application propose",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Réservation en ligne",
+          "subheading": "L'interrupteur général. Tout le reste de cet écran en dépend.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Réservation en ligne",
+            "L'interrupteur général. Tout le reste de cet écran en dépend.",
+            "Accepter les réservations depuis l'application",
+            "Coupé, l'établissement reste visible mais n'est plus réservable.",
+            "Réouverture programmée",
+            "Laissez vide pour rouvrir à la main."
+          ],
+          "fields": [
+            {
+              "label": "Réouverture programmée",
+              "value": "",
+              "type": "date"
+            }
+          ],
+          "toggles": [
+            {
+              "label": "",
+              "on": true
+            }
+          ]
+        },
+        {
+          "kind": "list",
+          "heading": "Services",
+          "subheading": "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
+          "actions": [
+            "Ajouter un service"
+          ],
+          "facets": [],
+          "texts": [
+            "Services",
+            "Déjeuner",
+            "ACTIF",
+            "V1",
+            "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
+            "3 zones réservables sur ce service.",
+            "Dîner",
+            "ACTIF",
+            "V1",
+            "tous les jours · 19h00 – 23h30 · dernière réservation 22h30 · 120 couverts · 14 par quart d'heure",
+            "3 zones réservables sur ce service."
+          ],
+          "items": [
+            {
+              "title": "Déjeuner",
+              "meta": "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "ACTIF",
+                  "tone": "success-10"
+                },
+                {
+                  "label": "V1",
+                  "tone": "ink-6"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Dîner",
+              "meta": "tous les jours · 19h00 – 23h30 · dernière réservation 22h30 · 120 couverts · 14 par quart d'heure",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "ACTIF",
+                  "tone": "success-10"
+                },
+                {
+                  "label": "V1",
+                  "tone": "ink-6"
+                }
+              ],
+              "actions": []
+            }
+          ]
+        },
+        {
+          "kind": "settings",
+          "heading": "Cadence et fenêtre de réservation",
+          "subheading": "Ce qui empêche la salle de recevoir vingt arrivées dans le même quart d'heure.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Cadence et fenêtre de réservation",
+            "Ce qui empêche la salle de recevoir vingt arrivées dans le même quart d'heure.",
+            "Arrivées maximum par quart d'heure",
+            "Au-delà, l'application propose le créneau suivant.",
+            "Couverts maximum par service",
+            "Groupe maximum accepté en ligne",
+            "Au-delà, la demande passe en validation manuelle.",
+            "Groupe minimum accepté en ligne",
+            "Sur demande à partir de",
+            "Les groupes de cette taille ne sont plus confirmés automatiquement.",
+            "Le carnet ouvre à",
+            "Combien de jours à l'avance un client peut réserver.",
+            "Heure limite le jour même",
+            "Délai minimum avant une réservation",
+            "Minutes entre la réservation et l'heure demandée."
+          ],
+          "fields": [
+            {
+              "label": "Arrivées maximum par quart d'heure",
+              "value": "12",
+              "type": "number"
+            },
+            {
+              "label": "Couverts maximum par service",
+              "value": "120",
+              "type": "number"
+            },
+            {
+              "label": "Groupe maximum accepté en ligne",
+              "value": "8",
+              "type": "number"
+            },
+            {
+              "label": "Groupe minimum accepté en ligne",
+              "value": "1",
+              "type": "number"
+            },
+            {
+              "label": "Sur demande à partir de",
+              "value": "8",
+              "type": "number"
+            },
+            {
+              "label": "Le carnet ouvre à",
+              "value": "60",
+              "type": "number"
+            },
+            {
+              "label": "Heure limite le jour même",
+              "value": "18:00",
+              "type": "time"
+            },
+            {
+              "label": "Délai minimum avant une réservation",
+              "value": "60",
+              "type": "number"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "list",
+          "heading": "Jours exceptionnels",
+          "subheading": "Privatisation",
+          "actions": [
+            "Fermer une journée"
+          ],
+          "facets": [],
+          "texts": [
+            "Jours exceptionnels",
+            "sam. 3 oct.",
+            "FERMÉ",
+            "Privatisation"
+          ],
+          "items": [
+            {
+              "title": "sam. 3 oct.",
+              "meta": "Privatisation",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "FERMÉ",
+                  "tone": "ink-mute-12"
+                }
+              ],
+              "actions": []
+            }
+          ]
+        },
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Ce que voit un client",
+            "Réservation ouverte"
+          ],
+          "body": "Ce que voit un clientRéservation ouverte Réservable jusqu'à 60 jours à l'avance, de 1 à 8 personnes, au plus tard 60 minutes avant. Le jour même, jusqu'à 18h00. Au-delà de 8 personnes, la demande est envoyée à l'établissement.",
+          "pills": []
+        }
+      ]
+    },
+    "/restaurant/equipe": {
+      "label": "Équipe et rôles",
+      "purpose": "Qui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Équipe et rôles",
+      "eyebrow": null,
+      "subtitle": "Qui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré.",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Équipe et rôles",
+            "Qui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré."
+          ],
+          "body": "Équipe et rôlesQui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré.",
+          "pills": []
+        },
+        {
+          "kind": "settings",
+          "heading": "Équipe",
+          "subheading": "Le rôle décide de ce qu'un membre peut faire dans le portail.",
+          "actions": [
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Retirer",
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Retirer",
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Retirer",
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Retirer",
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Inviter"
+          ],
+          "facets": [],
+          "texts": [
+            "Équipe",
+            "Le rôle décide de ce qu'un membre peut faire dans le portail.",
+            "Rachid Amrani",
+            "rachid@darzellij.ma",
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Retirer",
+            "Yassine Alami",
+            "yassine@darzellij.ma",
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Retirer",
+            "Imane Ouali",
+            "imane@darzellij.ma",
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Retirer",
+            "Karim Sefrioui",
+            "karim@darzellij.ma",
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Retirer",
+            "Inviter un membre",
+            "Nom complet",
+            "E-mail",
+            "Propriétaire",
+            "Manager",
+            "Équipe",
+            "Inviter",
+            "Travaille le service du jour et les arrivées."
+          ],
+          "fields": [
+            {
+              "label": "Nom complet",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "label": "E-mail",
+              "value": "",
+              "type": "email"
+            }
+          ],
+          "toggles": []
+        }
+      ]
+    },
+    "/restaurant/notifications": {
+      "label": "Notifications",
+      "purpose": "Les alertes de l'équipe et les messages aux clients, avec leur canal, leur moment et leur journal de délivrance.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "Les canaux, les horaires et les gabarits s'enregistrent. L'expédition attend le compte Twilio ou Infobip de LYFE.",
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Notifications",
+      "eyebrow": null,
+      "subtitle": "Qui reçoit quoi, et par quel canal",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Alertes de l'équipe",
+          "subheading": "Ce que l'établissement reçoit, et par quel canal.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Alertes de l'équipe",
+            "Ce que l'établissement reçoit, et par quel canal.",
+            "Nouvelle demande de réservation",
+            "La seule alerte qu'un manager doit voir pendant un service.",
+            "Push",
+            "E-mail",
+            "WhatsApp",
+            "Aucun"
+          ],
+          "fields": [
+            {
+              "label": "Nouvelle demande de réservation",
+              "value": "Push",
+              "type": "select-one"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "settings",
+          "heading": "Messages aux clients",
+          "subheading": "Envoyés par LYFE au nom de l'établissement. Le texte reste dans les gabarits validés ; le moment vous appartient.",
+          "actions": [
+            "Envoyer un test"
+          ],
+          "facets": [],
+          "texts": [
+            "Messages aux clients",
+            "Envoyés par LYFE au nom de l'établissement. Le texte reste dans les gabarits validés ; le moment vous appartient.",
+            "Ces messages ne sont pas des campagnes",
+            "Confirmation",
+            "IMMÉDIAT",
+            "Envoyée dès que la réservation est acceptée.",
+            "Push",
+            "E-mail",
+            "WhatsApp",
+            "Aucun"
+          ],
+          "fields": [
+            {
+              "label": "Confirmation",
+              "value": "WhatsApp",
+              "type": "select-one"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "list",
+          "heading": "Journal de délivrance",
+          "subheading": "table_prete · lun. 21 sept.",
+          "actions": [],
+          "facets": [
+            {
+              "label": "Tout",
+              "count": "6"
+            },
+            {
+              "label": "Échecs",
+              "count": "1"
+            }
+          ],
+          "texts": [
+            "Journal de délivrance",
+            "6",
+            "1",
+            "+212 667 74 21 08",
+            "SMS",
+            "DELIVRE",
+            "table_prete · lun. 21 sept.",
+            "+212 661 20 44 18",
+            "WHATSAPP",
+            "LU",
+            "confirmation · dim. 20 sept.",
+            "+212 663 41 77 92",
+            "WHATSAPP",
+            "ÉCHEC",
+            "reconfirmation · dim. 20 sept.",
+            "Numéro non joignable sur WhatsApp",
+            "+212 660 15 62 40",
+            "WHATSAPP",
+            "DELIVRE",
+            "rappel_j1 · dim. 20 sept.",
+            "leila.m@gmail.com",
+            "EMAIL",
+            "LU",
+            "remerciement · sam. 19 sept.",
+            "app_user_11",
+            "PUSH",
+            "ENVOYE",
+            "avis_invitation · ven. 18 sept."
+          ],
+          "items": [
+            {
+              "title": "+212 667 74 21 08",
+              "meta": "table_prete · lun. 21 sept.",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "SMS",
+                  "tone": "ink-6"
+                },
+                {
+                  "label": "DELIVRE",
+                  "tone": "info-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "+212 661 20 44 18",
+              "meta": "confirmation · dim. 20 sept.",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "WHATSAPP",
+                  "tone": "ink-6"
+                },
+                {
+                  "label": "LU",
+                  "tone": "info-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "+212 663 41 77 92",
+              "meta": "reconfirmation · dim. 20 sept.",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "WHATSAPP",
+                  "tone": "ink-6"
+                },
+                {
+                  "label": "ÉCHEC",
+                  "tone": "danger-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "+212 660 15 62 40",
+              "meta": "rappel_j1 · dim. 20 sept.",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "WHATSAPP",
+                  "tone": "ink-6"
+                },
+                {
+                  "label": "DELIVRE",
+                  "tone": "info-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "leila.m@gmail.com",
+              "meta": "remerciement · sam. 19 sept.",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "EMAIL",
+                  "tone": "ink-6"
+                },
+                {
+                  "label": "LU",
+                  "tone": "info-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "app_user_11",
+              "meta": "avis_invitation · ven. 18 sept.",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "PUSH",
+                  "tone": "ink-6"
+                },
+                {
+                  "label": "ENVOYE",
+                  "tone": "info-10"
+                }
+              ],
+              "actions": []
+            }
+          ]
+        }
+      ]
+    },
+    "/restaurant/parametres": {
+      "label": "Paramètres",
+      "purpose": "Entité juridique, banque, type de configuration — l'interrupteur qui fait apparaître Vie nocturne —, langue, données, intégrations.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "title": "Paramètres",
+      "eyebrow": null,
+      "subtitle": "La configuration administrative de l'établissement",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Type de configuration",
+          "subheading": "Le seul réglage qui ajoute des écrans. Lounge active Vie nocturne — guest list, tables avec minimum, promoteurs — et renomme les couverts en personnes.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Type de configuration",
+            "Le seul réglage qui ajoute des écrans. Lounge active Vie nocturne — guest list, tables avec minimum, promoteurs — et renomme les couverts en personnes.",
+            "Vie nocturne est masquée",
+            "Passez en Lounge ou en Restaurant et lounge pour la faire apparaître dans la navigation.",
+            "Configuration",
+            "Restaurant, Lounge, ou les deux.",
+            "Restaurant",
+            "Lounge",
+            "Restaurant et lounge",
+            "Dress code",
+            "Affiché sur la fiche de l'application. Utile surtout en configuration lounge.",
+            "Âge minimum",
+            "0 pour aucune restriction."
+          ],
+          "fields": [
+            {
+              "label": "Configuration",
+              "value": "Restaurant",
+              "type": "select-one"
+            },
+            {
+              "label": "Dress code",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "label": "Âge minimum",
+              "value": "0",
+              "type": "number"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "settings",
+          "heading": "Entité juridique",
+          "subheading": "Ce qui figure sur les factures LYFE.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Entité juridique",
+            "Ce qui figure sur les factures LYFE.",
+            "Raison sociale",
+            "ICE",
+            "RC",
+            "Adresse de facturation",
+            "12 derb Sidi Ahmed Soussi, Médina, Marrakech"
+          ],
+          "fields": [
+            {
+              "label": "Raison sociale",
+              "value": "Dar Zellij SARL",
+              "type": "text"
+            },
+            {
+              "label": "ICE",
+              "value": "001874520000031",
+              "type": "text"
+            },
+            {
+              "label": "RC",
+              "value": "112 447",
+              "type": "text"
+            },
+            {
+              "label": "Adresse de facturation",
+              "value": "12 derb Sidi Ahmed Soussi, Médina, Marrakech",
+              "type": "textarea"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "settings",
+          "heading": "Coordonnées bancaires",
+          "subheading": "Le compte qui reçoit les reversements.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Coordonnées bancaires",
+            "Le compte qui reçoit les reversements.",
+            "IBAN",
+            "RIB",
+            "Document justificatif, demandé une fois.",
+            "Téléverser depuis Ma fiche"
+          ],
+          "fields": [
+            {
+              "label": "IBAN",
+              "value": "MA64 0113 0000 0012 3456 7890 12",
+              "type": "text"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "settings",
+          "heading": "Langue et fuseau",
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Langue et fuseau",
+            "Langue de l'établissement",
+            "Français",
+            "العربية",
+            "English",
+            "Fuseau horaire",
+            "Casablanca (GMT+1)",
+            "Paris (GMT+1 / +2)"
+          ],
+          "fields": [
+            {
+              "label": "Langue de l'établissement",
+              "value": "Français",
+              "type": "select-one"
+            },
+            {
+              "label": "Fuseau horaire",
+              "value": "Casablanca (GMT+1)",
+              "type": "select-one"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "settings",
+          "heading": "Données et vie privée",
+          "subheading": "Ce que le client accepte, et combien de temps vous le gardez.",
+          "actions": [
+            "Exporter toutes les données"
+          ],
+          "facets": [],
+          "texts": [
+            "Données et vie privée",
+            "Ce que le client accepte, et combien de temps vous le gardez.",
+            "Texte de consentement",
+            "Montré dans l'application au moment de réserver.",
+            "Durée de conservation",
+            "Mois après la dernière visite, au terme desquels la fiche est anonymisée."
+          ],
+          "fields": [
+            {
+              "label": "Texte de consentement",
+              "value": "En réservant, vous acceptez que l'établissement conserve vos coordonnées pour gérer votre venue. Vous pouvez retirer ce consentement à tout moment depuis l'application.",
+              "type": "textarea"
+            },
+            {
+              "label": "Durée de conservation",
+              "value": "36",
+              "type": "number"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "settings",
+          "heading": "Intégrations",
+          "subheading": "Pour un futur raccordement à une caisse. Désactivé par défaut.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Intégrations",
+            "Fiche Google Business",
+            "Compte Instagram",
+            "Numéro WhatsApp Business",
+            "Accès API",
+            "Pour un futur raccordement à une caisse. Désactivé par défaut."
+          ],
+          "fields": [
+            {
+              "label": "Fiche Google Business",
+              "value": "https://g.page/dar-zellij",
+              "type": "text"
+            },
+            {
+              "label": "Compte Instagram",
+              "value": "@darzellij",
+              "type": "text"
+            },
+            {
+              "label": "Numéro WhatsApp Business",
+              "value": "+212 661 00 26 00",
+              "type": "text"
+            }
+          ],
+          "toggles": [
+            {
+              "label": "",
+              "on": false
+            }
+          ]
+        }
+      ]
+    },
+    "/restaurant/abonnement": {
+      "label": "Abonnement",
+      "purpose": "Le plan, son état, les factures et l'usage de la période.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire",
+      "workspace": "venue",
+      "title": "Abonnement",
+      "eyebrow": null,
+      "subtitle": "La relation commerciale avec LYFE",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "kpi-grid",
+          "heading": null,
+          "subheading": "Renouvellement le ven. 6 nov.",
+          "actions": [],
+          "facets": [
+            {
+              "label": "Moyen de paiementCarte ••••",
+              "count": "4417"
+            }
+          ],
+          "texts": [
+            "Abonnement",
+            "ACTIF",
+            "Renouvellement le ven. 6 nov.",
+            "ACTIF",
+            "Montant annuel",
+            "14 400 MAD",
+            "Un abonnement annuel unique. Ni palier, ni option à l'usage.",
+            "Moyen de paiement",
+            "Carte •••• 4417"
+          ],
+          "tiles": [
+            {
+              "label": "Abonnement",
+              "value": "ACTIF",
+              "meta": [
+                "Renouvellement le ven. 6 nov."
+              ],
+              "pills": [
+                {
+                  "label": "ACTIF",
+                  "tone": "success-10"
+                }
+              ]
+            },
+            {
+              "label": "Montant annuel",
+              "value": "14 400 MAD",
+              "meta": [
+                "Un abonnement annuel unique. Ni palier, ni option à l'usage."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Moyen de paiement",
+              "value": "Carte •••• 4417",
+              "meta": [],
+              "pills": []
+            }
+          ]
+        },
+        {
+          "kind": "kpi-grid",
+          "heading": null,
+          "subheading": "Toutes celles enregistrées depuis l'ouverture du compte.",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Réservations",
+            "359",
+            "Toutes celles enregistrées depuis l'ouverture du compte.",
+            "Clients au fichier",
+            "60",
+            "Le total affiché par Clients.",
+            "Messages envoyés",
+            "6",
+            "Messages de service envoyés au nom de l'établissement.",
+            "Campagnes",
+            "6",
+            "Campagnes ponctuelles et automatisations confondues."
+          ],
+          "tiles": [
+            {
+              "label": "Réservations",
+              "value": "359",
+              "meta": [
+                "Toutes celles enregistrées depuis l'ouverture du compte."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Clients au fichier",
+              "value": "60",
+              "meta": [
+                "Le total affiché par Clients."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Messages envoyés",
+              "value": "6",
+              "meta": [
+                "Messages de service envoyés au nom de l'établissement."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Campagnes",
+              "value": "6",
+              "meta": [
+                "Campagnes ponctuelles et automatisations confondues."
+              ],
+              "pills": []
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "heading": "Factures",
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Factures",
+            "Référence",
+            "Émise le",
+            "Montant",
+            "État",
+            "LYFE-2026-0182",
+            "jeu. 6 nov.",
+            "14 400 MAD",
+            "PAYÉE",
+            "LYFE-2025-0611",
+            "mer. 6 nov.",
+            "12 000 MAD",
+            "PAYÉE"
+          ],
+          "head": [
+            "Référence",
+            "Émise le",
+            "Montant",
+            "État"
+          ],
+          "rows": [
+            [
+              {
+                "text": "LYFE-2026-0182",
+                "pills": []
+              },
+              {
+                "text": "jeu. 6 nov.",
+                "pills": []
+              },
+              {
+                "text": "14 400 MAD",
+                "pills": []
+              },
+              {
+                "text": "PAYÉE",
+                "pills": [
+                  {
+                    "label": "PAYÉE",
+                    "tone": "success-10"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "text": "LYFE-2025-0611",
+                "pills": []
+              },
+              {
+                "text": "mer. 6 nov.",
+                "pills": []
+              },
+              {
+                "text": "12 000 MAD",
+                "pills": []
+              },
+              {
+                "text": "PAYÉE",
+                "pills": [
+                  {
+                    "label": "PAYÉE",
+                    "tone": "success-10"
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    "/restaurant/support": {
+      "label": "Support",
+      "purpose": "Guides, formulaire de contact, tickets et leur état, lien WhatsApp avec ses horaires.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "title": "Support",
+      "eyebrow": null,
+      "subtitle": "De l'aide sans quitter le portail",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "list",
+          "heading": "Guides",
+          "subheading": "Compléter la fiche, ouvrir les disponibilités, prendre la première réservation. · 8 min de lecture",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Guides",
+            "Démarrer avec LYFE",
+            "Compléter la fiche, ouvrir les disponibilités, prendre la première réservation. · 8 min de lecture",
+            "Gérer un service",
+            "Le carnet, la liste d'attente, le check-in, et ce que l'équipe lit au briefing. · 12 min de lecture",
+            "Réduire les absences",
+            "Rappels, reconfirmation, acomptes : ce qui marche, dans l'ordre. · 10 min de lecture",
+            "Configurer les acomptes",
+            "Quand demander de l'argent d'avance, et comment le capturer ou le rendre. · 7 min de lecture"
+          ],
+          "items": [
+            {
+              "title": "Démarrer avec LYFE",
+              "meta": "Compléter la fiche, ouvrir les disponibilités, prendre la première réservation. · 8 min de lecture",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Gérer un service",
+              "meta": "Le carnet, la liste d'attente, le check-in, et ce que l'équipe lit au briefing. · 12 min de lecture",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Réduire les absences",
+              "meta": "Rappels, reconfirmation, acomptes : ce qui marche, dans l'ordre. · 10 min de lecture",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Configurer les acomptes",
+              "meta": "Quand demander de l'argent d'avance, et comment le capturer ou le rendre. · 7 min de lecture",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            }
+          ]
+        },
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": "Ouvrir WhatsApp",
+          "actions": [
+            "Ouvrir un ticket"
+          ],
+          "facets": [],
+          "texts": [
+            "Nous joindre",
+            "WhatsApp, du lundi au samedi, 9 h – 22 h.",
+            "Ouvrir WhatsApp",
+            "Ouvrir un ticket",
+            "État des services"
+          ],
+          "body": "Nous joindreWhatsApp, du lundi au samedi, 9 h – 22 h. Pour un service en cours, WhatsApp est le plus rapide. Pour tout ce qui demande une pièce jointe ou un suivi, ouvrez un ticket : il reste consultable ci-dessous.Ouvrir WhatsAppOuvrir un ticketÉtat des services",
+          "pills": []
+        },
+        {
+          "kind": "list",
+          "heading": "Vos demandes",
+          "subheading": "SUP-4610 · Paiements · ouvert le sam. 19 sept.",
+          "actions": [],
+          "facets": [
+            {
+              "label": "Toutes",
+              "count": "2"
+            },
+            {
+              "label": "En cours",
+              "count": "1"
+            },
+            {
+              "label": "Résolues",
+              "count": "1"
+            }
+          ],
+          "texts": [
+            "Vos demandes",
+            "2",
+            "1",
+            "1",
+            "Acompte marqué échoué alors que le client a été débité",
+            "EN COURS",
+            "SUP-4610 · Paiements · ouvert le sam. 19 sept.",
+            "Détail transmis à l'équipe LYFE avec les captures d'écran.",
+            "Une réservation de l'app n'apparaît pas dans le carnet",
+            "RÉSOLU",
+            "SUP-4412 · Réservations · ouvert le sam. 12 sept.",
+            "Détail transmis à l'équipe LYFE avec les captures d'écran."
+          ],
+          "items": [
+            {
+              "title": "Acompte marqué échoué alors que le client a été débité",
+              "meta": "SUP-4610 · Paiements · ouvert le sam. 19 sept.",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "EN COURS",
+                  "tone": "info-10"
+                }
+              ],
+              "actions": []
+            },
+            {
+              "title": "Une réservation de l'app n'apparaît pas dans le carnet",
+              "meta": "SUP-4412 · Réservations · ouvert le sam. 12 sept.",
+              "initials": null,
+              "trailing": null,
+              "pills": [
+                {
+                  "label": "RÉSOLU",
+                  "tone": "success-10"
+                }
+              ],
+              "actions": []
+            }
+          ]
+        }
+      ]
+    },
+    "/login": {
+      "label": "Connexion",
+      "purpose": "Le seul point d'entrée. Résout le compte vers son espace ; propose de choisir le lieu quand il y en a plusieurs.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "title": "Le système d'exploitation de vos soirées.",
+      "eyebrow": "Espace partenaire",
+      "subtitle": "Billetterie, réservations, audience, paiements et analyses — sur la même plateforme. Pour les festivals, les salles, les restaurants et les bars au Maroc.",
+      "venue": null,
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Connectez-vous",
+          "subheading": "personnes touchées",
+          "actions": [
+            "Se connecter"
+          ],
+          "facets": [],
+          "texts": [
+            "Espace partenaire",
+            "Le système d'exploitation de vos soirées.",
+            "Billetterie, réservations, audience, paiements et analyses — sur la même plateforme. Pour les festivals, les salles, les restaurants et les bars au Maroc.",
+            "+45 000",
+            "personnes touchées",
+            "12",
+            "villes au Maroc",
+            "J+3",
+            "versement garanti",
+            "« LYFE nous a permis de gérer la billetterie de notre 19e édition sans friction. »",
+            "— Équipe Jazzablanca",
+            "Connectez-vous",
+            "Un seul accès, pour vos événements comme pour vos lieux.",
+            "Adresse e-mail",
+            "Mot de passe",
+            "Se connecter",
+            "Comptes de démonstration",
+            "Mot de passe : demo. Chaque compte mène à un espace différent.",
+            "Organisateur d'événements",
+            "Jazzablanca · deux organisations, aucun lieu",
+            "Les deux espaces",
+            "Deux lieux et une organisation",
+            "Partenaire lieu",
+            "Nomad Rooftop · gérante, un seul lieu",
+            "Plusieurs lieux",
+            "Gérant de deux lieux · doit choisir",
+            "Compte sans espace",
+            "Inscrit, rien encore rattaché"
+          ],
+          "fields": [
+            {
+              "label": "Adresse e-mail",
+              "value": "",
+              "type": "email"
+            },
+            {
+              "label": "Mot de passe",
+              "value": "",
+              "type": "password"
+            }
+          ],
+          "toggles": []
+        }
+      ]
+    },
+    "/splash": {
+      "label": "Splash",
+      "purpose": "Écran de lancement de l'application mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "venue": null,
+      "blocks": []
+    },
+    "/contact": {
+      "label": "Demander une démo",
+      "purpose": "Formulaire public pour un partenaire sans accès.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "venue": null,
+      "blocks": [
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": "Casablanca · Rabat · Marrakech",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Parlons de votre événement.",
+            "LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures avec une démo personnalisée.",
+            "Casablanca · Rabat · Marrakech"
+          ],
+          "body": "Parlons de votre événement.LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures avec une démo personnalisée.hello@lyfe.maCasablanca · Rabat · Marrakech",
+          "pills": []
+        }
+      ]
+    }
+  },
+  "nav": {
+    "groups": [
+      {
+        "label": "Aujourd'hui",
+        "items": [
+          {
+            "label": "Accueil",
+            "href": "/restaurant"
+          },
+          {
+            "label": "Réservations",
+            "href": "/restaurant/reservations"
+          }
+        ]
+      },
+      {
+        "label": "En service",
+        "items": [
+          {
+            "label": "Check-in",
+            "href": "/restaurant/check-in"
+          }
+        ]
+      },
+      {
+        "label": "Clients",
+        "items": [
+          {
+            "label": "Liste clients",
+            "href": "/restaurant/clients"
+          }
+        ]
+      },
+      {
+        "label": "Ma présence",
+        "items": [
+          {
+            "label": "Ma fiche",
+            "href": "/restaurant/ma-fiche"
+          },
+          {
+            "label": "Menu",
+            "href": "/restaurant/menu"
+          },
+          {
+            "label": "Avis",
+            "href": "/restaurant/avis"
+          }
+        ]
+      },
+      {
+        "label": "Croissance",
+        "items": [
+          {
+            "label": "Visibilité",
+            "href": "/restaurant/visibilite"
+          }
+        ]
+      },
+      {
+        "label": "Pilotage",
+        "items": [
+          {
+            "label": "Performance",
+            "href": "/restaurant/performance"
+          },
+          {
+            "label": "Bilans",
+            "href": "/restaurant/bilans"
+          }
+        ]
+      },
+      {
+        "label": "Établissement",
+        "items": [
+          {
+            "label": "Disponibilités",
+            "href": "/restaurant/disponibilites"
+          },
+          {
+            "label": "Équipe et rôles",
+            "href": "/restaurant/equipe"
+          },
+          {
+            "label": "Notifications",
+            "href": "/restaurant/notifications"
+          }
+        ]
+      },
+      {
+        "label": "Compte",
+        "items": [
+          {
+            "label": "Paramètres",
+            "href": "/restaurant/parametres"
+          },
+          {
+            "label": "Abonnement",
+            "href": "/restaurant/abonnement"
+          },
+          {
+            "label": "Support",
+            "href": "/restaurant/support"
+          }
+        ]
+      }
+    ]
+  }
+}

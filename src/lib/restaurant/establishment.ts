@@ -25,7 +25,8 @@ import type {
 } from "@/lib/types/venue-operations";
 import type { ServiceConfiguration } from "@/lib/data/repository";
 import { CONFIGURATION_LABEL, configFor } from "@/lib/venue/config";
-import { RESTAURANT_SETTINGS_PATH, restaurantHref } from "./slugs";
+import { RESTAURANT_SETTINGS_PATH, restaurantHref, type Lot } from "./slugs";
+import type { Role } from "@/lib/auth/session";
 import { clock, money, shortDay } from "./format";
 
 const WEEKDAY_SHORT = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
@@ -38,7 +39,9 @@ export function buildAvailabilityScreen(
   config: ServiceConfiguration | undefined,
   availability: VenueAvailability | undefined,
   configuration: VenueConfiguration,
+  lot: Lot = 2,
 ): ScreenSpec {
+  const lot1 = lot === 1;
   const vocabulary = configFor(configuration);
 
   if (!config) {
@@ -233,11 +236,15 @@ export function buildAvailabilityScreen(
       title: "Aucune fermeture",
       body: "Fériés, privatisations, congés : ce qui retire une journée du carnet.",
       icon: "calendar",
-      action: {
-        kind: "link",
-        href: restaurantHref("calendrier"),
-        label: "Ouvrir le calendrier",
-      },
+      // Calendrier is Lot 2; without it the empty state says what a
+      // closure is and leaves it there.
+      action: lot1
+        ? undefined
+        : {
+            kind: "link",
+            href: restaurantHref("calendrier"),
+            label: "Ouvrir le calendrier",
+          },
     },
   };
 
@@ -254,17 +261,19 @@ export function buildAvailabilityScreen(
     body: pacing.onlineBookingOpen
       ? `Réservable jusqu'à ${pacing.bookingWindowDays} jours à l'avance, de ${pacing.minPartyOnline} à ${pacing.maxPartyOnline} personnes, au plus tard ${pacing.minLeadMinutes} minutes avant. Le jour même, jusqu'à ${clock(pacing.sameDayCutoff)}. Au-delà de ${pacing.requestOnlyAbove} personnes, la demande est envoyée à l'établissement.`
       : "L'établissement apparaît dans l'application mais aucun créneau n'est proposé.",
-    actions: [
-      {
-        action: {
-          kind: "link",
-          href: restaurantHref("calendrier"),
-          label: "Voir la charge par jour",
-          icon: "calendar",
-        },
-        variant: "secondary",
-      },
-    ],
+    actions: lot1
+      ? []
+      : [
+          {
+            action: {
+              kind: "link",
+              href: restaurantHref("calendrier"),
+              label: "Voir la charge par jour",
+              icon: "calendar",
+            },
+            variant: "secondary",
+          },
+        ],
   };
 
   return {
@@ -381,7 +390,9 @@ const GUEST_MESSAGES: {
 export function buildNotificationsScreen(
   prefs: NotificationPreferences | undefined,
   messages: { id: string; recipient: string; kind: string; status: string; at: string; channel: string; failureReason: string }[],
+  lot: Lot = 2,
 ): ScreenSpec {
+  const lot1 = lot === 1;
   const channelOf = (list: string[] | undefined) =>
     list && list.length > 0 ? list[0] : "none";
 
@@ -400,39 +411,46 @@ export function buildNotificationsScreen(
         payload: { event: "newBooking" },
         allow: ["owner", "admin"],
       },
-      {
-        id: "cancellation",
-        label: "Annulation",
-        control: {
-          kind: "select",
-          value: channelOf(prefs?.cancellation),
-          options: CHANNELS,
-        },
-        command: "notifications.channel",
-        payload: { event: "cancellation" },
-        allow: ["owner", "admin"],
-      },
-      {
-        id: "review",
-        label: "Avis reçu",
-        control: { kind: "select", value: channelOf(prefs?.review), options: CHANNELS },
-        command: "notifications.channel",
-        payload: { event: "review" },
-        allow: ["owner", "admin"],
-      },
-      {
-        id: "summary",
-        label: "Résumé quotidien",
-        hint: "Un récapitulatif du service de la veille, le matin.",
-        control: {
-          kind: "select",
-          value: channelOf(prefs?.dailySummary),
-          options: CHANNELS,
-        },
-        command: "notifications.channel",
-        payload: { event: "dailySummary" },
-        allow: ["owner", "admin"],
-      },
+      // Lot 1 buys one alert: the booking that needs a decision. The
+      // other three are the same control over events Lot 1 does not act
+      // on anywhere in the portal.
+      ...(lot1
+        ? []
+        : ([
+            {
+              id: "cancellation",
+              label: "Annulation",
+              control: {
+                kind: "select" as const,
+                value: channelOf(prefs?.cancellation),
+                options: CHANNELS,
+              },
+              command: "notifications.channel",
+              payload: { event: "cancellation" },
+              allow: ["owner", "admin"] as Role[],
+            },
+            {
+              id: "review",
+              label: "Avis reçu",
+              control: { kind: "select" as const, value: channelOf(prefs?.review), options: CHANNELS },
+              command: "notifications.channel",
+              payload: { event: "review" },
+              allow: ["owner", "admin"] as Role[],
+            },
+            {
+              id: "summary",
+              label: "Résumé quotidien",
+              hint: "Un récapitulatif du service de la veille, le matin.",
+              control: {
+                kind: "select" as const,
+                value: channelOf(prefs?.dailySummary),
+                options: CHANNELS,
+              },
+              command: "notifications.channel",
+              payload: { event: "dailySummary" },
+              allow: ["owner", "admin"] as Role[],
+            },
+          ] satisfies SettingRow[])),
     ],
   };
 
@@ -445,14 +463,23 @@ export function buildNotificationsScreen(
     banner: {
       tone: "info",
       title: "Ces messages ne sont pas des campagnes",
-      body: "Ils partent quel que soit le consentement marketing, parce qu'ils concernent une réservation que le client a faite. Les campagnes vivent dans Campagnes.",
-      action: {
-        kind: "link",
-        href: restaurantHref("campagnes"),
-        label: "Ouvrir Campagnes",
-      },
+      body: lot1
+        ? "Ils partent quel que soit le consentement marketing, parce qu'ils concernent une réservation que le client a faite. Les campagnes marketing arrivent avec le lot 2."
+        : "Ils partent quel que soit le consentement marketing, parce qu'ils concernent une réservation que le client a faite. Les campagnes vivent dans Campagnes.",
+      action: lot1
+        ? undefined
+        : {
+            kind: "link",
+            href: restaurantHref("campagnes"),
+            label: "Ouvrir Campagnes",
+          },
     },
-    rows: GUEST_MESSAGES.flatMap((message): SettingRow[] => [
+    // Lot 1 sends one guest message: the confirmation of a booking it
+    // accepted. The rest are the reminder and survey cadence Lot 2 buys.
+    rows: (lot1
+      ? GUEST_MESSAGES.filter((m) => m.id === "confirmation")
+      : GUEST_MESSAGES
+    ).flatMap((message): SettingRow[] => [
       {
         id: `${message.id}-channel`,
         label: message.label,
@@ -486,7 +513,13 @@ export function buildNotificationsScreen(
       { id: "all", label: "Tout" },
       { id: "failed", label: "Échecs", match: { facet: "status", values: ["echoue"] } },
     ],
-    rows: messages.slice(0, 50).map((m) => ({
+    // The journal records what went out. Under Lot 1 that is the one
+    // message Lot 1 sends: a log showing reminders and survey invites
+    // beside a screen that offers neither reads as a screen with hidden
+    // settings rather than as a narrower product.
+    rows: (lot1 ? messages.filter((m) => m.kind === "confirmation") : messages)
+      .slice(0, 50)
+      .map((m) => ({
       id: m.id,
       title: m.recipient,
       icon: "message-square" as const,
@@ -741,7 +774,11 @@ function row(
 
 // ── Abonnement ───────────────────────────────────────────────
 
-export function buildSubscriptionScreen(subscription: Subscription): ScreenSpec {
+export function buildSubscriptionScreen(
+  subscription: Subscription,
+  lot: Lot = 2,
+): ScreenSpec {
+  const lot1 = lot === 1;
   const statusBadge =
     subscription.status === "actif"
       ? { label: "ACTIF", tone: "success" as const }
@@ -774,7 +811,9 @@ export function buildSubscriptionScreen(subscription: Subscription): ScreenSpec 
         tone: "surface",
         icon: "coins",
         metric: { value: subscription.priceMad, format: MAD, animate: true },
-        hint: "Un abonnement unique, sans palier.",
+        hint: lot1
+          ? "Un abonnement annuel unique. Ni palier, ni option à l'usage."
+          : "Un abonnement unique, sans palier.",
       },
       {
         id: "method",
@@ -821,7 +860,9 @@ export function buildSubscriptionScreen(subscription: Subscription): ScreenSpec 
         // The journal counts one row per guest message. Campaign sends
         // are counted per campaign in Campagnes, which is why the two
         // screens quote different totals for the word "messages".
-        hint: "Messages de service. Les envois de campagne sont comptés dans Campagnes."
+        hint: lot1
+          ? "Messages de service envoyés au nom de l'établissement."
+          : "Messages de service. Les envois de campagne sont comptés dans Campagnes."
       },
       {
         id: "campaigns",
@@ -901,7 +942,10 @@ export function buildSubscriptionScreen(subscription: Subscription): ScreenSpec 
     slug: "abonnement",
     title: "Abonnement",
     subtitle: "La relation commerciale avec LYFE",
-    blocks: [plan, usage, invoices, marketingAddon],
+    // One annual plan, its invoices, and what it has been used for. The
+    // marketing add-on is priced per recipient against Campagnes, so it
+    // belongs to the lot that sells Campagnes.
+    blocks: lot1 ? [plan, usage, invoices] : [plan, usage, invoices, marketingAddon],
   };
 }
 

@@ -26,7 +26,7 @@ import type {
 } from "@/lib/types/venue-operations";
 import type { RestaurantProfile } from "@/lib/types/restaurant";
 import { configFor } from "@/lib/venue/config";
-import { RESTAURANT_SETTINGS_PATH, restaurantHref } from "./slugs";
+import { RESTAURANT_SETTINGS_PATH, restaurantHref, type Lot } from "./slugs";
 import { COUNT, MAD } from "@/lib/dashboard/formats";
 import { shortDay } from "./format";
 
@@ -78,7 +78,9 @@ export function buildPerformanceScreen(
   desk: MoneyDesk | undefined,
   calendar: CalendarDay[],
   configuration: VenueConfiguration,
+  lot: Lot = 2,
 ): ScreenSpec {
+  const lot1 = lot === 1;
   if (!analytics) {
     return {
       slug: "performance",
@@ -123,22 +125,28 @@ export function buildPerformanceScreen(
         },
         command: "performance.period",
       },
-      {
-        id: "comparison",
-        label: "Comparer à",
-        hint: "Toutes les variations de cet écran sont mesurées contre cette base.",
-        control: {
-          kind: "select",
-          value: comparison,
-          options: (["previous", "last_year"] as Comparison[]).map((c) => ({
-            value: c,
-            label: COMPARISON_LABEL[c],
-          })),
-        },
-        command: "performance.comparison",
-      },
+      // Lot 1 buys a period selector and nothing beside it: the baseline
+      // is the previous period, stated rather than chosen.
+      ...(lot1
+        ? []
+        : [
+            {
+              id: "comparison",
+              label: "Comparer à",
+              hint: "Toutes les variations de cet écran sont mesurées contre cette base.",
+              control: {
+                kind: "select" as const,
+                value: comparison,
+                options: (["previous", "last_year"] as Comparison[]).map((c) => ({
+                  value: c,
+                  label: COMPARISON_LABEL[c],
+                })),
+              },
+              command: "performance.comparison",
+            },
+          ]),
     ],
-    footerActions: [
+    footerActions: lot1 ? [] : [
       {
         action: {
           kind: "command",
@@ -252,7 +260,49 @@ export function buildPerformanceScreen(
       : []),
   ];
 
-  const kpis: Block = { id: "performance-kpis", type: "kpi-grid", columns: 4, tiles };
+  /**
+   * The three Lot 1 buys, in the order row 39 lists them.
+   *
+   * Revenue is the projection the analytics slice already carries, not a
+   * Lyfe Pay total — Lyfe Pay is a Lot 2 screen, and a figure that
+   * disappeared with it would make the tile a lie on half the venues.
+   * The word on the tile says so.
+   */
+  const lot1Tiles: KpiTile[] = [
+    {
+      id: "fill",
+      label: "Taux de remplissage",
+      tone: "sand",
+      icon: "gauge",
+      metric: { value: analytics.occupancyRate, format: { kind: "percent" }, animate: true },
+      delta: { value: analytics.occupancyDeltaPct, period: "vs période précédente" },
+      hint: "Contre la capacité déclarée dans Disponibilités.",
+    },
+    {
+      id: "revenue",
+      label: "Revenu estimé",
+      tone: "sage",
+      icon: "coins",
+      metric: { value: analytics.estimatedRevenueMad, format: MAD, animate: true },
+      delta: { value: analytics.revenueDeltaPct, period: "vs période précédente" },
+      hint: "Projeté depuis les couverts servis et le ticket moyen.",
+    },
+    {
+      id: "no-show",
+      label: "Taux de no-show",
+      tone: "surface",
+      icon: "user-x",
+      metric: { value: analytics.noShowRate, format: PCT, animate: true },
+      delta: { value: analytics.noShowDeltaPct, period: "vs période précédente", invert: true },
+    },
+  ];
+
+  const kpis: Block = {
+    id: "performance-kpis",
+    type: "kpi-grid",
+    columns: lot1 ? 3 : 4,
+    tiles: lot1 ? lot1Tiles : tiles,
+  };
 
   const noSpendNote: Block | null = hasSpend
     ? null
@@ -328,6 +378,15 @@ export function buildPerformanceScreen(
       : (new Date(parsed).getDay() + 6) % 7;
     const current = byWeekday.get(index) ?? { covers: 0, days: 0 };
     byWeekday.set(index, { covers: current.covers + point.covers, days: current.days + 1 });
+  }
+
+  if (lot1) {
+    return {
+      slug: "performance",
+      title: "Performance",
+      subtitle: ANALYTICS_PERIOD[period],
+      blocks: [periodPicker, kpis],
+    };
   }
 
   return {
@@ -410,7 +469,9 @@ export function buildVisibilityScreen(
   photoCount: number,
   replyRate: number,
   noShowRate: number,
+  lot: Lot = 2,
 ): ScreenSpec {
+  const lot1 = lot === 1;
   if (!metrics) {
     return {
       slug: "visibilite",
@@ -496,17 +557,22 @@ export function buildVisibilityScreen(
         subtitle: metrics.boostEndsAt
           ? `Jusqu'au ${format(new Date(metrics.boostEndsAt), "d MMMM", { locale: fr })}`
           : undefined,
-        ring: {
-          progress: done / checklist.length,
-          topLabel: "Fiche",
-          centerLabel: `${done}/${checklist.length}`,
-          bottomLabel: "complète",
-        },
+        // The ring counts the ranking checklist, so it goes where the
+        // checklist goes: Lot 1 buys the boost, not the factors behind
+        // a ranking it cannot see.
+        ring: lot1
+          ? undefined
+          : {
+              progress: done / checklist.length,
+              topLabel: "Fiche",
+              centerLabel: `${done}/${checklist.length}`,
+              bottomLabel: "complète",
+            },
         // No stats here: the grid immediately below carries the same
         // four numbers with their deltas. The hero's job on this screen
         // is the boost state and how complete the listing is.
       },
-      {
+      ...(lot1 ? [] : [{
         id: "visibility-kpis",
         type: "kpi-grid",
         columns: 4,
@@ -543,8 +609,8 @@ export function buildVisibilityScreen(
             metric: { value: metrics.conversionPct, format: PCT, animate: true },
           },
         ],
-      },
-      {
+      } satisfies Block]),
+      ...(lot1 ? [] : [{
         id: "checklist",
         type: "entity-list",
         heading: "Ce qui pèse sur le classement",
@@ -572,7 +638,7 @@ export function buildVisibilityScreen(
                 },
               ],
         })),
-      },
+      } satisfies Block]),
       {
         id: "boost-actions",
         type: "nudge",
@@ -613,7 +679,9 @@ export function buildReportsScreen(
   analytics: VenueAnalytics | undefined,
   desk: MoneyDesk | undefined,
   configuration: VenueConfiguration,
+  lot: Lot = 2,
 ): ScreenSpec {
+  const lot1 = lot === 1;
   const vocabulary = configFor(configuration);
   const hasSpend = Boolean(desk?.hasTransactionSource);
   // Bilans has no period selector of its own: it reports whatever window
@@ -647,21 +715,40 @@ export function buildReportsScreen(
   // Recommendations are derived from the figures on this page, never
   // invented: three lines maximum, each pointing at a screen.
   const recommendations: { text: string; href: string; label: string }[] = [];
+  // A recommendation is only worth making where the screen that acts on
+  // it exists. Acomptes, Offres and Lyfe Pay are Lot 2, so under Lot 1
+  // the same conditions are reported without a button into nothing.
   if (analytics.noShowRate > 8) {
-    recommendations.push({
-      text: `${analytics.noShowRate.toFixed(1)} % d'absences sur la période. Un acompte sur les grandes tables est ce qui fait baisser ce chiffre le plus vite.`,
-      href: restaurantHref("acomptes"),
-      label: "Configurer les acomptes",
-    });
+    recommendations.push(
+      lot1
+        ? {
+            text: `${analytics.noShowRate.toFixed(1)} % d'absences sur la période. Un rappel la veille est le levier disponible ici ; les acomptes arrivent avec le lot 2.`,
+            href: restaurantHref("notifications"),
+            label: "Régler les rappels",
+          }
+        : {
+            text: `${analytics.noShowRate.toFixed(1)} % d'absences sur la période. Un acompte sur les grandes tables est ce qui fait baisser ce chiffre le plus vite.`,
+            href: restaurantHref("acomptes"),
+            label: "Configurer les acomptes",
+          },
+    );
   }
   if (analytics.occupancyRate < 65) {
-    recommendations.push({
-      text: `La salle tourne à ${Math.round(analytics.occupancyRate)} % de sa capacité. Une offre sur les deux services les plus creux remplit sans toucher aux prix.`,
-      href: restaurantHref("offres"),
-      label: "Créer une offre",
-    });
+    recommendations.push(
+      lot1
+        ? {
+            text: `La salle tourne à ${Math.round(analytics.occupancyRate)} % de sa capacité. Un boost met la fiche en tête du fil sur la ville.`,
+            href: restaurantHref("visibilite"),
+            label: "Ouvrir Visibilité",
+          }
+        : {
+            text: `La salle tourne à ${Math.round(analytics.occupancyRate)} % de sa capacité. Une offre sur les deux services les plus creux remplit sans toucher aux prix.`,
+            href: restaurantHref("offres"),
+            label: "Créer une offre",
+          },
+    );
   }
-  if (!hasSpend) {
+  if (!hasSpend && !lot1) {
     recommendations.push({
       text: "Sans source de transaction, aucun bilan ne peut parler de recette ni de panier moyen.",
       href: restaurantHref("lyfe-pay"),
@@ -808,11 +895,13 @@ export function buildReportsScreen(
             id: "worst",
             type: "entity-list",
             heading: "Services les plus creux",
-            headingAction: {
-              kind: "link",
-              href: restaurantHref("offres"),
-              label: "Créer une offre →",
-            },
+            headingAction: lot1
+              ? undefined
+              : {
+                  kind: "link",
+                  href: restaurantHref("offres"),
+                  label: "Créer une offre →",
+                },
             rows: worst.map((p, i) => ({
               id: `worst-${i}`,
               title: p.label,

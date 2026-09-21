@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { Icon } from "@/components/dashboard/primitives";
-import { isActive, resolveWorkspace } from "@/lib/nav/workspaces";
+import { isActive, itemsInLot, resolveWorkspace } from "@/lib/nav/workspaces";
+import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { useChromeCommand } from "@/lib/nav/chrome-commands";
 import { cn } from "@/lib/utils/cn";
 
@@ -27,7 +28,10 @@ const FULLSCREEN_ROUTES = [
 export function BottomTabs() {
   const pathname = usePathname();
   const workspace = resolveWorkspace(pathname);
-  const tabs = workspace.tabs;
+  // A tab bar with a dead tab is worse than a shorter tab bar: under
+  // Lot 1 the queue is not registered, so it is not offered.
+  const { lot } = useWorkspaceAccess();
+  const tabs = itemsInLot(workspace.tabs, lot);
   const runTabCommand = useChromeCommand();
 
   // Hide on fullscreen takeover routes.

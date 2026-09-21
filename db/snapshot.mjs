@@ -115,6 +115,15 @@ const snapshot = {
   // static driver rebases every timestamp off this on read, so a
   // six-month-old snapshot still shows a service in progress today.
   capturedAt: new Date().toISOString(),
+  // The lot the capture ran under, and the lots the file can serve.
+  //
+  // Every slice is captured whatever `LYFE_LOT` says, on purpose: the
+  // lot filters screens, not data, so one committed snapshot serves
+  // both modes and a cold clone cannot land on a file that happens to
+  // be missing what the other lot needs. The stamp is here so that
+  // stays a decision someone made rather than a coincidence.
+  capturedUnderLot: process.env.LYFE_LOT?.trim() === "2" ? 2 : 1,
+  serves: [1, 2],
   users,
   businessAccounts,
   venues: perVenue,
@@ -125,4 +134,6 @@ writeFileSync(OUT, `${JSON.stringify(snapshot, null, 2)}\n`);
 
 const kb = (JSON.stringify(snapshot).length / 1024).toFixed(0);
 console.log(`Snapshot written to ${OUT}`);
-console.log(`  users ${users.length} · venues ${venueIds.length} · ${kb} KB`);
+console.log(
+  `  users ${users.length} · venues ${venueIds.length} · ${kb} KB · sert les lots 1 et 2`,
+);

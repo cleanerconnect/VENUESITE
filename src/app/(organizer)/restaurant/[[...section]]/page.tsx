@@ -8,7 +8,8 @@ import {
   type SpecSlug,
 } from "@/lib/restaurant/screens";
 import type { Comparison } from "@/lib/restaurant/operations";
-import { isRestaurantSlug, restaurantHref } from "@/lib/restaurant/slugs";
+import { isRestaurantSlug, restaurantHref, slugInLot } from "@/lib/restaurant/slugs";
+import { activeLot } from "@/lib/lot";
 import { redirect } from "next/navigation";
 import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
@@ -58,6 +59,10 @@ export default async function RestaurantSectionPage({
   // Form surfaces have their own routes, which Next resolves before this
   // catch-all. Reaching here with one means a stale link.
   if (!isRestaurantSlug(slug) || isFormRoute(slug)) notFound();
+  // A Lot 2 screen is not registered in a Lot 1 deployment. Not hidden,
+  // not disabled — a 404, so a bookmark or a stale link behaves the way
+  // it would against a build that never had the screen.
+  if (!slugInLot(slug, activeLot())) notFound();
 
   // Venue scoping comes from the session, server side. Nothing here
   // reads a venue id from the URL, and no venue constant is imported.
@@ -136,6 +141,10 @@ async function loadContext(
     comparison,
     configuration: settings.configuration,
     settings,
+    // Resolved here rather than in each builder: a builder that read the
+    // environment itself would be a builder the styleguide and the
+    // capture tools could not drive.
+    lot: activeLot(),
   };
 
   await Promise.all(

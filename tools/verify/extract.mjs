@@ -28,6 +28,7 @@
 import { chromium } from "playwright";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { ROUTES } from "../../src/lib/nav/routes.ts";
+import { LOT, LOT_LABEL, inLot } from "./lot.mjs";
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const DEPTH = process.env.DEPTH ?? "outline";
@@ -438,7 +439,7 @@ if (VENUE) {
 }
 if (SHOTS) mkdirSync(SHOTS, { recursive: true });
 
-const result = { base: BASE, venue: VENUE, account: ACCOUNT, depth: DEPTH, capturedAt: new Date().toISOString(), screens: {}, nav: null };
+const result = { base: BASE, venue: VENUE, account: ACCOUNT, depth: DEPTH, lot: LOT, capturedAt: new Date().toISOString(), screens: {}, nav: null };
 
 const NAV = () => {
   const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
@@ -525,9 +526,13 @@ async function capture(list, tag) {
   }
 }
 
-const VENUE_ROUTES = ROUTES.filter((r) => r.workspace === "venue");
-const EVENT_ROUTES = ROUTES.filter((r) => r.workspace === "event" || r.workspace === "shared");
-const ENTRY_ROUTES = ROUTES.filter((r) => r.workspace === "entry");
+// Filtered by lot: capturing a screen this build does not register
+// would write a 404 into the reference set and call it a screen.
+const VENUE_ROUTES = ROUTES.filter((r) => r.workspace === "venue" && inLot(r));
+const EVENT_ROUTES = ROUTES.filter(
+  (r) => (r.workspace === "event" || r.workspace === "shared") && inLot(r),
+);
+const ENTRY_ROUTES = ROUTES.filter((r) => r.workspace === "entry" && inLot(r));
 
 await capture(VENUE_ROUTES, "venue");
 if (DEPTH !== "full") await capture(EVENT_ROUTES, "event");
@@ -535,5 +540,7 @@ await context.clearCookies();
 await capture(ENTRY_ROUTES, "entry");
 
 writeFileSync(OUT, JSON.stringify(result, null, 2));
-console.log(`\nwrote ${OUT} — ${Object.keys(result.screens).length} screens`);
+console.log(
+  `\nwrote ${OUT} — ${Object.keys(result.screens).length} screens · ${LOT_LABEL}`,
+);
 await browser.close();

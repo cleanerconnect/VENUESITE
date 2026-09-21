@@ -15,42 +15,13 @@
 // deliberately, not a dependency to carry.
 
 import { chromium } from "playwright";
+import { LOT, LOT_LABEL, venueScreens } from "./lot.mjs";
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 
-const SCREENS = [
-  ["", "Accueil"],
-  ["/reservations", "Réservations"],
-  ["/calendrier", "Calendrier"],
-  ["/liste-attente", "Liste d'attente"],
-  ["/check-in", "Check-in"],
-  ["/briefing", "Briefing"],
-  ["/clients", "Liste clients"],
-  ["/clients/cus_1", "Fiche client"],
-  ["/segments", "Tags et segments"],
-  ["/audience", "Audience"],
-  ["/ma-fiche", "Ma fiche"],
-  ["/menu", "Menu"],
-  ["/avis", "Avis"],
-  ["/visibilite", "Visibilité"],
-  ["/offres", "Offres"],
-  ["/experiences", "Expériences"],
-  ["/guest-list", "Guest list"],
-  ["/tables", "Tables minimums"],
-  ["/promoteurs", "Promoteurs"],
-  ["/acomptes", "Acomptes"],
-  ["/annulations", "Annulations"],
-  ["/lyfe-pay", "Lyfe Pay"],
-  ["/performance", "Performance"],
-  ["/bilans", "Bilans"],
-  ["/campagnes", "Campagnes"],
-  ["/disponibilites", "Disponibilités"],
-  ["/equipe", "Équipe et rôles"],
-  ["/notifications", "Notifications"],
-  ["/parametres", "Paramètres"],
-  ["/abonnement", "Abonnement"],
-  ["/support", "Support"],
-];
+// Derived from the route index and filtered by lot, so a screen this
+// build does not register is not walked and not counted as missing.
+const SCREENS = venueScreens();
 
 const width = Number(process.env.W ?? 1440);
 const height = Number(process.env.H ?? 900);
@@ -119,7 +90,7 @@ for (const [path, label] of SCREENS) {
 }
 
 console.log(
-  `\n${ok}/${SCREENS.length} screens clean at ${width}×${height}${venue ? ` · ${venue}` : ""}`,
+  `\n${ok}/${SCREENS.length} screens clean at ${width}×${height} · ${LOT_LABEL}${venue ? ` · ${venue}` : ""}`,
 );
 await browser.close();
 process.exit(ok === SCREENS.length ? 0 : 1);

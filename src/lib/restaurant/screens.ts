@@ -119,6 +119,7 @@ import type {
 } from "@/lib/types/business";
 import {
   RESTAURANT_SLUGS,
+  type Lot,
   type RestaurantSlug,
   isRestaurantSlug,
   restaurantHref,
@@ -137,12 +138,77 @@ const covers = coversIn;
 
 // ── Dashboard ────────────────────────────────────────────────
 
+/**
+ * Accueil's three numbers, under Lot 1.
+ *
+ * The same three Performance reports — taux de remplissage, revenu
+ * estimé, taux de no-show — read for the service in hand rather than
+ * for a period, so the two screens answer one question at two scales
+ * instead of two questions that sound alike.
+ *
+ * The revenue tile obeys the rule every money tile obeys: it needs a
+ * transaction source to derive an average ticket from, and without one
+ * it is absent rather than estimated from nothing. A venue with no Lyfe
+ * Pay sees two tiles.
+ */
+function lot1Tiles(
+  data: RestaurantOverview,
+  service: Service,
+  desk: MoneyDesk,
+): KpiTile[] {
+  const booked = Math.max(1, service.bookedCovers);
+  return [
+    {
+      id: "fill",
+      label: "Taux de remplissage",
+      tone: "sand",
+      icon: "gauge",
+      metric: {
+        value: Math.round((service.bookedCovers / Math.max(1, service.capacity)) * 100),
+        format: { kind: "percent" },
+        animate: true,
+      },
+      hint: service.label,
+    },
+    ...(desk.hasTransactionSource
+      ? ([
+          {
+            id: "revenue",
+            label: "Revenu estimé",
+            tone: "surface",
+            icon: "coins",
+            metric: {
+              value: Math.round(data.coversToday.count * data.averageTicket.amountMad),
+              format: MAD,
+              animate: true,
+            },
+            hint: "Couverts du jour × ticket moyen des 7 derniers jours.",
+          },
+        ] satisfies KpiTile[])
+      : []),
+    {
+      id: "no-show",
+      label: "Taux de no-show",
+      tone: "surface",
+      icon: "user-x",
+      metric: {
+        value: Number(((data.noShows.count / booked) * 100).toFixed(1)),
+        format: { kind: "percent", decimals: 1 },
+        animate: true,
+      },
+      hint: service.label,
+    },
+  ];
+}
+
 export function buildDashboardScreen(
   data: RestaurantOverview,
   floor: ServiceFloor,
   desk: MoneyDesk,
   configuration: VenueConfiguration,
+  lot: Lot = 2,
 ): ScreenSpec {
+  const lot1 = lot === 1;
   const vocabulary = configFor(configuration);
   const service = data.currentService;
   const inService = service.state === "open" || service.state === "peak";
@@ -232,44 +298,67 @@ export function buildDashboardScreen(
     eyebrow: data.greeting.salutation,
     title: `${data.greeting.salutation}, ${data.greeting.firstName}.`,
     emphasis: data.greeting.clause,
-    subline: data.greeting.subline,
-    actions: [
-      {
-        action: {
-          kind: "link",
-          label: "Nouvelle réservation",
-          href: `${restaurantHref("reservations")}?nouvelle=1`,
-          icon: "plus",
-        },
-        allow: ["owner", "admin"],
-      },
-      {
-        action: {
-          kind: "link",
-          label: "Ouvrir le carnet →",
-          href: restaurantHref("reservations"),
-        },
-        variant: "secondary",
-      },
-      {
-        action: {
-          kind: "link",
-          label: "Liste d'attente",
-          href: restaurantHref("liste-attente"),
-          icon: "timer",
-        },
-        variant: "secondary",
-      },
-      {
-        action: {
-          kind: "link",
-          label: "Briefing",
-          href: restaurantHref("briefing"),
-          icon: "clipboard",
-        },
-        variant: "ghost",
-      },
-    ],
+    // The store composes one subline for both lots, because the payload
+    // is lot-agnostic by design. Lot 1 drops its waitlist clause here:
+    // Liste d'attente is a Lot 2 screen, and a count of people queueing
+    // is no use on a dashboard with nowhere to work the queue.
+    subline: lot1
+      ? `${covers(configuration, service.bookedCovers)} ${coverAgreement(
+          vocabulary,
+          "réservé",
+        )}, ${remainingCovers} encore disponibles.`
+      : data.greeting.subline,
+    // The shortcuts the specification names are Nouvelle réservation,
+    // Liste d'attente and Briefing — all three Lot 2. Under Lot 1 the
+    // greeting keeps the one shortcut that lands somewhere: the carnet.
+    actions: lot1
+      ? [
+          {
+            action: {
+              kind: "link",
+              label: "Ouvrir le carnet →",
+              href: restaurantHref("reservations"),
+            },
+            variant: "secondary",
+          },
+        ]
+      : [
+          {
+            action: {
+              kind: "link",
+              label: "Nouvelle réservation",
+              href: `${restaurantHref("reservations")}?nouvelle=1`,
+              icon: "plus",
+            },
+            allow: ["owner", "admin"],
+          },
+          {
+            action: {
+              kind: "link",
+              label: "Ouvrir le carnet →",
+              href: restaurantHref("reservations"),
+            },
+            variant: "secondary",
+          },
+          {
+            action: {
+              kind: "link",
+              label: "Liste d'attente",
+              href: restaurantHref("liste-attente"),
+              icon: "timer",
+            },
+            variant: "secondary",
+          },
+          {
+            action: {
+              kind: "link",
+              label: "Briefing",
+              href: restaurantHref("briefing"),
+              icon: "clipboard",
+            },
+            variant: "ghost",
+          },
+        ],
   };
 
   const kpiBlock: Block = {
@@ -389,7 +478,10 @@ export function buildDashboardScreen(
   const arrivalsBlock: Block = {
     id: "arrivals",
     type: "entity-list",
-    heading: "Prochaines arrivées",
+    // Lot 1 asks Accueil for the day's reservations; the full screen
+    // asks it for what is still to come, because it has a carnet, a
+    // band and a load chart carrying the rest of the day already.
+    heading: lot1 ? "Réservations du jour" : "Prochaines arrivées",
     headingAction: {
       kind: "link",
       label: "Tout voir →",
@@ -398,15 +490,25 @@ export function buildDashboardScreen(
     // Still expected, which is what the heading says: a party already
     // seated is not an arrival to come, and the whole carnet — seated
     // parties included — is one tap away behind "Tout voir".
-    rows: data.upcomingReservations
-      .filter((r) => r.state !== "arrived" && Date.parse(r.at) >= Date.now())
+    rows: (lot1
+      ? data.upcomingReservations
+      : data.upcomingReservations.filter(
+          (r) => r.state !== "arrived" && Date.parse(r.at) >= Date.now(),
+        )
+    )
       .slice(0, 6)
       .map((r) => reservationRow(r, data.zones, configuration)),
-    empty: {
-      title: "Plus personne d'attendu",
-      body: "Le carnet est vide pour la fin de ce service.",
-      icon: "calendar",
-    },
+    empty: lot1
+      ? {
+          title: "Aucune réservation aujourd'hui",
+          body: "Le carnet du jour est vide.",
+          icon: "calendar",
+        }
+      : {
+          title: "Plus personne d'attendu",
+          body: "Le carnet est vide pour la fin de ce service.",
+          icon: "calendar",
+        },
   };
 
   const feedBlock: Block = {
@@ -476,9 +578,9 @@ export function buildDashboardScreen(
           },
         ],
       })),
-    ...desk.deposits
-      .filter((d) => d.status === "echoue")
-      .map((d) => ({
+    // Acomptes is a Lot 2 screen, so a failed deposit has nowhere to be
+    // resolved under Lot 1 and does not join the queue.
+    ...(lot1 ? [] : desk.deposits.filter((d) => d.status === "echoue")).map((d) => ({
         id: `dep-${d.id}`,
         title: d.guestName,
         icon: "wallet" as const,
@@ -520,13 +622,17 @@ export function buildDashboardScreen(
       { id: "all", label: "Tout" },
       { id: "requests", label: "Demandes", match: { facet: "queue", values: ["requests"] } },
       { id: "risk", label: "Risque", match: { facet: "queue", values: ["risk"] } },
-      { id: "deposits", label: "Acomptes", match: { facet: "queue", values: ["deposits"] } },
+      ...(lot1
+        ? []
+        : [{ id: "deposits", label: "Acomptes", match: { facet: "queue", values: ["deposits"] } }]),
       { id: "reviews", label: "Avis", match: { facet: "queue", values: ["reviews"] } },
     ],
     rows: attention,
     empty: {
       title: "Rien à traiter",
-      body: "Aucune demande en attente, aucun acompte échoué, aucun avis sans réponse.",
+      body: lot1
+        ? "Aucune demande en attente, aucun avis sans réponse."
+        : "Aucune demande en attente, aucun acompte échoué, aucun avis sans réponse.",
       icon: "check",
     },
     noMatches: { title: "Rien ici", body: "Aucun élément dans cette file." },
@@ -578,6 +684,29 @@ export function buildDashboardScreen(
     valueFormat: MAD,
   };
 
+  // Lot 1 buys three numbers, the queue that needs a decision and the
+  // day's book — and nothing that leads anywhere Lot 1 does not
+  // register. The suggestion card is the clearest case: its whole point
+  // is to send a manager to Liste d'attente, which Lot 1 does not have.
+  if (lot1) {
+    const lotKpis: Block = {
+      ...kpiBlock,
+      id: "kpis",
+      columns: 3,
+      tiles: lot1Tiles(data, service, desk),
+    };
+    return {
+      slug: "",
+      title: "Vue d'ensemble",
+      blocks: [greetingBlock, attentionBlock, lotKpis, arrivalsBlock],
+      mobileBlocks: [
+        attentionBlock,
+        { ...lotKpis, id: "kpis-mobile", columns: 1 },
+        arrivalsBlock,
+      ],
+    };
+  }
+
   return {
     slug: "",
     title: "Vue d'ensemble",
@@ -626,7 +755,9 @@ export function buildReservationsScreen(
   data: RestaurantOverview,
   configuration: VenueConfiguration,
   desk: MoneyDesk,
+  lot: Lot = 2,
 ): ScreenSpec {
+  const lot1 = lot === 1;
   const all = [...data.upcomingReservations, ...data.waitlist];
   const requested = all.filter((r) => r.state === "requested");
   const atRisk = all.filter((r) => (r.noShowRisk ?? 0) >= 0.3);
@@ -697,12 +828,17 @@ export function buildReservationsScreen(
     id: "book",
     type: "entity-list",
     heading: "Carnet du service",
-    headingAction: {
-      kind: "command",
-      command: "reservation.create",
-      label: "Nouvelle réservation",
-      icon: "plus",
-    },
+    // Lot 1 works the book it is given: view, accept, refuse with a
+    // reason, check in, mark absent. Creating a booking from the portal
+    // is Lot 2, so the button that starts one is not drawn.
+    headingAction: lot1
+      ? undefined
+      : {
+          kind: "command",
+          command: "reservation.create",
+          label: "Nouvelle réservation",
+          icon: "plus",
+        },
     // One list, filtered — rather than four lists a manager has to
     // scan in turn. Counts, search and sort all derive from the rows.
     tabs: [
@@ -792,24 +928,31 @@ export function buildReservationsScreen(
       },
     ],
     footerActions: [
-      {
-        action: {
-          kind: "command",
-          command: "reservation.create",
-          label: "Nouvelle réservation",
-          icon: "plus",
-        },
-        variant: "primary",
-      },
-      {
-        action: {
-          kind: "command",
-          command: "reservation.walkIn",
-          label: vocabulary.walkInLabel,
-          icon: "door-open",
-        },
-        variant: "secondary",
-      },
+      // Creating a booking and taking a walk-in both write a reservation
+      // the portal did not receive. Lot 2 buys that; Lot 1 is left with
+      // the two actions that only read the day.
+      ...(lot1
+        ? []
+        : ([
+            {
+              action: {
+                kind: "command" as const,
+                command: "reservation.create",
+                label: "Nouvelle réservation",
+                icon: "plus" as const,
+              },
+              variant: "primary" as const,
+            },
+            {
+              action: {
+                kind: "command" as const,
+                command: "reservation.walkIn",
+                label: vocabulary.walkInLabel,
+                icon: "door-open" as const,
+              },
+              variant: "secondary" as const,
+            },
+          ])),
       {
         action: {
           kind: "command",
@@ -1525,6 +1668,15 @@ export interface ScreenContext {
   photoCount?: number;
   period?: AnalyticsPeriod;
   comparison?: Comparison;
+  /**
+   * The lot this deployment runs.
+   *
+   * A builder reads it to leave out what Lot 1 did not buy, and to drop
+   * any link, button or tile that would lead into a screen Lot 1 does
+   * not register. Defaulting to 2 keeps every existing caller — and
+   * every test — rendering the full screen unless it says otherwise.
+   */
+  lot?: Lot;
 }
 
 export type ScreenDataNeed =
@@ -1670,9 +1822,15 @@ export const RESTAURANT_SCREENS: Record<
       ctx.serviceFloor ?? EMPTY_FLOOR,
       ctx.money ?? EMPTY_MONEY,
       ctx.configuration,
+      ctx.lot,
     ),
   reservations: (ctx) =>
-    buildReservationsScreen(ctx.overview, ctx.configuration, ctx.money ?? EMPTY_MONEY),
+    buildReservationsScreen(
+      ctx.overview,
+      ctx.configuration,
+      ctx.money ?? EMPTY_MONEY,
+      ctx.lot,
+    ),
   calendrier: (ctx) =>
     buildCalendarScreen(ctx.serviceFloor ?? EMPTY_FLOOR, ctx.configuration),
 
@@ -1689,6 +1847,7 @@ export const RESTAURANT_SCREENS: Record<
       ctx.overview.reviews,
       ctx.guestGraph ?? EMPTY_GRAPH,
       ctx.spendByCustomer ?? {},
+      ctx.lot,
     ),
   audience: (ctx) =>
     buildAudienceScreen(ctx.audience ?? emptyAudience(ctx.overview.restaurant.id), ctx.configuration),
@@ -1710,6 +1869,7 @@ export const RESTAURANT_SCREENS: Record<
       ctx.photoCount ?? 0,
       replyRateOf(ctx.overview),
       ctx.analytics?.noShowRate ?? 0,
+      ctx.lot,
     ),
   offres: (ctx) => buildOffersScreen(ctx.growth ?? EMPTY_GROWTH, ctx.configuration),
   experiences: (ctx) => buildExperiencesScreen(ctx.growth ?? EMPTY_GROWTH),
@@ -1742,17 +1902,25 @@ export const RESTAURANT_SCREENS: Record<
       ctx.money,
       (ctx.serviceFloor ?? EMPTY_FLOOR).calendar,
       ctx.configuration,
+      ctx.lot,
     ),
-  bilans: (ctx) => buildReportsScreen(ctx.analytics, ctx.money, ctx.configuration),
+  bilans: (ctx) =>
+    buildReportsScreen(ctx.analytics, ctx.money, ctx.configuration, ctx.lot),
   campagnes: (ctx) => buildCampaignsScreen(ctx.marketing ?? EMPTY_MARKETING),
 
   // 9. Établissement
   disponibilites: (ctx) =>
-    buildAvailabilityScreen(ctx.serviceConfig, ctx.availability, ctx.configuration),
+    buildAvailabilityScreen(
+      ctx.serviceConfig,
+      ctx.availability,
+      ctx.configuration,
+      ctx.lot,
+    ),
   notifications: (ctx) =>
     buildNotificationsScreen(
       ctx.notificationPreferences,
       (ctx.marketing ?? EMPTY_MARKETING).messages,
+      ctx.lot,
     ),
 
   // 10. Compte
@@ -1789,6 +1957,7 @@ export const RESTAURANT_SCREENS: Record<
         invoices: [],
         usage: { reservations: 0, guests: 0, messagesSent: 0, campaigns: 0 },
       },
+      ctx.lot,
     ),
   support: (ctx) => buildSupportScreen(ctx.support ?? []),
 };

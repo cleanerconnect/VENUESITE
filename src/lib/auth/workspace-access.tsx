@@ -13,6 +13,7 @@
 
 import { createContext, useContext } from "react";
 import type { VenueConfiguration } from "@/lib/types/venue-operations";
+import { DEFAULT_LOT, type Lot } from "@/lib/lot/shared";
 
 export interface WorkspaceAccess {
   event: boolean;
@@ -24,12 +25,19 @@ export interface WorkspaceAccess {
    * three components is a prop two of them get wrong.
    */
   configuration: VenueConfiguration;
+  /**
+   * The lot this deployment runs. Published for the same reason as the
+   * configuration — every piece of chrome filters its links on it, and
+   * a link the router will 404 is worse than no link.
+   */
+  lot: Lot;
 }
 
 const Ctx = createContext<WorkspaceAccess>({
   event: true,
   venue: true,
   configuration: "restaurant",
+  lot: DEFAULT_LOT,
 });
 
 export function WorkspaceAccessProvider({

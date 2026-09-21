@@ -9,16 +9,12 @@
 //   node tools/verify/states.mjs
 
 import { chromium } from "playwright";
+import { LOT, LOT_LABEL, venuePaths } from "./lot.mjs";
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const ERROR_MARKER = "Cette page n'a pas pu charger";
 
-const PATHS = ["", "/reservations", "/calendrier", "/liste-attente", "/check-in",
-  "/briefing", "/clients", "/clients/cus_1", "/segments", "/audience", "/ma-fiche", "/menu",
-  "/avis", "/visibilite", "/offres", "/experiences", "/guest-list", "/tables",
-  "/promoteurs", "/acomptes", "/annulations", "/lyfe-pay", "/performance",
-  "/bilans", "/campagnes", "/disponibilites", "/equipe", "/notifications",
-  "/parametres", "/abonnement", "/support"];
+const PATHS = venuePaths();
 
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
@@ -60,7 +56,7 @@ for (const path of PATHS) {
 
 console.log(
   fails === 0
-    ? `\nAll three states forceable on all ${PATHS.length} routes.`
+    ? `\nAll three states forceable on all ${PATHS.length} routes · ${LOT_LABEL}.`
     : `\n${fails} failures`,
 );
 await browser.close();

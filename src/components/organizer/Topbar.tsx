@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/dashboard/primitives";
 import { RoleGate } from "@/lib/auth/role";
 import { resolveWorkspace } from "@/lib/nav/workspaces";
+import { pathInLot } from "@/lib/nav/routes";
+import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { useChromeCommand } from "@/lib/nav/chrome-commands";
 import { useScannerStore } from "@/lib/stores/scanner";
 import { useAssistantStore } from "@/lib/stores/assistant";
@@ -20,7 +22,18 @@ import { useMobileNavStore } from "@/lib/stores/mobileNav";
 export function Topbar() {
   const pathname = usePathname();
   const workspace = resolveWorkspace(pathname);
-  const { searchPlaceholder, quickAction, primaryAction } = workspace.topbar;
+  const { searchPlaceholder, quickAction, primaryAction: topbarAction } =
+    workspace.topbar;
+  // The venue topbar's primary action opens the new-booking drawer,
+  // which Lot 2 buys. It is gated on what it does rather than on where
+  // it points: Réservations is a Lot 1 screen, and `?nouvelle=1` is the
+  // one thing on it Lot 1 did not buy.
+  const { lot } = useWorkspaceAccess();
+  const primaryAction =
+    topbarAction &&
+    (lot === 2 || (pathInLot(topbarAction.href, lot) && !topbarAction.href.includes("nouvelle=")))
+      ? topbarAction
+      : undefined;
 
   const openScanner = useScannerStore((s) => s.setOpen);
   const openAssistant = useAssistantStore((s) => s.setOpen);

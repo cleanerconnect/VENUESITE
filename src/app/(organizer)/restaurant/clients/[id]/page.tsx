@@ -8,6 +8,7 @@ import { RepositoryError } from "@/lib/data/repository";
 import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
 import { ScreenError } from "@/components/restaurant/ScreenError";
 import { buildCustomerScreen } from "@/lib/restaurant/customer";
+import { activeLot } from "@/lib/lot";
 import { RestaurantSpecScreen } from "@/components/restaurant/RestaurantSpecScreen";
 
 // Fiche client.
@@ -88,6 +89,7 @@ export default async function CustomerPage({ params, searchParams }: Props) {
     hasSpendSource: desk.hasTransactionSource,
     messages: marketing.messages.filter((m) => m.customerId === customer.id),
     configuration: settings.configuration,
+    lot: activeLot(),
   });
 
   return <RestaurantSpecScreen spec={spec} />;

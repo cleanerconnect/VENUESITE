@@ -10,6 +10,7 @@ import { resolveSession } from "@/lib/auth/server-session";
 import { resolveAccount } from "@/lib/auth/accounts";
 import { getRestaurantRepository } from "@/lib/data";
 import { redirect } from "next/navigation";
+import { activeLot } from "@/lib/lot";
 
 // Shell, sticky sidebar (desktop), top app bar, mobile bottom tabs.
 // ScannerModal, CheckInSheet and AssistantFAB live here so they're
@@ -45,6 +46,10 @@ export default async function OrganizerLayout({
     event: (account?.organizations.length ?? 0) > 0,
     venue: session.venues.length > 0,
     configuration,
+    // Read once here for the same reason as the configuration: the
+    // sidebar, the drawer and the Plus sheet all filter on it, and
+    // `process.env` does not exist in any of the three.
+    lot: activeLot(),
   };
 
   return (

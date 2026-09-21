@@ -19,6 +19,8 @@ import {
 } from "@/lib/restaurant/slugs";
 import type { VenueConfiguration } from "@/lib/types/venue-operations";
 import { hasNightlife } from "@/lib/venue/config";
+import type { Lot } from "@/lib/restaurant/slugs";
+import { pathInLot } from "./routes";
 
 /** A named sidebar group. The spec's ten, rendered in its order. */
 export interface NavGroup {
@@ -382,14 +384,34 @@ const RESTAURANT_WORKSPACE: Workspace = {
 export function visibleGroups(
   workspace: Workspace,
   configuration: VenueConfiguration,
+  lot: Lot = 2,
 ): NavGroup[] {
-  return workspace.groups.filter(
-    (group) =>
-      !group.configurations ||
-      (group.label === "Vie nocturne"
-        ? hasNightlife(configuration)
-        : group.configurations.includes(configuration)),
-  );
+  return workspace.groups
+    .filter(
+      (group) =>
+        !group.configurations ||
+        (group.label === "Vie nocturne"
+          ? hasNightlife(configuration)
+          : group.configurations.includes(configuration)),
+    )
+    .map((group) => ({ ...group, items: itemsInLot(group.items, lot) }))
+    // A group whose every screen is Lot 2 does not render empty, and it
+    // does not render as a heading with nothing under it: it is absent,
+    // the way Vie nocturne is absent from a restaurant.
+    .filter((group) => group.items.length > 0);
+}
+
+/**
+ * Nav items a lot registers.
+ *
+ * A link to an unregistered route is a link to a 404, so the filter runs
+ * over every list the chrome draws from — the sidebar groups, the Plus
+ * sheet's `secondary` and the phone `tabs` — rather than over the
+ * sidebar alone.
+ */
+export function itemsInLot<T extends { href?: string }>(items: T[], lot: Lot): T[] {
+  if (lot === 2) return items;
+  return items.filter((i) => !i.href || pathInLot(i.href, 1));
 }
 
 export const WORKSPACES: Workspace[] = [EVENT_WORKSPACE, RESTAURANT_WORKSPACE];

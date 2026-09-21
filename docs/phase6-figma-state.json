@@ -15,7 +15,8 @@
     "05 Espace organisateur": "14:16",
     "06 États": "14:17",
     "07 Téléphone": "14:18",
-    "08 Exemple complet · Dar Zellij": "53:2"
+    "08 Exemple complet · Dar Zellij": "53:2",
+    "09 Lot 1 · Dar Zellij": "128:2"
   },
   "collections": {
     "Primitives": {
@@ -124,7 +125,7 @@
     "effectStyles": 3,
     "components": 29,
     "variants": 175,
-    "frames": 63
+    "frames": 81
   },
   "keyComponentIds": {
     "sidebarRestaurant": "26:2",
@@ -220,5 +221,15 @@
     "src/lib/db/overview-store.ts — Accueil subtitle now reads venue_settings.configuration via configFor()/covers(); lounge says 'personnes réservées'.",
     "src/lib/restaurant/screens.ts — feminine agreement fixed via VenueConfig.cover.gender + coverAgreement()/coverLabel(); five sites, not the two §5 named.",
     "components/ui/Button.tsx — text sizes now spend --text-control-sm|md|lg; 15px joined the type scale as a token."
-  ]
+  ],
+  "lots": {
+    "setting": "LYFE_LOT, default 1 (src/lib/lot/)",
+    "lot1": "18 screens: Connexion, Accueil, Réservations, Check-in, Disponibilités, Performance, Visibilité, Avis, Liste clients, Fiche client, Équipe et rôles, Notifications, Paramètres, Abonnement, Support, Bilans, Ma fiche, Menu — row 39 of ChiffrageV3.0 plus the September scope email",
+    "lot2": "14 venue screens: Calendrier, Liste d'attente, Briefing, Tags et segments, Audience, Offres, Expériences, Guest list, Tables minimums, Promoteurs, Acomptes, Annulations, Lyfe Pay, Campagnes — front-end and design only",
+    "page04": "every screen frame carries its lot in the frame name, [lot 1] or [lot 2]: 17 and 14",
+    "page09": "the Lot 1 product on its own — 18 frames cloned from page 08 and cut to the contracted feature set, so page 08 is untouched",
+    "sidebar": "Chrome / Sidebar · Lot 1, a second chrome component in 02 Composants holding the eight Lot 1 groups; every page 09 frame swaps to it rather than detaching",
+    "capture": "docs/lot1-dar-zellij.json and docs/lot1-reference/*.png, captured with LYFE_LOT=1 on both the server and the tool",
+    "verification": "all five tools pass in both modes: 17/17 venue screens in lot 1 at 1440 and 390, 31/31 in lot 2; audience.mjs reports its screen unregistered in lot 1 and exits clean; configuration.mjs expects eight groups in lot 1 and nine or ten in lot 2"
+  }
 }

@@ -17,9 +17,21 @@
 // playwright`.
 
 import { chromium } from "playwright";
+import { LOT, LOT_LABEL } from "./lot.mjs";
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const MINIMUM = 10;
+
+// Audience is a Lot 2 screen. Under Lot 1 there is nothing to check and
+// nothing wrong — the tool says which, and passes, rather than failing
+// on a 404 it asked for itself.
+if (LOT !== 2) {
+  console.log(
+    `Audience n'est pas enregistré en ${LOT_LABEL} — rien à vérifier.\n` +
+      "Relancer avec LYFE_LOT=2, serveur compris, pour contrôler le seuil de dix.",
+  );
+  process.exit(0);
+}
 
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",

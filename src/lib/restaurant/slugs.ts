@@ -57,6 +57,78 @@ export const RESTAURANT_SLUGS = [
 
 export type RestaurantSlug = (typeof RESTAURANT_SLUGS)[number];
 
+/**
+ * The two lots the portal is delivered in.
+ *
+ * Lot 1 is the dashboard DigiNegoce wires: the screens priced on row 39
+ * of ChiffrageV3.0 and confirmed in the September scope email. Lot 2 is
+ * everything else on this page — built, designed and rendered here, but
+ * handed over as front-end and design for a later phase rather than as
+ * something the Business Service must answer now.
+ *
+ * The field says what a Lot 1 deployment registers, which for the venue
+ * dashboard is exactly the contractual split.
+ */
+export type Lot = 1 | 2;
+
+/**
+ * Which lot each screen belongs to.
+ *
+ * A total map, like the block registry: adding a slug without placing it
+ * in a lot is a compile error, because the alternative is a screen that
+ * quietly ships in a delivery nobody sold.
+ */
+export const LOT_BY_SLUG: Record<RestaurantSlug, Lot> = {
+  // 1. Aujourd'hui
+  "": 1,
+  reservations: 1,
+  calendrier: 2,
+  // 2. En service
+  "liste-attente": 2,
+  "check-in": 1,
+  briefing: 2,
+  // 3. Clients
+  clients: 1,
+  segments: 2,
+  audience: 2,
+  // 4. Ma présence
+  "ma-fiche": 1,
+  menu: 1,
+  avis: 1,
+  // 5. Croissance
+  visibilite: 1,
+  offres: 2,
+  experiences: 2,
+  // 6. Vie nocturne — entirely Lot 2.
+  "guest-list": 2,
+  tables: 2,
+  promoteurs: 2,
+  // 7. Paiements — entirely Lot 2.
+  acomptes: 2,
+  annulations: 2,
+  "lyfe-pay": 2,
+  // 8. Pilotage
+  performance: 1,
+  bilans: 1,
+  campagnes: 2,
+  // 9. Établissement
+  disponibilites: 1,
+  equipe: 1,
+  notifications: 1,
+  // 10. Compte
+  parametres: 1,
+  abonnement: 1,
+  support: 1,
+};
+
+/** The Fiche client detail route rides with Liste clients. */
+export const CUSTOMER_ROUTE_LOT: Lot = 1;
+
+/** Whether a screen is registered in a deployment running `lot`. */
+export function slugInLot(slug: RestaurantSlug, lot: Lot): boolean {
+  return lot === 2 || LOT_BY_SLUG[slug] === 1;
+}
+
 export const RESTAURANT_BASE = "/restaurant";
 
 /** Type-checked href for a restaurant screen. */
