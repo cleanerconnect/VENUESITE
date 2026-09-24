@@ -47,6 +47,10 @@ export type SignInResult =
 export async function signIn(
   email: string,
   password: string,
+  // Unchecked, the session ends with the browser. A shared host stand is
+  // the normal case in a restaurant, so staying signed in for a month is
+  // a choice the partner makes rather than the default they discover.
+  remember = true,
 ): Promise<SignInResult> {
   const result = verifyCredentials(email, password);
 
@@ -61,7 +65,7 @@ export async function signIn(
   const jar = await cookies();
   const options = {
     path: "/",
-    maxAge: THIRTY_DAYS,
+    ...(remember ? { maxAge: THIRTY_DAYS } : {}),
     sameSite: "lax" as const,
     httpOnly: false,
   };

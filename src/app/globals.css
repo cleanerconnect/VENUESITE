@@ -411,3 +411,23 @@ input[type="time"] {
     border-left: 3px solid #0a1f3d !important;
   }
 }
+
+/* A date input used as a picker and nothing else.
+ *
+ * `<input type="date">` formats its own value from the browser's UI
+ * locale rather than the page's, so on a French portal it can render
+ * `09/25/2026` beside a row that spells the same day "vendredi 25
+ * septembre" — two formats for one date, one of them not French. Where
+ * the row already states the day, the input keeps only its calendar
+ * button. The rule is WebKit/Blink-only; elsewhere the text stays, in
+ * the reader's own locale, which is the harmless outcome. */
+.date-compact::-webkit-datetime-edit,
+.date-compact::-webkit-inner-spin-button,
+.date-compact::-webkit-clear-button {
+  display: none;
+}
+.date-compact::-webkit-calendar-picker-indicator {
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}

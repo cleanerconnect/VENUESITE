@@ -77,6 +77,13 @@ export default async function RestaurantSectionPage({
   // have measured every delta against last year under a label promising
   // the previous period, so the baseline is pinned rather than read.
   const comparison = lot === 1 ? "previous" : readComparison(query.c);
+  // Réservations is the one screen that is not about now. `?jour=` is
+  // where the chosen day lives, so the back button walks the book and a
+  // link to a particular day is a link a partner can send.
+  const jour = readDay(query.jour);
+  const serviceParam = Array.isArray(query.service)
+    ? query.service[0]
+    : query.service;
   const demo = parseDemoState(
     Array.isArray(query[DEMO_STATE_PARAM])
       ? query[DEMO_STATE_PARAM][0]
@@ -93,7 +100,15 @@ export default async function RestaurantSectionPage({
   try {
     const [overview, context] = await Promise.all([
       loadOverview(repo, session.venueId, session.firstName),
-      loadContext(repo, slug, session.venueId, period, comparison),
+      loadContext(
+        repo,
+        slug,
+        session.venueId,
+        period,
+        comparison,
+        jour,
+        serviceParam,
+      ),
     ]);
     return <RestaurantScreen slug={slug} data={overview} context={context} />;
   } catch (error) {
@@ -117,6 +132,27 @@ function readPeriod(raw: string | string[] | undefined): AnalyticsPeriod {
     : "30d";
 }
 
+/**
+ * The chosen day, or today.
+ *
+ * Anything that is not a calendar date falls back rather than throwing:
+ * a mistyped link should open the book on today, not a 500.
+ */
+function readDay(raw: string | string[] | undefined): string {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return todayIso();
+  return Number.isNaN(new Date(`${value}T12:00:00`).getTime())
+    ? todayIso()
+    : value;
+}
+
+function todayIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
+
 /** The comparison baseline lives in the URL too. */
 function readComparison(raw: string | string[] | undefined): Comparison {
   const value = Array.isArray(raw) ? raw[0] : raw;
@@ -137,6 +173,8 @@ async function loadContext(
   venueId: string,
   period: AnalyticsPeriod,
   comparison: Comparison,
+  day: string,
+  dayService: string | undefined,
 ): Promise<Omit<ScreenContext, "overview">> {
   const needs = SCREEN_NEEDS[slug];
 
@@ -150,6 +188,7 @@ async function loadContext(
     // environment itself would be a builder the styleguide and the
     // capture tools could not drive.
     lot: activeLot(),
+    dayService,
   };
 
   await Promise.all(
@@ -209,6 +248,9 @@ async function loadContext(
           return;
         case "spend":
           ctx.spendByCustomer = await repo.getSpendByCustomer(venueId);
+          return;
+        case "dayBook":
+          ctx.dayBook = await repo.getDayBook(venueId, day);
           return;
         case "notificationPrefs":
           ctx.notificationPreferences =

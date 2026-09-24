@@ -1,5 +1,6 @@
 "use client";
 
+import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -10,6 +11,7 @@ import { saveVenueIdentity, type VenueIdentityInput } from "@/app/actions/venue"
 import { cn } from "@/lib/utils/cn";
 
 export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) {
+  const { lot } = useWorkspaceAccess();
   const form = useOptimisticForm({
     initial,
     submit: saveVenueIdentity,
@@ -42,7 +44,7 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {text("name", "Nom du lieu")}
           {text("shortName", "Nom court", {
-            hint: "Affiché dans les listes et la navigation.",
+            hint: "Affiché dans les listes de l'application.",
           })}
         </div>
 
@@ -89,8 +91,18 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {text("address", "Adresse")}
           {text("city", "Ville")}
-          {text("latitude", "Latitude", { hint: "Facultatif — pour la carte." })}
-          {text("longitude", "Longitude")}
+          {/* Coordinates are not something a restaurant knows about
+              itself, and the basique fiche is the record as its owner
+              would state it. Lot 2 places the pin; until then the stored
+              values are kept and simply not asked for. */}
+          {lot === 2 ? (
+            <>
+              {text("latitude", "Latitude", {
+                hint: "Facultatif — pour la carte.",
+              })}
+              {text("longitude", "Longitude")}
+            </>
+          ) : null}
           {text("contactPhone", "Téléphone")}
           {text("contactEmail", "E-mail")}
         </div>

@@ -12,6 +12,7 @@ import "server-only";
 // swapping it for a hash comparison is a one-line change.
 
 import { directory, type DirectoryMembership } from "./directory";
+import type { Lot } from "@/lib/lot/shared";
 import { PROFILES } from "./static/profiles";
 import type { OrganizerProfile } from "@/lib/types/domain";
 
@@ -219,9 +220,24 @@ export function verifyCredentials(
   return { ok: true, account: resolved };
 }
 
-/** The accounts offered on the login screen, for walking the states. */
-export function demoAccounts() {
-  return ACCOUNTS.filter((a) => a.demo).map((a) => ({
+/**
+ * The accounts offered on the login screen, for walking the states.
+ *
+ * Lot 1 has no event side, so an account whose only destination is the
+ * events dashboard leads somewhere this build does not register. It is
+ * filtered out rather than left to 404 — except the account with nothing
+ * attached, whose whole purpose is the state it lands on.
+ */
+export function demoAccounts(lot: Lot = 2) {
+  const offered =
+    lot === 2
+      ? ACCOUNTS
+      : ACCOUNTS.filter(
+          (a) =>
+            a.userId === "usr_nouveau" ||
+            directory().findById(a.userId)?.venues.length,
+        );
+  return offered.filter((a) => a.demo).map((a) => ({
     email: a.email,
     password: a.password,
     label: a.demo!.label,

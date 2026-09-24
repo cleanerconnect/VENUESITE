@@ -184,20 +184,30 @@ function Control({
       );
 
     case "number":
+      // The suffix is the unit. Without it a box reading 60 next to
+      // "Le carnet ouvre à" is a number with no idea what it counts;
+      // the spec type has carried the field all along, unrendered.
       return (
-        <input
-          id={id}
-          type="number"
-          disabled={readOnly}
-          value={String(value)}
-          min={control.min}
-          max={control.max}
-          step={control.step}
-          // On blur rather than on every keystroke: a spinner held down
-          // would otherwise fire a write per increment.
-          onChange={(e) => onCommit(Number(e.target.value))}
-          className={cn(FIELD, "w-24 num text-right")}
-        />
+        <span className="flex items-center gap-2">
+          <input
+            id={id}
+            type="number"
+            disabled={readOnly}
+            value={String(value)}
+            min={control.min}
+            max={control.max}
+            step={control.step}
+            // On blur rather than on every keystroke: a spinner held down
+            // would otherwise fire a write per increment.
+            onChange={(e) => onCommit(Number(e.target.value))}
+            className={cn(FIELD, "w-24 num text-right")}
+          />
+          {control.suffix ? (
+            <span className="text-meta text-ink-mute shrink-0">
+              {control.suffix}
+            </span>
+          ) : null}
+        </span>
       );
 
     case "text":
@@ -244,17 +254,28 @@ function Control({
       );
 
     case "time":
-    case "date":
+    case "date": {
+      const compact = control.kind === "date" && control.compact;
       return (
         <input
           id={id}
           type={control.kind}
           disabled={readOnly}
           value={String(value)}
+          // Bounds only exist on a date, and only where the caller set
+          // them — a picker that offers a day the dataset cannot answer
+          // for is a picker that leads to an empty screen.
+          min={control.kind === "date" ? control.min : undefined}
+          max={control.kind === "date" ? control.max : undefined}
+          aria-label={
+            control.kind === "date" ? control.label : undefined
+          }
+          title={control.kind === "date" ? control.label : undefined}
           onChange={(e) => onCommit(e.target.value)}
-          className={cn(FIELD, "num")}
+          className={cn(FIELD, "num", compact && "date-compact w-[52px] px-2")}
         />
       );
+    }
 
     case "readonly":
       return control.href ? (

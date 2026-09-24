@@ -162,6 +162,32 @@ export function RestaurantScreen({
         );
       },
 
+      // Walking the book. The day lives in the URL rather than in
+      // component state, so the back button steps through the days a
+      // partner looked at and a link to one opens on that day.
+      "reservations.day": (payload) => {
+        const value = String(payload?.value ?? "");
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
+        const params = new URLSearchParams(window.location.search);
+        params.set("jour", value);
+        // A service id names the day it was resolved for, so carrying
+        // one across a day change would point at a service that day
+        // does not run. Dropping it lets the new day choose its own.
+        params.delete("service");
+        router.push(`${window.location.pathname}?${params.toString()}`);
+      },
+
+      // Picking one of the day's services. Same reasoning as the day:
+      // it belongs in the URL, so the book a partner is reading is a
+      // thing they can link to and step back out of.
+      "reservations.service": (payload) => {
+        const value = String(payload?.value ?? "");
+        if (!value) return;
+        const params = new URLSearchParams(window.location.search);
+        params.set("service", value);
+        router.push(`${window.location.pathname}?${params.toString()}`);
+      },
+
       "review.reply": () => toast({ tone: "info", title: COPY.toast.replySaved }),
       "nudge.dismiss": () => toast({ tone: "info", title: COPY.toast.nudgeDismissed }),
       "route.refresh": () => router.refresh(),

@@ -32,6 +32,7 @@ import type {
   SemanticTone,
 } from "@/lib/dashboard/spec";
 import type {
+  DayBook,
   GuestReview,
   MenuItem,
   Reservation,
@@ -149,8 +150,85 @@ const covers = coversIn;
  * One definition, read from both, is what stops the same room being
  * three different percentages full on two screens a tap apart.
  */
-function serviceBook(reservations: Reservation[], serviceId: string): Reservation[] {
-  return reservations.filter((r) => r.serviceId === serviceId);
+function serviceBook(reservations: Reservation[], service: Service): Reservation[] {
+  const opens = new Date(service.opensAt).getTime();
+  const closes = new Date(service.closesAt).getTime();
+  return reservations.filter((r) => {
+    // A booking written against the live service names it. One taken for
+    // a day still ahead has no service row to name yet, so it is placed
+    // by the only thing it does carry: the time it asked for.
+    if (r.serviceId) return r.serviceId === service.id;
+    const at = new Date(r.at).getTime();
+    return at >= opens && at <= closes;
+  });
+}
+
+/**
+ * How far the book can be walked.
+ *
+ * The same window `db/snapshot.mjs` captures, so the static driver can
+ * answer for every date the picker offers. A wider picker would hand a
+ * reviewer an empty screen and no way to tell that from a quiet day.
+ */
+const BOOK_DAYS_BACK = 7;
+const BOOK_DAYS_AHEAD = 30;
+
+/** `yyyy-MM-dd` in the venue's own calendar, not UTC. */
+function isoDay(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
+
+/** Shift a `yyyy-MM-dd` by whole days, staying on the calendar grid. */
+function shiftDay(date: string, by: number): string {
+  const d = new Date(`${date}T12:00:00`);
+  d.setDate(d.getDate() + by);
+  return isoDay(d);
+}
+
+/**
+ * Which service a walked-to day opens on.
+ *
+ * The named one when the partner picked it, otherwise the first that
+ * actually holds bookings — a venue serving lunch and dinner takes
+ * almost all of its forward bookings for dinner, and opening on an empty
+ * lunch reads as a day with nothing in it.
+ */
+function pickService(book: DayBook, serviceId?: string): Service | undefined {
+  if (serviceId) {
+    const named = book.services.find((s) => s.id === serviceId);
+    if (named) return named;
+  }
+  const busiest = book.services.find(
+    (s) => serviceBook(book.reservations, s).length > 0,
+  );
+  return busiest ?? book.services[0];
+}
+
+/**
+ * A stand-in for a date the venue does not open on.
+ *
+ * Shaped like a service so every figure beside the book divides by
+ * something, and zeroed so none of them claims a house that is not
+ * opening.
+ */
+function closedService(shape: Service, date: string): Service {
+  return {
+    ...shape,
+    id: `closed@${date}`,
+    label: "Fermé",
+    date,
+    opensAt: `${date}T00:00:00.000Z`,
+    closesAt: `${date}T00:00:00.000Z`,
+    state: "closed",
+    capacity: 0,
+    bookedCovers: 0,
+    arrivedCovers: 0,
+    noShowCovers: 0,
+    revenueMad: 0,
+    slotLoad: [],
+  };
 }
 
 /**
@@ -723,9 +801,29 @@ export function buildReservationsScreen(
   configuration: VenueConfiguration,
   desk: MoneyDesk,
   lot: Lot = 2,
+  /**
+   * The day being shown, when it is not today.
+   *
+   * A restaurant takes tomorrow's bookings all through tonight's
+   * service, so the book has to be walkable. Today still comes from the
+   * overview — the live service with its engine counters — and any other
+   * day comes from here, resolved against the venue's own service
+   * definitions.
+   */
+  book?: DayBook,
+  /** Which of the day's services to read, when the partner picked one. */
+  serviceId?: string,
 ): ScreenSpec {
   const lot1 = lot === 1;
-  const service = data.currentService;
+  const today = isoDay(new Date());
+  const onAnotherDay = Boolean(book && book.date !== today);
+  // A day with no service defined — a venue closed on Mondays, or a date
+  // past what the dataset holds — still has to render. It gets the
+  // overview's service for its shape, emptied of every figure, so the
+  // screen says "closed" instead of dividing by a capacity it invented.
+  const service = onAnotherDay
+    ? pickService(book!, serviceId) ?? closedService(data.currentService, book!.date)
+    : data.currentService;
   // One scope, named on the tiles.
   //
   // The tiles used to read `currentService`, a per-service figure, while
@@ -734,9 +832,15 @@ export function buildReservationsScreen(
   // above an "Arrivés" chip counting bookings. Lot 1 reads the service
   // in hand and nothing else, and every figure beside the book is
   // counted off these same rows.
+  // The queue at the door is a thing about right now, so it joins the
+  // book only on today; a waitlist on a page showing next Tuesday would
+  // be counting people who are standing in the room tonight.
+  const dayRows = onAnotherDay ? book!.reservations : data.upcomingReservations;
   const all = lot1
-    ? serviceBook(data.upcomingReservations, service.id)
-    : [...data.upcomingReservations, ...data.waitlist];
+    ? serviceBook(dayRows, service)
+    : onAnotherDay
+      ? dayRows
+      : [...data.upcomingReservations, ...data.waitlist];
   const requested = all.filter((r) => r.state === "requested");
   const atRisk = all.filter((r) => (r.noShowRisk ?? 0) >= 0.3);
   const arrived = all.filter((r) => r.state === "arrived");
@@ -914,9 +1018,19 @@ export function buildReservationsScreen(
     },
   };
 
+  const shownDate = onAnotherDay ? book!.date : service.date;
+  const MIN_DAY = shiftDay(today, -BOOK_DAYS_BACK);
+  const MAX_DAY = shiftDay(today, BOOK_DAYS_AHEAD);
+
   // The day and the service, as a control rather than a heading: the
   // book is always read for one day, and the previous one is one tap
   // away all through a service.
+  //
+  // The date used to be a dead control — read-only under Lot 1, and
+  // under Lot 2 a date input whose command had no handler. Taking
+  // tomorrow's bookings while tonight's service runs is the ordinary
+  // work of a restaurant, so the day is walkable: a step either way,
+  // a picker for a date further off, and a way back to today.
   const dayPicker: Block = {
     id: "day",
     type: "settings",
@@ -924,29 +1038,88 @@ export function buildReservationsScreen(
     rows: [
       {
         id: "date",
-        label: "Date",
-        // A date input renders its value as `2026-09-24`, the one ISO
-        // date left on a Lot 1 screen. Lot 1 reads the service in hand
-        // and has no day to navigate to, so the day is stated in the
-        // same French long form the header and every row use.
-        control: lot1
-          ? { kind: "readonly", value: dayLabel(service.opensAt) }
-          : { kind: "date", value: service.date },
+        // The label carries the day in French long form, because a date
+        // input renders its own value as `2026-09-24` and that is the
+        // one ISO date that would otherwise be left on a Lot 1 screen.
+        label: dayLabel(shownDate),
+        hint:
+          shownDate === today
+            ? "Aujourd'hui."
+            : shownDate === shiftDay(today, 1)
+              ? "Demain."
+              : undefined,
+        // The row's own label carries the day in French long form, so
+        // the input is the picker and does not restate it.
+        control: {
+          kind: "date",
+          value: shownDate,
+          min: MIN_DAY,
+          max: MAX_DAY,
+          compact: true,
+          label: "Choisir une date",
+        },
         command: "reservations.day",
       },
       {
         id: "service",
         label: vocabulary.service.one.replace(/^./, (c) => c.toUpperCase()),
         hint: `Les ${vocabulary.service.many} se définissent dans Disponibilités.`,
+        // Every service the day runs, so a venue serving both lunch and
+        // dinner can read either. Today has one live row and nothing to
+        // choose between; a walked-to day is resolved from the
+        // definitions and usually has two.
         control: {
           kind: "select",
           value: service.id,
-          options: [{ value: service.id, label: service.label }],
+          options: (onAnotherDay && book!.services.length > 0
+            ? book!.services
+            : [service]
+          ).map((s) => ({ value: s.id, label: s.label })),
         },
         command: "reservations.service",
       },
     ],
     footerActions: [
+      // A step either way, and a way back. These read the day and
+      // nothing else, so they are the one set of controls on this
+      // screen that Lot 1 gets in full.
+      {
+        action: {
+          kind: "command",
+          command: "reservations.day",
+          label: "Jour précédent",
+          icon: "chevron-left",
+          payload: { value: shiftDay(shownDate, -1) },
+        },
+        variant: "secondary",
+      },
+      {
+        action: {
+          kind: "command",
+          command: "reservations.day",
+          label: "Jour suivant",
+          icon: "chevron-right",
+          payload: { value: shiftDay(shownDate, 1) },
+        },
+        variant: "secondary",
+      },
+      // Only worth a button when it would change something: on today it
+      // is a control that does nothing, which is a control that teaches
+      // the partner to distrust the row.
+      ...(shownDate === today
+        ? []
+        : ([
+            {
+              action: {
+                kind: "command" as const,
+                command: "reservations.day",
+                label: "Aujourd'hui",
+                icon: "calendar" as const,
+                payload: { value: today },
+              },
+              variant: "ghost" as const,
+            },
+          ])),
       // Creating a booking and taking a walk-in both write a reservation
       // the portal did not receive. Lot 2 buys that; Lot 1 is left with
       // the two actions that only read the day.
@@ -991,9 +1164,12 @@ export function buildReservationsScreen(
   // The scope, spelled out: the day in French long form, the service
   // resolved from the clock against the services table, and the hours
   // that service actually runs. Everything below is inside it.
-  const subtitle = `${dayLabel(service.opensAt)} · ${service.label} · ${hm(
-    service.opensAt,
-  )} – ${hm(service.closesAt)}`;
+  const subtitle =
+    service.capacity === 0
+      ? `${dayLabel(shownDate)} · aucun service ce jour-là`
+      : `${dayLabel(shownDate)} · ${service.label} · ${hm(service.opensAt)} – ${hm(
+          service.closesAt,
+        )}`;
 
   // Réservations, under « Gestion des reservation uniquement ».
   //
@@ -1825,6 +2001,17 @@ export interface ScreenContext {
   support?: SupportTicket[];
   spendByCustomer?: Record<string, number>;
   notificationPreferences?: NotificationPreferences;
+  /**
+   * The day Réservations is showing, when it is not today.
+   *
+   * Absent means today, and the builder reads the overview as before —
+   * the live service, its counters and the book behind them. Present
+   * means the partner walked to another date, and every figure on the
+   * screen is counted off this instead.
+   */
+  dayBook?: DayBook;
+  /** Which of `dayBook`'s services to read, when the partner picked one. */
+  dayService?: string;
   profile?: import("@/lib/types/restaurant").RestaurantProfile | null;
   photoCount?: number;
   period?: AnalyticsPeriod;
@@ -1859,6 +2046,7 @@ export type ScreenDataNeed =
   | "support"
   | "spend"
   | "profile"
+  | "dayBook"
   | "notificationPrefs";
 
 /**
@@ -1886,7 +2074,7 @@ export function isFormRoute(slug: string): slug is FormRouteSlug {
 /** Which extra slices each screen requires. */
 export const SCREEN_NEEDS: Record<SpecSlug, ScreenDataNeed[]> = {
   "": ["serviceFloor", "money"],
-  reservations: ["money"],
+  reservations: ["money", "dayBook"],
   calendrier: ["serviceFloor", "growth"],
   "liste-attente": ["serviceFloor"],
   briefing: ["serviceFloor"],
@@ -1991,6 +2179,8 @@ export const RESTAURANT_SCREENS: Record<
       ctx.configuration,
       ctx.money ?? EMPTY_MONEY,
       ctx.lot,
+      ctx.dayBook,
+      ctx.dayService,
     ),
   calendrier: (ctx) =>
     buildCalendarScreen(ctx.serviceFloor ?? EMPTY_FLOOR, ctx.configuration),

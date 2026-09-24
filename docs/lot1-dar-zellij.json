@@ -4,7 +4,7 @@
   "account": "yassine@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-09-24T14:49:16.176Z",
+  "capturedAt": "2026-09-24T16:10:20.884Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -14,9 +14,9 @@
       "dependsOn": null,
       "roles": null,
       "workspace": "venue",
-      "title": "Bon après-midi, Yassine. le service est lancé.",
+      "title": "Bon après-midi, Yassine. Le service est lancé.",
       "eyebrow": "Bon après-midi",
-      "subtitle": "Déjeuner · 15 réservations aujourd'hui.",
+      "subtitle": "Dîner · 5 réservations aujourd'hui.",
       "venue": "YA",
       "blocks": [
         {
@@ -29,16 +29,16 @@
           "facets": [],
           "texts": [
             "Bon après-midi",
-            "le service est lancé.",
-            "Déjeuner · 15 réservations aujourd'hui.",
+            "Le service est lancé.",
+            "Dîner · 5 réservations aujourd'hui.",
             "Ouvrir le carnet →"
           ],
           "rows": [
             {
               "lines": [
                 "Bon après-midi",
-                "le service est lancé.",
-                "Déjeuner · 15 réservations aujourd'hui."
+                "Le service est lancé.",
+                "Dîner · 5 réservations aujourd'hui."
               ],
               "pills": [],
               "actions": []
@@ -57,181 +57,34 @@
         {
           "kind": "list",
           "heading": "Réservations du jour",
-          "subheading": "12h00 · 2 couverts · Grande salle · LYFE",
+          "subheading": "19h00 · 4 couverts · Patio · LYFE",
           "actions": [],
           "facets": [],
           "texts": [
             "Réservations du jour",
-            "FA",
-            "Famille Alami",
-            "12h00 · 2 couverts · Grande salle · LYFE",
-            "TO",
-            "Table Ourika",
-            "12h00 · 3 couverts · Grande salle",
-            "RB",
-            "Rachid Benjelloun",
-            "12h30 · 4 couverts · Patio · Téléphone",
-            "MB",
-            "Mehdi Bouzoubaa",
-            "12h30 · 5 couverts · Patio · LYFE",
-            "SM",
-            "Sanaa Mourad",
-            "13h00 · 2 couverts · Terrasse",
-            "CL",
-            "Couple Lambert",
-            "13h00 · 2 couverts · Terrasse · LYFE",
-            "GZ",
-            "Groupe Ziyad",
-            "13h30 · 6 couverts · Grande salle · LYFE",
-            "GA",
-            "Groupe Atlas",
-            "13h30 · 4 couverts · Grande salle · Téléphone",
-            "KN",
-            "Khalid Naciri",
-            "14h00 · 4 couverts · Patio · LYFE",
             "SB",
             "Salma Bennani",
-            "14h30 · 4 couverts · Patio · LYFE",
+            "19h00 · 4 couverts · Patio · LYFE",
             "Anniversaire, dessert avec bougie",
             "GK",
             "Groupe Karam",
-            "14h30 · 6 couverts · Grande salle · Téléphone",
+            "19h30 · 6 couverts · Grande salle · Téléphone",
             "Sans gluten pour deux couverts",
             "YE",
             "Yasmine El Alaoui",
-            "14h30 · 4 couverts · Terrasse",
+            "19h30 · 4 couverts · Terrasse",
             "NC",
             "Nabil Cherkaoui",
-            "14h30 · 2 couverts · LYFE",
+            "20h00 · 2 couverts · LYFE",
             "Demande une table près de la fontaine",
             "HT",
             "Hind Tazi",
-            "14h30 · 5 couverts · Grande salle · Téléphone",
-            "IS",
-            "Imane Sefrioui",
-            "14h30 · 2 couverts · Terrasse · Téléphone"
+            "20h30 · 5 couverts · Grande salle · Téléphone"
           ],
           "items": [
             {
-              "title": "Famille Alami",
-              "meta": "12h00 · 2 couverts · Grande salle · LYFE",
-              "initials": "FA",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Table Ourika",
-              "meta": "12h00 · 3 couverts · Grande salle",
-              "initials": "TO",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Rachid Benjelloun",
-              "meta": "12h30 · 4 couverts · Patio · Téléphone",
-              "initials": "RB",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Mehdi Bouzoubaa",
-              "meta": "12h30 · 5 couverts · Patio · LYFE",
-              "initials": "MB",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Sanaa Mourad",
-              "meta": "13h00 · 2 couverts · Terrasse",
-              "initials": "SM",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Couple Lambert",
-              "meta": "13h00 · 2 couverts · Terrasse · LYFE",
-              "initials": "CL",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Groupe Ziyad",
-              "meta": "13h30 · 6 couverts · Grande salle · LYFE",
-              "initials": "GZ",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Groupe Atlas",
-              "meta": "13h30 · 4 couverts · Grande salle · Téléphone",
-              "initials": "GA",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Khalid Naciri",
-              "meta": "14h00 · 4 couverts · Patio · LYFE",
-              "initials": "KN",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
               "title": "Salma Bennani",
-              "meta": "14h30 · 4 couverts · Patio · LYFE",
+              "meta": "19h00 · 4 couverts · Patio · LYFE",
               "initials": "SB",
               "trailing": null,
               "pills": [
@@ -244,7 +97,7 @@
             },
             {
               "title": "Groupe Karam",
-              "meta": "14h30 · 6 couverts · Grande salle · Téléphone",
+              "meta": "19h30 · 6 couverts · Grande salle · Téléphone",
               "initials": "GK",
               "trailing": null,
               "pills": [
@@ -257,7 +110,7 @@
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "14h30 · 4 couverts · Terrasse",
+              "meta": "19h30 · 4 couverts · Terrasse",
               "initials": "YE",
               "trailing": null,
               "pills": [
@@ -270,7 +123,7 @@
             },
             {
               "title": "Nabil Cherkaoui",
-              "meta": "14h30 · 2 couverts · LYFE",
+              "meta": "20h00 · 2 couverts · LYFE",
               "initials": "NC",
               "trailing": null,
               "pills": [
@@ -283,26 +136,13 @@
             },
             {
               "title": "Hind Tazi",
-              "meta": "14h30 · 5 couverts · Grande salle · Téléphone",
+              "meta": "20h30 · 5 couverts · Grande salle · Téléphone",
               "initials": "HT",
               "trailing": null,
               "pills": [
                 {
                   "label": "CONFIRMÉE",
                   "tone": "info-10"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Imane Sefrioui",
-              "meta": "14h30 · 2 couverts · Terrasse · Téléphone",
-              "initials": "IS",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
                 }
               ],
               "actions": []
@@ -321,30 +161,37 @@
       "workspace": "venue",
       "title": "Réservations",
       "eyebrow": null,
-      "subtitle": "jeudi 24 septembre · Déjeuner · 12h00 – 15h00",
+      "subtitle": "jeudi 24 septembre · Dîner · 19h00 – 23h30",
       "venue": "YA",
       "blocks": [
         {
           "kind": "settings",
           "heading": "Journée",
-          "subheading": "Les services se définissent dans Disponibilités.",
+          "subheading": "Aujourd'hui.",
           "actions": [
+            "Jour précédent",
+            "Jour suivant",
             "Exporter la journée",
             "Imprimer"
           ],
           "facets": [],
           "texts": [
             "Journée",
-            "Date",
             "jeudi 24 septembre",
+            "Aujourd'hui.",
             "Service",
             "Les services se définissent dans Disponibilités.",
-            "Déjeuner"
+            "Dîner"
           ],
           "fields": [
             {
+              "label": "jeudi 24 septembre",
+              "value": "2026-09-24",
+              "type": "date"
+            },
+            {
               "label": "Service",
-              "value": "Déjeuner",
+              "value": "Dîner",
               "type": "select-one"
             }
           ],
@@ -353,7 +200,7 @@
         {
           "kind": "list",
           "heading": "Carnet du service",
-          "subheading": "12h00 · 2 couverts · Grande salle · LYFE",
+          "subheading": "Trier par",
           "actions": [
             "Check-in",
             "Absent",
@@ -370,7 +217,7 @@
           "facets": [
             {
               "label": "Tous",
-              "count": "15"
+              "count": "5"
             },
             {
               "label": "À confirmer",
@@ -382,189 +229,43 @@
             },
             {
               "label": "Arrivés",
-              "count": "10"
+              "count": "0"
             }
           ],
           "texts": [
             "Carnet du service",
+            "Trier par",
             "Heure · tôt → tard",
             "Heure · tard → tôt",
             "Couverts",
             "Nom",
-            "15",
+            "5",
             "1",
             "4",
-            "10",
-            "FA",
-            "Famille Alami",
-            "12h00 · 2 couverts · Grande salle · LYFE",
-            "TO",
-            "Table Ourika",
-            "12h00 · 3 couverts · Grande salle",
-            "RB",
-            "Rachid Benjelloun",
-            "12h30 · 4 couverts · Patio · Téléphone",
-            "MB",
-            "Mehdi Bouzoubaa",
-            "12h30 · 5 couverts · Patio · LYFE",
-            "SM",
-            "Sanaa Mourad",
-            "13h00 · 2 couverts · Terrasse",
-            "CL",
-            "Couple Lambert",
-            "13h00 · 2 couverts · Terrasse · LYFE",
-            "GZ",
-            "Groupe Ziyad",
-            "13h30 · 6 couverts · Grande salle · LYFE",
-            "GA",
-            "Groupe Atlas",
-            "13h30 · 4 couverts · Grande salle · Téléphone",
-            "KN",
-            "Khalid Naciri",
-            "14h00 · 4 couverts · Patio · LYFE",
+            "0",
             "SB",
             "Salma Bennani",
-            "14h30 · 4 couverts · Patio · LYFE",
+            "19h00 · 4 couverts · Patio · LYFE",
             "Anniversaire, dessert avec bougie",
             "GK",
             "Groupe Karam",
-            "14h30 · 6 couverts · Grande salle · Téléphone",
+            "19h30 · 6 couverts · Grande salle · Téléphone",
             "Sans gluten pour deux couverts",
             "YE",
             "Yasmine El Alaoui",
-            "14h30 · 4 couverts · Terrasse",
+            "19h30 · 4 couverts · Terrasse",
             "NC",
             "Nabil Cherkaoui",
-            "14h30 · 2 couverts · LYFE",
+            "20h00 · 2 couverts · LYFE",
             "Demande une table près de la fontaine",
             "HT",
             "Hind Tazi",
-            "14h30 · 5 couverts · Grande salle · Téléphone",
-            "IS",
-            "Imane Sefrioui",
-            "14h30 · 2 couverts · Terrasse · Téléphone"
+            "20h30 · 5 couverts · Grande salle · Téléphone"
           ],
           "items": [
             {
-              "title": "Famille Alami",
-              "meta": "12h00 · 2 couverts · Grande salle · LYFE",
-              "initials": "FA",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Table Ourika",
-              "meta": "12h00 · 3 couverts · Grande salle",
-              "initials": "TO",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Rachid Benjelloun",
-              "meta": "12h30 · 4 couverts · Patio · Téléphone",
-              "initials": "RB",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Mehdi Bouzoubaa",
-              "meta": "12h30 · 5 couverts · Patio · LYFE",
-              "initials": "MB",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Sanaa Mourad",
-              "meta": "13h00 · 2 couverts · Terrasse",
-              "initials": "SM",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Couple Lambert",
-              "meta": "13h00 · 2 couverts · Terrasse · LYFE",
-              "initials": "CL",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Groupe Ziyad",
-              "meta": "13h30 · 6 couverts · Grande salle · LYFE",
-              "initials": "GZ",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Groupe Atlas",
-              "meta": "13h30 · 4 couverts · Grande salle · Téléphone",
-              "initials": "GA",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Khalid Naciri",
-              "meta": "14h00 · 4 couverts · Patio · LYFE",
-              "initials": "KN",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
               "title": "Salma Bennani",
-              "meta": "14h30 · 4 couverts · Patio · LYFE",
+              "meta": "19h00 · 4 couverts · Patio · LYFE",
               "initials": "SB",
               "trailing": null,
               "pills": [
@@ -580,7 +281,7 @@
             },
             {
               "title": "Groupe Karam",
-              "meta": "14h30 · 6 couverts · Grande salle · Téléphone",
+              "meta": "19h30 · 6 couverts · Grande salle · Téléphone",
               "initials": "GK",
               "trailing": null,
               "pills": [
@@ -596,7 +297,7 @@
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "14h30 · 4 couverts · Terrasse",
+              "meta": "19h30 · 4 couverts · Terrasse",
               "initials": "YE",
               "trailing": null,
               "pills": [
@@ -612,7 +313,7 @@
             },
             {
               "title": "Nabil Cherkaoui",
-              "meta": "14h30 · 2 couverts · LYFE",
+              "meta": "20h00 · 2 couverts · LYFE",
               "initials": "NC",
               "trailing": null,
               "pills": [
@@ -629,7 +330,7 @@
             },
             {
               "title": "Hind Tazi",
-              "meta": "14h30 · 5 couverts · Grande salle · Téléphone",
+              "meta": "20h30 · 5 couverts · Grande salle · Téléphone",
               "initials": "HT",
               "trailing": null,
               "pills": [
@@ -642,19 +343,6 @@
                 "Check-in",
                 "Absent"
               ]
-            },
-            {
-              "title": "Imane Sefrioui",
-              "meta": "14h30 · 2 couverts · Terrasse · Téléphone",
-              "initials": "IS",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
             }
           ]
         }
@@ -662,25 +350,27 @@
       "surfaces": [
         {
           "name": "Détail réservation",
-          "title": "Famille Alami",
+          "title": "Salma Bennani",
           "lines": [
-            "Famille Alami",
-            "12h00 · 2 couverts · LYFE",
+            "Salma Bennani",
+            "19h00 · 4 couverts · LYFE",
             "La réservation",
             "Heure",
-            "12h00",
+            "19h00",
             "Personnes",
-            "2",
+            "4",
             "Espace",
-            "Grande salle",
+            "Patio",
             "Canal",
             "LYFE",
             "Le client",
             "Téléphone",
-            "+212 610000000"
+            "+212 661 20 44 18",
+            "Note de salle",
+            "Anniversaire, dessert avec bougie"
           ],
           "pills": [
-            "ARRIVÉ"
+            "CONFIRMÉE"
           ],
           "buttons": [
             "Marquer comme arrivé"
@@ -750,7 +440,7 @@
           "left": {
             "kind": "settings",
             "heading": "Scanner le code",
-            "subheading": "Le code vient de l'application du client. Le portail le valide, il ne le fabrique jamais.",
+            "subheading": "Le client présente le code reçu dans son application. Vous pouvez aussi le saisir à la main.",
             "actions": [
               "Allumer la caméra",
               "Valider"
@@ -758,7 +448,7 @@
             "facets": [],
             "texts": [
               "Scanner le code",
-              "Le code vient de l'application du client. Le portail le valide, il ne le fabrique jamais.",
+              "Le client présente le code reçu dans son application. Vous pouvez aussi le saisir à la main.",
               "Allumer la caméra",
               "La caméra est éteinte. La saisie manuelle et la recherche par nom fonctionnent sans elle.",
               "Code de réservation",
@@ -778,11 +468,11 @@
             "heading": "Chercher par nom",
             "subheading": "Pour un client qui a réservé par téléphone et n'a pas de code.",
             "actions": [
-              "Confirmer",
-              "Confirmer",
-              "Confirmer",
-              "Confirmer",
-              "Confirmer"
+              "Check-in",
+              "Check-in",
+              "Check-in",
+              "Check-in",
+              "Check-in"
             ],
             "facets": [],
             "texts": [
@@ -790,23 +480,23 @@
               "Pour un client qui a réservé par téléphone et n'a pas de code.",
               "Nom du client",
               "Salma Bennani",
-              "14h30 · 4 couverts · Patio",
+              "19h00 · 4 couverts · Patio",
               "Anniversaire, dessert avec bougie",
-              "Confirmer",
+              "Check-in",
               "Groupe Karam",
-              "14h30 · 6 couverts · Grande salle",
+              "19h30 · 6 couverts · Grande salle",
               "Sans gluten pour deux couverts",
-              "Confirmer",
+              "Check-in",
               "Yasmine El Alaoui",
-              "14h30 · 4 couverts · Terrasse",
-              "Confirmer",
+              "19h30 · 4 couverts · Terrasse",
+              "Check-in",
               "Nabil Cherkaoui",
-              "14h30 · 2 couverts",
+              "20h00 · 2 couverts",
               "Demande une table près de la fontaine",
-              "Confirmer",
+              "Check-in",
               "Hind Tazi",
-              "14h30 · 5 couverts · Grande salle",
-              "Confirmer"
+              "20h30 · 5 couverts · Grande salle",
+              "Check-in"
             ],
             "fields": [
               {
@@ -855,7 +545,7 @@
             "Ce que les clients voient dans l'application.",
             "Nom du lieu",
             "Nom court",
-            "Affiché dans les listes et la navigation.",
+            "Affiché dans les listes de l'application.",
             "Description",
             "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
             "Catégorie",
@@ -866,9 +556,6 @@
             "Adresse et contact",
             "Adresse",
             "Ville",
-            "Latitude",
-            "Facultatif — pour la carte.",
-            "Longitude",
             "Téléphone",
             "E-mail",
             "Site web",
@@ -905,16 +592,6 @@
             {
               "label": "Ville",
               "value": "Marrakech",
-              "type": "text"
-            },
-            {
-              "label": "Latitude",
-              "value": "31.6295",
-              "type": "text"
-            },
-            {
-              "label": "Longitude",
-              "value": "-7.9811",
               "type": "text"
             },
             {
@@ -990,12 +667,10 @@
             "Services",
             "Déjeuner",
             "ACTIF",
-            "V1",
             "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
             "3 zones réservables sur ce service.",
             "Dîner",
             "ACTIF",
-            "V1",
             "tous les jours · 19h00 – 23h30 · dernière réservation 22h30 · 120 couverts · 14 par quart d'heure",
             "3 zones réservables sur ce service."
           ],
@@ -1009,10 +684,6 @@
                 {
                   "label": "ACTIF",
                   "tone": "success-10"
-                },
-                {
-                  "label": "V1",
-                  "tone": "ink-6"
                 }
               ],
               "actions": []
@@ -1026,10 +697,6 @@
                 {
                   "label": "ACTIF",
                   "tone": "success-10"
-                },
-                {
-                  "label": "V1",
-                  "tone": "ink-6"
                 }
               ],
               "actions": []
@@ -1047,46 +714,53 @@
             "Ce qui empêche la salle de recevoir vingt arrivées dans le même quart d'heure.",
             "Arrivées maximum par quart d'heure",
             "Au-delà, l'application propose le créneau suivant.",
+            "arrivées",
             "Couverts maximum par service",
+            "couverts",
             "Groupe maximum accepté en ligne",
             "Au-delà, la demande passe en validation manuelle.",
+            "personnes",
             "Groupe minimum accepté en ligne",
-            "Sur demande à partir de",
+            "personnes",
+            "Validation manuelle à partir de",
             "Les groupes de cette taille ne sont plus confirmés automatiquement.",
-            "Le carnet ouvre à",
-            "Combien de jours à l'avance un client peut réserver.",
+            "personnes",
+            "Réservation possible à l'avance",
+            "Au-delà de ce nombre de jours, la date n'est pas encore ouverte.",
+            "jours",
             "Heure limite le jour même",
             "Délai minimum avant une réservation",
-            "Minutes entre la réservation et l'heure demandée."
+            "Entre le moment où le client réserve et l'heure demandée.",
+            "minutes"
           ],
           "fields": [
             {
-              "label": "Arrivées maximum par quart d'heure",
+              "label": "arrivées",
               "value": "12",
               "type": "number"
             },
             {
-              "label": "Couverts maximum par service",
+              "label": "couverts",
               "value": "120",
               "type": "number"
             },
             {
-              "label": "Groupe maximum accepté en ligne",
+              "label": "personnes",
               "value": "8",
               "type": "number"
             },
             {
-              "label": "Groupe minimum accepté en ligne",
+              "label": "personnes",
               "value": "1",
               "type": "number"
             },
             {
-              "label": "Sur demande à partir de",
+              "label": "personnes",
               "value": "8",
               "type": "number"
             },
             {
-              "label": "Le carnet ouvre à",
+              "label": "jours",
               "value": "60",
               "type": "number"
             },
@@ -1096,7 +770,7 @@
               "type": "time"
             },
             {
-              "label": "Délai minimum avant une réservation",
+              "label": "minutes",
               "value": "60",
               "type": "number"
             }
@@ -1158,20 +832,20 @@
       "workspace": "venue",
       "title": "Notifications",
       "eyebrow": null,
-      "subtitle": "L'alerte que l'établissement reçoit, et par quel canal",
+      "subtitle": "Comment vous êtes prévenu d'une nouvelle demande",
       "venue": "YA",
       "blocks": [
         {
           "kind": "settings",
           "heading": "Alertes de l'équipe",
-          "subheading": "Ce que l'établissement reçoit, et par quel canal.",
+          "subheading": "Choisissez par quel canal chaque alerte vous parvient.",
           "actions": [],
           "facets": [],
           "texts": [
             "Alertes de l'équipe",
-            "Ce que l'établissement reçoit, et par quel canal.",
+            "Choisissez par quel canal chaque alerte vous parvient.",
             "Nouvelle demande de réservation",
-            "La seule alerte qu'un manager doit voir pendant un service.",
+            "Envoyée dès qu'un client demande une table.",
             "Push",
             "E-mail",
             "WhatsApp",
@@ -1196,40 +870,34 @@
       "dependsOn": null,
       "roles": null,
       "workspace": "entry",
-      "title": "Le système d'exploitation de vos soirées.",
+      "title": "Gérez les réservations de votre établissement, de la demande à l'arrivée en salle.",
       "eyebrow": "Espace partenaire",
-      "subtitle": "Billetterie, réservations, audience, paiements et analyses — sur la même plateforme. Pour les festivals, les salles, les restaurants et les bars au Maroc.",
+      "subtitle": "LYFE · Maroc",
       "venue": null,
       "blocks": [
         {
           "kind": "settings",
           "heading": "Connectez-vous",
-          "subheading": "personnes touchées",
+          "subheading": "LYFE · Maroc",
           "actions": [
+            "Mot de passe oublié ?",
             "Se connecter"
           ],
           "facets": [],
           "texts": [
             "Espace partenaire",
-            "Le système d'exploitation de vos soirées.",
-            "Billetterie, réservations, audience, paiements et analyses — sur la même plateforme. Pour les festivals, les salles, les restaurants et les bars au Maroc.",
-            "+45 000",
-            "personnes touchées",
-            "12",
-            "villes au Maroc",
-            "J+3",
-            "versement garanti",
-            "« LYFE nous a permis de gérer la billetterie de notre 19e édition sans friction. »",
-            "— Équipe Jazzablanca",
+            "Gérez les réservations de votre établissement, de la demande à l'arrivée en salle.",
+            "LYFE · Maroc",
             "Connectez-vous",
-            "Un seul accès, pour vos événements comme pour vos lieux.",
+            "L'accès à votre établissement sur LYFE.",
             "Adresse e-mail",
             "Mot de passe",
+            "Se souvenir de moi",
+            "Mot de passe oublié ?",
             "Se connecter",
+            "contact@lyfemaroc.org",
             "Comptes de démonstration",
             "Mot de passe : demo. Chaque compte mène à un espace différent.",
-            "Organisateur d'événements",
-            "Jazzablanca · deux organisations, aucun lieu",
             "Les deux espaces",
             "Deux lieux et une organisation",
             "Partenaire lieu",
@@ -1249,9 +917,19 @@
               "label": "Mot de passe",
               "value": "",
               "type": "password"
+            },
+            {
+              "label": "Se souvenir de moi",
+              "value": "on",
+              "type": "checkbox"
             }
           ],
-          "toggles": []
+          "toggles": [
+            {
+              "label": "Se souvenir de moiMot de passe oublié ?",
+              "on": true
+            }
+          ]
         }
       ]
     },

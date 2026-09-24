@@ -142,7 +142,13 @@ export function buildAvailabilityScreen(
         id: "arrivals",
         label: "Arrivées maximum par quart d'heure",
         hint: "Au-delà, l'application propose le créneau suivant.",
-        control: { kind: "number", value: pacing.maxArrivalsPerQuarter, min: 1, max: 60 },
+        control: {
+          kind: "number",
+          value: pacing.maxArrivalsPerQuarter,
+          min: 1,
+          max: 60,
+          suffix: "arrivées",
+        },
         command: "pacing.set",
         payload: { field: "maxArrivalsPerQuarter" },
         allow: ["owner", "admin"],
@@ -150,7 +156,13 @@ export function buildAvailabilityScreen(
       {
         id: "max-covers",
         label: `${vocabulary.cover.many.replace(/^./, (c) => c.toUpperCase())} maximum par ${vocabulary.service.one}`,
-        control: { kind: "number", value: pacing.maxCoversPerService, min: 0, max: 2000 },
+        control: {
+          kind: "number",
+          value: pacing.maxCoversPerService,
+          min: 0,
+          max: 2000,
+          suffix: vocabulary.cover.many,
+        },
         command: "pacing.set",
         payload: { field: "maxCoversPerService" },
         allow: ["owner", "admin"],
@@ -159,7 +171,13 @@ export function buildAvailabilityScreen(
         id: "max-party",
         label: "Groupe maximum accepté en ligne",
         hint: "Au-delà, la demande passe en validation manuelle.",
-        control: { kind: "number", value: pacing.maxPartyOnline, min: 1, max: 40 },
+        control: {
+          kind: "number",
+          value: pacing.maxPartyOnline,
+          min: 1,
+          max: 40,
+          suffix: "personnes",
+        },
         command: "pacing.set",
         payload: { field: "maxPartyOnline" },
         allow: ["owner", "admin"],
@@ -167,25 +185,43 @@ export function buildAvailabilityScreen(
       {
         id: "min-party",
         label: "Groupe minimum accepté en ligne",
-        control: { kind: "number", value: pacing.minPartyOnline, min: 1, max: 20 },
+        control: {
+          kind: "number",
+          value: pacing.minPartyOnline,
+          min: 1,
+          max: 20,
+          suffix: "personnes",
+        },
         command: "pacing.set",
         payload: { field: "minPartyOnline" },
         allow: ["owner", "admin"],
       },
       {
         id: "request-only",
-        label: "Sur demande à partir de",
+        label: "Validation manuelle à partir de",
         hint: "Les groupes de cette taille ne sont plus confirmés automatiquement.",
-        control: { kind: "number", value: pacing.requestOnlyAbove, min: 1, max: 40 },
+        control: {
+          kind: "number",
+          value: pacing.requestOnlyAbove,
+          min: 1,
+          max: 40,
+          suffix: "personnes",
+        },
         command: "pacing.set",
         payload: { field: "requestOnlyAbove" },
         allow: ["owner", "admin"],
       },
       {
         id: "window",
-        label: "Le carnet ouvre à",
-        hint: "Combien de jours à l'avance un client peut réserver.",
-        control: { kind: "number", value: pacing.bookingWindowDays, min: 1, max: 365 },
+        label: "Réservation possible à l'avance",
+        hint: "Au-delà de ce nombre de jours, la date n'est pas encore ouverte.",
+        control: {
+          kind: "number",
+          value: pacing.bookingWindowDays,
+          min: 1,
+          max: 365,
+          suffix: "jours",
+        },
         command: "pacing.set",
         payload: { field: "bookingWindowDays" },
         allow: ["owner", "admin"],
@@ -201,8 +237,15 @@ export function buildAvailabilityScreen(
       {
         id: "lead",
         label: "Délai minimum avant une réservation",
-        hint: "Minutes entre la réservation et l'heure demandée.",
-        control: { kind: "number", value: pacing.minLeadMinutes, min: 0, max: 1440, step: 15 },
+        hint: "Entre le moment où le client réserve et l'heure demandée.",
+        control: {
+          kind: "number",
+          value: pacing.minLeadMinutes,
+          min: 0,
+          max: 1440,
+          step: 15,
+          suffix: "minutes",
+        },
         command: "pacing.set",
         payload: { field: "minLeadMinutes" },
         allow: ["owner", "admin"],
@@ -307,9 +350,6 @@ function serviceRow(service: ServiceDefinition, configuration: VenueConfiguratio
       service.enabled
         ? { label: "ACTIF", tone: "success" as const }
         : { label: "DÉSACTIVÉ", tone: "muted" as const },
-      // The version is on screen because a refused write names it. A
-      // conflict the user cannot see is a conflict they cannot resolve.
-      { label: `V${service.version}`, tone: "neutral" as const },
     ],
     signal:
       service.zoneIds.length > 0
@@ -406,12 +446,12 @@ export function buildNotificationsScreen(
     id: "team-alerts",
     type: "settings",
     heading: "Alertes de l'équipe",
-    subheading: "Ce que l'établissement reçoit, et par quel canal.",
+    subheading: "Choisissez par quel canal chaque alerte vous parvient.",
     rows: [
       {
         id: "new-booking",
         label: "Nouvelle demande de réservation",
-        hint: "La seule alerte qu'un manager doit voir pendant un service.",
+        hint: "Envoyée dès qu'un client demande une table.",
         control: { kind: "select", value: channelOf(prefs?.newBooking), options: CHANNELS },
         command: "notifications.channel",
         payload: { event: "newBooking" },
@@ -558,7 +598,7 @@ export function buildNotificationsScreen(
     return {
       slug: "notifications",
       title: "Notifications",
-      subtitle: "L'alerte que l'établissement reçoit, et par quel canal",
+      subtitle: "Comment vous êtes prévenu d'une nouvelle demande",
       blocks: [team],
     };
   }

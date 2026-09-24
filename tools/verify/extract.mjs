@@ -431,7 +431,13 @@ const SURFACES = {
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
 });
-const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+// `locale` because a native date input formats its own value from the
+// browser's locale, not from the page: without it a French portal
+// captures `09/25/2026` next to a day it spells "vendredi 25 septembre".
+const context = await browser.newContext({
+  viewport: { width: 1440, height: 900 },
+  locale: "fr-FR",
+});
 const page = await context.newPage();
 
 await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });

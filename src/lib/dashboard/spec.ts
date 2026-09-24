@@ -448,7 +448,24 @@ export type SettingControl =
   | { kind: "text"; value: string; placeholder?: string; multiline?: boolean }
   | { kind: "select"; value: string; options: { value: string; label: string }[] }
   | { kind: "time"; value: string }
-  | { kind: "date"; value: string }
+  /**
+   * `min`/`max` bound the picker to the days the dataset can answer for.
+   *
+   * `compact` hides the input's own text, leaving the calendar button.
+   * A native date input renders its value from the browser's locale, not
+   * the page's — so on a French portal it can read `09/25/2026` beside a
+   * row that spells the same day "vendredi 25 septembre". Where the row
+   * already states the date, the input is a picker and nothing else.
+   */
+  | {
+      kind: "date";
+      value: string;
+      min?: string;
+      max?: string;
+      compact?: boolean;
+      /** Names the control when its text is hidden. */
+      label?: string;
+    }
   /** Read-only, for a value another screen owns. */
   | { kind: "readonly"; value: string; href?: string };
 

@@ -87,6 +87,20 @@ export type ServiceState =
   | "closed";
 
 /** One sitting: a date + a named window the floor is open for. */
+/**
+ * The book for one day, and the services it is read against.
+ *
+ * Réservations is the one screen that is not about now — a venue takes
+ * tomorrow's bookings all through tonight's service — so the day it is
+ * showing is a payload of its own rather than a slice of the overview.
+ */
+export interface DayBook {
+  /** `yyyy-MM-dd`, the day these rows belong to. */
+  date: string;
+  services: Service[];
+  reservations: Reservation[];
+}
+
 export interface Service {
   id: string;
   kind: ServiceKind;

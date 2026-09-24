@@ -21,7 +21,8 @@ import type {
   VenueAvailability,
   VisibilityMetrics,
 } from "@/lib/types/business";
-import type { MenuItem, Reservation, RestaurantOverview, RestaurantProfile } from "@/lib/types/restaurant";
+import type {
+  DayBook, MenuItem, Reservation, RestaurantOverview, RestaurantProfile } from "@/lib/types/restaurant";
 import type { VenueAsset } from "@/lib/assets/types";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
 import type {
@@ -81,6 +82,8 @@ export interface DirectoryUser {
 
 interface VenueBundle {
   overview: RestaurantOverview;
+  /** One book per day across the captured window, keyed `yyyy-MM-dd`. */
+  dayBooks: Record<string, DayBook>;
   profile: RestaurantProfile | null;
   menuItems: MenuItem[];
   availability: VenueAvailability;

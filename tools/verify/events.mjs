@@ -37,7 +37,13 @@ const IGNORE = /favicon|Download the React|was preloaded using link preload|prel
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
 });
-const context = await browser.newContext({ viewport: { width: W, height: H } });
+// `locale` because a native date input formats its own value from the
+// browser's locale, not from the page: without it a French portal
+// captures `09/25/2026` next to a day it spells "vendredi 25 septembre".
+const context = await browser.newContext({
+  viewport: { width: W, height: H },
+  locale: "fr-FR",
+});
 const page = await context.newPage();
 
 await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });

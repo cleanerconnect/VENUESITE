@@ -15,6 +15,7 @@ import type {
   Reservation,
   RestaurantOverview,
   RestaurantProfile,
+  DayBook,
 } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
@@ -74,6 +75,17 @@ export interface AnalyticsInput {
  */
 export interface RestaurantRepository extends VenueOperationsRepository {
   getOverview(restaurantId: string): Promise<RestaurantOverview>;
+
+  /**
+   * The book for one day, and the services it is read against.
+   *
+   * Réservations is the one screen that is not about now: a restaurant
+   * takes tomorrow's bookings all through tonight's service. The
+   * overview cannot answer for another day — its greeting, queue and
+   * activity rail are all about the moment it was read — so the day is
+   * its own read.
+   */
+  getDayBook(restaurantId: string, date: string): Promise<DayBook>;
 
   confirmReservation(input: ReservationRefInput): Promise<RestaurantOverview>;
   cancelReservation(input: ReservationRefInput): Promise<RestaurantOverview>;

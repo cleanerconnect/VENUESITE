@@ -17,11 +17,25 @@
 //
 // The sixth state, an expired session, arrives as `?expired=1` from the
 // middleware and renders as a notice above the form.
+//
+// Two affordances a partner expects of any login and had to be added:
+// revealing the password, because a host types it on a stand with one
+// hand; and asking for a reset link, which answers the same way whether
+// or not the address is known, for the same reason the failure message
+// is single.
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Clock, Info, TriangleAlert } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  Eye,
+  EyeOff,
+  Info,
+  Mail,
+  TriangleAlert,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -48,6 +62,9 @@ export function SignInPanel({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [notice, setNotice] = useState<string | null>(null);
   const [stage, setStage] = useState<Stage>({ name: "form" });
   const [pending, startTransition] = useTransition();
 
@@ -55,9 +72,10 @@ export function SignInPanel({
     e.preventDefault();
     if (pending) return;
     setError(null);
+    setNotice(null);
 
     startTransition(async () => {
-      const result = await signIn(email, password);
+      const result = await signIn(email, password, remember);
 
       if (!result.ok) {
         setError(result.message);
@@ -76,6 +94,17 @@ export function SignInPanel({
       }
       setStage({ name: "no_workspace", fullName: result.fullName });
     });
+  };
+
+  // No mail is sent — there is no backend to send it. What ships is the
+  // answer a partner must get either way: the same sentence whether or
+  // not the address is on file, so the form cannot be used to find out
+  // who has an account.
+  const forgot = () => {
+    setError(null);
+    setNotice(
+      email.includes("@") ? COPY.auth.forgotSent : COPY.auth.forgotNeedsEmail,
+    );
   };
 
   const pick = (venueId: string) =>
@@ -112,6 +141,24 @@ export function SignInPanel({
               </Notice>
             ) : null}
 
+            {notice ? (
+              <Notice tone="info" icon={<Mail size={15} strokeWidth={1.8} />}>
+                {notice}
+              </Notice>
+            ) : null}
+
+            {/* The failure is one fact about the pair, so it is stated
+                once here; the fields below only show that they are the
+                ones being asked about again. */}
+            {error ? (
+              <Notice
+                tone="danger"
+                icon={<TriangleAlert size={15} strokeWidth={1.8} />}
+              >
+                {error}
+              </Notice>
+            ) : null}
+
             <form onSubmit={submit} className="flex flex-col gap-4 mt-6">
               <Input
                 label={COPY.auth.email}
@@ -119,19 +166,64 @@ export function SignInPanel({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
-                error={error ?? undefined}
+                invalid={Boolean(error)}
                 required
                 disabled={pending}
               />
               <Input
                 label={COPY.auth.password}
-                type="password"
+                type={revealed ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
+                invalid={Boolean(error)}
                 required
                 disabled={pending}
+                suffix={
+                  <button
+                    type="button"
+                    onClick={() => setRevealed((v) => !v)}
+                    aria-label={
+                      revealed ? COPY.auth.hidePassword : COPY.auth.showPassword
+                    }
+                    title={
+                      revealed ? COPY.auth.hidePassword : COPY.auth.showPassword
+                    }
+                    aria-pressed={revealed}
+                    className="h-8 w-8 rounded-[var(--radius-sm)] flex items-center justify-center text-ink-mute hover:text-ink hover:bg-canvas-2 transition-colors"
+                  >
+                    {revealed ? (
+                      <EyeOff size={16} strokeWidth={1.8} />
+                    ) : (
+                      <Eye size={16} strokeWidth={1.8} />
+                    )}
+                  </button>
+                }
               />
+
+              <div className="flex items-center justify-between gap-3 -mt-1">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    disabled={pending}
+                    className="h-4 w-4 rounded-[4px] border-line accent-[var(--color-violet-deep)] cursor-pointer"
+                  />
+                  <span className="text-meta text-ink-soft">
+                    {COPY.auth.remember}
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={forgot}
+                  disabled={pending}
+                  className="text-meta text-ink-soft underline underline-offset-2 hover:text-ink transition-colors disabled:opacity-50"
+                >
+                  {COPY.auth.forgot}
+                </button>
+              </div>
+
               <Button
                 type="submit"
                 size="lg"
@@ -141,6 +233,19 @@ export function SignInPanel({
                 {pending ? COPY.auth.submitting : COPY.auth.submit}
               </Button>
             </form>
+
+            {/* Someone who is not a partner yet has reached a form no
+                credentials will open. This is the only thing on the
+                screen that is of any use to them. */}
+            <p className="text-meta text-ink-mute mt-4">
+              {COPY.auth.notPartner}{" "}
+              <a
+                href={`mailto:${COPY.auth.notPartnerEmail}`}
+                className="text-ink underline underline-offset-2 hover:text-violet-deep transition-colors"
+              >
+                {COPY.auth.notPartnerEmail}
+              </a>
+            </p>
 
             <div className="mt-7 pt-6 border-t border-line-soft">
               <div className="text-eyebrow text-ink-soft">
@@ -162,6 +267,7 @@ export function SignInPanel({
                       setEmail(a.email);
                       setPassword(a.password);
                       setError(null);
+                      setNotice(null);
                     }}
                     className={cn(
                       "group text-left rounded-[var(--radius-sm)] border border-line",

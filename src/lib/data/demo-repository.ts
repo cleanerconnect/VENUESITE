@@ -151,6 +151,23 @@ function empty(base: RestaurantRepository): RestaurantRepository {
         nudge: undefined,
       };
     },
+    // The empty state has to hold for a chosen day too, or walking to
+    // tomorrow would break out of the state a reviewer forced.
+    getDayBook: async (venueId: string, date: string) => {
+      const base_ = await base.getDayBook(venueId, date);
+      return {
+        date,
+        services: base_.services.map((s) => ({
+          ...s,
+          bookedCovers: 0,
+          arrivedCovers: 0,
+          noShowCovers: 0,
+          revenueMad: 0,
+          slotLoad: [],
+        })),
+        reservations: [],
+      };
+    },
     getAvailability: async (venueId: string) => ({
       venueId,
       slots: [],

@@ -14,6 +14,7 @@ import "server-only";
 import { differenceInMinutes, format, startOfDay, subDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import type {
+  DayBook,
   GuestReview,
   MenuItem,
   Reservation,
@@ -135,6 +136,107 @@ function currentService(venueId: string, list: Service[]): Service | null {
     list[list.length - 1] ??
     null
   );
+}
+
+/**
+ * The services that run on a given date.
+ *
+ * `services` holds the live row for today and nothing else — it is the
+ * service in hand, written by the seed and reconciled against the book.
+ * Any other day has to be derived from `service_definitions`, which is
+ * what they are for: the weekly pattern the venue declared on
+ * Disponibilités. Deriving means tomorrow's book is read against the
+ * same hours a partner can see and edit, rather than against a row
+ * nobody wrote.
+ */
+function servicesOn(venueId: string, date: string, book: Reservation[]): Service[] {
+  const live = services(venueId).filter((s) => s.date === date);
+  if (live.length > 0) return live;
+
+  // ISO weekday, 1 = Monday, to match `service_definitions.weekdays`.
+  const weekday = ((new Date(`${date}T12:00:00`).getDay() + 6) % 7) + 1;
+
+  return all(
+    "SELECT * FROM service_definitions WHERE venue_id = ? AND enabled = 1 ORDER BY position",
+    venueId,
+  )
+    .filter((r) =>
+      String(r.weekdays)
+        .split(",")
+        .map((n) => Number(n.trim()))
+        .includes(weekday),
+    )
+    .map((r) => {
+      const opensAt = new Date(`${date}T${String(r.starts_at)}:00`);
+      const closesAt = new Date(`${date}T${String(r.ends_at)}:00`);
+      // A service declared 21:00–02:00 closes the next morning.
+      if (closesAt.getTime() <= opensAt.getTime()) {
+        closesAt.setDate(closesAt.getDate() + 1);
+      }
+
+      const held = book.filter((b) => {
+        const at = new Date(b.at).getTime();
+        return at >= opensAt.getTime() && at <= closesAt.getTime();
+      });
+      const covered = (states: Reservation["state"][]) =>
+        held
+          .filter((b) => states.includes(b.state))
+          .reduce((n, b) => n + b.partySize, 0);
+
+      return {
+        // Synthetic, and never written back: it names the definition and
+        // the date it was resolved for, so two days of the same service
+        // are not the same service.
+        id: `${String(r.id)}@${date}`,
+        kind: String(r.kind) as ServiceKind,
+        label: String(r.name),
+        date,
+        opensAt: opensAt.toISOString(),
+        closesAt: closesAt.toISOString(),
+        state: (closesAt.getTime() < Date.now() ? "closed" : "upcoming") as Service["state"],
+        capacity: Number(r.capacity_covers),
+        bookedCovers: covered(["confirmed", "arrived"]),
+        arrivedCovers: covered(["arrived"]),
+        noShowCovers: covered(["no_show"]),
+        // No takings on a day that has not happened, and none recorded
+        // for one that has: revenue is a Lot 2 reading with its own
+        // source, and inventing one here would put a figure on the
+        // screen that no table backs.
+        revenueMad: 0,
+        // For the live service the curve comes from the booking engine.
+        // A day with no engine row has one source for it — the book
+        // itself, which for a day still ahead is the whole of the load.
+        slotLoad: slotLoadFrom(held),
+      } satisfies Service;
+    });
+}
+
+/** Half-hour buckets, so a derived curve lands on the same grid. */
+function slotLoadFrom(book: Reservation[]): { at: string; covers: number }[] {
+  const buckets = new Map<string, number>();
+  for (const b of book) {
+    if (b.state !== "confirmed" && b.state !== "arrived") continue;
+    const at = new Date(b.at);
+    at.setMinutes(at.getMinutes() < 30 ? 0 : 30, 0, 0);
+    const key = at.toISOString();
+    buckets.set(key, (buckets.get(key) ?? 0) + b.partySize);
+  }
+  return [...buckets.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([at, covers]) => ({ at, covers }));
+}
+
+/**
+ * Réservations for a chosen day.
+ *
+ * Separate from `overview` rather than a parameter on it: the overview is
+ * the venue as it stands right now — the greeting, the queue, the
+ * activity rail — and none of that means anything for a date three days
+ * out. What a day has is a book and the services that run it.
+ */
+export function dayBookFor(venueId: string, date: string): DayBook {
+  const reservations = upcomingReservations(venueId, date);
+  return { date, services: servicesOn(venueId, date, reservations), reservations };
 }
 
 // ── Bookings ─────────────────────────────────────────────────
@@ -497,10 +599,13 @@ export function overview(venueId: string, viewerFirstName: string): RestaurantOv
     greeting: {
       firstName: viewerFirstName,
       salutation: salutation(new Date()),
+      // Rendered inline after the title, which ends in a full stop —
+      // "Bon après-midi, Yassine." — so the clause is a sentence of its
+      // own and starts like one.
       clause:
         service && service.bookedCovers / Math.max(1, service.capacity) > 0.85
-          ? "le service est complet."
-          : "le service est lancé.",
+          ? "Le service est complet."
+          : "Le service est lancé.",
       subline: service
         ? `${covers(vocabulary, service.bookedCovers)} ${coverAgreement(
             vocabulary,

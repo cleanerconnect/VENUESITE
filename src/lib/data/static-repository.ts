@@ -42,7 +42,11 @@ import type {
   ServiceFloorAction,
 } from "./repository";
 import type { SurveyConfig, VenueSettings } from "@/lib/types/venue-operations";
-import type { RestaurantOverview, Reservation } from "@/lib/types/restaurant";
+import type {
+  DayBook,
+  Reservation,
+  RestaurantOverview,
+} from "@/lib/types/restaurant";
 import type { AssetKind } from "@/lib/assets/types";
 import type {
   CheckInResult,
@@ -82,6 +86,24 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       );
     }
     return clone(bundle.overview);
+  }
+
+  async getDayBook(venueId: string, date: string): Promise<DayBook> {
+    const bundle = staticVenue(venueId);
+    if (!bundle) {
+      throw new RepositoryError(
+        `Aucun lieu ${venueId} dans le jeu de données statique.`,
+        404,
+        "venue_not_found",
+      );
+    }
+
+    const captured = bundle.dayBooks?.[date];
+    // A date outside the captured window is not an error — it is a day
+    // with nothing in it, which is exactly what the screen should say.
+    // Inventing services for it would claim hours this driver cannot
+    // check against the definitions it holds.
+    return clone(captured ?? { date, services: [], reservations: [] });
   }
 
   // ── Booking lifecycle ──

@@ -36,7 +36,7 @@ const BLOCKS: { type: string; note: string; blocks: Block[] }[] = [
         type: "greeting",
         eyebrow: "JEUDI 12 JUIN",
         title: "Bonsoir Yassine,",
-        emphasis: "le service est complet.",
+        emphasis: "Le service est complet.",
         subline: "128 couverts réservés, 3 demandes en attente.",
         actions: [
           {

@@ -47,9 +47,23 @@ export const COPY = {
   /** The front door. */
   auth: {
     title: "Connectez-vous",
-    subtitle: "Un seul accès, pour vos événements comme pour vos lieux.",
+    // The partner arrives from the Org button on lyfemaroc.org, already
+    // knowing what LYFE is. What they need to read here is whose screen
+    // this is — not what the platform sells.
+    subtitle: "L'accès à votre établissement sur LYFE.",
+    eyebrow: "Espace partenaire",
+    hero: "Gérez les réservations de votre établissement, de la demande à l'arrivée en salle.",
     email: "Adresse e-mail",
     password: "Mot de passe",
+    showPassword: "Afficher le mot de passe",
+    hidePassword: "Masquer le mot de passe",
+    remember: "Se souvenir de moi",
+    forgot: "Mot de passe oublié ?",
+    forgotSent:
+      "Si un compte existe pour cette adresse, un lien de réinitialisation vient d'être envoyé.",
+    forgotNeedsEmail: "Saisissez votre adresse e-mail, puis redemandez le lien.",
+    notPartner: "Votre établissement n'est pas encore sur LYFE ?",
+    notPartnerEmail: "contact@lyfemaroc.org",
     submit: "Se connecter",
     submitting: "Connexion…",
     invalidCredentials: "E-mail ou mot de passe incorrect.",

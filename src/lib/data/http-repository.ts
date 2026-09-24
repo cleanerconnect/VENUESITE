@@ -11,7 +11,7 @@ import type { AudienceInsights } from "@/lib/types/venue-operations";
 // server-only: this holds the API token. Importing it from a client
 // component is a build error rather than a leaked credential.
 
-import type { RestaurantOverview } from "@/lib/types/restaurant";
+import type { DayBook, RestaurantOverview } from "@/lib/types/restaurant";
 import type {
   BusinessAccount,
   CheckInResult,
@@ -78,6 +78,15 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     return this.request<RestaurantOverview>(
       "GET",
       `/api/business/overview?venue_id=${encodeURIComponent(venueId)}`,
+    );
+  }
+
+  getDayBook(venueId: string, date: string) {
+    return this.request<DayBook>(
+      "GET",
+      `/api/business/book?venue_id=${encodeURIComponent(
+        venueId,
+      )}&date=${encodeURIComponent(date)}`,
     );
   }
 

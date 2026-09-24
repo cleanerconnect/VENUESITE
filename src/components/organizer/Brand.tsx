@@ -21,8 +21,11 @@ export function Brand({
 }) {
   const src =
     variant === "white" ? "/lyfe-logo-white.svg" : "/lyfe-logo.jpg";
-  // Match the JPG's actual aspect ratio, 954/522.
-  const width = Math.round((height * 954) / 522);
+  // Each asset has its own aspect ratio — the JPG is 954×522, the
+  // white SVG's viewBox is 140×96. Sizing both off the JPG's ratio gave
+  // Next/Image a width the SVG never had.
+  const ratio = variant === "white" ? 140 / 96 : 954 / 522;
+  const width = Math.round(height * ratio);
   return (
     <Image
       src={src}

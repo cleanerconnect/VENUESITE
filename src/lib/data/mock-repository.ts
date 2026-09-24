@@ -10,7 +10,7 @@
 // fallback: an unseeded database raises rather than rendering a
 // plausible-looking empty dashboard.
 
-import type { RestaurantOverview } from "@/lib/types/restaurant";
+import type { DayBook, RestaurantOverview } from "@/lib/types/restaurant";
 import type { CheckInResult, NotificationPreferences } from "@/lib/types/business";
 import * as store from "@/lib/db/venue-store";
 import { listStaff as listStaffRows } from "@/lib/db/venue-write-store";
@@ -24,6 +24,7 @@ import {
   overview as overviewFromStore,
   transitionBooking,
   visibility as visibilityFromStore,
+  dayBookFor as dayBookFromStore,
 } from "@/lib/db/overview-store";
 import {
   RepositoryError,
@@ -68,6 +69,10 @@ export class MockRestaurantRepository implements RestaurantRepository {
       );
     }
     return data;
+  }
+
+  async getDayBook(venueId: string, date: string): Promise<DayBook> {
+    return dayBookFromStore(venueId, date);
   }
 
   async confirmReservation(_input: ReservationRefInput) {

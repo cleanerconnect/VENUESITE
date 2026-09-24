@@ -12,12 +12,32 @@ interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, "prefix"> {
   label: string;
   hint?: string;
   error?: string;
+  /**
+   * Mark the field as rejected without repeating the reason under it.
+   *
+   * A sign-in failure is one fact about two fields, so it is stated once
+   * above the form; both fields still have to show they are the ones
+   * being asked about again.
+   */
+  invalid?: boolean;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, Props>(function Input(
-  { label, hint, error, prefix, suffix, className, value, defaultValue, ...rest },
+  {
+    label,
+    hint,
+    error,
+    invalid,
+    prefix,
+    suffix,
+    className,
+    value,
+    defaultValue,
+    placeholder,
+    ...rest
+  },
   ref,
 ) {
   const id = useId();
@@ -26,6 +46,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
     (value ?? defaultValue ?? "").toString().length > 0,
   );
   const floated = focused || hasValue;
+  const rejected = Boolean(error) || Boolean(invalid);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -33,7 +54,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
         className={cn(
           "relative flex items-center bg-surface border rounded-[var(--radius-sm)]",
           "transition-colors duration-150",
-          error
+          rejected
             ? "border-danger/60"
             : focused
               ? "border-ink"
@@ -50,7 +71,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
             animate={{
               y: floated ? -10 : 0,
               scale: floated ? 0.84 : 1,
-              color: error
+              color: rejected
                 ? "var(--color-danger)"
                 : floated
                   ? "var(--color-ink)"
@@ -70,6 +91,12 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
             ref={ref}
             value={value}
             defaultValue={defaultValue}
+            // The label rests *over* the field until it floats, so a
+            // placeholder shown at the same time prints one string on
+            // top of the other — "Code de réservation" across "LYFE-…".
+            // The placeholder is an example of the value, which is only
+            // of use once the label has moved out of its way.
+            placeholder={floated ? placeholder : undefined}
             onFocus={(e) => {
               setFocused(true);
               rest.onFocus?.(e);
@@ -82,11 +109,12 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
               "w-full h-12 px-3.5 pt-3 bg-transparent text-ink text-[14px] outline-none",
               className,
             )}
+            aria-invalid={rejected || undefined}
             {...rest}
           />
         </div>
         {suffix ? (
-          <span className="pr-3.5 text-meta text-ink-mute shrink-0">
+          <span className="pr-2 text-meta text-ink-mute shrink-0 flex items-center">
             {suffix}
           </span>
         ) : null}

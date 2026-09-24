@@ -38,6 +38,27 @@ const audience = await import("../src/lib/db/audience-store.ts");
 const { all } = await import("../src/lib/db/store.ts");
 
 const PERIODS = ["7d", "30d", "90d", "12m"];
+
+// Réservations can be walked day by day, so the snapshot has to hold
+// more than today. The window matches the one the date picker allows —
+// a week back for what just happened, a month forward to cover the
+// fortnight the seed fills and leave room past it.
+const BOOK_DAYS_BACK = 7;
+const BOOK_DAYS_AHEAD = 30;
+
+const isoDay = (d) => d.toISOString().slice(0, 10);
+
+function bookWindow() {
+  const days = [];
+  const start = new Date();
+  start.setHours(12, 0, 0, 0);
+  for (let i = -BOOK_DAYS_BACK; i <= BOOK_DAYS_AHEAD; i += 1) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    days.push(isoDay(d));
+  }
+  return days;
+}
 const OUT = resolve("src/lib/data/static/venue-snapshot.json");
 
 // Every user the demo can sign in as, with the venues they hold. This is
@@ -60,6 +81,12 @@ for (const id of venueIds) {
   // static driver re-derives that per request, so capture it empty.
   perVenue[id] = {
     overview: overview.overview(id, ""),
+    // One entry per day in the window, captured through the same
+    // function the SQLite driver calls, so a day read without a
+    // database is the day the database would have given.
+    dayBooks: Object.fromEntries(
+      bookWindow().map((date) => [date, overview.dayBookFor(id, date)]),
+    ),
     profile: overview.venueProfile(id),
     menuItems: overview.menuItems(id),
     availability: venue.availability(id),

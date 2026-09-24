@@ -261,8 +261,8 @@ export function CheckInScreen({
               <div>
                 <h2 className="text-h3 text-ink">Scanner le code</h2>
                 <p className="text-meta text-ink-mute mt-1">
-                  Le code vient de l'application du client. Le portail le valide,
-                  il ne le fabrique jamais.
+                  Le client présente le code reçu dans son application. Vous
+                  pouvez aussi le saisir à la main.
                 </p>
               </div>
               <Button
@@ -360,7 +360,7 @@ export function CheckInScreen({
                       disabled={pending}
                       onClick={() => void arriveByName(guest)}
                     >
-                      Confirmer
+                      Check-in
                     </Button>
                   </div>
                 ))

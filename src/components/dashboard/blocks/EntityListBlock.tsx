@@ -98,20 +98,27 @@ export function EntityListBlock({ block }: { block: Spec }) {
             </div>
           ) : null}
 
+          {/* The select used to carry its name in `aria-label` alone, so
+              a sighted user read "Heure" in a box and had to work out
+              that it was a sort order and not a filter. */}
           {block.sorts?.length ? (
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              aria-label="Trier"
-              className="h-12 px-4 pr-10 bg-surface border border-line rounded-[var(--radius-sm)] text-[14px] focus:outline-none focus:border-ink transition-colors appearance-none"
-              style={SELECT_CHEVRON}
-            >
-              {block.sorts.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+            <label className="flex items-center gap-2.5 shrink-0">
+              <span className="text-meta text-ink-soft whitespace-nowrap">
+                Trier par
+              </span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="h-12 px-4 pr-10 bg-surface border border-line rounded-[var(--radius-sm)] text-[14px] focus:outline-none focus:border-ink transition-colors appearance-none"
+                style={SELECT_CHEVRON}
+              >
+                {block.sorts.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           ) : null}
         </div>
       ) : null}

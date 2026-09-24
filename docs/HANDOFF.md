@@ -70,7 +70,7 @@ Three nouns in the sprint row, and the word that decides the rest:
 | 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. |
 | 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Services, capacity, pacing and the booking window — the hours the venue can be booked for. |
 | 4 | Accueil | `/restaurant` | Gestion des réservations | Today's book, and the sentence above it. No tiles. |
-| 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | The day and the service it is scoped to, then the book — and the four decisions on the row: accepter, refuser with a coded reason, check-in, no-show. |
+| 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | Any day's book, walked a step at a time or picked from a calendar, scoped to one of that day's services — and the four decisions on the row: accepter, refuser with a coded reason, check-in, no-show. |
 | 6 | Check-in | `/restaurant/check-in` | Gestion des réservations | Validate a booking at the door, by code or by name. |
 | 7 | Notifications | `/restaurant/notifications` | Gestion des réservations | One alert: a new booking needs a decision. |
 
@@ -301,19 +301,28 @@ plus the entry:
 
 | Section | Frames |
 |---|---|
-| `Entrée` | Connexion · **Sélecteur d'établissement · états** |
+| `Entrée` | Connexion · **Sélecteur d'établissement · états** · **Connexion · identifiants refusés** |
 | `1 · Aujourd'hui` | Accueil · Réservations |
 | `2 · En service` | Check-in |
 | `3 · Ma présence` | Ma fiche |
 | `4 · Établissement` | Disponibilités · Notifications |
 
-The switcher frame is the one thing on the page that is not a screen
-capture: three states of the venue picker at the top of the sidebar —
-one establishment (a card with no affordance), several closed, several
-open with the active one checked. It is there because `Détail Sprint`
-row 41 puts the same user story on `Dashboard Drinks/Cellar partenaire`,
-so one account holding a restaurant and a bar is the normal case, not an
-edge one.
+Two frames on the page are not screen captures. The switcher frame is
+three states of the venue picker at the top of the sidebar — one
+establishment (a card with no affordance), several closed, several open
+with the active one checked. It is there because `Détail Sprint` row 41
+puts the same user story on `Dashboard Drinks/Cellar partenaire`, so one
+account holding a restaurant and a bar is the normal case, not an edge
+one. Each state carries its label and nothing else: the frame is a
+reference for what to build, and a paragraph explaining why is a
+paragraph that goes stale where nobody is reading it.
+
+`Connexion · identifiants refusés` is the second: the sign-in form after
+a refusal, which cannot be drawn on the same frame as the resting form
+without the frame asserting two things at once. One message above the
+pair rather than two beneath it — a wrong address and a wrong password
+read the same, so the form cannot be used to find out which partners
+have accounts — and both fields marked without repeating the reason.
 
 **What no frame on `09` shows.** A sweep of every text node on the page
 returns nothing for any of: liste d'attente, walk-in, acompte, palier,

@@ -10,6 +10,8 @@
 import {
   AlertTriangle,
   ArrowLeftRight,
+  ChevronLeft,
+  ChevronRight,
   Armchair,
   Ban,
   Banknote,
@@ -92,6 +94,8 @@ export const ICONS = {
   "calendar-plus": CalendarPlus,
   check: Check,
   "chef-hat": ChefHat,
+  "chevron-left": ChevronLeft,
+  "chevron-right": ChevronRight,
   clipboard: ClipboardList,
   clock: Clock,
   coins: Coins,
