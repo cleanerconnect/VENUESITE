@@ -56,7 +56,16 @@ healthy while serving demo data.
 **Implementations:** `mock-repository.ts` (now) · `http-repository.ts` (yours)
 **Selection:** `src/lib/data/index.ts`, on `LYFE_API_BASE_URL` + `LYFE_API_TOKEN`
 
-The HTTP adapter is written and typed. It expects these endpoints:
+> **Périmé sur les chemins.** The table below records the endpoints the
+> scoping asked for. The adapter has since moved to the
+> `/api/business/*` contract, and the venue is a query parameter rather
+> than a path segment. For anything in Lot 1, read
+> [`LOT1_API_CONTRACT.md`](LOT1_API_CONTRACT.md) instead — it is
+> generated from the adapter, screen by screen. This table is kept
+> because the difference between the two is itself worth handing over.
+
+The HTTP adapter is written and typed. The scoping expected these
+endpoints:
 
 | Method | Path | Returns |
 | --- | --- | --- |

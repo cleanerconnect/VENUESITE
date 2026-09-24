@@ -28,6 +28,22 @@ and the same sentence again as the user story:
 Row 41 is the identical story for `Dashboard Drinks/Cellar partenaire`,
 which is why a lounge renders the same seven screens as a restaurant.
 
+**The backend contract is written out in French, endpoint by endpoint:
+[`docs/LOT1_API_CONTRACT.md`](LOT1_API_CONTRACT.md).** Read it before
+writing any service code. It lists, per Lot 1 screen, every call the
+portal makes — method, path, request body, response shape — and the
+tables of `db/schema.sql` each one reads or writes; the nine reads and
+six writes that are the minimum for the seven screens; the six reads
+the portal makes today whose payload Lot 1 never renders; the
+correspondence with the seven endpoints the scoping recorded and with
+`business_accounts`; and the three things that are **not** wired —
+authentication talks to no service, four of the five booking decisions
+never leave the browser, and the Ma fiche forms write straight to
+SQLite instead of through the driver. It also gives the environment
+variables for running the portal in Lot 1 against a real backend.
+`docs/INTEGRATION.md` §1 predates it and still lists the old
+`/restaurants/{id}/…` paths; for anything Lot 1, the contract wins.
+
 **Maquettes are due 2 October 2026.** That date is derived, not quoted:
 the prerequisite column of `Planning V3` is headed *« Prérequis à
 préparer 10 jours avant le démarrage du Sprint »*, and its Prio 02 cell
@@ -583,11 +599,15 @@ open. Read in order, they are the history of the repository:
 | `docs/PHASE6.md` | The Figma export: variables, components, frames, and §5 — the écarts found by reading the code against the documents, all now closed |
 | `docs/PHASE7.md` | The worked example: one venue, every screen, populated from the seed; §6 — six observations, four of them defects still open here; §9 — the coherence pass, frame by frame |
 
-Four reference documents sit beside them:
+Five reference documents sit beside them:
+`docs/LOT1_API_CONTRACT.md` (**the Lot 1 backend contract**, in French —
+every call the seven screens make, the tables behind them, and what is
+not wired) ·
 `docs/INTERFACE.md` (how the UI is put together) ·
 `docs/CONVERGENCE.md` (what was unified, what is still duplicated) ·
 `docs/APP_MAPPING.md` (app element → portal control) ·
-`docs/INTEGRATION.md` (the API and AI seams).
+`docs/INTEGRATION.md` (the API and AI seams — superseded on Lot 1 paths
+by the contract above).
 
 `docs/SCOPE_AUDIT.md` and `docs/PHASE2_HARDCODED_AUDIT.md` are earlier
 passes, kept for provenance.
