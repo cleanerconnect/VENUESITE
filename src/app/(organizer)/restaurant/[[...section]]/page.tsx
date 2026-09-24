@@ -62,7 +62,8 @@ export default async function RestaurantSectionPage({
   // A Lot 2 screen is not registered in a Lot 1 deployment. Not hidden,
   // not disabled — a 404, so a bookmark or a stale link behaves the way
   // it would against a build that never had the screen.
-  if (!slugInLot(slug, activeLot())) notFound();
+  const lot = activeLot();
+  if (!slugInLot(slug, lot)) notFound();
 
   // Venue scoping comes from the session, server side. Nothing here
   // reads a venue id from the URL, and no venue constant is imported.
@@ -71,7 +72,11 @@ export default async function RestaurantSectionPage({
 
   const query = await searchParams;
   const period = readPeriod(query.p);
-  const comparison = readComparison(query.c);
+  // Lot 1's Performance has no baseline selector, and its tiles say
+  // "vs période précédente" outright. Reading `?c=last_year` here would
+  // have measured every delta against last year under a label promising
+  // the previous period, so the baseline is pinned rather than read.
+  const comparison = lot === 1 ? "previous" : readComparison(query.c);
   const demo = parseDemoState(
     Array.isArray(query[DEMO_STATE_PARAM])
       ? query[DEMO_STATE_PARAM][0]

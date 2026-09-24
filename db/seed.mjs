@@ -58,6 +58,18 @@ const day = (d) => iso(d).slice(0, 10);
 /** Money is stored in centimes; the app works in MAD. */
 const mad = (n) => Math.round(n * 100);
 
+/**
+ * The lot this dataset is for.
+ *
+ * Lot 1 does not ship Liste d'attente, Acomptes or the loyalty service,
+ * so a Lot 1 dataset must not contain a queue, a walk-in, a deposit or a
+ * tier. Gating only the screens would leave those concepts showing up on
+ * the screens Lot 1 *does* ship — a walk-in source on a Réservations row,
+ * an acompte pill in the book — which is the leak this closes at the
+ * source.
+ */
+const LOT = process.env.LYFE_LOT?.trim() === "2" ? 2 : 1;
+
 const VENUE = "rst_dar_zellij";
 const OWNER = "usr_yassine";
 
@@ -180,7 +192,11 @@ function seedVisits({ venue, id, name, phone, visits, lastDays, firstSeenDays, s
       id: `res_past_${id}_${v}`, venue_id: venue, service_id: null,
       customer_id: id, guest_name: name, guest_phone: phone,
       party_size: 2 + ((salt + v) % 4), at, state: "completed",
-      channel: ["lyfe", "phone", "site", "walk_in"][(salt + v) % 4],
+      // A past visit's source shows on the Historique of Fiche client, a
+      // Lot 1 screen, so a Lot 1 dataset keeps walk-in out of it too.
+      channel: (LOT === 1
+        ? ["lyfe", "phone", "site", "lyfe"]
+        : ["lyfe", "phone", "site", "walk_in"])[(salt + v) % 4],
       zone_id: null, note: null, deposit_cents: null, no_show_risk: null,
       qr_code: `LYFE-PAST-${id.toUpperCase()}-${v}`,
       checked_in_at: iso(new Date(Date.parse(at) + 5 * 60_000)),
@@ -222,73 +238,160 @@ CUSTOMERS.forEach(([id, name, phone, email, visits, lastDays, avg, noShows, pref
   seedVisits({ venue: VENUE, id, name, phone, visits, lastDays, firstSeenDays, salt: i });
 
   // The booking has to exist before the no-show that references it.
+  //
+  // `daysAgo` carries the wall clock, which would land a missed booking
+  // at 13:10. The no-show history is a Lot 1 panel on Fiche client, so
+  // these sit on the half-hour grid like every other booking.
   for (let n = 0; n < noShows; n += 1) {
+    const missed = clockAgo(20 * (n + 1), n % 2 === 0 ? 20 : 13, n % 3 === 0 ? 30 : 0);
     insert("reservations", {
       id: `res_hist_${id}_${n}`, venue_id: VENUE, service_id: null, customer_id: id,
       guest_name: name, guest_phone: phone, party_size: 2 + (n % 3),
-      at: daysAgo(20 * (n + 1)), state: "no_show", channel: "lyfe",
+      at: missed, state: "no_show", channel: "lyfe",
       zone_id: null, note: null, deposit_cents: null,
       no_show_risk: null, qr_code: `LYFE-HIST-${id}-${n}`, checked_in_at: null,
-      created_at: daysAgo(21 * (n + 1)), updated_at: daysAgo(20 * (n + 1)),
+      created_at: daysAgo(21 * (n + 1)), updated_at: missed,
     });
     insert("no_show_records", {
       id: `ns_${id}_${n}`, venue_id: VENUE, customer_id: id,
       reservation_id: `res_hist_${id}_${n}`, party_size: 2 + (n % 3),
-      at: daysAgo(20 * (n + 1) + i),
+      at: missed,
     });
   }
 });
 
-// ── Current service ──────────────────────────────────────────
+// ── Service definitions ──────────────────────────────────────
 //
-// Anchored to whenever the seed runs, so a demo opened at any hour shows
-// a service in progress. The kind is derived from that hour rather than
-// fixed: a "Dîner" running from 09h05 is the kind of detail that tells a
-// partner the whole screen is fake.
-const SERVICE = "svc_current";
-const opens = slotFloor(new Date(now.getTime() - 100 * 60_000));
-const closes = new Date(opens.getTime() + 270 * 60_000);
+// The establishment's real opening hours, declared once here and used
+// twice: `service_definitions` renders them on Disponibilités, and the
+// live `services` row is resolved from them against the clock.
+//
+// They used to be declared only in the `seedOperations` call at the foot
+// of this file, which left the live service synthesised from `now` — a
+// "Petit-déjeuner" running 10h58–15h28 matched no row a partner could
+// find in Disponibilités, so Accueil and Disponibilités described two
+// different restaurants.
+//
+// [id, name, kind, weekdays, startsAt, endsAt, lastBookingAt, capacity, perQuarter]
+const DZ_SERVICES = [
+  ["sd_dej", "Déjeuner", "dejeuner", "1,2,3,4,5,6,7", "12:00", "15:00", "14:30", 72, 10],
+  ["sd_din", "Dîner", "diner", "1,2,3,4,5,6,7", "19:00", "23:30", "22:30", 120, 14],
+];
+const NM_SERVICES = [
+  ["sd_sunset", "Sunset", "creneau", "3,4,5,6,7", "18:00", "21:00", "20:30", 40, 8],
+  ["sd_night", "Nuit", "creneau", "3,4,5,6,7", "21:00", "02:00", "01:00", 70, 12],
+];
 
-function serviceKindFor(date) {
-  const hour = date.getHours();
-  if (hour < 11) return ["petit_dejeuner", "Petit-déjeuner"];
-  if (hour < 16) return ["dejeuner", "Déjeuner"];
-  if (hour < 23) return ["diner", "Dîner"];
-  return ["tardif", "Service tardif"];
+const hhmm = (v) => {
+  const [h, m] = v.split(":").map(Number);
+  return h * 60 + m;
+};
+
+/**
+ * The service a dashboard leads with, resolved from the clock against the
+ * definitions: the one running now, else the next due, else the first.
+ *
+ * Returns the definition plus today's instants for its window, so
+ * everything downstream — the label, the capacity, the last bookable
+ * slot, the load histogram — comes from the same row Disponibilités
+ * shows.
+ */
+function resolveService(definitions, at) {
+  const midnight = new Date(at);
+  midnight.setHours(0, 0, 0, 0);
+  const minutes = at.getHours() * 60 + at.getMinutes();
+
+  const windows = definitions
+    .map(([id, name, kind, , startsAt, endsAt, lastBookingAt, capacity]) => {
+      const from = hhmm(startsAt);
+      // A window that ends before it starts runs past midnight.
+      const to = hhmm(endsAt) <= from ? hhmm(endsAt) + 1440 : hhmm(endsAt);
+      const last = hhmm(lastBookingAt) <= from ? hhmm(lastBookingAt) + 1440 : hhmm(lastBookingAt);
+      return { id, name, kind, from, to, last, capacity };
+    })
+    .sort((a, b) => a.from - b.from);
+
+  const w =
+    windows.find((x) => minutes >= x.from && minutes <= x.to) ??
+    windows.find((x) => x.from > minutes) ??
+    windows[0];
+
+  const opensAt = new Date(midnight.getTime() + w.from * 60_000);
+  return {
+    ...w,
+    opensAt,
+    closesAt: new Date(midnight.getTime() + w.to * 60_000),
+    lastBookingAt: new Date(midnight.getTime() + w.last * 60_000),
+    live: minutes >= w.from && minutes <= w.to,
+  };
 }
-const [serviceKind, serviceLabel] = serviceKindFor(opens);
+
+/** Every bookable :00/:30 slot from `from` to the last bookable time. */
+function bookableSlots(service, from) {
+  const out = [];
+  let t = slotCeil(new Date(Math.max(service.opensAt.getTime(), from.getTime())));
+  while (t.getTime() <= service.lastBookingAt.getTime()) {
+    out.push(new Date(t));
+    t = new Date(t.getTime() + HALF);
+  }
+  // A service whose last bookable slot has passed still needs somewhere
+  // to hang its book: the closing slot.
+  return out.length > 0 ? out : [new Date(service.lastBookingAt)];
+}
+
+/** Every :00/:30 slot already elapsed in a live service. */
+function elapsedSlots(service, until) {
+  const out = [];
+  let t = new Date(service.opensAt);
+  while (t.getTime() <= Math.min(until.getTime(), service.closesAt.getTime())) {
+    out.push(new Date(t));
+    t = new Date(t.getTime() + HALF);
+  }
+  return out;
+}
+
+// ── Current service ──────────────────────────────────────────
+const SERVICE = "svc_current";
+const DZ_LIVE = resolveService(DZ_SERVICES, now);
+const opens = DZ_LIVE.opensAt;
+const closes = DZ_LIVE.closesAt;
+const serviceLabel = DZ_LIVE.name;
 
 insert("services", {
-  id: SERVICE, venue_id: VENUE, kind: serviceKind, label: serviceLabel,
+  id: SERVICE, venue_id: VENUE, kind: DZ_LIVE.kind, label: serviceLabel,
   date: day(opens), opens_at: iso(opens), closes_at: iso(closes),
-  state: "peak", capacity: 120, booked_covers: 104, arrived_covers: 86,
-  no_show_covers: 6, revenue_cents: mad(63_400),
+  // Counters and state are rewritten from the book at the end of the
+  // seed; these are placeholders the reconcile step overwrites.
+  state: DZ_LIVE.live ? "peak" : "upcoming",
+  capacity: DZ_LIVE.capacity,
+  booked_covers: 0, arrived_covers: 0, no_show_covers: 0, revenue_cents: 0,
 });
-const SHAPE = [0.28, 0.55, 0.82, 1, 0.94, 0.76, 0.58, 0.4, 0.26, 0.14];
-for (let i = 0; i < SHAPE.length; i += 1) {
-  insert("service_slot_load", {
-    service_id: SERVICE,
-    at: iso(new Date(opens.getTime() + i * 30 * 60_000)),
-    covers: Math.round(34 * SHAPE[i]),
-  });
-}
 
 // ── Live bookings ────────────────────────────────────────────
-// The number is a lead time in minutes, rounded up to the next :00 or
-// :30 — two bookings on the same slot is what a full service looks like.
+//
+// The number is a slot index: which bookable :00/:30 slot of the service
+// the party holds, counted from the next one due. Every booking
+// therefore lands inside the service window and at or before the last
+// bookable time the definition declares — two parties on one slot is
+// what a full service looks like.
+//
+// The deposit column is ignored under Lot 1: Acomptes is a Lot 2 screen,
+// so a Lot 1 dataset holds no deposit for a Lot 1 screen to render.
 const BOOKINGS = [
-  ["res_001", "cus_1", "Salma Bennani", "+212 661 20 44 18", 4, 1, "confirmed", "lyfe", "z_patio", "Anniversaire, dessert avec bougie", 400, 0.04],
-  ["res_002", "cus_3", "Groupe Karam", "+212 662 88 10 03", 6, 31, "confirmed", "phone", "z_salle", "Sans gluten pour deux couverts", null, 0.11],
-  ["res_003", "cus_4", "Yasmine El Alaoui", "+212 663 41 77 92", 4, 31, "confirmed", "instagram", "z_terrasse", null, null, 0.38],
-  ["res_010", "cus_5", "Nabil Cherkaoui", "+212 665 09 33 71", 2, 61, "requested", "lyfe", null, "Demande une table près de la fontaine", null, 0.22],
-  ["res_011", "cus_2", "Hind Tazi", "+212 660 15 62 40", 5, 91, "confirmed", "partner", "z_salle", null, 500, 0.03],
+  ["res_001", "cus_1", "Salma Bennani", "+212 661 20 44 18", 4, 0, "confirmed", "lyfe", "z_patio", "Anniversaire, dessert avec bougie", 400, 0.04],
+  ["res_002", "cus_3", "Groupe Karam", "+212 662 88 10 03", 6, 1, "confirmed", "phone", "z_salle", "Sans gluten pour deux couverts", null, 0.11],
+  ["res_003", "cus_4", "Yasmine El Alaoui", "+212 663 41 77 92", 4, 1, "confirmed", "instagram", "z_terrasse", null, null, 0.38],
+  ["res_010", "cus_5", "Nabil Cherkaoui", "+212 665 09 33 71", 2, 2, "requested", "lyfe", null, "Demande une table près de la fontaine", null, 0.22],
+  ["res_011", "cus_2", "Hind Tazi", "+212 660 15 62 40", 5, 3, "confirmed", "partner", "z_salle", null, 500, 0.03],
 ];
-BOOKINGS.forEach(([id, cus, name, phone, size, inMin, state, channel, zone, note, deposit, risk]) => {
+const DZ_SLOTS = bookableSlots(DZ_LIVE, now);
+BOOKINGS.forEach(([id, cus, name, phone, size, slot, state, channel, zone, note, deposit, risk]) => {
+  const at = DZ_SLOTS[Math.min(slot, DZ_SLOTS.length - 1)];
   insert("reservations", {
     id, venue_id: VENUE, service_id: SERVICE, customer_id: cus,
     guest_name: name, guest_phone: phone, party_size: size,
-    at: slotAhead(inMin), state, channel, zone_id: zone,
-    note, deposit_cents: deposit === null ? null : mad(deposit),
+    at: iso(at), state, channel, zone_id: zone,
+    note, deposit_cents: LOT === 1 || deposit === null ? null : mad(deposit),
     no_show_risk: risk,
     // The QR the app shows the guest (EP20-US9). The portal validates it.
     qr_code: `LYFE-${id.toUpperCase()}`,
@@ -335,17 +438,53 @@ const SEATED_NAMES = [
  * that has already run, so the load histogram and the carnet describe
  * the same evening.
  */
-function fillBook({ venue, serviceId, prefix, opens, arrived, absent, zones }) {
+/**
+ * Party sizes that fill a room to about 85 %, with a few absences.
+ *
+ * Returns covers, not rows: the caller's job is to seat them. Derived
+ * from the capacity so the same ladder works for a 72-seat lunch and a
+ * 120-seat dinner without a second table of numbers to keep in step.
+ */
+function arrivedFor(capacity) {
+  const LADDER = [2, 4, 2, 6, 4, 2, 3, 5, 2, 4, 8, 2, 4, 6, 2, 3, 4, 2, 6, 4, 4];
+  const absent = [4];
+  // Leave room for the named bookings still to come and a little slack.
+  const target = Math.max(0, Math.round(capacity * 0.85) - 19 - absent[0]);
+  const arrived = [];
+  let total = 0;
+  for (let i = 0; total < target; i += 1) {
+    const size = LADDER[i % LADDER.length];
+    if (total + size > target) break;
+    arrived.push(size);
+    total += size;
+  }
+  return { arrived, absent };
+}
+
+function fillBook({ venue, service, prefix, arrived, absent, zones }) {
+  // A party cannot have arrived at a service that has not opened, so a
+  // venue caught between services seats nobody and the dashboard says
+  // so — which is the truthful reading and one the restaurant, always
+  // mid-service, never shows.
+  const slots = elapsedSlots(service, now);
+  if (slots.length === 0) return;
+
   let n = 0;
   const place = (size, state) => {
     const id = `${prefix}_f${n}`;
-    const at = new Date(opens.getTime() + (n % 4) * HALF);
+    const at = slots[n % slots.length];
     insert("reservations", {
-      id, venue_id: venue, service_id: serviceId, customer_id: null,
+      id, venue_id: venue, service_id: service.id, customer_id: null,
       guest_name: SEATED_NAMES[n % SEATED_NAMES.length],
       guest_phone: `+212 6${String(10_000_000 + n * 137_911).slice(0, 8)}`,
       party_size: size, at: iso(at), state,
-      channel: ["lyfe", "phone", "walk_in", "site"][n % 4],
+      // Walk-in is a Lot 2 concept: it arrives through Liste d'attente
+      // and is taken with the walk-in action Réservations does not have
+      // under Lot 1. A Lot 1 dataset books through the channels Lot 1
+      // can actually receive.
+      channel: (LOT === 1
+        ? ["lyfe", "phone", "site", "lyfe"]
+        : ["lyfe", "phone", "walk_in", "site"])[n % 4],
       zone_id: zones[n % zones.length],
       note: null, deposit_cents: null,
       no_show_risk: state === "no_show" ? 0.62 : null,
@@ -411,13 +550,16 @@ fillAhead({
   fills: [0.55, 0.62, 0.38, 0.3, 0.68, 0.72, 0.26, 0.2, 0.24, 0.14, 0.4, 0.46, 0.1, 0.08],
 });
 
+// Sized against the resolved service's own capacity rather than a fixed
+// 120: Déjeuner seats 72 and Dîner 120, and a book of 104 covers in a
+// room of 72 is the kind of number that makes a partner stop reading.
+const dzArrived = arrivedFor(DZ_LIVE.capacity);
 fillBook({
   venue: VENUE,
-  serviceId: SERVICE,
+  service: { ...DZ_LIVE, id: SERVICE },
   prefix: "res_dz",
-  opens,
-  arrived: [2, 4, 2, 6, 4, 2, 3, 5, 2, 4, 8, 2, 4, 6, 2, 3, 4, 2, 6, 4, 4],
-  absent: [4, 2],
+  arrived: dzArrived.arrived,
+  absent: dzArrived.absent,
   zones: ["z_salle", "z_patio", "z_terrasse"],
 });
 
@@ -618,33 +760,32 @@ insert("business_accounts", {
   }),
 );
 
+// The lounge's live service comes from its own definitions, the same way.
+// A bar that opens at 18h shows an upcoming service at lunchtime, which
+// is the truthful reading and the one case the restaurant does not show.
 const SERVICE2 = "svc_nomad_current";
-const opens2 = slotFloor(new Date(now.getTime() - 40 * 60_000));
-const closes2 = new Date(opens2.getTime() + 300 * 60_000);
-const [kind2, label2] = serviceKindFor(opens2);
+const NM_LIVE = resolveService(NM_SERVICES, now);
+const opens2 = NM_LIVE.opensAt;
+const closes2 = NM_LIVE.closesAt;
 insert("services", {
-  id: SERVICE2, venue_id: VENUE2, kind: kind2, label: label2,
+  id: SERVICE2, venue_id: VENUE2, kind: NM_LIVE.kind, label: NM_LIVE.name,
   date: day(opens2), opens_at: iso(opens2), closes_at: iso(closes2),
-  state: "open", capacity: 70, booked_covers: 38, arrived_covers: 22,
-  no_show_covers: 2, revenue_cents: mad(14_800),
+  state: NM_LIVE.live ? "open" : "upcoming",
+  capacity: NM_LIVE.capacity,
+  booked_covers: 0, arrived_covers: 0, no_show_covers: 0, revenue_cents: 0,
 });
-[0.3, 0.6, 0.9, 1, 0.8, 0.5].forEach((f, i) =>
-  insert("service_slot_load", {
-    service_id: SERVICE2,
-    at: iso(new Date(opens2.getTime() + i * 30 * 60_000)),
-    covers: Math.round(14 * f),
-  }),
-);
 
+const NM_SLOTS = bookableSlots(NM_LIVE, now);
 [
-  ["res_n1", "Leïla Fassi", "+212 661 55 20 11", 4, 1, "confirmed", "lyfe", "z_n_toit", "Table près du bord", 0.06],
-  ["res_n2", "Anas Berrada", "+212 662 31 88 40", 2, 31, "requested", "lyfe", null, null, 0.19],
-  ["res_n3", "Groupe Anfa", "+212 663 12 74 05", 8, 61, "confirmed", "partner", "z_n_bar", "Anniversaire", 0.08],
-].forEach(([id, name, phone, size, inMin, state, channel, zone, note, risk]) => {
+  ["res_n1", "Leïla Fassi", "+212 661 55 20 11", 4, 0, "confirmed", "lyfe", "z_n_toit", "Table près du bord", 0.06],
+  ["res_n2", "Anas Berrada", "+212 662 31 88 40", 2, 1, "requested", "lyfe", null, null, 0.19],
+  ["res_n3", "Groupe Anfa", "+212 663 12 74 05", 8, 2, "confirmed", "partner", "z_n_bar", "Anniversaire", 0.08],
+].forEach(([id, name, phone, size, slot, state, channel, zone, note, risk]) => {
+  const at = NM_SLOTS[Math.min(slot, NM_SLOTS.length - 1)];
   insert("reservations", {
     id, venue_id: VENUE2, service_id: SERVICE2, customer_id: null,
     guest_name: name, guest_phone: phone, party_size: size,
-    at: slotAhead(inMin), state, channel, zone_id: zone,
+    at: iso(at), state, channel, zone_id: zone,
     note, deposit_cents: null, no_show_risk: risk,
     qr_code: `LYFE-${id.toUpperCase()}`, checked_in_at: null,
     created_at: daysAgo(2), updated_at: minutesAgo(20),
@@ -664,13 +805,13 @@ fillAhead({
   fills: [0.3, 0.52, 0.6, 0.18, 0.14, 0.34, 0.44, 0.1],
 });
 
+const nmArrived = arrivedFor(NM_LIVE.capacity);
 fillBook({
   venue: VENUE2,
-  serviceId: SERVICE2,
+  service: { ...NM_LIVE, id: SERVICE2 },
   prefix: "res_nm",
-  opens: opens2,
-  arrived: [2, 4, 2, 6, 4, 2, 4],
-  absent: [2],
+  arrived: nmArrived.arrived,
+  absent: nmArrived.absent,
   zones: ["z_n_toit", "z_n_bar"],
 });
 
@@ -790,19 +931,20 @@ const nextWeekday = (target) => {
   });
   seedVisits({ venue: VENUE2, id, name, phone, visits, lastDays, firstSeenDays, salt: i });
   for (let n = 0; n < noShows; n += 1) {
+    const missed = clockAgo(25 * (n + 1), n % 2 === 0 ? 22 : 19, n % 3 === 0 ? 30 : 0);
     insert("reservations", {
       id: `res_nhist_${id}_${n}`, venue_id: VENUE2, service_id: null,
       customer_id: id, guest_name: name, guest_phone: phone,
-      party_size: 2 + n, at: daysAgo(25 * (n + 1)), state: "no_show",
+      party_size: 2 + n, at: missed, state: "no_show",
       channel: "lyfe", zone_id: null, note: null, deposit_cents: null,
       no_show_risk: null, qr_code: `LYFE-NHIST-${id}-${n}`,
       checked_in_at: null,
-      created_at: daysAgo(26 * (n + 1)), updated_at: daysAgo(25 * (n + 1)),
+      created_at: daysAgo(26 * (n + 1)), updated_at: missed,
     });
     insert("no_show_records", {
       id: `ns_${id}_${n}`, venue_id: VENUE2, customer_id: id,
       reservation_id: `res_nhist_${id}_${n}`, party_size: 2 + n,
-      at: daysAgo(25 * (n + 1)),
+      at: missed,
     });
   }
 });
@@ -860,9 +1002,16 @@ function seedOperations(opts) {
     }),
   );
 
+  // Both tickets are about Réservations, which both lots ship.
+  //
+  // The open one used to be "Acompte marqué échoué…", and a support
+  // subject is free text: no builder can filter it by lot, so it read
+  // the same on a Lot 1 Support as on a Lot 2 one — including on the
+  // committed snapshot, which is captured once and serves both. A
+  // dataset that holds no Lot 2 subject needs no gate anywhere.
   [
     ["a", "SUP-4412", "Réservations", "Une réservation de l'app n'apparaît pas dans le carnet", "resolu", 9],
-    ["b", "SUP-4610", "Paiements", "Acompte marqué échoué alors que le client a été débité", "en_cours", 2],
+    ["b", "SUP-4610", "Réservations", "Une absence signalée par erreur, comment la corriger", "en_cours", 2],
   ].forEach(([suffix, reference, category, subject, status, ago]) =>
     insert("support_tickets", {
       id: p(`sup_${suffix}`), venue_id: venue, reference, category, subject,
@@ -923,7 +1072,12 @@ function seedOperations(opts) {
     updated_at: minutesAgo(90),
   });
 
-  opts.waitlist.forEach((row) => {
+  // Liste d'attente is a Lot 2 screen. A Lot 1 dataset holds no queue at
+  // all: Accueil reads the same table for its waitlist count, and a
+  // number counting people a Lot 1 partner has no screen to work is a
+  // Lot 2 concept leaking onto a Lot 1 dashboard.
+  const queue = LOT === 1 ? [] : opts.waitlist;
+  queue.forEach((row) => {
     const [id, customerId, name, phone, size, quote, addedMin, source, status, notifiedMin] = row;
     insert("waitlist", {
       id: p(id), venue_id: venue, customer_id: customerId,
@@ -936,22 +1090,25 @@ function seedOperations(opts) {
   });
   // One party already seated and one already gone, so the list has a
   // history behind it rather than only a live top.
-  insert("waitlist", {
-    id: p("wl_seated"), venue_id: venue, customer_id: customers[0],
-    guest_name: opts.seatedName, guest_phone: opts.seatedPhone, party_size: 2,
-    quoted_minutes: 15, added_at: minutesAgo(74), notified_at: minutesAgo(61),
-    seated_at: minutesAgo(58), removed_at: null,
-    source: "walk_in", status: "seated", removal_reason: null,
-    note: "", reservation_id: null,
-  });
-  insert("waitlist", {
-    id: p("wl_left"), venue_id: venue, customer_id: null,
-    guest_name: opts.leftName, guest_phone: "", party_size: 4,
-    quoted_minutes: 45, added_at: minutesAgo(96), notified_at: minutesAgo(52),
-    seated_at: null, removed_at: minutesAgo(38),
-    source: "app", status: "left", removal_reason: "parti",
-    note: "N'a pas répondu au message", reservation_id: null,
-  });
+  // Both sit in the queue, so they only exist under Lot 2.
+  if (LOT === 2) {
+    insert("waitlist", {
+      id: p("wl_seated"), venue_id: venue, customer_id: customers[0],
+      guest_name: opts.seatedName, guest_phone: opts.seatedPhone, party_size: 2,
+      quoted_minutes: 15, added_at: minutesAgo(74), notified_at: minutesAgo(61),
+      seated_at: minutesAgo(58), removed_at: null,
+      source: "walk_in", status: "seated", removal_reason: null,
+      note: "", reservation_id: null,
+    });
+    insert("waitlist", {
+      id: p("wl_left"), venue_id: venue, customer_id: null,
+      guest_name: opts.leftName, guest_phone: "", party_size: 4,
+      quoted_minutes: 45, added_at: minutesAgo(96), notified_at: minutesAgo(52),
+      seated_at: null, removed_at: minutesAgo(38),
+      source: "app", status: "left", removal_reason: "parti",
+      note: "N'a pas répondu au message", reservation_id: null,
+    });
+  }
 
   // ── Shift notes ──
   opts.shiftNotes.forEach(([id, body, pinned, ago]) =>
@@ -1096,7 +1253,11 @@ function seedOperations(opts) {
     });
   });
 
-  opts.deposits.forEach((row) => {
+  // Acomptes is a Lot 2 screen, and its rows reach three Lot 1 screens
+  // through the money desk: an acompte pill in the Réservations book, an
+  // amount on a row's trailing, a failed deposit in Accueil's queue.
+  // A Lot 1 dataset holds none.
+  (LOT === 1 ? [] : opts.deposits).forEach((row) => {
     const [id, reservationId, guest, amount, status, requestedAgo, paidAgo, failure] = row;
     insert("deposits", {
       id: p(id), venue_id: venue, policy_id: p(opts.depositPolicies[0][0]),
@@ -1320,7 +1481,9 @@ function seedOperations(opts) {
       night, at: `${night}T23:30:00`,
       minimum_cents: mad(minimum),
       reached_cents: reached === null ? null : mad(reached),
-      status, deposit_id: depositId ? p(depositId) : null,
+      // The deposits table is empty under Lot 1, so the reference has to go
+      // with it or SQLite rejects the row.
+      status, deposit_id: depositId && LOT === 2 ? p(depositId) : null,
       created_at: daysAgo(6), updated_at: daysAgo(1),
     });
   });
@@ -1447,7 +1610,7 @@ seedOperations({
   prefix: "nm",
   configuration: "lounge",
   service: SERVICE2,
-  serviceLabel: label2,
+  serviceLabel: NM_LIVE.name,
   capacity: 70,
   zones: ["z_n_bar", "z_n_toit"],
   customers: ["cus_n1", "cus_n3", "cus_n4", "cus_n5"],
@@ -1555,10 +1718,17 @@ seedOperations({
 // rather than typed beside them, and the load histogram is rescaled to
 // the same total. Nothing on a service screen can now disagree with the
 // rows it sits above, because there is only one number.
-for (const [serviceId, opensAt, ticketMad, shape] of [
-  [SERVICE, opens, 737, [0.28, 0.55, 0.82, 1, 0.94, 0.76, 0.58, 0.4, 0.26]],
-  [SERVICE2, opens2, 412, [0.3, 0.6, 0.9, 1, 0.8, 0.5]],
+for (const [serviceId, live, ticketMad, shape] of [
+  [SERVICE, DZ_LIVE, 737, [0.28, 0.55, 0.82, 1, 0.94, 0.76, 0.58, 0.4, 0.26]],
+  [SERVICE2, NM_LIVE, 412, [0.3, 0.6, 0.9, 1, 0.8, 0.5]],
 ]) {
+  // One bar per half hour of the service the definition declares, so the
+  // histogram ends when the service does instead of running past its
+  // own closing time.
+  const bars = Math.max(
+    1,
+    Math.round((live.closesAt.getTime() - live.opensAt.getTime()) / HALF),
+  );
   const sum = (states) =>
     db
       .prepare(
@@ -1577,19 +1747,29 @@ for (const [serviceId, opensAt, ticketMad, shape] of [
             no_show_covers = ?, revenue_cents = ? WHERE id = ?`,
   ).run(booked, arrived, absent, mad(arrived * ticketMad), serviceId);
 
-  // The bars are the same covers, spread over the service's half hours.
+  // The bars are the covers still holding a table, spread over the
+  // service's half hours.
+  //
+  // They summed to `booked` — no-shows included — under a chart whose
+  // subheading is word for word the label on the réservés tile beside
+  // it, so adding the bars up gave four covers more than the tile. The
+  // line is what the salle has left to turn, and a party that never came
+  // is not part of that.
+  const held = booked - absent;
   db.prepare("DELETE FROM service_slot_load WHERE service_id = ?").run(serviceId);
-  const total = shape.reduce((a, b) => a + b, 0);
+  // The curve is sampled to however many half hours the service runs.
+  const curve = Array.from({ length: bars }, (_, i) =>
+    shape[Math.min(shape.length - 1, Math.floor((i * shape.length) / bars))],
+  );
+  const total = curve.reduce((a, b) => a + b, 0) || 1;
   let placed = 0;
-  shape.forEach((f, i) => {
+  curve.forEach((f, i) => {
     const covers =
-      i === shape.length - 1
-        ? booked - placed
-        : Math.round((booked * f) / total);
+      i === curve.length - 1 ? held - placed : Math.round((held * f) / total);
     placed += covers;
     insert("service_slot_load", {
       service_id: serviceId,
-      at: iso(new Date(opensAt.getTime() + i * HALF)),
+      at: iso(new Date(live.opensAt.getTime() + i * HALF)),
       covers: Math.max(0, covers),
     });
   });

@@ -23,8 +23,10 @@ import { fr } from "date-fns/locale";
 import type {
   Block,
   DetailSpec,
+  CtaAction,
   EntityRow,
   FeedEntry,
+  FilterTab,
   KpiTile,
   ScreenSpec,
   SemanticTone,
@@ -139,6 +141,33 @@ const covers = coversIn;
 // ── Dashboard ────────────────────────────────────────────────
 
 /**
+ * The rows one service's book holds, out of the day handed to a screen.
+ *
+ * Accueil and Réservations both lead with the service resolved from the
+ * clock, and both used to count their tiles off something else — the
+ * day's array, the door's queue, or the counters on the `services` row.
+ * One definition, read from both, is what stops the same room being
+ * three different percentages full on two screens a tap apart.
+ */
+function serviceBook(reservations: Reservation[], serviceId: string): Reservation[] {
+  return reservations.filter((r) => r.serviceId === serviceId);
+}
+
+/**
+ * Covers holding a table, counted off those rows.
+ *
+ * A request holds nothing until someone accepts it — the "À confirmer"
+ * tile counts those — and a party marked absent has left the book, which
+ * is the difference between this and `service.bookedCovers`: that figure
+ * is this plus `noShowCovers`, which is what the no-show rate divides by.
+ */
+function heldCovers(reservations: Reservation[]): number {
+  return reservations
+    .filter((r) => r.state === "confirmed" || r.state === "arrived")
+    .reduce((n, r) => n + r.partySize, 0);
+}
+
+/**
  * Accueil's three numbers, under Lot 1.
  *
  * The same three Performance reports — taux de remplissage, revenu
@@ -155,20 +184,30 @@ function lot1Tiles(
   data: RestaurantOverview,
   service: Service,
   desk: MoneyDesk,
+  configuration: VenueConfiguration,
 ): KpiTile[] {
+  const covers = configFor(configuration).cover.many;
   const booked = Math.max(1, service.bookedCovers);
+  const held = heldCovers(serviceBook(data.upcomingReservations, service.id));
+  // Every tile reads the same service, and says so: the list beside them
+  // is the whole day, and two scopes on one screen have to be named or
+  // the three figures read as the day's.
+  const on = `${service.label} · ${hm(service.opensAt)} – ${hm(service.closesAt)}`;
   return [
     {
       id: "fill",
       label: "Taux de remplissage",
       tone: "sand",
       icon: "gauge",
+      // Counted off the book, not off the counter on the service row, so
+      // this is the same percentage Réservations puts under its own
+      // réservés tile — one room, one figure.
       metric: {
-        value: Math.round((service.bookedCovers / Math.max(1, service.capacity)) * 100),
+        value: Math.round((held / Math.max(1, service.capacity)) * 100),
         format: { kind: "percent" },
         animate: true,
       },
-      hint: service.label,
+      hint: `${held} / ${service.capacity} ${covers} · ${on}`,
     },
     ...(desk.hasTransactionSource
       ? ([
@@ -178,11 +217,11 @@ function lot1Tiles(
             tone: "surface",
             icon: "coins",
             metric: {
-              value: Math.round(data.coversToday.count * data.averageTicket.amountMad),
+              value: Math.round(held * data.averageTicket.amountMad),
               format: MAD,
               animate: true,
             },
-            hint: "Couverts du jour × ticket moyen des 7 derniers jours.",
+            hint: `Couverts réservés × ticket moyen des 7 derniers jours · ${on}`,
           },
         ] satisfies KpiTile[])
       : []),
@@ -191,15 +230,18 @@ function lot1Tiles(
       label: "Taux de no-show",
       tone: "surface",
       icon: "user-x",
+      // Absent covers over the covers the service was due — the held
+      // ones plus the absent ones, which is exactly `bookedCovers`.
       metric: {
         value: Number(((data.noShows.count / booked) * 100).toFixed(1)),
         format: { kind: "percent", decimals: 1 },
         animate: true,
       },
-      hint: service.label,
+      hint: `${data.noShows.count} / ${service.bookedCovers} ${covers} · ${on}`,
     },
   ];
 }
+
 
 export function buildDashboardScreen(
   data: RestaurantOverview,
@@ -213,6 +255,11 @@ export function buildDashboardScreen(
   const service = data.currentService;
   const inService = service.state === "open" || service.state === "peak";
   const remainingCovers = Math.max(0, service.capacity - service.bookedCovers);
+  // The covers the current service's book actually holds — the figure
+  // the three Lot 1 tiles and Réservations both divide by the capacity.
+  // The greeting reads it too, so the sentence above the tiles cannot
+  // quote a different room from the tiles themselves.
+  const heldNow = heldCovers(serviceBook(data.upcomingReservations, service.id));
 
   const heroBlock: Block = {
     id: "service-hero",
@@ -303,10 +350,13 @@ export function buildDashboardScreen(
     // Liste d'attente is a Lot 2 screen, and a count of people queueing
     // is no use on a dashboard with nowhere to work the queue.
     subline: lot1
-      ? `${covers(configuration, service.bookedCovers)} ${coverAgreement(
+      ? `${service.label} · ${covers(configuration, heldNow)} ${coverAgreement(
           vocabulary,
           "réservé",
-        )}, ${remainingCovers} encore disponibles.`
+        )} sur ${service.capacity}, ${Math.max(
+          0,
+          service.capacity - heldNow,
+        )} encore disponibles.`
       : data.greeting.subline,
     // The shortcuts the specification names are Nouvelle réservation,
     // Liste d'attente and Briefing — all three Lot 2. Under Lot 1 the
@@ -497,7 +547,7 @@ export function buildDashboardScreen(
         )
     )
       .slice(0, 6)
-      .map((r) => reservationRow(r, data.zones, configuration)),
+      .map((r) => reservationRow(r, data.zones, configuration, undefined, lot)),
     empty: lot1
       ? {
           title: "Aucune réservation aujourd'hui",
@@ -693,7 +743,7 @@ export function buildDashboardScreen(
       ...kpiBlock,
       id: "kpis",
       columns: 3,
-      tiles: lot1Tiles(data, service, desk),
+      tiles: lot1Tiles(data, service, desk, configuration),
     };
     return {
       slug: "",
@@ -758,15 +808,35 @@ export function buildReservationsScreen(
   lot: Lot = 2,
 ): ScreenSpec {
   const lot1 = lot === 1;
-  const all = [...data.upcomingReservations, ...data.waitlist];
+  const service = data.currentService;
+  // One scope, named on the tiles.
+  //
+  // The tiles used to read `currentService`, a per-service figure, while
+  // the rows under them were the whole day plus the door's queue: three
+  // scopes on one screen, with "Déjà arrivés" counting covers directly
+  // above an "Arrivés" chip counting bookings. Lot 1 reads the service
+  // in hand and nothing else, and every figure beside the book is
+  // counted off these same rows.
+  const all = lot1
+    ? serviceBook(data.upcomingReservations, service.id)
+    : [...data.upcomingReservations, ...data.waitlist];
   const requested = all.filter((r) => r.state === "requested");
   const atRisk = all.filter((r) => (r.noShowRisk ?? 0) >= 0.3);
+  const arrived = all.filter((r) => r.state === "arrived");
+  // The same covers Accueil's remplissage tile divides by the same
+  // capacity, so the two screens cannot report the room differently.
+  const bookedCovers = heldCovers(all);
   const vocabulary = configFor(configuration);
+  // Acomptes is a Lot 2 screen, so no Lot 1 row carries a deposit pill
+  // or an amount — not even when the driver hands one over.
   const depositByReservation = new Map(
-    desk.deposits
+    (lot1 ? [] : desk.deposits)
       .filter((d) => d.reservationId)
       .map((d) => [d.reservationId as string, d]),
   );
+  // "couverts · Déjeuner", "réservations · Déjeuner": the unit and the
+  // scope, on every tile, because two of them count different things.
+  const scope = (unit: string) => `${unit} · ${service.label}`;
 
   const kpiBlock: Block = {
     id: "reservation-kpis",
@@ -779,27 +849,32 @@ export function buildReservationsScreen(
         tone: "sand",
         icon: "calendar-clock",
         metric: {
-          value: data.currentService.bookedCovers,
+          value: lot1 ? bookedCovers : service.bookedCovers,
           format: COUNT,
-          suffix: `/ ${data.currentService.capacity}`,
+          suffix: `/ ${service.capacity}`,
           animate: true,
         },
-        hint: `${Math.round(
-          (data.currentService.bookedCovers /
-            Math.max(1, data.currentService.capacity)) *
-            100,
-        )} % de la salle engagée`,
+        hint: lot1
+          ? `${scope(vocabulary.cover.many)} · ${Math.round(
+              (bookedCovers / Math.max(1, service.capacity)) * 100,
+            )} % de la salle engagée · hors demandes`
+          : `${Math.round(
+              (service.bookedCovers / Math.max(1, service.capacity)) * 100,
+            )} % de la salle engagée`,
       },
       {
         id: "arrived",
         label: "Déjà arrivés",
         tone: "surface",
         icon: "user-check",
+        // Bookings, not covers — the same thing the Arrivés chip on the
+        // book counts, so the tile and the chip read the same number.
         metric: {
-          value: data.currentService.arrivedCovers,
+          value: lot1 ? arrived.length : service.arrivedCovers,
           format: COUNT,
           animate: true,
         },
+        hint: lot1 ? scope("réservations") : undefined,
       },
       {
         id: "requested",
@@ -807,9 +882,13 @@ export function buildReservationsScreen(
         tone: requested.length > 0 ? "peach" : "surface",
         icon: "hourglass",
         metric: { value: requested.length, format: COUNT, animate: true },
-        hint: requested.length
-          ? "À traiter avant le coup de feu"
-          : "Rien en attente",
+        hint: lot1
+          ? `${scope("réservations")} · ${
+              requested.length ? "à traiter avant le coup de feu" : "rien en attente"
+            }`
+          : requested.length
+            ? "À traiter avant le coup de feu"
+            : "Rien en attente",
       },
       {
         id: "risk",
@@ -817,9 +896,15 @@ export function buildReservationsScreen(
         tone: atRisk.length > 0 ? "rose" : "sage",
         icon: "user-x",
         metric: { value: atRisk.length, format: COUNT, animate: true },
-        hint: atRisk.length
-          ? "Un rappel SMS réduit le risque de moitié"
-          : "Aucun risque détecté",
+        hint: lot1
+          ? `${scope("réservations")} · ${
+              atRisk.length
+                ? "un rappel SMS réduit le risque de moitié"
+                : "aucun risque détecté"
+            }`
+          : atRisk.length
+            ? "Un rappel SMS réduit le risque de moitié"
+            : "Aucun risque détecté",
       },
     ],
   };
@@ -858,21 +943,29 @@ export function buildReservationsScreen(
         label: "Arrivés",
         match: { facet: "state", values: ["arrived"] },
       },
-      {
-        id: "waiting",
-        label: "Liste d'attente",
-        match: { facet: "state", values: ["waitlisted"] },
-      },
-      {
-        id: "no_show",
-        label: "No-show",
-        match: { facet: "state", values: ["no_show"] },
-      },
-      {
-        id: "cancelled",
-        label: "Annulées",
-        match: { facet: "state", values: ["cancelled", "rejected"] },
-      },
+      // Three filters Lot 1 cannot fill. The queue is Liste d'attente, a
+      // Lot 2 screen; marking a booking absent or refusing it takes it
+      // out of the service's book, so those two chips could only ever
+      // read zero next to a no-show figure Performance does show.
+      ...(lot1
+        ? []
+        : ([
+            {
+              id: "waiting",
+              label: "Liste d'attente",
+              match: { facet: "state", values: ["waitlisted"] },
+            },
+            {
+              id: "no_show",
+              label: "No-show",
+              match: { facet: "state", values: ["no_show"] },
+            },
+            {
+              id: "cancelled",
+              label: "Annulées",
+              match: { facet: "state", values: ["cancelled", "rejected"] },
+            },
+          ] satisfies FilterTab[])),
       {
         id: "risk",
         label: "À risque",
@@ -888,7 +981,7 @@ export function buildReservationsScreen(
       { id: "name", label: "Nom", key: "name", direction: "asc" },
     ],
     rows: all.map((r) =>
-      reservationRow(r, data.zones, configuration, depositByReservation.get(r.id)),
+      reservationRow(r, data.zones, configuration, depositByReservation.get(r.id), lot, true),
     ),
     empty: {
       title: "Carnet vide",
@@ -912,7 +1005,13 @@ export function buildReservationsScreen(
       {
         id: "date",
         label: "Date",
-        control: { kind: "date", value: data.currentService.date },
+        // A date input renders its value as `2026-09-24`, the one ISO
+        // date left on a Lot 1 screen. Lot 1 reads the service in hand
+        // and has no day to navigate to, so the day is stated in the
+        // same French long form the header and every row use.
+        control: lot1
+          ? { kind: "readonly", value: dayLabel(service.opensAt) }
+          : { kind: "date", value: service.date },
         command: "reservations.day",
       },
       {
@@ -921,8 +1020,8 @@ export function buildReservationsScreen(
         hint: `Les ${vocabulary.service.many} se définissent dans Disponibilités.`,
         control: {
           kind: "select",
-          value: data.currentService.id,
-          options: [{ value: data.currentService.id, label: data.currentService.label }],
+          value: service.id,
+          options: [{ value: service.id, label: service.label }],
         },
         command: "reservations.service",
       },
@@ -972,10 +1071,12 @@ export function buildReservationsScreen(
   return {
     slug: "reservations",
     title: "Réservations",
-    // The day and the service both scope this screen — the picker sets
-    // one, the book below reads the other — so the header names both
-    // rather than leaving the tiles to be read as the whole day's.
-    subtitle: `${dayLabel(data.currentService.opensAt)} · ${data.currentService.label}`,
+    // The scope, spelled out: the day in French long form, the service
+    // resolved from the clock against the services table, and the hours
+    // that service actually runs. Everything below is counted inside it.
+    subtitle: `${dayLabel(service.opensAt)} · ${service.label} · ${hm(
+      service.opensAt,
+    )} – ${hm(service.closesAt)}`,
     blocks: [dayPicker, kpiBlock, serviceLoadBlock(data, configuration), bookBlock],
     // Phone lane: the book first.
     //
@@ -1312,8 +1413,15 @@ function reservationRow(
   zones: Zone[],
   configuration: VenueConfiguration = "restaurant",
   deposit?: Deposit,
+  lot: Lot = 2,
+  // Réservations is where a booking is decided, so that is the only
+  // place the decisions are drawn on the row. Accueil lists the same
+  // bookings beside an attention queue that already carries them, and
+  // two copies of Accepter on one screen is one too many.
+  inlineActions = false,
 ): EntityRow {
   const vocabulary = configFor(configuration);
+  const lot1 = lot === 1;
   const badges = [reservationBadge(reservation.state)];
   if (reservation.vip) badges.push({ label: "Habitué", tone: "violet", icon: "star" });
   if ((reservation.noShowRisk ?? 0) >= 0.3) {
@@ -1338,7 +1446,11 @@ function reservationRow(
     zoneName(zones, reservation.zoneId),
     // Source, spelled the way the configuration speaks: a bar takes
     // entries at the door, a restaurant takes walk-ins.
-    reservation.channel === "walk_in"
+    //
+    // Lot 1 has no walk-in action and no queue to take one from, so a
+    // Lot 1 row never names one as a source — it reads the channel the
+    // booking actually arrived through.
+    reservation.channel === "walk_in" && !lot1
       ? vocabulary.walkInLabel
       : RESERVATION_CHANNEL[reservation.channel],
   ]
@@ -1352,12 +1464,13 @@ function reservationRow(
     meta: `${hm(reservation.at)} · ${coversIn(configuration, reservation.partySize)} · ${place}`,
     badges,
     signal: reservation.note ? { text: reservation.note, icon: "note" } : undefined,
-    trailing: reservation.depositMad
-      ? { label: "Acompte", metric: { value: reservation.depositMad, format: MAD } }
-      : {
-          label: "Visites",
-          metric: { value: reservation.visits, format: COUNT },
-        },
+    trailing:
+      reservation.depositMad && !lot1
+        ? { label: "Acompte", metric: { value: reservation.depositMad, format: MAD } }
+        : {
+            label: "Visites",
+            metric: { value: reservation.visits, format: COUNT },
+          },
     // Facets are what the tabs filter on; sortKeys what the select orders
     // by; keywords what search reaches beyond the visible text.
     facets: {
@@ -1379,9 +1492,83 @@ function reservationRow(
     ]
       .filter(Boolean)
       .join(" "),
-    detail: reservationDetail(reservation, zones, configuration),
+    detail: reservationDetail(reservation, zones, configuration, lot),
     menu: reservationMenu(reservation),
+    actions: lot1 && inlineActions ? reservationActions(reservation) : undefined,
   };
+}
+
+/**
+ * The three decisions Lot 1 buys on a booking, on the row itself.
+ *
+ * Accepter, refuser and signaler une absence are the whole of what a Lot
+ * 1 partner does to a reservation, and all three sat behind a kebab that
+ * had to be opened first — one tap too many at a host stand, and nothing
+ * at all on a printed frame. They are the same commands the kebab
+ * dispatches, drawn inline and filtered by the state the row is in: a
+ * booking already seated has no decision left, and check-in replaces
+ * accepter once the request has been accepted.
+ */
+function reservationActions(reservation: Reservation): CtaAction[] | undefined {
+  if (reservation.state === "requested") {
+    return [
+      {
+        action: {
+          kind: "command",
+          command: "reservation.confirm",
+          payload: { id: reservation.id },
+          label: "Accepter",
+          icon: "check",
+        },
+        variant: "primary",
+      },
+      {
+        action: {
+          kind: "command",
+          command: "reservation.reject",
+          payload: { id: reservation.id, name: reservation.guestName },
+          label: "Refuser",
+          icon: "ban",
+        },
+        variant: "secondary",
+      },
+      {
+        action: {
+          kind: "command",
+          command: "reservation.noShow",
+          payload: { id: reservation.id },
+          label: "Absent",
+          icon: "user-x",
+        },
+        variant: "ghost",
+      },
+    ];
+  }
+  if (reservation.state === "confirmed") {
+    return [
+      {
+        action: {
+          kind: "command",
+          command: "reservation.arrive",
+          payload: { id: reservation.id },
+          label: "Check-in",
+          icon: "user-check",
+        },
+        variant: "primary",
+      },
+      {
+        action: {
+          kind: "command",
+          command: "reservation.noShow",
+          payload: { id: reservation.id },
+          label: "Absent",
+          icon: "user-x",
+        },
+        variant: "ghost",
+      },
+    ];
+  }
+  return undefined;
 }
 
 function reservationMenu(reservation: Reservation): EntityRow["menu"] {
@@ -1462,6 +1649,7 @@ function reservationDetail(
   reservation: Reservation,
   zones: Zone[],
   configuration: VenueConfiguration = "restaurant",
+  lot: Lot = 2,
 ): DetailSpec {
   const risk = Math.round((reservation.noShowRisk ?? 0) * 100);
 
@@ -1505,7 +1693,9 @@ function reservationDetail(
             label: "Visites",
             metric: { value: reservation.visits, format: COUNT },
           },
-          ...(reservation.depositMad
+          // An amount the Lot 1 partner cannot see taken, refunded or
+          // released, because Acomptes is a Lot 2 screen.
+          ...(reservation.depositMad && lot !== 1
             ? [
                 {
                   label: "Acompte versé",
@@ -1959,7 +2149,7 @@ export const RESTAURANT_SCREENS: Record<
       },
       ctx.lot,
     ),
-  support: (ctx) => buildSupportScreen(ctx.support ?? []),
+  support: (ctx) => buildSupportScreen(ctx.support ?? [], ctx.lot),
 };
 
 /** Share of reviews the venue has answered. Feeds the ranking checklist. */

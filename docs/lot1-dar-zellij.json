@@ -1,10 +1,10 @@
 {
   "base": "http://localhost:3210",
-  "venue": "",
+  "venue": "rst_dar_zellij",
   "account": "yassine@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-09-21T01:35:40.378Z",
+  "capturedAt": "2026-09-24T14:05:02.510Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -14,9 +14,9 @@
       "dependsOn": null,
       "roles": null,
       "workspace": "venue",
-      "title": "Bonjour, Yassine. le service est complet.",
+      "title": "Bon après-midi, Yassine. le service est lancé.",
       "eyebrow": "Taux de remplissage",
-      "subtitle": "104 couverts réservés, 11 en liste d'attente, 16 encore disponibles.",
+      "subtitle": "Déjeuner · 53 couverts réservés sur 72, 19 encore disponibles.",
       "venue": "YA",
       "blocks": [
         {
@@ -28,17 +28,17 @@
           ],
           "facets": [],
           "texts": [
-            "Bonjour",
-            "le service est complet.",
-            "104 couverts réservés, 11 en liste d'attente, 16 encore disponibles.",
+            "Bon après-midi",
+            "le service est lancé.",
+            "Déjeuner · 53 couverts réservés sur 72, 19 encore disponibles.",
             "Ouvrir le carnet →"
           ],
           "rows": [
             {
               "lines": [
-                "Bonjour",
-                "le service est complet.",
-                "104 couverts réservés, 11 en liste d'attente, 16 encore disponibles."
+                "Bon après-midi",
+                "le service est lancé.",
+                "Déjeuner · 53 couverts réservés sur 72, 19 encore disponibles."
               ],
               "pills": [],
               "actions": []
@@ -57,7 +57,7 @@
         {
           "kind": "list",
           "heading": "À traiter",
-          "subheading": "02h30 · 2 couverts · demande en attente",
+          "subheading": "14h30 · 2 couverts · demande en attente",
           "actions": [
             "Accepter",
             "Refuser",
@@ -90,11 +90,11 @@
             "NC",
             "Nabil Cherkaoui",
             "À CONFIRMER",
-            "02h30 · 2 couverts · demande en attente",
+            "14h30 · 2 couverts · demande en attente",
             "YE",
             "Yasmine El Alaoui",
             "RISQUE ÉLEVÉ",
-            "02h00 · 4 couverts · risque d'absence élevé",
+            "14h30 · 4 couverts · risque d'absence élevé",
             "TR",
             "Thomas R.",
             "AVIS SANS RÉPONSE",
@@ -111,7 +111,7 @@
           "items": [
             {
               "title": "Nabil Cherkaoui",
-              "meta": "02h30 · 2 couverts · demande en attente",
+              "meta": "14h30 · 2 couverts · demande en attente",
               "initials": "NC",
               "trailing": null,
               "pills": [
@@ -127,7 +127,7 @@
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "02h00 · 4 couverts · risque d'absence élevé",
+              "meta": "14h30 · 4 couverts · risque d'absence élevé",
               "initials": "YE",
               "trailing": null,
               "pills": [
@@ -184,42 +184,42 @@
         {
           "kind": "kpi-grid",
           "heading": null,
-          "subheading": "Service tardif",
+          "subheading": "53 / 72 couverts · Déjeuner · 12h00 – 15h00",
           "actions": [],
           "facets": [],
           "texts": [
             "Taux de remplissage",
-            "87 %",
-            "Service tardif",
+            "74 %",
+            "53 / 72 couverts · Déjeuner · 12h00 – 15h00",
             "Revenu estimé",
-            "48 642 MAD",
-            "Couverts du jour × ticket moyen des 7 derniers jours.",
+            "39 061 MAD",
+            "Couverts réservés × ticket moyen des 7 derniers jours · Déjeuner · 12h00 – 15h00",
             "Taux de no-show",
-            "6,0 %",
-            "Service tardif"
+            "7,0 %",
+            "4 / 57 couverts · Déjeuner · 12h00 – 15h00"
           ],
           "tiles": [
             {
               "label": "Taux de remplissage",
-              "value": "87 %",
+              "value": "74 %",
               "meta": [
-                "Service tardif"
+                "53 / 72 couverts · Déjeuner · 12h00 – 15h00"
               ],
               "pills": []
             },
             {
               "label": "Revenu estimé",
-              "value": "48 642 MAD",
+              "value": "39 061 MAD",
               "meta": [
-                "Couverts du jour × ticket moyen des 7 derniers jours."
+                "Couverts réservés × ticket moyen des 7 derniers jours · Déjeuner · 12h00 – 15h00"
               ],
               "pills": []
             },
             {
               "label": "Taux de no-show",
-              "value": "6,0 %",
+              "value": "7,0 %",
               "meta": [
-                "Service tardif"
+                "4 / 57 couverts · Déjeuner · 12h00 – 15h00"
               ],
               "pills": []
             }
@@ -243,46 +243,46 @@
           "right": {
             "kind": "list",
             "heading": null,
-            "subheading": "00h00 · 4 couverts · Patio · Téléphone",
+            "subheading": "12h00 · 2 couverts · Grande salle · LYFE",
             "actions": [],
             "facets": [],
             "texts": [
-              "RB",
-              "Rachid Benjelloun",
-              "00h00 · 4 couverts · Patio · Téléphone",
+              "FA",
+              "Famille Alami",
+              "12h00 · 2 couverts · Grande salle · LYFE",
               "Visites",
               "0",
               "IS",
               "Imane Sefrioui",
-              "00h00 · 2 couverts · Terrasse · Téléphone",
+              "12h00 · 2 couverts · Terrasse · Téléphone",
               "Visites",
               "0",
-              "GA",
-              "Groupe Atlas",
-              "00h00 · 4 couverts · Grande salle · Téléphone",
+              "RB",
+              "Rachid Benjelloun",
+              "12h30 · 4 couverts · Patio · Téléphone",
               "Visites",
               "0",
-              "FT",
-              "Famille Tazi",
-              "00h00 · 6 couverts · Patio · Téléphone",
-              "Visites",
-              "0",
-              "LZ",
-              "Laila Zniber",
-              "00h00 · 2 couverts · Terrasse · Téléphone",
+              "TO",
+              "Table Ourika",
+              "12h30 · 3 couverts · Grande salle",
               "Visites",
               "0",
               "SM",
               "Sanaa Mourad",
-              "00h30 · 2 couverts · Terrasse · Walk-in",
+              "13h00 · 2 couverts · Terrasse",
+              "Visites",
+              "0",
+              "MB",
+              "Mehdi Bouzoubaa",
+              "13h00 · 5 couverts · Patio · LYFE",
               "Visites",
               "0"
             ],
             "items": [
               {
-                "title": "Rachid Benjelloun",
-                "meta": "00h00 · 4 couverts · Patio · Téléphone",
-                "initials": "RB",
+                "title": "Famille Alami",
+                "meta": "12h00 · 2 couverts · Grande salle · LYFE",
+                "initials": "FA",
                 "trailing": [
                   "Visites",
                   "0"
@@ -297,7 +297,7 @@
               },
               {
                 "title": "Imane Sefrioui",
-                "meta": "00h00 · 2 couverts · Terrasse · Téléphone",
+                "meta": "12h00 · 2 couverts · Terrasse · Téléphone",
                 "initials": "IS",
                 "trailing": [
                   "Visites",
@@ -312,9 +312,9 @@
                 "actions": []
               },
               {
-                "title": "Groupe Atlas",
-                "meta": "00h00 · 4 couverts · Grande salle · Téléphone",
-                "initials": "GA",
+                "title": "Rachid Benjelloun",
+                "meta": "12h30 · 4 couverts · Patio · Téléphone",
+                "initials": "RB",
                 "trailing": [
                   "Visites",
                   "0"
@@ -328,25 +328,9 @@
                 "actions": []
               },
               {
-                "title": "Famille Tazi",
-                "meta": "00h00 · 6 couverts · Patio · Téléphone",
-                "initials": "FT",
-                "trailing": [
-                  "Visites",
-                  "0"
-                ],
-                "pills": [
-                  {
-                    "label": "ARRIVÉ",
-                    "tone": "violet-12"
-                  }
-                ],
-                "actions": []
-              },
-              {
-                "title": "Laila Zniber",
-                "meta": "00h00 · 2 couverts · Terrasse · Téléphone",
-                "initials": "LZ",
+                "title": "Table Ourika",
+                "meta": "12h30 · 3 couverts · Grande salle",
+                "initials": "TO",
                 "trailing": [
                   "Visites",
                   "0"
@@ -361,8 +345,24 @@
               },
               {
                 "title": "Sanaa Mourad",
-                "meta": "00h30 · 2 couverts · Terrasse · Walk-in",
+                "meta": "13h00 · 2 couverts · Terrasse",
                 "initials": "SM",
+                "trailing": [
+                  "Visites",
+                  "0"
+                ],
+                "pills": [
+                  {
+                    "label": "ARRIVÉ",
+                    "tone": "violet-12"
+                  }
+                ],
+                "actions": []
+              },
+              {
+                "title": "Mehdi Bouzoubaa",
+                "meta": "13h00 · 5 couverts · Patio · LYFE",
+                "initials": "MB",
                 "trailing": [
                   "Visites",
                   "0"
@@ -390,7 +390,7 @@
       "workspace": "venue",
       "title": "Réservations",
       "eyebrow": null,
-      "subtitle": "dimanche 20 septembre · Service tardif",
+      "subtitle": "jeudi 24 septembre · Déjeuner · 12h00 – 15h00",
       "venue": "YA",
       "blocks": [
         {
@@ -405,19 +405,15 @@
           "texts": [
             "Journée",
             "Date",
+            "jeudi 24 septembre",
             "Service",
             "Les services se définissent dans Disponibilités.",
-            "Service tardif"
+            "Déjeuner"
           ],
           "fields": [
             {
-              "label": "Date",
-              "value": "2026-09-20",
-              "type": "date"
-            },
-            {
               "label": "Service",
-              "value": "Service tardif",
+              "value": "Déjeuner",
               "type": "select-one"
             }
           ],
@@ -426,43 +422,46 @@
         {
           "kind": "kpi-grid",
           "heading": null,
-          "subheading": "87 % de la salle engagée",
+          "subheading": "couverts · Déjeuner · 74 % de la salle engagée · hors demandes",
           "actions": [],
           "facets": [],
           "texts": [
             "Couverts réservés",
-            "104",
-            "/ 120",
-            "87 % de la salle engagée",
+            "53",
+            "/ 72",
+            "couverts · Déjeuner · 74 % de la salle engagée · hors demandes",
             "Déjà arrivés",
-            "79",
+            "10",
+            "réservations · Déjeuner",
             "À confirmer",
             "1",
-            "À traiter avant le coup de feu",
+            "réservations · Déjeuner · à traiter avant le coup de feu",
             "Risque d'absence",
             "1",
-            "Un rappel SMS réduit le risque de moitié"
+            "réservations · Déjeuner · un rappel SMS réduit le risque de moitié"
           ],
           "tiles": [
             {
               "label": "Couverts réservés",
-              "value": "104",
+              "value": "53",
               "meta": [
-                "87 % de la salle engagée"
+                "couverts · Déjeuner · 74 % de la salle engagée · hors demandes"
               ],
               "pills": []
             },
             {
               "label": "Déjà arrivés",
-              "value": "79",
-              "meta": [],
+              "value": "10",
+              "meta": [
+                "réservations · Déjeuner"
+              ],
               "pills": []
             },
             {
               "label": "À confirmer",
               "value": "1",
               "meta": [
-                "À traiter avant le coup de feu"
+                "réservations · Déjeuner · à traiter avant le coup de feu"
               ],
               "pills": []
             },
@@ -470,7 +469,7 @@
               "label": "Risque d'absence",
               "value": "1",
               "meta": [
-                "Un rappel SMS réduit le risque de moitié"
+                "réservations · Déjeuner · un rappel SMS réduit le risque de moitié"
               ],
               "pills": []
             }
@@ -485,116 +484,98 @@
           "texts": [
             "Charge du service",
             "Couverts réservés par créneau de 30 min. La ligne marque ce que la salle peut tourner.",
-            "27 couverts / créneau",
-            "5",
-            "10",
-            "15",
-            "19",
-            "17",
+            "24 couverts / créneau",
+            "4",
+            "8",
             "14",
-            "11",
-            "7",
+            "13",
+            "8",
             "6",
-            "23h30",
-            "00h00",
-            "00h30",
-            "01h00",
-            "01h30",
-            "02h00",
-            "02h30",
-            "03h00",
-            "03h30"
+            "12h00",
+            "12h30",
+            "13h00",
+            "13h30",
+            "14h00",
+            "14h30"
           ],
           "bars": [
             {
-              "height": "18.5185",
+              "height": "16.6667",
               "color": "var(--color-violet-deep)",
-              "label": "23h30 · 5 couverts"
+              "label": "12h00 · 4 couverts"
             },
             {
-              "height": "37.037",
+              "height": "33.3333",
               "color": "var(--color-violet-deep)",
-              "label": "00h00 · 10 couverts"
+              "label": "12h30 · 8 couverts"
             },
             {
-              "height": "55.5556",
+              "height": "58.3333",
               "color": "var(--color-violet-deep)",
-              "label": "00h30 · 15 couverts"
+              "label": "13h00 · 14 couverts"
             },
             {
-              "height": "70.3704",
+              "height": "54.1667",
               "color": "var(--color-violet-deep)",
-              "label": "01h00 · 19 couverts"
+              "label": "13h30 · 13 couverts"
             },
             {
-              "height": "62.963",
+              "height": "33.3333",
               "color": "var(--color-violet-deep)",
-              "label": "01h30 · 17 couverts"
+              "label": "14h00 · 8 couverts"
             },
             {
-              "height": "51.8518",
+              "height": "25",
               "color": "var(--color-violet-deep)",
-              "label": "02h00 · 14 couverts"
-            },
-            {
-              "height": "40.7407",
-              "color": "var(--color-violet-deep)",
-              "label": "02h30 · 11 couverts"
-            },
-            {
-              "height": "25.9259",
-              "color": "var(--color-violet-deep)",
-              "label": "03h00 · 7 couverts"
-            },
-            {
-              "height": "22.2222",
-              "color": "var(--color-violet-deep)",
-              "label": "03h30 · 6 couverts"
+              "label": "14h30 · 6 couverts"
             }
           ],
           "axis": [
-            "23h30",
-            "00h00",
-            "00h30",
-            "01h00",
-            "01h30",
-            "02h00",
-            "02h30",
-            "03h00",
-            "03h30"
+            "12h00",
+            "12h30",
+            "13h00",
+            "13h30",
+            "14h00",
+            "14h30"
           ],
           "svgs": [],
           "values": [
-            "27 couverts / créneau",
-            "5",
-            "10",
-            "15",
-            "19",
-            "17",
+            "24 couverts / créneau",
+            "4",
+            "8",
             "14",
-            "11",
-            "7",
+            "13",
+            "8",
             "6",
-            "23h30",
-            "00h00",
-            "00h30",
-            "01h00",
-            "01h30",
-            "02h00",
-            "02h30",
-            "03h00",
-            "03h30"
+            "12h00",
+            "12h30",
+            "13h00",
+            "13h30",
+            "14h00",
+            "14h30"
           ]
         },
         {
           "kind": "list",
           "heading": "Carnet du service",
-          "subheading": "00h00 · 4 couverts · Patio · Téléphone",
-          "actions": [],
+          "subheading": "12h00 · 2 couverts · Grande salle · LYFE",
+          "actions": [
+            "Check-in",
+            "Absent",
+            "Check-in",
+            "Absent",
+            "Check-in",
+            "Absent",
+            "Accepter",
+            "Refuser",
+            "Absent",
+            "Check-in",
+            "Absent"
+          ],
           "facets": [
             {
               "label": "Tous",
-              "count": "24"
+              "count": "15"
             },
             {
               "label": "À confirmer",
@@ -606,19 +587,7 @@
             },
             {
               "label": "Arrivés",
-              "count": "15"
-            },
-            {
-              "label": "Liste d'attente",
-              "count": "4"
-            },
-            {
-              "label": "No-show",
-              "count": "0"
-            },
-            {
-              "label": "Annulées",
-              "count": "0"
+              "count": "10"
             },
             {
               "label": "À risque",
@@ -632,126 +601,95 @@
             "Couverts",
             "Fidélité",
             "Nom",
-            "24",
-            "1",
-            "4",
             "15",
-            "4",
-            "0",
-            "0",
             "1",
-            "RB",
-            "Rachid Benjelloun",
-            "00h00 · 4 couverts · Patio · Téléphone",
+            "4",
+            "10",
+            "1",
+            "FA",
+            "Famille Alami",
+            "12h00 · 2 couverts · Grande salle · LYFE",
             "Visites",
             "0",
             "IS",
             "Imane Sefrioui",
-            "00h00 · 2 couverts · Terrasse · Téléphone",
+            "12h00 · 2 couverts · Terrasse · Téléphone",
             "Visites",
             "0",
-            "GA",
-            "Groupe Atlas",
-            "00h00 · 4 couverts · Grande salle · Téléphone",
-            "Visites",
-            "0",
-            "FT",
-            "Famille Tazi",
-            "00h00 · 6 couverts · Patio · Téléphone",
-            "Visites",
-            "0",
-            "LZ",
-            "Laila Zniber",
-            "00h00 · 2 couverts · Terrasse · Téléphone",
-            "Visites",
-            "0",
-            "SM",
-            "Sanaa Mourad",
-            "00h30 · 2 couverts · Terrasse · Walk-in",
+            "RB",
+            "Rachid Benjelloun",
+            "12h30 · 4 couverts · Patio · Téléphone",
             "Visites",
             "0",
             "TO",
             "Table Ourika",
-            "00h30 · 3 couverts · Grande salle · Walk-in",
+            "12h30 · 3 couverts · Grande salle",
             "Visites",
             "0",
-            "AC",
-            "Anniversaire Chraïbi",
-            "00h30 · 8 couverts · Patio · Walk-in",
-            "Visites",
-            "0",
-            "SG",
-            "Sofia Guessous",
-            "00h30 · 2 couverts · Terrasse · Walk-in",
-            "Visites",
-            "0",
-            "TK",
-            "Table Koutoubia",
-            "00h30 · 6 couverts · Grande salle · Walk-in",
-            "Visites",
-            "0",
-            "OI",
-            "Omar Idrissi",
-            "00h53 · 2 couverts · Walk-in",
-            "Visites",
-            "0",
-            "GZ",
-            "Groupe Ziyad",
-            "01h00 · 6 couverts · Grande salle",
+            "SM",
+            "Sanaa Mourad",
+            "13h00 · 2 couverts · Terrasse",
             "Visites",
             "0",
             "MB",
             "Mehdi Bouzoubaa",
-            "01h00 · 5 couverts · Patio",
+            "13h00 · 5 couverts · Patio · LYFE",
             "Visites",
             "0",
-            "NR",
-            "Nawal Rifai",
-            "01h00 · 2 couverts · Terrasse",
+            "GZ",
+            "Groupe Ziyad",
+            "13h30 · 6 couverts · Grande salle · LYFE",
             "Visites",
             "0",
-            "RA",
-            "Réda Amrani",
-            "01h00 · 3 couverts · Grande salle",
+            "CL",
+            "Couple Lambert",
+            "13h30 · 2 couverts · Terrasse · LYFE",
             "Visites",
             "0",
-            "AB",
-            "Adil Berrechid",
-            "01h00 · 4 couverts · Patio",
+            "KN",
+            "Khalid Naciri",
+            "14h00 · 4 couverts · Patio · LYFE",
             "Visites",
             "0",
-            "FB",
-            "Famille Berrada",
-            "01h05 · 4 couverts · Walk-in",
-            "Visites",
-            "3",
-            "SL",
-            "Sofia Lahlou",
-            "01h13 · 3 couverts · LYFE",
-            "Visites",
-            "0",
-            "CR",
-            "Couple Renaud",
-            "01h19 · 2 couverts · LYFE",
+            "GA",
+            "Groupe Atlas",
+            "14h00 · 4 couverts · Grande salle · Téléphone",
             "Visites",
             "0",
             "SB",
             "Salma Bennani",
-            "01h30 · 4 couverts · Patio · LYFE",
+            "14h30 · 4 couverts · Patio · LYFE",
             "Anniversaire, dessert avec bougie",
-            "Acompte",
-            "400 MAD",
+            "Visites",
+            "6",
             "GK",
             "Groupe Karam",
-            "02h00 · 6 couverts · Grande salle · Téléphone",
+            "14h30 · 6 couverts · Grande salle · Téléphone",
             "Sans gluten pour deux couverts",
-            "Visites"
+            "Visites",
+            "2",
+            "YE",
+            "Yasmine El Alaoui",
+            "14h30 · 4 couverts · Terrasse · Instagram",
+            "Visites",
+            "1",
+            "NC",
+            "Nabil Cherkaoui",
+            "14h30 · 2 couverts · LYFE",
+            "Demande une table près de la fontaine",
+            "Visites",
+            "0",
+            "HT",
+            "Hind Tazi",
+            "14h30 · 5 couverts · Grande salle · Partenaire",
+            "Visites",
+            "9"
           ],
           "items": [
             {
-              "title": "Rachid Benjelloun",
-              "meta": "00h00 · 4 couverts · Patio · Téléphone",
-              "initials": "RB",
+              "title": "Famille Alami",
+              "meta": "12h00 · 2 couverts · Grande salle · LYFE",
+              "initials": "FA",
               "trailing": [
                 "Visites",
                 "0"
@@ -766,7 +704,7 @@
             },
             {
               "title": "Imane Sefrioui",
-              "meta": "00h00 · 2 couverts · Terrasse · Téléphone",
+              "meta": "12h00 · 2 couverts · Terrasse · Téléphone",
               "initials": "IS",
               "trailing": [
                 "Visites",
@@ -781,57 +719,9 @@
               "actions": []
             },
             {
-              "title": "Groupe Atlas",
-              "meta": "00h00 · 4 couverts · Grande salle · Téléphone",
-              "initials": "GA",
-              "trailing": [
-                "Visites",
-                "0"
-              ],
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Famille Tazi",
-              "meta": "00h00 · 6 couverts · Patio · Téléphone",
-              "initials": "FT",
-              "trailing": [
-                "Visites",
-                "0"
-              ],
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Laila Zniber",
-              "meta": "00h00 · 2 couverts · Terrasse · Téléphone",
-              "initials": "LZ",
-              "trailing": [
-                "Visites",
-                "0"
-              ],
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Sanaa Mourad",
-              "meta": "00h30 · 2 couverts · Terrasse · Walk-in",
-              "initials": "SM",
+              "title": "Rachid Benjelloun",
+              "meta": "12h30 · 4 couverts · Patio · Téléphone",
+              "initials": "RB",
               "trailing": [
                 "Visites",
                 "0"
@@ -846,7 +736,7 @@
             },
             {
               "title": "Table Ourika",
-              "meta": "00h30 · 3 couverts · Grande salle · Walk-in",
+              "meta": "12h30 · 3 couverts · Grande salle",
               "initials": "TO",
               "trailing": [
                 "Visites",
@@ -861,73 +751,9 @@
               "actions": []
             },
             {
-              "title": "Anniversaire Chraïbi",
-              "meta": "00h30 · 8 couverts · Patio · Walk-in",
-              "initials": "AC",
-              "trailing": [
-                "Visites",
-                "0"
-              ],
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Sofia Guessous",
-              "meta": "00h30 · 2 couverts · Terrasse · Walk-in",
-              "initials": "SG",
-              "trailing": [
-                "Visites",
-                "0"
-              ],
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Table Koutoubia",
-              "meta": "00h30 · 6 couverts · Grande salle · Walk-in",
-              "initials": "TK",
-              "trailing": [
-                "Visites",
-                "0"
-              ],
-              "pills": [
-                {
-                  "label": "ARRIVÉ",
-                  "tone": "violet-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Omar Idrissi",
-              "meta": "00h53 · 2 couverts · Walk-in",
-              "initials": "OI",
-              "trailing": [
-                "Visites",
-                "0"
-              ],
-              "pills": [
-                {
-                  "label": "LISTE D'ATTENTE",
-                  "tone": "ink-mute-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Groupe Ziyad",
-              "meta": "01h00 · 6 couverts · Grande salle",
-              "initials": "GZ",
+              "title": "Sanaa Mourad",
+              "meta": "13h00 · 2 couverts · Terrasse",
+              "initials": "SM",
               "trailing": [
                 "Visites",
                 "0"
@@ -942,7 +768,7 @@
             },
             {
               "title": "Mehdi Bouzoubaa",
-              "meta": "01h00 · 5 couverts · Patio",
+              "meta": "13h00 · 5 couverts · Patio · LYFE",
               "initials": "MB",
               "trailing": [
                 "Visites",
@@ -957,9 +783,9 @@
               "actions": []
             },
             {
-              "title": "Nawal Rifai",
-              "meta": "01h00 · 2 couverts · Terrasse",
-              "initials": "NR",
+              "title": "Groupe Ziyad",
+              "meta": "13h30 · 6 couverts · Grande salle · LYFE",
+              "initials": "GZ",
               "trailing": [
                 "Visites",
                 "0"
@@ -973,9 +799,9 @@
               "actions": []
             },
             {
-              "title": "Réda Amrani",
-              "meta": "01h00 · 3 couverts · Grande salle",
-              "initials": "RA",
+              "title": "Couple Lambert",
+              "meta": "13h30 · 2 couverts · Terrasse · LYFE",
+              "initials": "CL",
               "trailing": [
                 "Visites",
                 "0"
@@ -989,9 +815,9 @@
               "actions": []
             },
             {
-              "title": "Adil Berrechid",
-              "meta": "01h00 · 4 couverts · Patio",
-              "initials": "AB",
+              "title": "Khalid Naciri",
+              "meta": "14h00 · 4 couverts · Patio · LYFE",
+              "initials": "KN",
               "trailing": [
                 "Visites",
                 "0"
@@ -1005,76 +831,43 @@
               "actions": []
             },
             {
-              "title": "Famille Berrada",
-              "meta": "01h05 · 4 couverts · Walk-in",
-              "initials": "FB",
-              "trailing": [
-                "Visites",
-                "3"
-              ],
-              "pills": [
-                {
-                  "label": "LISTE D'ATTENTE",
-                  "tone": "ink-mute-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Sofia Lahlou",
-              "meta": "01h13 · 3 couverts · LYFE",
-              "initials": "SL",
+              "title": "Groupe Atlas",
+              "meta": "14h00 · 4 couverts · Grande salle · Téléphone",
+              "initials": "GA",
               "trailing": [
                 "Visites",
                 "0"
               ],
               "pills": [
                 {
-                  "label": "LISTE D'ATTENTE",
-                  "tone": "ink-mute-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Couple Renaud",
-              "meta": "01h19 · 2 couverts · LYFE",
-              "initials": "CR",
-              "trailing": [
-                "Visites",
-                "0"
-              ],
-              "pills": [
-                {
-                  "label": "LISTE D'ATTENTE",
-                  "tone": "ink-mute-12"
+                  "label": "ARRIVÉ",
+                  "tone": "violet-12"
                 }
               ],
               "actions": []
             },
             {
               "title": "Salma Bennani",
-              "meta": "01h30 · 4 couverts · Patio · LYFE",
+              "meta": "14h30 · 4 couverts · Patio · LYFE",
               "initials": "SB",
               "trailing": [
-                "Acompte",
-                "400 MAD"
+                "Visites",
+                "6"
               ],
               "pills": [
                 {
                   "label": "CONFIRMÉE",
                   "tone": "info-10"
-                },
-                {
-                  "label": "ACOMPTE PAYE",
-                  "tone": "success-10"
                 }
               ],
-              "actions": []
+              "actions": [
+                "Check-in",
+                "Absent"
+              ]
             },
             {
               "title": "Groupe Karam",
-              "meta": "02h00 · 6 couverts · Grande salle · Téléphone",
+              "meta": "14h30 · 6 couverts · Grande salle · Téléphone",
               "initials": "GK",
               "trailing": [
                 "Visites",
@@ -1086,11 +879,14 @@
                   "tone": "info-10"
                 }
               ],
-              "actions": []
+              "actions": [
+                "Check-in",
+                "Absent"
+              ]
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "02h00 · 4 couverts · Terrasse · Instagram",
+              "meta": "14h30 · 4 couverts · Terrasse · Instagram",
               "initials": "YE",
               "trailing": [
                 "Visites",
@@ -1106,11 +902,14 @@
                   "tone": "warning-12"
                 }
               ],
-              "actions": []
+              "actions": [
+                "Check-in",
+                "Absent"
+              ]
             },
             {
               "title": "Nabil Cherkaoui",
-              "meta": "02h30 · 2 couverts · LYFE",
+              "meta": "14h30 · 2 couverts · LYFE",
               "initials": "NC",
               "trailing": [
                 "Visites",
@@ -1122,15 +921,19 @@
                   "tone": "warning-12"
                 }
               ],
-              "actions": []
+              "actions": [
+                "Accepter",
+                "Refuser",
+                "Absent"
+              ]
             },
             {
               "title": "Hind Tazi",
-              "meta": "03h00 · 5 couverts · Grande salle · Partenaire",
+              "meta": "14h30 · 5 couverts · Grande salle · Partenaire",
               "initials": "HT",
               "trailing": [
-                "Acompte",
-                "500 MAD"
+                "Visites",
+                "9"
               ],
               "pills": [
                 {
@@ -1140,13 +943,12 @@
                 {
                   "label": "Habitué",
                   "tone": "violet-12"
-                },
-                {
-                  "label": "ACOMPTE DEMANDE",
-                  "tone": "warning-12"
                 }
               ],
-              "actions": []
+              "actions": [
+                "Check-in",
+                "Absent"
+              ]
             }
           ]
         }
@@ -1154,22 +956,22 @@
       "surfaces": [
         {
           "name": "Détail réservation",
-          "title": "Rachid Benjelloun",
+          "title": "Famille Alami",
           "lines": [
-            "Rachid Benjelloun",
-            "00h00 · 4 couverts · Téléphone",
+            "Famille Alami",
+            "12h00 · 2 couverts · LYFE",
             "La réservation",
             "Heure",
-            "00h00",
+            "12h00",
             "Personnes",
-            "4",
+            "2",
             "Espace",
-            "Patio",
+            "Grande salle",
             "Canal",
-            "Téléphone",
+            "LYFE",
             "Le client",
             "Téléphone",
-            "+212 610137911",
+            "+212 610000000",
             "Visites",
             "0",
             "Risque d'absence",
@@ -1184,6 +986,36 @@
             "Rappel SMS"
           ],
           "width": 460
+        },
+        {
+          "name": "Refuser",
+          "title": "Refuser la demande",
+          "lines": [
+            "Refuser la demande",
+            "Nabil Cherkaoui sera prévenu dans l'application.",
+            "Motif du refus",
+            "Complet sur ce créneau",
+            "Groupe trop nombreux",
+            "Hors service",
+            "Fermeture exceptionnelle",
+            "Doublon",
+            "Autre",
+            "Précision (facultatif)",
+            "Annuler",
+            "Refuser la demande"
+          ],
+          "pills": [],
+          "buttons": [
+            "Complet sur ce créneau",
+            "Groupe trop nombreux",
+            "Hors service",
+            "Fermeture exceptionnelle",
+            "Doublon",
+            "Autre",
+            "Annuler",
+            "Refuser la demande"
+          ],
+          "width": 448
         }
       ]
     },
@@ -1258,25 +1090,23 @@
               "Pour un client qui a réservé par téléphone et n'a pas de code.",
               "Nom du client",
               "Salma Bennani",
-              "Acompte 400 MAD",
-              "01h30 · 4 couverts · Patio",
+              "14h30 · 4 couverts · Patio",
               "Anniversaire, dessert avec bougie",
               "Confirmer",
               "Groupe Karam",
-              "02h00 · 6 couverts · Grande salle",
+              "14h30 · 6 couverts · Grande salle",
               "Sans gluten pour deux couverts",
               "Confirmer",
               "Yasmine El Alaoui",
-              "02h00 · 4 couverts · Terrasse",
+              "14h30 · 4 couverts · Terrasse",
               "Confirmer",
               "Nabil Cherkaoui",
-              "02h30 · 2 couverts",
+              "14h30 · 2 couverts",
               "Demande une table près de la fontaine",
               "Confirmer",
               "Hind Tazi",
               "Habitué",
-              "Acompte 500 MAD",
-              "03h00 · 5 couverts · Grande salle",
+              "14h30 · 5 couverts · Grande salle",
               "Confirmer"
             ],
             "fields": [
@@ -1293,7 +1123,7 @@
     },
     "/restaurant/clients": {
       "label": "Liste clients",
-      "purpose": "La base, alimentée par les réservations, les walk-ins et les installations depuis la liste d'attente.",
+      "purpose": "Base alimentée automatiquement par les réservations — aucune saisie manuelle.",
       "status": "built",
       "gap": null,
       "dependsOn": null,
@@ -1317,12 +1147,9 @@
             "Clients fidèles",
             "10",
             "8 visites ou plus",
-            "Chiffre cumulé",
-            "16 960 MAD",
-            "Transactions Lyfe Pay rattachées à un client.",
             "À risque d'absence",
             "3",
-            "Demander un acompte à la prochaine réservation"
+            "Demander une reconfirmation avant le service"
           ],
           "tiles": [
             {
@@ -1342,18 +1169,10 @@
               "pills": []
             },
             {
-              "label": "Chiffre cumulé",
-              "value": "16 960 MAD",
-              "meta": [
-                "Transactions Lyfe Pay rattachées à un client."
-              ],
-              "pills": []
-            },
-            {
               "label": "À risque d'absence",
               "value": "3",
               "meta": [
-                "Demander un acompte à la prochaine réservation"
+                "Demander une reconfirmation avant le service"
               ],
               "pills": []
             }
@@ -1362,7 +1181,7 @@
         {
           "kind": "list",
           "heading": "Base clients",
-          "subheading": "1 visite · dernière le 21 sept. 2026 · +212 667 57 57 57",
+          "subheading": "1 visite · dernière le 24 sept. 2026 · +212 667 57 57 57",
           "actions": [
             "Exporter la sélection"
           ],
@@ -1400,7 +1219,6 @@
             "Base clients",
             "Dernière visite",
             "Nombre de visites",
-            "Dépense moyenne",
             "Risque d'absence",
             "Nom",
             "60",
@@ -1412,152 +1230,136 @@
             "0",
             "LE",
             "Lina El Amrani",
-            "Nouveau",
-            "1 visite · dernière le 21 sept. 2026 · +212 667 57 57 57",
+            "1 visite · dernière le 24 sept. 2026 · +212 667 57 57 57",
             "Cuisine japonaise",
             "MB",
             "Mehdi Benslimane",
-            "Nouveau",
-            "4 visites · dernière le 19 sept. 2026 · +212 664 24 24 24",
+            "4 visites · dernière le 22 sept. 2026 · +212 664 24 24 24",
             "Brunch · Cuisine marocaine",
             "LM",
             "Leïla Mansouri",
-            "Nouveau",
             "HABITUÉ",
             "VIP",
             "Sans démarchage",
-            "14 visites · dernière le 17 sept. 2026 · +212 664 51 12 87",
+            "14 visites · dernière le 20 sept. 2026 · +212 664 51 12 87",
             "Terrasse · Végétarienne",
-            "Dépensé",
-            "3 378 MAD",
             "TR",
             "Thomas Renaud",
-            "Nouveau",
             "PRESSE",
-            "2 visites · dernière le 16 sept. 2026 · +33 6 12 44 90 21",
+            "2 visites · dernière le 19 sept. 2026 · +33 6 12 44 90 21",
             "YT",
             "Youssef Tahiri",
-            "Nouveau",
-            "6 visites · dernière le 14 sept. 2026 · +212 668 38 38 38",
+            "6 visites · dernière le 17 sept. 2026 · +212 668 38 38 38",
             "Cuisine marocaine",
             "RB",
             "Reda Benslimane",
-            "Nouveau",
-            "3 visites · dernière le 14 sept. 2026 · +212 664 44 44 44",
+            "3 visites · dernière le 17 sept. 2026 · +212 664 44 44 44",
             "Brunch",
             "HT",
             "Hind Tazi",
-            "Nouveau",
             "ALLERGIE",
             "HABITUÉ",
-            "9 visites · dernière le 12 sept. 2026 · +212 660 15 62 40",
+            "9 visites · dernière le 15 sept. 2026 · +212 660 15 62 40",
             "Allergie fruits de mer · Anniversaire en mai",
-            "Dépensé",
-            "3 351 MAD",
             "ME",
             "Meryem El Amrani",
-            "Nouveau",
-            "3 visites · dernière le 11 sept. 2026 · +212 661 21 21 21",
+            "3 visites · dernière le 14 sept. 2026 · +212 661 21 21 21",
             "Cuisine japonaise · Cuisine marocaine",
             "AT",
             "Adam Tahiri",
-            "Nouveau",
             "Sans démarchage",
-            "8 visites · dernière le 11 sept. 2026 · +212 666 46 46 46",
+            "8 visites · dernière le 14 sept. 2026 · +212 666 46 46 46",
             "Afterwork",
             "NE",
             "Nawal El Amrani",
-            "Nouveau",
-            "8 visites · dernière le 10 sept. 2026 · +212 669 49 49 49",
+            "8 visites · dernière le 13 sept. 2026 · +212 669 49 49 49",
             "Cuisine japonaise · Festivals",
             "RB",
             "Reda Benslimane",
-            "Nouveau",
-            "6 visites · dernière le 6 sept. 2026 · +212 660 20 20 20",
+            "6 visites · dernière le 9 sept. 2026 · +212 660 20 20 20",
             "Festivals",
             "WB",
             "Walid Benslimane",
-            "Nouveau",
-            "6 visites · dernière le 6 sept. 2026 · +212 666 56 56 56",
+            "6 visites · dernière le 9 sept. 2026 · +212 666 56 56 56",
             "Afterwork · Brunch · Cuisine marocaine",
             "AB",
             "Amina Bouzid",
-            "Nouveau",
             "HABITUÉ",
             "GROS PANIER",
-            "11 visites · dernière le 5 sept. 2026 · +212 661 88 03 45",
+            "11 visites · dernière le 8 sept. 2026 · +212 661 88 03 45",
             "Sans alcool",
-            "Dépensé",
-            "3 324 MAD",
             "KT",
             "Karim Tahiri",
-            "Nouveau",
-            "5 visites · dernière le 3 sept. 2026 · +212 668 18 18 18",
+            "5 visites · dernière le 6 sept. 2026 · +212 668 18 18 18",
             "Cuisine italienne · Cuisine marocaine · Festivals",
             "SB",
             "Salma Bennani",
-            "Nouveau",
             "HABITUÉ",
             "VIP",
             "Sans démarchage",
-            "6 visites · dernière le 31 août 2026 · +212 661 20 44 18",
+            "6 visites · dernière le 3 sept. 2026 · +212 661 20 44 18",
             "Sans porc · Table au patio",
-            "Dépensé",
-            "3 610 MAD",
             "IB",
             "Imane Belkadi",
-            "Nouveau",
-            "7 visites · dernière le 30 août 2026 · +212 669 39 39 39",
+            "7 visites · dernière le 2 sept. 2026 · +212 669 39 39 39",
             "Concerts",
             "SE",
             "Soukaina El Amrani",
-            "Nouveau",
-            "1 visite · dernière le 27 août 2026 · +212 667 17 17 17",
+            "1 visite · dernière le 30 août 2026 · +212 667 17 17 17",
             "Afterwork",
             "AT",
             "Anas Tahiri",
-            "Nouveau"
+            "2 visites · dernière le 30 août 2026 · +212 664 34 34 34",
+            "DJ sets",
+            "NB",
+            "Nabil Benslimane",
+            "4 visites · dernière le 30 août 2026 · +212 662 52 52 52",
+            "Cuisine japonaise · Festivals",
+            "SL",
+            "Sofia Lahlou",
+            "À RISQUE",
+            "5 visites · dernière le 28 août 2026 · +212 666 70 15 29",
+            "RB",
+            "Rim Belkadi",
+            "6 visites · dernière le 28 août 2026 · +212 667 27 27 27",
+            "Cuisine marocaine",
+            "SE",
+            "Soukaina El Amrani",
+            "5 visites · dernière le 28 août 2026 · +212 661 41 41 41",
+            "Brunch · Expositions",
+            "FB",
+            "Famille Berrada",
+            "3 visites · dernière le 22 août 2026 · +212 668 30 90 55",
+            "Chaise haute",
+            "OB",
+            "Othmane Benslimane",
+            "5 visites · dernière le 21 août 2026 · +212 666 16 16 16",
+            "Rooftop",
+            "SB"
           ],
           "items": [
             {
               "title": "Lina El Amrani",
-              "meta": "1 visite · dernière le 21 sept. 2026 · +212 667 57 57 57",
+              "meta": "1 visite · dernière le 24 sept. 2026 · +212 667 57 57 57",
               "initials": "LE",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Mehdi Benslimane",
-              "meta": "4 visites · dernière le 19 sept. 2026 · +212 664 24 24 24",
+              "meta": "4 visites · dernière le 22 sept. 2026 · +212 664 24 24 24",
               "initials": "MB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Leïla Mansouri",
-              "meta": "14 visites · dernière le 17 sept. 2026 · +212 664 51 12 87",
+              "meta": "14 visites · dernière le 20 sept. 2026 · +212 664 51 12 87",
               "initials": "LM",
-              "trailing": [
-                "Dépensé",
-                "3 378 MAD"
-              ],
+              "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "HABITUÉ",
                   "tone": "violet-12"
@@ -1575,14 +1377,10 @@
             },
             {
               "title": "Thomas Renaud",
-              "meta": "2 visites · dernière le 16 sept. 2026 · +33 6 12 44 90 21",
+              "meta": "2 visites · dernière le 19 sept. 2026 · +33 6 12 44 90 21",
               "initials": "TR",
               "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "PRESSE",
                   "tone": "violet-12"
@@ -1592,43 +1390,26 @@
             },
             {
               "title": "Youssef Tahiri",
-              "meta": "6 visites · dernière le 14 sept. 2026 · +212 668 38 38 38",
+              "meta": "6 visites · dernière le 17 sept. 2026 · +212 668 38 38 38",
               "initials": "YT",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Reda Benslimane",
-              "meta": "3 visites · dernière le 14 sept. 2026 · +212 664 44 44 44",
+              "meta": "3 visites · dernière le 17 sept. 2026 · +212 664 44 44 44",
               "initials": "RB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Hind Tazi",
-              "meta": "9 visites · dernière le 12 sept. 2026 · +212 660 15 62 40",
+              "meta": "9 visites · dernière le 15 sept. 2026 · +212 660 15 62 40",
               "initials": "HT",
-              "trailing": [
-                "Dépensé",
-                "3 351 MAD"
-              ],
+              "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "ALLERGIE",
                   "tone": "violet-12"
@@ -1642,27 +1423,18 @@
             },
             {
               "title": "Meryem El Amrani",
-              "meta": "3 visites · dernière le 11 sept. 2026 · +212 661 21 21 21",
+              "meta": "3 visites · dernière le 14 sept. 2026 · +212 661 21 21 21",
               "initials": "ME",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Adam Tahiri",
-              "meta": "8 visites · dernière le 11 sept. 2026 · +212 666 46 46 46",
+              "meta": "8 visites · dernière le 14 sept. 2026 · +212 666 46 46 46",
               "initials": "AT",
               "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "Sans démarchage",
                   "tone": "ink-mute-12"
@@ -1672,56 +1444,34 @@
             },
             {
               "title": "Nawal El Amrani",
-              "meta": "8 visites · dernière le 10 sept. 2026 · +212 669 49 49 49",
+              "meta": "8 visites · dernière le 13 sept. 2026 · +212 669 49 49 49",
               "initials": "NE",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Reda Benslimane",
-              "meta": "6 visites · dernière le 6 sept. 2026 · +212 660 20 20 20",
+              "meta": "6 visites · dernière le 9 sept. 2026 · +212 660 20 20 20",
               "initials": "RB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Walid Benslimane",
-              "meta": "6 visites · dernière le 6 sept. 2026 · +212 666 56 56 56",
+              "meta": "6 visites · dernière le 9 sept. 2026 · +212 666 56 56 56",
               "initials": "WB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Amina Bouzid",
-              "meta": "11 visites · dernière le 5 sept. 2026 · +212 661 88 03 45",
+              "meta": "11 visites · dernière le 8 sept. 2026 · +212 661 88 03 45",
               "initials": "AB",
-              "trailing": [
-                "Dépensé",
-                "3 324 MAD"
-              ],
+              "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "HABITUÉ",
                   "tone": "violet-12"
@@ -1735,30 +1485,18 @@
             },
             {
               "title": "Karim Tahiri",
-              "meta": "5 visites · dernière le 3 sept. 2026 · +212 668 18 18 18",
+              "meta": "5 visites · dernière le 6 sept. 2026 · +212 668 18 18 18",
               "initials": "KT",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Salma Bennani",
-              "meta": "6 visites · dernière le 31 août 2026 · +212 661 20 44 18",
+              "meta": "6 visites · dernière le 3 sept. 2026 · +212 661 20 44 18",
               "initials": "SB",
-              "trailing": [
-                "Dépensé",
-                "3 610 MAD"
-              ],
+              "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "HABITUÉ",
                   "tone": "violet-12"
@@ -1776,66 +1514,42 @@
             },
             {
               "title": "Imane Belkadi",
-              "meta": "7 visites · dernière le 30 août 2026 · +212 669 39 39 39",
+              "meta": "7 visites · dernière le 2 sept. 2026 · +212 669 39 39 39",
               "initials": "IB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Soukaina El Amrani",
-              "meta": "1 visite · dernière le 27 août 2026 · +212 667 17 17 17",
+              "meta": "1 visite · dernière le 30 août 2026 · +212 667 17 17 17",
               "initials": "SE",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Anas Tahiri",
-              "meta": "2 visites · dernière le 27 août 2026 · +212 664 34 34 34",
+              "meta": "2 visites · dernière le 30 août 2026 · +212 664 34 34 34",
               "initials": "AT",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Nabil Benslimane",
-              "meta": "4 visites · dernière le 27 août 2026 · +212 662 52 52 52",
+              "meta": "4 visites · dernière le 30 août 2026 · +212 662 52 52 52",
               "initials": "NB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Sofia Lahlou",
-              "meta": "5 visites · dernière le 25 août 2026 · +212 666 70 15 29",
+              "meta": "5 visites · dernière le 28 août 2026 · +212 666 70 15 29",
               "initials": "SL",
               "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "À RISQUE",
                   "tone": "violet-12"
@@ -1849,105 +1563,66 @@
             },
             {
               "title": "Rim Belkadi",
-              "meta": "6 visites · dernière le 25 août 2026 · +212 667 27 27 27",
+              "meta": "6 visites · dernière le 28 août 2026 · +212 667 27 27 27",
               "initials": "RB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Soukaina El Amrani",
-              "meta": "5 visites · dernière le 25 août 2026 · +212 661 41 41 41",
+              "meta": "5 visites · dernière le 28 août 2026 · +212 661 41 41 41",
               "initials": "SE",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Famille Berrada",
-              "meta": "3 visites · dernière le 19 août 2026 · +212 668 30 90 55",
+              "meta": "3 visites · dernière le 22 août 2026 · +212 668 30 90 55",
               "initials": "FB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Othmane Benslimane",
-              "meta": "5 visites · dernière le 18 août 2026 · +212 666 16 16 16",
+              "meta": "5 visites · dernière le 21 août 2026 · +212 666 16 16 16",
               "initials": "OB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Salma Belkadi",
-              "meta": "8 visites · dernière le 18 août 2026 · +212 669 19 19 19",
+              "meta": "8 visites · dernière le 21 août 2026 · +212 669 19 19 19",
               "initials": "SB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Nabil Benslimane",
-              "meta": "8 visites · dernière le 13 août 2026 · +212 668 28 28 28",
+              "meta": "8 visites · dernière le 16 août 2026 · +212 668 28 28 28",
               "initials": "NB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Hajar Belkadi",
-              "meta": "7 visites · dernière le 13 août 2026 · +212 661 31 31 31",
+              "meta": "7 visites · dernière le 16 août 2026 · +212 661 31 31 31",
               "initials": "HB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Adam Tahiri",
-              "meta": "8 visites · dernière le 11 août 2026 · +212 662 22 22 22",
+              "meta": "8 visites · dernière le 14 août 2026 · +212 662 22 22 22",
               "initials": "AT",
               "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "Sans démarchage",
                   "tone": "ink-mute-12"
@@ -1957,40 +1632,26 @@
             },
             {
               "title": "Salma Belkadi",
-              "meta": "7 visites · dernière le 10 août 2026 · +212 663 43 43 43",
+              "meta": "7 visites · dernière le 13 août 2026 · +212 663 43 43 43",
               "initials": "SB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Dounia El Amrani",
-              "meta": "6 visites · dernière le 9 août 2026 · +212 667 37 37 37",
+              "meta": "6 visites · dernière le 12 août 2026 · +212 667 37 37 37",
               "initials": "DE",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Dounia El Amrani",
-              "meta": "5 visites · dernière le 7 août 2026 · +212 663 13 13 13",
+              "meta": "5 visites · dernière le 10 août 2026 · +212 663 13 13 13",
               "initials": "DE",
               "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "Sans démarchage",
                   "tone": "ink-mute-12"
@@ -2000,17 +1661,10 @@
             },
             {
               "title": "Groupe Karam",
-              "meta": "2 visites · dernière le 4 août 2026 · +212 662 88 10 03",
+              "meta": "2 visites · dernière le 7 août 2026 · +212 662 88 10 03",
               "initials": "GK",
-              "trailing": [
-                "Dépensé",
-                "3 297 MAD"
-              ],
+              "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "ALLERGIE",
                   "tone": "violet-12"
@@ -2024,53 +1678,34 @@
             },
             {
               "title": "Ghita El Amrani",
-              "meta": "6 visites · dernière le 29 juil. 2026 · +212 663 53 53 53",
+              "meta": "6 visites · dernière le 1 août 2026 · +212 663 53 53 53",
               "initials": "GE",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Karim Hakimi",
-              "meta": "4 visites · dernière le 23 juil. 2026 · +212 669 22 41 06",
+              "meta": "4 visites · dernière le 26 juil. 2026 · +212 669 22 41 06",
               "initials": "KH",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Aya Belkadi",
-              "meta": "8 visites · dernière le 19 juil. 2026 · +212 663 23 23 23",
+              "meta": "8 visites · dernière le 22 juil. 2026 · +212 663 23 23 23",
               "initials": "AB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "1 visite · dernière le 9 juil. 2026 · +212 663 41 77 92",
+              "meta": "1 visite · dernière le 12 juil. 2026 · +212 663 41 77 92",
               "initials": "YE",
               "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "INACTIF",
                   "tone": "violet-12"
@@ -2088,184 +1723,114 @@
             },
             {
               "title": "Ismail Benslimane",
-              "meta": "6 visites · dernière le 8 juil. 2026 · +212 666 36 36 36",
+              "meta": "6 visites · dernière le 11 juil. 2026 · +212 666 36 36 36",
               "initials": "IB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Rim Belkadi",
-              "meta": "3 visites · dernière le 2 juil. 2026 · +212 661 51 51 51",
+              "meta": "3 visites · dernière le 5 juil. 2026 · +212 661 51 51 51",
               "initials": "RB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Youssef Tahiri",
-              "meta": "3 visites · dernière le 30 juin 2026 · +212 664 14 14 14",
+              "meta": "3 visites · dernière le 3 juil. 2026 · +212 664 14 14 14",
               "initials": "YT",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Imane Belkadi",
-              "meta": "7 visites · dernière le 21 juin 2026 · +212 665 15 15 15",
+              "meta": "7 visites · dernière le 24 juin 2026 · +212 665 15 15 15",
               "initials": "IB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Ismail Benslimane",
-              "meta": "1 visite · dernière le 14 juin 2026 · +212 662 12 12 12",
+              "meta": "1 visite · dernière le 17 juin 2026 · +212 662 12 12 12",
               "initials": "IB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Ghita El Amrani",
-              "meta": "1 visite · dernière le 13 juin 2026 · +212 669 29 29 29",
+              "meta": "1 visite · dernière le 16 juin 2026 · +212 669 29 29 29",
               "initials": "GE",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Aya Belkadi",
-              "meta": "8 visites · dernière le 9 juin 2026 · +212 667 47 47 47",
+              "meta": "8 visites · dernière le 12 juin 2026 · +212 667 47 47 47",
               "initials": "AB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Nawal El Amrani",
-              "meta": "3 visites · dernière le 8 juin 2026 · +212 665 25 25 25",
+              "meta": "3 visites · dernière le 11 juin 2026 · +212 665 25 25 25",
               "initials": "NE",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Sara Belkadi",
-              "meta": "7 visites · dernière le 6 juin 2026 · +212 661 11 11 11",
+              "meta": "7 visites · dernière le 9 juin 2026 · +212 661 11 11 11",
               "initials": "SB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Lina El Amrani",
-              "meta": "5 visites · dernière le 6 juin 2026 · +212 663 33 33 33",
+              "meta": "5 visites · dernière le 9 juin 2026 · +212 663 33 33 33",
               "initials": "LE",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Walid Benslimane",
-              "meta": "3 visites · dernière le 31 mai 2026 · +212 662 32 32 32",
+              "meta": "3 visites · dernière le 3 juin 2026 · +212 662 32 32 32",
               "initials": "WB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Hajar Belkadi",
-              "meta": "1 visite · dernière le 28 mai 2026 · +212 665 55 55 55",
+              "meta": "1 visite · dernière le 31 mai 2026 · +212 665 55 55 55",
               "initials": "HB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Meryem El Amrani",
-              "meta": "7 visites · dernière le 27 mai 2026 · +212 665 45 45 45",
+              "meta": "7 visites · dernière le 30 mai 2026 · +212 665 45 45 45",
               "initials": "ME",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
               "title": "Anas Tahiri",
-              "meta": "1 visite · dernière le 26 mai 2026 · +212 660 10 10 10",
+              "meta": "1 visite · dernière le 29 mai 2026 · +212 660 10 10 10",
               "initials": "AT",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
@@ -2274,10 +1839,6 @@
               "initials": "NC",
               "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "NOUVEAU",
                   "tone": "violet-12"
@@ -2292,10 +1853,6 @@
               "trailing": null,
               "pills": [
                 {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
-                {
                   "label": "NOUVEAU",
                   "tone": "violet-12"
                 }
@@ -2307,12 +1864,7 @@
               "meta": "Aucune visite · +212 666 26 26 26",
               "initials": "AT",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
@@ -2321,10 +1873,6 @@
               "initials": "ZT",
               "trailing": null,
               "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                },
                 {
                   "label": "Sans démarchage",
                   "tone": "ink-mute-12"
@@ -2337,12 +1885,7 @@
               "meta": "Aucune visite · +212 665 35 35 35",
               "initials": "SB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
@@ -2350,12 +1893,7 @@
               "meta": "Aucune visite · +212 660 40 40 40",
               "initials": "OB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
@@ -2363,12 +1901,7 @@
               "meta": "Aucune visite · +212 662 42 42 42",
               "initials": "KT",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
@@ -2376,12 +1909,7 @@
               "meta": "Aucune visite · +212 668 48 48 48",
               "initials": "MB",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
@@ -2389,12 +1917,7 @@
               "meta": "Aucune visite · +212 660 50 50 50",
               "initials": "AT",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             },
             {
@@ -2402,12 +1925,7 @@
               "meta": "Aucune visite · +212 664 54 54 54",
               "initials": "ZT",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "Nouveau",
-                  "tone": "ink-mute-12"
-                }
-              ],
+              "pills": [],
               "actions": []
             }
           ]
@@ -2454,8 +1972,7 @@
           "title": "Lina El Amrani",
           "lines": [
             "Lina El Amrani",
-            "Client depuis le 7 mars 2026 · dernière visite le 21 sept. 2026",
-            "Nouveau",
+            "Client depuis le 10 mars 2026 · dernière visite le 24 sept. 2026",
             "Contact",
             "Téléphone",
             "+212 667 57 57 57",
@@ -2467,9 +1984,7 @@
             "Visites",
             "1",
             "Dernière visite",
-            "21 sept. 2026",
-            "Palier fidélité",
-            "Nouveau",
+            "24 sept. 2026",
             "Absences",
             "No-shows enregistrés",
             "0",
@@ -2478,9 +1993,7 @@
             "Préférences et demandes",
             "Cuisine japonaise"
           ],
-          "pills": [
-            "Nouveau"
-          ],
+          "pills": [],
           "buttons": [
             "Appeler",
             "Ouvrir la fiche"
@@ -2498,8 +2011,8 @@
       "roles": null,
       "workspace": "venue",
       "title": "Salma Bennani Habitué · VIP",
-      "eyebrow": "Nouveau",
-      "subtitle": "Client depuis le mar. 23 juin · dernière visite le lun. 31 août",
+      "eyebrow": "Visites",
+      "subtitle": "Client depuis le ven. 26 juin · dernière visite le jeu. 3 sept.",
       "venue": "YA",
       "blocks": [
         {
@@ -2514,16 +2027,14 @@
           ],
           "facets": [],
           "texts": [
-            "Nouveau",
             "Habitué · VIP",
-            "Client depuis le mar. 23 juin · dernière visite le lun. 31 août"
+            "Client depuis le ven. 26 juin · dernière visite le jeu. 3 sept."
           ],
           "rows": [
             {
               "lines": [
-                "Nouveau",
                 "Habitué · VIP",
-                "Client depuis le mar. 23 juin · dernière visite le lun. 31 août"
+                "Client depuis le ven. 26 juin · dernière visite le jeu. 3 sept."
               ],
               "pills": [],
               "actions": []
@@ -2535,15 +2046,15 @@
           "left": {
             "kind": "prose",
             "heading": null,
-            "subheading": "Dernière le lun. 31 août",
+            "subheading": "Dernière le jeu. 3 sept.",
             "actions": [],
             "facets": [],
             "texts": [
               "Visites",
               "6",
-              "Dernière le lun. 31 août"
+              "Dernière le jeu. 3 sept."
             ],
-            "body": "Visites6Dernière le lun. 31 août",
+            "body": "Visites6Dernière le jeu. 3 sept.",
             "pills": []
           },
           "right": {
@@ -2573,7 +2084,7 @@
             "facets": [
               {
                 "label": "Tout",
-                "count": "7"
+                "count": "6"
               },
               {
                 "label": "Absences",
@@ -2587,31 +2098,29 @@
               "Table au patio",
               "Reportée automatiquement sur chaque réservation",
               "Réservations à venir",
-              "Rien de prévu",
-              "Ce client n'a aucune réservation à venir.",
+              "SB",
+              "jeudi 24 septembre à 14h30",
+              "4 couverts · Anniversaire, dessert avec bougie",
               "Historique",
-              "7",
+              "6",
               "0",
               "SB",
-              "lundi 21 septembre à 01h30",
-              "4 couverts · Anniversaire, dessert avec bougie · acompte 400 MAD",
-              "SB",
-              "lundi 31 août à 21h00",
+              "jeudi 3 septembre à 21h00",
               "2 couverts · sans note",
               "SB",
-              "lundi 17 août à 13h30",
+              "jeudi 20 août à 13h30",
               "3 couverts · sans note",
               "SB",
-              "lundi 3 août à 21h30",
+              "jeudi 6 août à 21h30",
               "4 couverts · sans note",
               "SB",
-              "mardi 21 juillet à 13h00",
+              "vendredi 24 juillet à 13h00",
               "5 couverts · sans note",
               "SB",
-              "mardi 7 juillet à 21h30",
+              "vendredi 10 juillet à 21h30",
               "2 couverts · sans note",
               "SB",
-              "mardi 23 juin à 13h30",
+              "vendredi 26 juin à 13h30",
               "3 couverts · sans note"
             ],
             "items": [
@@ -2632,8 +2141,8 @@
                 "actions": []
               },
               {
-                "title": "lundi 21 septembre à 01h30",
-                "meta": "4 couverts · Anniversaire, dessert avec bougie · acompte 400 MAD",
+                "title": "jeudi 24 septembre à 14h30",
+                "meta": "4 couverts · Anniversaire, dessert avec bougie",
                 "initials": "SB",
                 "trailing": null,
                 "pills": [
@@ -2645,7 +2154,7 @@
                 "actions": []
               },
               {
-                "title": "lundi 31 août à 21h00",
+                "title": "jeudi 3 septembre à 21h00",
                 "meta": "2 couverts · sans note",
                 "initials": "SB",
                 "trailing": null,
@@ -2658,7 +2167,7 @@
                 "actions": []
               },
               {
-                "title": "lundi 17 août à 13h30",
+                "title": "jeudi 20 août à 13h30",
                 "meta": "3 couverts · sans note",
                 "initials": "SB",
                 "trailing": null,
@@ -2671,7 +2180,7 @@
                 "actions": []
               },
               {
-                "title": "lundi 3 août à 21h30",
+                "title": "jeudi 6 août à 21h30",
                 "meta": "4 couverts · sans note",
                 "initials": "SB",
                 "trailing": null,
@@ -2684,7 +2193,7 @@
                 "actions": []
               },
               {
-                "title": "mardi 21 juillet à 13h00",
+                "title": "vendredi 24 juillet à 13h00",
                 "meta": "5 couverts · sans note",
                 "initials": "SB",
                 "trailing": null,
@@ -2697,7 +2206,7 @@
                 "actions": []
               },
               {
-                "title": "mardi 7 juillet à 21h30",
+                "title": "vendredi 10 juillet à 21h30",
                 "meta": "2 couverts · sans note",
                 "initials": "SB",
                 "trailing": null,
@@ -2710,7 +2219,7 @@
                 "actions": []
               },
               {
-                "title": "mardi 23 juin à 13h30",
+                "title": "vendredi 26 juin à 13h30",
                 "meta": "3 couverts · sans note",
                 "initials": "SB",
                 "trailing": null,
@@ -3355,35 +2864,35 @@
         {
           "kind": "list",
           "heading": "Derniers avis",
-          "subheading": "20 sept. · 22h27 · LYFE",
+          "subheading": "24 sept. · 11h02 · LYFE",
           "actions": [],
           "facets": [],
           "texts": [
             "Derniers avis",
             "LM",
             "Leïla M.",
-            "20 sept. · 22h27 · LYFE",
+            "24 sept. · 11h02 · LYFE",
             "Le patio au coucher du soleil, rien à redire. Service attentif sans être pesant.",
             "TR",
             "Thomas R.",
             "Sans réponse",
-            "20 sept. · 18h27 · GOOGLE",
+            "24 sept. · 07h02 · GOOGLE",
             "Cuisine excellente. Vingt minutes d'attente malgré la réservation à 21h.",
             "AB",
             "Amina B.",
             "Sans réponse",
-            "20 sept. · 00h27 · LYFE",
+            "23 sept. · 13h02 · LYFE",
             "La pastilla vaut le détour à elle seule.",
             "KH",
             "Karim H.",
             "Sans réponse",
-            "19 sept. · 06h07 · GOOGLE",
+            "22 sept. · 18h42 · GOOGLE",
             "Table en terrasse bruyante, on s'entendait à peine."
           ],
           "items": [
             {
               "title": "Leïla M.",
-              "meta": "20 sept. · 22h27 · LYFE",
+              "meta": "24 sept. · 11h02 · LYFE",
               "initials": "LM",
               "trailing": null,
               "pills": [
@@ -3396,7 +2905,7 @@
             },
             {
               "title": "Thomas R.",
-              "meta": "20 sept. · 18h27 · GOOGLE",
+              "meta": "24 sept. · 07h02 · GOOGLE",
               "initials": "TR",
               "trailing": null,
               "pills": [
@@ -3413,7 +2922,7 @@
             },
             {
               "title": "Amina B.",
-              "meta": "20 sept. · 00h27 · LYFE",
+              "meta": "23 sept. · 13h02 · LYFE",
               "initials": "AB",
               "trailing": null,
               "pills": [
@@ -3430,7 +2939,7 @@
             },
             {
               "title": "Karim H.",
-              "meta": "19 sept. · 06h07 · GOOGLE",
+              "meta": "22 sept. · 18h42 · GOOGLE",
               "initials": "KH",
               "trailing": null,
               "pills": [
@@ -3538,31 +3047,31 @@
           "facets": [],
           "texts": [
             "Taux de remplissage",
-            "39 %",
+            "38 %",
             "· vs période précédente",
             "Revenu estimé",
-            "2 132 878 MAD",
+            "2 067 285 MAD",
             "· vs période précédente",
             "Taux de no-show",
-            "4,0 %",
+            "3,0 %",
             "· vs période précédente"
           ],
           "tiles": [
             {
               "label": "Taux de remplissage",
-              "value": "39 %",
+              "value": "38 %",
               "meta": [],
               "pills": []
             },
             {
               "label": "Revenu estimé",
-              "value": "2 132 878 MAD",
+              "value": "2 067 285 MAD",
               "meta": [],
               "pills": []
             },
             {
               "label": "Taux de no-show",
-              "value": "4,0 %",
+              "value": "3,0 %",
               "meta": [],
               "pills": []
             }
@@ -3613,48 +3122,37 @@
         {
           "kind": "kpi-grid",
           "heading": null,
-          "subheading": "44 transactions Lyfe Pay",
+          "subheading": null,
           "actions": [],
           "facets": [],
           "texts": [
             "Couverts",
-            "2 894",
+            "2 805",
             "· vs période précédente",
             "Occupation",
-            "39 %",
+            "38 %",
             "· vs période précédente",
             "Absences",
-            "4,0 %",
-            "· vs période précédente",
-            "Encaissé",
-            "42 915 MAD",
-            "44 transactions Lyfe Pay"
+            "3,0 %",
+            "· vs période précédente"
           ],
           "tiles": [
             {
               "label": "Couverts",
-              "value": "2 894",
+              "value": "2 805",
               "meta": [],
               "pills": []
             },
             {
               "label": "Occupation",
-              "value": "39 %",
+              "value": "38 %",
               "meta": [],
               "pills": []
             },
             {
               "label": "Absences",
-              "value": "4,0 %",
+              "value": "3,0 %",
               "meta": [],
-              "pills": []
-            },
-            {
-              "label": "Encaissé",
-              "value": "42 915 MAD",
-              "meta": [
-                "44 transactions Lyfe Pay"
-              ],
               "pills": []
             }
           ]
@@ -3668,38 +3166,38 @@
           "texts": [
             "Recommandations",
             "Recommandation 1",
-            "La salle tourne à 39 % de sa capacité. Un boost met la fiche en tête du fil sur la ville.",
+            "La salle tourne à 38 % de sa capacité. Un boost met la fiche en tête du fil sur la ville.",
             "Ouvrir Visibilité"
           ],
-          "body": "RecommandationsRecommandation 1La salle tourne à 39 % de sa capacité. Un boost met la fiche en tête du fil sur la ville.Ouvrir Visibilité",
+          "body": "RecommandationsRecommandation 1La salle tourne à 38 % de sa capacité. Un boost met la fiche en tête du fil sur la ville.Ouvrir Visibilité",
           "pills": []
         },
         {
           "kind": "split",
           "left": {
             "kind": "list",
-            "heading": "Meilleurs services",
+            "heading": "Meilleures journées",
             "subheading": "125 couverts",
             "actions": [],
             "facets": [],
             "texts": [
-              "Meilleurs services",
-              "22 août",
+              "Meilleures journées",
+              "11 sept.",
               "125 couverts",
               "couverts",
               "125",
-              "12 sept.",
-              "125 couverts",
+              "29 août",
+              "124 couverts",
               "couverts",
-              "125",
-              "30 août",
-              "123 couverts",
+              "124",
+              "19 sept.",
+              "124 couverts",
               "couverts",
-              "123"
+              "124"
             ],
             "items": [
               {
-                "title": "22 août",
+                "title": "11 sept.",
                 "meta": "125 couverts",
                 "initials": null,
                 "trailing": [
@@ -3710,23 +3208,23 @@
                 "actions": []
               },
               {
-                "title": "12 sept.",
-                "meta": "125 couverts",
+                "title": "29 août",
+                "meta": "124 couverts",
                 "initials": null,
                 "trailing": [
                   "couverts",
-                  "125"
+                  "124"
                 ],
                 "pills": [],
                 "actions": []
               },
               {
-                "title": "30 août",
-                "meta": "123 couverts",
+                "title": "19 sept.",
+                "meta": "124 couverts",
                 "initials": null,
                 "trailing": [
                   "couverts",
-                  "123"
+                  "124"
                 ],
                 "pills": [],
                 "actions": []
@@ -3735,28 +3233,39 @@
           },
           "right": {
             "kind": "list",
-            "heading": "Services les plus creux",
-            "subheading": "66 couverts",
+            "heading": "Journées les plus creuses",
+            "subheading": "65 couverts",
             "actions": [],
             "facets": [],
             "texts": [
-              "Services les plus creux",
-              "31 août",
+              "Journées les plus creuses",
+              "7 sept.",
+              "65 couverts",
+              "couverts",
+              "65",
+              "3 sept.",
               "66 couverts",
               "couverts",
               "66",
-              "21 sept.",
+              "24 sept.",
               "66 couverts",
               "couverts",
-              "66",
-              "27 août",
-              "67 couverts",
-              "couverts",
-              "67"
+              "66"
             ],
             "items": [
               {
-                "title": "31 août",
+                "title": "7 sept.",
+                "meta": "65 couverts",
+                "initials": null,
+                "trailing": [
+                  "couverts",
+                  "65"
+                ],
+                "pills": [],
+                "actions": []
+              },
+              {
+                "title": "3 sept.",
                 "meta": "66 couverts",
                 "initials": null,
                 "trailing": [
@@ -3767,23 +3276,12 @@
                 "actions": []
               },
               {
-                "title": "21 sept.",
+                "title": "24 sept.",
                 "meta": "66 couverts",
                 "initials": null,
                 "trailing": [
                   "couverts",
                   "66"
-                ],
-                "pills": [],
-                "actions": []
-              },
-              {
-                "title": "27 août",
-                "meta": "67 couverts",
-                "initials": null,
-                "trailing": [
-                  "couverts",
-                  "67"
                 ],
                 "pills": [],
                 "actions": []
@@ -3997,13 +3495,13 @@
           "facets": [],
           "texts": [
             "Jours exceptionnels",
-            "sam. 3 oct.",
+            "mar. 6 oct.",
             "FERMÉ",
             "Privatisation"
           ],
           "items": [
             {
-              "title": "sam. 3 oct.",
+              "title": "mar. 6 oct.",
               "meta": "Privatisation",
               "initials": null,
               "trailing": null,
@@ -4207,69 +3705,31 @@
         {
           "kind": "list",
           "heading": "Journal de délivrance",
-          "subheading": "table_prete · lun. 21 sept.",
+          "subheading": "confirmation · jeu. 24 sept.",
           "actions": [],
           "facets": [
             {
               "label": "Tout",
-              "count": "6"
+              "count": "1"
             },
             {
               "label": "Échecs",
-              "count": "1"
+              "count": "0"
             }
           ],
           "texts": [
             "Journal de délivrance",
-            "6",
             "1",
-            "+212 667 74 21 08",
-            "SMS",
-            "DELIVRE",
-            "table_prete · lun. 21 sept.",
+            "0",
             "+212 661 20 44 18",
             "WHATSAPP",
             "LU",
-            "confirmation · dim. 20 sept.",
-            "+212 663 41 77 92",
-            "WHATSAPP",
-            "ÉCHEC",
-            "reconfirmation · dim. 20 sept.",
-            "Numéro non joignable sur WhatsApp",
-            "+212 660 15 62 40",
-            "WHATSAPP",
-            "DELIVRE",
-            "rappel_j1 · dim. 20 sept.",
-            "leila.m@gmail.com",
-            "EMAIL",
-            "LU",
-            "remerciement · sam. 19 sept.",
-            "app_user_11",
-            "PUSH",
-            "ENVOYE",
-            "avis_invitation · ven. 18 sept."
+            "confirmation · jeu. 24 sept."
           ],
           "items": [
             {
-              "title": "+212 667 74 21 08",
-              "meta": "table_prete · lun. 21 sept.",
-              "initials": null,
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "SMS",
-                  "tone": "ink-6"
-                },
-                {
-                  "label": "DELIVRE",
-                  "tone": "info-10"
-                }
-              ],
-              "actions": []
-            },
-            {
               "title": "+212 661 20 44 18",
-              "meta": "confirmation · dim. 20 sept.",
+              "meta": "confirmation · jeu. 24 sept.",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -4279,74 +3739,6 @@
                 },
                 {
                   "label": "LU",
-                  "tone": "info-10"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "+212 663 41 77 92",
-              "meta": "reconfirmation · dim. 20 sept.",
-              "initials": null,
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "WHATSAPP",
-                  "tone": "ink-6"
-                },
-                {
-                  "label": "ÉCHEC",
-                  "tone": "danger-10"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "+212 660 15 62 40",
-              "meta": "rappel_j1 · dim. 20 sept.",
-              "initials": null,
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "WHATSAPP",
-                  "tone": "ink-6"
-                },
-                {
-                  "label": "DELIVRE",
-                  "tone": "info-10"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "leila.m@gmail.com",
-              "meta": "remerciement · sam. 19 sept.",
-              "initials": null,
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "EMAIL",
-                  "tone": "ink-6"
-                },
-                {
-                  "label": "LU",
-                  "tone": "info-10"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "app_user_11",
-              "meta": "avis_invitation · ven. 18 sept.",
-              "initials": null,
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "PUSH",
-                  "tone": "ink-6"
-                },
-                {
-                  "label": "ENVOYE",
                   "tone": "info-10"
                 }
               ],
@@ -4587,7 +3979,7 @@
         {
           "kind": "kpi-grid",
           "heading": null,
-          "subheading": "Renouvellement le ven. 6 nov.",
+          "subheading": "Renouvellement le lun. 9 nov.",
           "actions": [],
           "facets": [
             {
@@ -4598,7 +3990,7 @@
           "texts": [
             "Abonnement",
             "ACTIF",
-            "Renouvellement le ven. 6 nov.",
+            "Renouvellement le lun. 9 nov.",
             "ACTIF",
             "Montant annuel",
             "14 400 MAD",
@@ -4611,7 +4003,7 @@
               "label": "Abonnement",
               "value": "ACTIF",
               "meta": [
-                "Renouvellement le ven. 6 nov."
+                "Renouvellement le lun. 9 nov."
               ],
               "pills": [
                 {
@@ -4644,7 +4036,7 @@
           "facets": [],
           "texts": [
             "Réservations",
-            "359",
+            "347",
             "Toutes celles enregistrées depuis l'ouverture du compte.",
             "Clients au fichier",
             "60",
@@ -4659,7 +4051,7 @@
           "tiles": [
             {
               "label": "Réservations",
-              "value": "359",
+              "value": "347",
               "meta": [
                 "Toutes celles enregistrées depuis l'ouverture du compte."
               ],
@@ -4704,11 +4096,11 @@
             "Montant",
             "État",
             "LYFE-2026-0182",
-            "jeu. 6 nov.",
+            "dim. 9 nov.",
             "14 400 MAD",
             "PAYÉE",
             "LYFE-2025-0611",
-            "mer. 6 nov.",
+            "sam. 9 nov.",
             "12 000 MAD",
             "PAYÉE"
           ],
@@ -4725,7 +4117,7 @@
                 "pills": []
               },
               {
-                "text": "jeu. 6 nov.",
+                "text": "dim. 9 nov.",
                 "pills": []
               },
               {
@@ -4748,7 +4140,7 @@
                 "pills": []
               },
               {
-                "text": "mer. 6 nov.",
+                "text": "sam. 9 nov.",
                 "pills": []
               },
               {
@@ -4793,11 +4185,9 @@
             "Démarrer avec LYFE",
             "Compléter la fiche, ouvrir les disponibilités, prendre la première réservation. · 8 min de lecture",
             "Gérer un service",
-            "Le carnet, la liste d'attente, le check-in, et ce que l'équipe lit au briefing. · 12 min de lecture",
+            "Le carnet du service, accepter ou refuser une demande, le check-in à la porte. · 9 min de lecture",
             "Réduire les absences",
-            "Rappels, reconfirmation, acomptes : ce qui marche, dans l'ordre. · 10 min de lecture",
-            "Configurer les acomptes",
-            "Quand demander de l'argent d'avance, et comment le capturer ou le rendre. · 7 min de lecture"
+            "Rappels et reconfirmation : ce qui marche, dans l'ordre. · 6 min de lecture"
           ],
           "items": [
             {
@@ -4810,7 +4200,7 @@
             },
             {
               "title": "Gérer un service",
-              "meta": "Le carnet, la liste d'attente, le check-in, et ce que l'équipe lit au briefing. · 12 min de lecture",
+              "meta": "Le carnet du service, accepter ou refuser une demande, le check-in à la porte. · 9 min de lecture",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -4818,15 +4208,7 @@
             },
             {
               "title": "Réduire les absences",
-              "meta": "Rappels, reconfirmation, acomptes : ce qui marche, dans l'ordre. · 10 min de lecture",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": []
-            },
-            {
-              "title": "Configurer les acomptes",
-              "meta": "Quand demander de l'argent d'avance, et comment le capturer ou le rendre. · 7 min de lecture",
+              "meta": "Rappels et reconfirmation : ce qui marche, dans l'ordre. · 6 min de lecture",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -4855,7 +4237,7 @@
         {
           "kind": "list",
           "heading": "Vos demandes",
-          "subheading": "SUP-4610 · Paiements · ouvert le sam. 19 sept.",
+          "subheading": "SUP-4610 · Réservations · ouvert le mar. 22 sept.",
           "actions": [],
           "facets": [
             {
@@ -4876,19 +4258,19 @@
             "2",
             "1",
             "1",
-            "Acompte marqué échoué alors que le client a été débité",
+            "Une absence signalée par erreur, comment la corriger",
             "EN COURS",
-            "SUP-4610 · Paiements · ouvert le sam. 19 sept.",
+            "SUP-4610 · Réservations · ouvert le mar. 22 sept.",
             "Détail transmis à l'équipe LYFE avec les captures d'écran.",
             "Une réservation de l'app n'apparaît pas dans le carnet",
             "RÉSOLU",
-            "SUP-4412 · Réservations · ouvert le sam. 12 sept.",
+            "SUP-4412 · Réservations · ouvert le mar. 15 sept.",
             "Détail transmis à l'équipe LYFE avec les captures d'écran."
           ],
           "items": [
             {
-              "title": "Acompte marqué échoué alors que le client a été débité",
-              "meta": "SUP-4610 · Paiements · ouvert le sam. 19 sept.",
+              "title": "Une absence signalée par erreur, comment la corriger",
+              "meta": "SUP-4610 · Réservations · ouvert le mar. 22 sept.",
               "initials": null,
               "trailing": null,
               "pills": [
@@ -4901,7 +4283,7 @@
             },
             {
               "title": "Une réservation de l'app n'apparaît pas dans le carnet",
-              "meta": "SUP-4412 · Réservations · ouvert le sam. 12 sept.",
+              "meta": "SUP-4412 · Réservations · ouvert le mar. 15 sept.",
               "initials": null,
               "trailing": null,
               "pills": [

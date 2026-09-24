@@ -27,7 +27,7 @@ import type { ServiceConfiguration } from "@/lib/data/repository";
 import { CONFIGURATION_LABEL, configFor } from "@/lib/venue/config";
 import { RESTAURANT_SETTINGS_PATH, restaurantHref, type Lot } from "./slugs";
 import type { Role } from "@/lib/auth/session";
-import { clock, money, shortDay } from "./format";
+import { clock, dayLabel, money, shortDay } from "./format";
 
 const WEEKDAY_SHORT = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
 const weekdayLabel = (days: number[]) =>
@@ -93,7 +93,13 @@ export function buildAvailabilityScreen(
       {
         id: "reopen",
         label: "Réouverture programmée",
-        hint: "Laissez vide pour rouvrir à la main.",
+        // A native date input renders whatever the browser's locale says,
+        // which on a French screen is a row of digits the rest of the
+        // portal never uses. The hint says the same date in words, so
+        // the row reads in French however the field is drawn.
+        hint: pacing.reopenAt
+          ? `Réouverture le ${dayLabel(pacing.reopenAt)}. Laissez vide pour rouvrir à la main.`
+          : "Laissez vide pour rouvrir à la main.",
         control: { kind: "date", value: (pacing.reopenAt ?? "").slice(0, 10) },
         command: "pacing.set",
         payload: { field: "reopenAt" },
@@ -951,6 +957,16 @@ export function buildSubscriptionScreen(
 
 // ── Support ──────────────────────────────────────────────────
 
+/**
+ * The help catalogue, per lot.
+ *
+ * A guide is only worth listing where the screen it explains exists. The
+ * Acomptes guide described a Lot 2 screen outright, and two others sent a
+ * Lot 1 partner to Liste d'attente and the briefing — so `lot1` carries
+ * the shorter body for the screens Lot 1 does have, and the guide with no
+ * Lot 1 subject is not listed at all. The ids are the help centre's own
+ * slugs, so they stay put whichever body is shown.
+ */
 const GUIDES = [
   {
     id: "start",
@@ -962,29 +978,42 @@ const GUIDES = [
     id: "service",
     title: "Gérer un service",
     body: "Le carnet, la liste d'attente, le check-in, et ce que l'équipe lit au briefing.",
+    lot1: {
+      body: "Le carnet du service, accepter ou refuser une demande, le check-in à la porte.",
+      minutes: 9,
+    },
     minutes: 12,
   },
   {
     id: "no-show",
     title: "Réduire les absences",
     body: "Rappels, reconfirmation, acomptes : ce qui marche, dans l'ordre.",
+    lot1: { body: "Rappels et reconfirmation : ce qui marche, dans l'ordre.", minutes: 6 },
     minutes: 10,
   },
   {
     id: "deposits",
     title: "Configurer les acomptes",
     body: "Quand demander de l'argent d'avance, et comment le capturer ou le rendre.",
+    lot2Only: true,
     minutes: 7,
   },
 ];
 
-export function buildSupportScreen(tickets: SupportTicket[]): ScreenSpec {
+export function buildSupportScreen(
+  tickets: SupportTicket[],
+  lot: Lot = 2,
+): ScreenSpec {
+  const lot1 = lot === 1;
+  const guideList = GUIDES.filter((g) => !(lot1 && g.lot2Only)).map((g) =>
+    lot1 && g.lot1 ? { ...g, ...g.lot1 } : g,
+  );
   const guides: Block = {
     id: "guides",
     type: "entity-list",
     heading: "Guides",
     search: { placeholder: "Rechercher dans l'aide…" },
-    rows: GUIDES.map((guide) => ({
+    rows: guideList.map((guide) => ({
       id: guide.id,
       title: guide.title,
       icon: "book" as const,

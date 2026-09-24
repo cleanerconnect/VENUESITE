@@ -242,7 +242,7 @@ follow.
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
-| `09 Lot 1 · Dar Zellij` | the eighteen Lot 1 screens, cut to the contracted feature set | `docs/lot1-dar-zellij.json` and the 39 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
+| `09 Lot 1 · Dar Zellij` | the eighteen Lot 1 screens, cut to the contracted feature set | `docs/lot1-dar-zellij.json` and the 40 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
 
 Two rules the file keeps, and a designer extending it should keep too:
 the library on `02 Composants` is the source for components, and `08` is

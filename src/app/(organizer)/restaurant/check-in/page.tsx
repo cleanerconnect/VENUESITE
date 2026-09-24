@@ -5,6 +5,7 @@ import { getRestaurantRepository } from "@/lib/data";
 import { demoRepository } from "@/lib/data/demo-repository";
 import { DEMO_STATE_PARAM, parseDemoState } from "@/lib/data/demo-state";
 import { RepositoryError } from "@/lib/data/repository";
+import { activeLot } from "@/lib/lot";
 import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
 import { ScreenError } from "@/components/restaurant/ScreenError";
 import { CheckInScreen } from "@/components/restaurant/CheckInScreen";
@@ -60,7 +61,11 @@ export default async function CheckInPage({ searchParams }: Props) {
         zone: overview.zones.find((z) => z.id === r.zoneId)?.name ?? null,
         note: r.note ?? null,
         vip: r.vip,
-        depositMad: r.depositMad ?? null,
+        // The amount is printed on the expected row so a host knows the
+        // table is really held. Under Lot 1 there is no Acomptes screen
+        // behind it, so the row carries no figure the partner cannot
+        // account for.
+        depositMad: activeLot() === 1 ? null : r.depositMad ?? null,
       }))}
     />
   );

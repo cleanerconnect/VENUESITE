@@ -57,8 +57,10 @@ export function buildCustomersScreen(
   const atRisk = customers.filter((c) => c.noShowRisk >= 0.3);
   // Spend comes from Lyfe Pay alone. An empty map means no source, and
   // every spend tile and column on this screen disappears rather than
-  // showing a base that has apparently never spent anything.
-  const hasSpend = Object.keys(spendByCustomer).length > 0;
+  // showing a base that has apparently never spent anything. Lot 1 does
+  // not buy Lyfe Pay, so the same columns are absent there whatever the
+  // driver hands over — the tile used to name the register in its hint.
+  const hasSpend = !lot1 && Object.keys(spendByCustomer).length > 0;
   const totalSpend = Object.values(spendByCustomer).reduce((n, v) => n + v, 0);
 
   const tagLabels = new Map(graph.tags.map((t) => [t.id, t.label]));
@@ -110,7 +112,11 @@ export function buildCustomersScreen(
             icon: "user-x",
             metric: { value: atRisk.length, format: COUNT, animate: true },
             hint: atRisk.length
-              ? "Demander un acompte à la prochaine réservation"
+              ? lot1
+                // Acomptes is a Lot 2 screen, so the advice is the one
+                // Lot 1 can actually act on.
+                ? "Demander une reconfirmation avant le service"
+                : "Demander un acompte à la prochaine réservation"
               : "Aucun risque détecté",
           },
         ],
@@ -144,12 +150,22 @@ export function buildCustomersScreen(
         sorts: [
           { id: "recent", label: "Dernière visite", key: "lastVisit", direction: "desc" },
           { id: "visits", label: "Nombre de visites", key: "visits", direction: "desc" },
-          { id: "spend", label: "Dépense moyenne", key: "spend", direction: "desc" },
+          ...(hasSpend
+            ? ([{ id: "spend", label: "Dépense moyenne", key: "spend", direction: "desc" }] as const)
+            : []),
           { id: "risk", label: "Risque d'absence", key: "risk", direction: "desc" },
           { id: "name", label: "Nom", key: "name", direction: "asc" },
         ],
         rows: customers.map((c) =>
-          customerRow(c, reviews, graph.tagsByCustomer[c.id] ?? [], tagLabels, spendByCustomer[c.id], thisMonth),
+          customerRow(
+            c,
+            reviews,
+            graph.tagsByCustomer[c.id] ?? [],
+            tagLabels,
+            hasSpend ? spendByCustomer[c.id] : undefined,
+            thisMonth,
+            lot,
+          ),
         ),
         empty: {
           title: "Aucun client",
@@ -230,11 +246,16 @@ export function customerRow(
   tagLabels: Map<string, string> = new Map(),
   spendMad?: number,
   currentMonth = new Date().getMonth(),
+  lot: Lot = 2,
 ): EntityRow {
-  const loyalty = LOYALTY_TIER[customer.loyaltyTier];
   const labels = tagIds.map((id) => tagLabels.get(id) ?? "").filter(Boolean);
+  // The tier is set by the loyalty service, a Lot 2 subscription. Lot 1
+  // has no screen that earns it, changes it or explains it, so no Lot 1
+  // row wears it — the visit count beside it is the figure Lot 1 owns.
   const badges: Badge[] = [
-    { label: loyalty.label, tone: LOYALTY_TONE[customer.loyaltyTier] },
+    ...(lot === 1
+      ? []
+      : [{ label: LOYALTY_TIER[customer.loyaltyTier].label, tone: LOYALTY_TONE[customer.loyaltyTier] }]),
     ...labels.map((label) => ({ label: label.toUpperCase(), tone: "violet" as const })),
   ];
   const risk = riskBadge(customer.noShowRisk);
@@ -292,14 +313,16 @@ export function customerRow(
       .filter(Boolean)
       .join(" "),
     href: `/restaurant/clients/${customer.id}`,
-    detail: customerDetail(customer, reviews, spendMad),
+    detail: customerDetail(customer, reviews, spendMad, lot),
   };
 }
 
 /**
  * The profile the brief specifies, in its order: identity and contact,
  * visits and last visit, average spend, recurring preferences, reviews
- * left, loyalty tier, and no-show history with its risk indicator.
+ * left, loyalty tier, and no-show history with its risk indicator. The
+ * tier is Lot 2's — under Lot 1 the sheet stops at what the portal
+ * itself can account for.
  *
  * Openable from the customer list and from a booking in progress — both
  * call this, so the two can never drift apart.
@@ -308,9 +331,10 @@ export function customerDetail(
   customer: Customer,
   reviews: GuestReview[],
   spendMad?: number,
+  lot: Lot = 2,
 ): DetailSpec {
   const theirReviews = reviews.filter((r) => customer.reviewIds.includes(r.id));
-  const loyalty = LOYALTY_TIER[customer.loyaltyTier];
+  const loyalty = lot === 1 ? null : LOYALTY_TIER[customer.loyaltyTier];
   const risk = riskBadge(customer.noShowRisk);
 
   return {
@@ -319,7 +343,7 @@ export function customerDetail(
       ? `Client depuis le ${dateFR(customer.firstSeenAt)} · dernière visite le ${dateFR(customer.lastVisitAt)}`
       : `Ajouté le ${dateFR(customer.firstSeenAt)} · pas encore venu`,
     badges: [
-      { label: loyalty.label, tone: LOYALTY_TONE[customer.loyaltyTier] },
+      ...(loyalty ? [{ label: loyalty.label, tone: LOYALTY_TONE[customer.loyaltyTier] }] : []),
       ...(risk ? [risk] : []),
     ],
     sections: [
@@ -346,7 +370,7 @@ export function customerDetail(
           ...(spendMad === undefined
             ? []
             : [{ label: "Total dépensé", metric: { value: spendMad, format: MAD } }]),
-          { label: "Palier fidélité", metric: { value: loyalty.label } },
+          ...(loyalty ? [{ label: "Palier fidélité", metric: { value: loyalty.label } }] : []),
         ],
       },
       {

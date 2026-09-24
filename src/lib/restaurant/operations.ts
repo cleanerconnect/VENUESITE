@@ -722,7 +722,7 @@ export function buildReportsScreen(
     recommendations.push(
       lot1
         ? {
-            text: `${analytics.noShowRate.toFixed(1)} % d'absences sur la période. Un rappel la veille est le levier disponible ici ; les acomptes arrivent avec le lot 2.`,
+            text: `${analytics.noShowRate.toFixed(1)} % d'absences sur la période. Un rappel la veille du service est le levier le plus direct sur ce chiffre.`,
             href: restaurantHref("notifications"),
             label: "Régler les rappels",
           }
@@ -766,7 +766,7 @@ export function buildReportsScreen(
   const summary: Block = {
     id: "summary",
     type: "kpi-grid",
-    columns: 4,
+    columns: hasSpend && !lot1 ? 4 : 3,
     tiles: [
       {
         id: "covers",
@@ -792,7 +792,10 @@ export function buildReportsScreen(
         metric: { value: analytics.noShowRate, format: PCT, animate: true },
         delta: { value: analytics.noShowDeltaPct, period: "vs période précédente", invert: true },
       },
-      ...(hasSpend
+      // Encaissé is a Lyfe Pay total, and Lyfe Pay is a Lot 2 screen: the
+      // tile would quote a figure from a register the partner has no
+      // screen to open, with a hint naming it.
+      ...(hasSpend && !lot1
         ? ([
             {
               id: "revenue",
@@ -813,6 +816,12 @@ export function buildReportsScreen(
 
   const best = [...analytics.series].sort((a, b) => b.covers - a.covers).slice(0, 3);
   const worst = [...analytics.series].sort((a, b) => a.covers - b.covers).slice(0, 3);
+  // The series is bucketed by day up to ninety days and by month beyond
+  // it, so every row here is dated — "24 sept", "sept". The two headings
+  // said "services", which is neither what the rows are nor a scope this
+  // screen has: the best *service* of a month is a figure Bilans never
+  // computes. They now say what they list.
+  const buckets = analytics.period === "12m" ? "mois" : "journées";
 
   return {
     slug: "bilans",
@@ -879,7 +888,7 @@ export function buildReportsScreen(
           {
             id: "best",
             type: "entity-list",
-            heading: "Meilleurs services",
+            heading: buckets === "mois" ? "Meilleurs mois" : "Meilleures journées",
             rows: best.map((p, i) => ({
               id: `best-${i}`,
               title: p.label,
@@ -887,14 +896,14 @@ export function buildReportsScreen(
               meta: `${p.covers} ${vocabulary.cover.many}`,
               trailing: { label: vocabulary.cover.many, metric: { value: p.covers, format: COUNT } },
             })),
-            empty: { title: "Aucun service", body: "Pas encore de données.", icon: "sunset" },
+            empty: { title: `Aucune donnée`, body: `Pas encore de ${buckets} mesurées.`, icon: "sunset" },
           },
         ],
         rail: [
           {
             id: "worst",
             type: "entity-list",
-            heading: "Services les plus creux",
+            heading: buckets === "mois" ? "Mois les plus creux" : "Journées les plus creuses",
             headingAction: lot1
               ? undefined
               : {
@@ -909,7 +918,7 @@ export function buildReportsScreen(
               meta: `${p.covers} ${vocabulary.cover.many}`,
               trailing: { label: vocabulary.cover.many, metric: { value: p.covers, format: COUNT } },
             })),
-            empty: { title: "Aucun service", body: "Pas encore de données.", icon: "sunset" },
+            empty: { title: `Aucune donnée`, body: `Pas encore de ${buckets} mesurées.`, icon: "sunset" },
           },
         ],
       },

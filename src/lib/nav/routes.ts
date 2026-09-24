@@ -299,7 +299,7 @@ export const ROUTES: RouteEntry[] = [
     lot: 1,
     label: "Liste clients",
     purpose:
-      "La base, alimentée par les réservations, les walk-ins et les installations depuis la liste d'attente.",
+      "Base alimentée automatiquement par les réservations — aucune saisie manuelle.",
     workspace: "venue",
     status: "built",
   },

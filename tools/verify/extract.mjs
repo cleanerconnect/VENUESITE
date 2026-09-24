@@ -400,11 +400,20 @@ const SURFACES = {
     { name: "Détail réservation", click: "button.block.w-full:visible" },
     // Refuser only exists on a reservation still awaiting a decision, so
     // filter to "À confirmer" first, then open that row.
-    { name: "Refuser", steps: [
-      'button:has-text("À confirmer"):visible',
-      "button.block.w-full:visible",
-      'button:has-text("Refuser"):visible',
-    ] },
+    // Refusing with a coded reason. The step used to go through the detail
+    // drawer, which has no Refuser of its own, so the surface never
+    // opened in either lot. Under Lot 1 the three decisions are on the
+    // row; under Lot 2 they are still behind the row's kebab.
+    { name: "Refuser", steps: LOT === 1
+      ? [
+          'button:has-text("À confirmer"):visible',
+          'button:has-text("Refuser"):visible',
+        ]
+      : [
+          'button:has-text("À confirmer"):visible',
+          "div.absolute.top-4.right-4 button:visible",
+          '[role="menuitem"]:has-text("Refuser"):visible',
+        ] },
   ],
   "/restaurant/clients": [{ name: "Fiche client", click: "button.block.w-full:visible" }],
   // Three surfaces the brief asks for do not exist in the portal for Dar

@@ -79,7 +79,10 @@ export function buildCustomerScreen(input: {
     .map((id) => tags.find((t) => t.id === id))
     .filter((t): t is GuestTag => Boolean(t) && !t!.archived);
   const risk = riskLevelOf(customer);
-  const loyalty = LOYALTY_TIER[customer.loyaltyTier];
+  // The tier comes from the loyalty service, a Lot 2 subscription: the
+  // tiles that explain it are already gated, and an eyebrow naming a
+  // palier above them was the last of it left on a Lot 1 sheet.
+  const loyalty = lot1 ? null : LOYALTY_TIER[customer.loyaltyTier];
   const theirs = reservations.filter(
     (r) => r.guestName === customer.fullName || r.guestPhone === customer.phone,
   );
@@ -91,7 +94,7 @@ export function buildCustomerScreen(input: {
   const header: Block = {
     id: "header",
     type: "greeting",
-    eyebrow: loyalty.label,
+    eyebrow: loyalty ? loyalty.label : undefined,
     title: `${customer.fullName}`,
     emphasis: labels.map((t) => t.label).join(" · ") || undefined,
     subline: customer.lastVisitAt
@@ -172,7 +175,7 @@ export function buildCustomerScreen(input: {
       // tier comes from the loyalty service, the total from Lyfe Pay.
       // Both are absent rather than blank, which is the rule the whole
       // portal follows for a figure it cannot source.
-      ...(lot1
+      ...(loyalty === null
         ? []
         : ([
             {
@@ -330,7 +333,7 @@ export function buildCustomerScreen(input: {
     id: "upcoming",
     type: "entity-list",
     heading: "Réservations à venir",
-    rows: upcoming.map((r) => reservationLine(r, configuration)),
+    rows: upcoming.map((r) => reservationLine(r, configuration, lot)),
     empty: {
       title: "Rien de prévu",
       body: "Ce client n'a aucune réservation à venir.",
@@ -354,7 +357,7 @@ export function buildCustomerScreen(input: {
     ],
     rows: theirs
       .filter((r) => Date.parse(r.at) < Date.now())
-      .map((r) => reservationLine(r, configuration)),
+      .map((r) => reservationLine(r, configuration, lot)),
     empty: {
       title: "Aucune visite",
       body: "L'historique se remplit à partir de la première venue.",
@@ -434,7 +437,11 @@ export function buildCustomerScreen(input: {
   };
 }
 
-function reservationLine(reservation: Reservation, configuration: VenueConfiguration) {
+function reservationLine(
+  reservation: Reservation,
+  configuration: VenueConfiguration,
+  lot: Lot = 2,
+) {
   const state = RESERVATION_STATE[reservation.state];
   return {
     id: reservation.id,
@@ -443,7 +450,11 @@ function reservationLine(reservation: Reservation, configuration: VenueConfigura
     meta: [
       coversIn(configuration, reservation.partySize),
       reservation.note ?? "sans note",
-      reservation.depositMad ? `acompte ${money(reservation.depositMad)}` : null,
+      // An amount with no Acomptes screen behind it to explain what
+      // happened to it.
+      reservation.depositMad && lot !== 1
+        ? `acompte ${money(reservation.depositMad)}`
+        : null,
     ]
       .filter(Boolean)
       .join(" · "),
