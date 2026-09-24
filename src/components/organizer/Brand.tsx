@@ -1,17 +1,23 @@
 import Image from "next/image";
 
-// LYFE wordmark — production artwork lives at /public/lyfe-logo.jpg
-// (954×522, 1.83:1). The JPG carries a white background; on tinted /
-// non-white surfaces (canvas-2 sidebar, violet washes), that background
-// shows up as a faint clipping rectangle. mix-blend-mode: multiply
-// solves it cleanly: white pixels (#FFFFFF) multiply to whatever sits
-// behind them, so they read as transparent against any surface that
-// isn't pure white. On pure-white surfaces (canvas, surface) the blend
-// is a no-op.
+// LYFE wordmark — the supplied artwork, matted out of its background.
 //
-// On dark surfaces multiply would make the logo disappear entirely —
-// for those, pass variant="white" to swap to the pre-rendered
-// transparent SVG.
+// Two files, because the mark has two official cuts: the colour one for
+// light surfaces (`/lyfe-logo.png`, 828×344) and the white one for dark
+// ones (`/lyfe-logo-white.png`, 1416×616). Both carry a real alpha
+// channel, so neither needs a blend mode to hide a background box — the
+// JPG this replaced was white-boxed, and `mix-blend-mode: multiply` was
+// the trick that stopped the box showing on tinted surfaces. A trick
+// that only works where the surface is lighter than the mark, which is
+// exactly why it could never serve the dark panel.
+//
+// The two cuts have different proportions, so the width is computed from
+// whichever is being drawn rather than from one ratio for both.
+const ART = {
+  color: { src: "/lyfe-logo.png", ratio: 828 / 344 },
+  white: { src: "/lyfe-logo-white.png", ratio: 1416 / 616 },
+} as const;
+
 export function Brand({
   height = 44,
   variant = "color",
@@ -19,27 +25,15 @@ export function Brand({
   height?: number;
   variant?: "color" | "white";
 }) {
-  const src =
-    variant === "white" ? "/lyfe-logo-white.svg" : "/lyfe-logo.jpg";
-  // Each asset has its own aspect ratio — the JPG is 954×522, the
-  // white SVG's viewBox is 140×96. Sizing both off the JPG's ratio gave
-  // Next/Image a width the SVG never had.
-  const ratio = variant === "white" ? 140 / 96 : 954 / 522;
-  const width = Math.round(height * ratio);
+  const art = ART[variant];
   return (
     <Image
-      src={src}
+      src={art.src}
       alt="LYFE"
-      width={width}
+      width={Math.round(height * art.ratio)}
       height={height}
       priority
-      style={{
-        height,
-        width: "auto",
-        objectFit: "contain",
-        background: "transparent",
-        mixBlendMode: variant === "color" ? "multiply" : undefined,
-      }}
+      style={{ height, width: "auto", objectFit: "contain" }}
     />
   );
 }

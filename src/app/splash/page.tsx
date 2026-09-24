@@ -64,16 +64,12 @@ function SplashInner() {
             transition={{ duration: 0.6, ease: EASE }}
           >
             <Image
-              src="/lyfe-logo.jpg"
+              src="/lyfe-logo.png"
               alt="LYFE"
-              width={320}
-              height={120}
+              width={828}
+              height={344}
               priority
-              style={{
-                height: "auto",
-                width: "min(280px, 56vw)",
-                mixBlendMode: "multiply",
-              }}
+              style={{ height: "auto", width: "min(280px, 56vw)" }}
             />
           </motion.div>
         ) : null}
