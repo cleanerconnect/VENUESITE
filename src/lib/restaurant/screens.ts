@@ -49,6 +49,7 @@ import {
   SERVICE_KIND,
   payoutBadge,
   reservationBadge,
+  reservationBand,
   serviceBadge,
 } from "./vocabulary";
 import { formatValue } from "@/lib/dashboard/value";
@@ -341,7 +342,10 @@ export function buildDashboardScreen(
     type: "greeting",
     eyebrow: data.greeting.salutation,
     title: `${data.greeting.salutation}, ${data.greeting.firstName}.`,
-    emphasis: data.greeting.clause,
+    // The clause was a serif italic flourish — "Le service est lancé." —
+    // that told a host nothing they could act on and took the largest
+    // line on the screen to do it. Lot 2 keeps it; a stand does not.
+    emphasis: lot1 ? undefined : data.greeting.clause,
     // The store composes one subline for both lots, because the payload
     // is lot-agnostic by design. Lot 1 drops its waitlist clause here:
     // Liste d'attente is a Lot 2 screen, and a count of people queueing
@@ -561,6 +565,74 @@ export function buildDashboardScreen(
         },
   };
 
+  // ── Accueil, under host density ──────────────────────────────
+  //
+  // One list of "Réservations du jour" asked the host to do the sorting:
+  // the request needing a decision sat between two confirmed bookings
+  // and looked like them. Three groups, in the order the work happens.
+  //
+  //   1  À traiter          — a request is the only thing that goes
+  //                           stale. Accepter and refuser are on the row
+  //                           and never behind a hover or a kebab.
+  //   2  Prochaines arrivées — confirmed, not yet in the room, by time.
+  //                           Check-in and absent on the row.
+  //   3  Arrivés            — done. A count and an expand, because a
+  //                           seated party needs no decision and the
+  //                           space belongs to the two groups above.
+  const dayRows = data.upcomingReservations;
+  const hostRow = (r: Reservation) =>
+    reservationRow(r, data.zones, configuration, undefined, lot, true);
+  const byTime = (a: Reservation, b: Reservation) =>
+    Date.parse(a.at) - Date.parse(b.at);
+
+  const toHandle = dayRows.filter((r) => r.state === "requested").sort(byTime);
+  const expected = dayRows.filter((r) => r.state === "confirmed").sort(byTime);
+  const seated = dayRows.filter((r) => r.state === "arrived").sort(byTime);
+
+  const toHandleBlock: Block = {
+    id: "to-handle",
+    type: "entity-list",
+    heading: "À traiter",
+    subheading:
+      toHandle.length > 0
+        ? "Ces clients attendent une réponse."
+        : "Rien en attente de décision.",
+    rows: toHandle.map(hostRow),
+    empty: {
+      title: "Rien à traiter",
+      body: "Aucune demande n'attend de réponse.",
+      icon: "check",
+    },
+  };
+
+  const expectedBlock: Block = {
+    id: "expected",
+    type: "entity-list",
+    heading: "Prochaines arrivées",
+    subheading: "Confirmées, pas encore en salle.",
+    rows: expected.map(hostRow),
+    empty: {
+      title: "Personne d'attendu",
+      body: "Aucune table confirmée à venir aujourd'hui.",
+      icon: "calendar",
+    },
+  };
+
+  const seatedBlock: Block = {
+    id: "seated",
+    type: "entity-list",
+    heading: "Arrivés",
+    // Collapsed by default: the work is done, and the count is the only
+    // thing a host needs from it mid-service.
+    collapsible: { summary: `${seated.length} ${seated.length === 1 ? "table installée" : "tables installées"}` },
+    rows: seated.map(hostRow),
+    empty: {
+      title: "Personne encore arrivé",
+      body: "Les clients installés apparaîtront ici.",
+      icon: "user-check",
+    },
+  };
+
   const feedBlock: Block = {
     id: "activity",
     type: "feed",
@@ -744,11 +816,12 @@ export function buildDashboardScreen(
   // does not produce, and the decision the other two ask for is taken
   // on Réservations, on the row itself.
   if (lot1) {
+    const groups = [toHandleBlock, expectedBlock, seatedBlock];
     return {
       slug: "",
       title: "Vue d'ensemble",
-      blocks: [greetingBlock, arrivalsBlock],
-      mobileBlocks: [greetingBlock, arrivalsBlock],
+      blocks: [greetingBlock, ...groups],
+      mobileBlocks: [greetingBlock, ...groups],
     };
   }
 
@@ -821,9 +894,14 @@ export function buildReservationsScreen(
   // past what the dataset holds — still has to render. It gets the
   // overview's service for its shape, emptied of every figure, so the
   // screen says "closed" instead of dividing by a capacity it invented.
+  // Today leads with the service the clock resolves — the live row with
+  // the engine's counters — unless the partner picked another of the
+  // day's sittings. Any other day is resolved from the book.
   const service = onAnotherDay
     ? pickService(book!, serviceId) ?? closedService(data.currentService, book!.date)
-    : data.currentService;
+    : (serviceId && book
+        ? book.services.find((s) => s.id === serviceId)
+        : undefined) ?? data.currentService;
   // One scope, named on the tiles.
   //
   // The tiles used to read `currentService`, a per-service figure, while
@@ -835,7 +913,10 @@ export function buildReservationsScreen(
   // The queue at the door is a thing about right now, so it joins the
   // book only on today; a waitlist on a page showing next Tuesday would
   // be counting people who are standing in the room tonight.
-  const dayRows = onAnotherDay ? book!.reservations : data.upcomingReservations;
+  const dayRows =
+    onAnotherDay || (book && serviceId)
+      ? book!.reservations
+      : data.upcomingReservations;
   const all = lot1
     ? serviceBook(dayRows, service)
     : onAnotherDay
@@ -996,6 +1077,20 @@ export function buildReservationsScreen(
     ],
     search: { placeholder: "Rechercher un client, un téléphone, une table…" },
     sorts: [
+      // The default a host works to: the next table to arrive, first.
+      // Sorting by clock time put a party seated at noon above one due
+      // in ten minutes, so the top of the book was the part of the day
+      // already dealt with.
+      ...(lot1
+        ? ([
+            {
+              id: "next",
+              label: "Prochaine arrivée",
+              key: "queue",
+              direction: "asc",
+            },
+          ] as const)
+        : []),
       { id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" },
       { id: "time_desc", label: "Heure · tard → tôt", key: "time", direction: "desc" },
       { id: "party", label: "Couverts", key: "party", direction: "desc" },
@@ -1031,6 +1126,32 @@ export function buildReservationsScreen(
   // tomorrow's bookings while tonight's service runs is the ordinary
   // work of a restaurant, so the day is walkable: a step either way,
   // a picker for a date further off, and a way back to today.
+  // The day's services, for the tabs. `getDayBook` answers for today as
+  // well as for a walked-to day, so a restaurant serving lunch and
+  // dinner can read either without leaving the screen.
+  const dayServices = book && book.services.length > 0 ? book.services : [service];
+
+  // Lot 1 turns the page; Lot 2 keeps the settings card, which is the
+  // right shape beside four KPI tiles and a load histogram.
+  const dayBar: Block = {
+    id: "day",
+    type: "day-bar",
+    label: dayLabel(shownDate),
+    hint:
+      shownDate === today
+        ? "Aujourd'hui."
+        : shownDate === shiftDay(today, 1)
+          ? "Demain."
+          : undefined,
+    value: shownDate,
+    min: MIN_DAY,
+    max: MAX_DAY,
+    command: "reservations.day",
+    services: dayServices.map((s) => ({ id: s.id, label: s.label })),
+    activeServiceId: service.id,
+    serviceCommand: "reservations.service",
+  };
+
   const dayPicker: Block = {
     id: "day",
     type: "settings",
@@ -1038,9 +1159,6 @@ export function buildReservationsScreen(
     rows: [
       {
         id: "date",
-        // The label carries the day in French long form, because a date
-        // input renders its own value as `2026-09-24` and that is the
-        // one ISO date that would otherwise be left on a Lot 1 screen.
         label: dayLabel(shownDate),
         hint:
           shownDate === today
@@ -1048,8 +1166,6 @@ export function buildReservationsScreen(
             : shownDate === shiftDay(today, 1)
               ? "Demain."
               : undefined,
-        // The row's own label carries the day in French long form, so
-        // the input is the picker and does not restate it.
         control: {
           kind: "date",
           value: shownDate,
@@ -1064,25 +1180,15 @@ export function buildReservationsScreen(
         id: "service",
         label: vocabulary.service.one.replace(/^./, (c) => c.toUpperCase()),
         hint: `Les ${vocabulary.service.many} se définissent dans Disponibilités.`,
-        // Every service the day runs, so a venue serving both lunch and
-        // dinner can read either. Today has one live row and nothing to
-        // choose between; a walked-to day is resolved from the
-        // definitions and usually has two.
         control: {
           kind: "select",
           value: service.id,
-          options: (onAnotherDay && book!.services.length > 0
-            ? book!.services
-            : [service]
-          ).map((s) => ({ value: s.id, label: s.label })),
+          options: dayServices.map((s) => ({ value: s.id, label: s.label })),
         },
         command: "reservations.service",
       },
     ],
     footerActions: [
-      // A step either way, and a way back. These read the day and
-      // nothing else, so they are the one set of controls on this
-      // screen that Lot 1 gets in full.
       {
         action: {
           kind: "command",
@@ -1103,9 +1209,6 @@ export function buildReservationsScreen(
         },
         variant: "secondary",
       },
-      // Only worth a button when it would change something: on today it
-      // is a control that does nothing, which is a control that teaches
-      // the partner to distrust the row.
       ...(shownDate === today
         ? []
         : ([
@@ -1120,31 +1223,24 @@ export function buildReservationsScreen(
               variant: "ghost" as const,
             },
           ])),
-      // Creating a booking and taking a walk-in both write a reservation
-      // the portal did not receive. Lot 2 buys that; Lot 1 is left with
-      // the two actions that only read the day.
-      ...(lot1
-        ? []
-        : ([
-            {
-              action: {
-                kind: "command" as const,
-                command: "reservation.create",
-                label: "Nouvelle réservation",
-                icon: "plus" as const,
-              },
-              variant: "primary" as const,
-            },
-            {
-              action: {
-                kind: "command" as const,
-                command: "reservation.walkIn",
-                label: vocabulary.walkInLabel,
-                icon: "door-open" as const,
-              },
-              variant: "secondary" as const,
-            },
-          ])),
+      {
+        action: {
+          kind: "command",
+          command: "reservation.create",
+          label: "Nouvelle réservation",
+          icon: "plus",
+        },
+        variant: "primary",
+      },
+      {
+        action: {
+          kind: "command",
+          command: "reservation.walkIn",
+          label: vocabulary.walkInLabel,
+          icon: "door-open",
+        },
+        variant: "secondary",
+      },
       {
         action: {
           kind: "command",
@@ -1183,8 +1279,31 @@ export function buildReservationsScreen(
       slug: "reservations",
       title: "Réservations",
       subtitle,
-      blocks: [dayPicker, bookBlock],
-      mobileBlocks: [bookBlock, dayPicker],
+      // Taking a copy of the day away acts on the whole screen, not on
+      // anything inside it, so it sits in the header rather than among
+      // the controls that change what the screen shows.
+      headerActions: [
+        {
+          action: {
+            kind: "command",
+            command: "reservations.export",
+            label: "Exporter la journée",
+            icon: "file",
+          },
+          variant: "secondary",
+        },
+        {
+          action: {
+            kind: "command",
+            command: "print",
+            label: "Imprimer",
+            icon: "file",
+          },
+          variant: "secondary",
+        },
+      ],
+      blocks: [dayBar, bookBlock],
+      mobileBlocks: [dayBar, bookBlock],
     };
   }
 
@@ -1582,7 +1701,23 @@ function reservationRow(
     id: reservation.id,
     title: reservation.guestName,
     initials: initialsOf(reservation.guestName),
-    meta: `${hm(reservation.at)} · ${coversIn(configuration, reservation.partySize)} · ${place}`,
+    // Under host density the time and the party size lead the row in
+    // their own type, so the secondary line carries what is left: where
+    // they sit and how the booking arrived. Lot 2 keeps the dot-joined
+    // line, which is the right density for a screen read at a desk.
+    lead: lot1
+      ? {
+          time: hm(reservation.at),
+          party: coversIn(configuration, reservation.partySize),
+        }
+      : undefined,
+    status: lot1 ? reservationBand(reservation.state) : undefined,
+    // The sitting this booking files under, on the half hour the whole
+    // dataset is already aligned to.
+    slot: lot1 ? slotOf(reservation.at) : undefined,
+    meta: lot1
+      ? place || undefined
+      : `${hm(reservation.at)} · ${coversIn(configuration, reservation.partySize)} · ${place}`,
     badges,
     signal: reservation.note ? { text: reservation.note, icon: "note" } : undefined,
     trailing: lot1
@@ -1600,6 +1735,15 @@ function reservationRow(
     },
     sortKeys: {
       time: new Date(reservation.at).getTime(),
+      // Next arrival first, with the parties already in the room at the
+      // bottom: they are the day's finished work, and the book is read
+      // for what is still coming. A day-sized offset does the sinking,
+      // so within each half the clock order still holds.
+      queue:
+        new Date(reservation.at).getTime() +
+        (reservation.state === "arrived" || reservation.state === "completed"
+          ? 86_400_000 * 365
+          : 0),
       party: reservation.partySize,
       visits: reservation.visits,
       name: reservation.guestName,
@@ -1616,9 +1760,25 @@ function reservationRow(
     // is the only place that offers a decision: Accueil's list reads the
     // day, and a kebab there would be a second, quieter way to do the
     // same work from a screen that does not show the outcome.
-    menu: lot1 && !inlineActions ? undefined : reservationMenu(reservation, lot),
+    // Under Lot 1 every decision the sprint buys is on the row itself, so
+    // the kebab would be a second, quieter path to the same four verbs —
+    // and one more small target in a row built for large ones.
+    menu: lot1 ? undefined : reservationMenu(reservation, lot),
     actions: lot1 && inlineActions ? reservationActions(reservation) : undefined,
   };
+}
+
+/**
+ * The half-hour sitting a booking belongs to.
+ *
+ * The seed puts every Lot 1 booking on a `:00` or `:30` slot, so this
+ * rounds down rather than inventing a bucket — a 19h05 booking taken by
+ * phone still files under the 19h00 sitting a host is working.
+ */
+function slotOf(at: string): string {
+  const d = new Date(at);
+  d.setMinutes(d.getMinutes() < 30 ? 0 : 30, 0, 0);
+  return hm(d.toISOString());
 }
 
 /**
@@ -1633,6 +1793,22 @@ function reservationRow(
  * accepter once the request has been accepted.
  */
 function reservationActions(reservation: Reservation): CtaAction[] | undefined {
+  // Absent is a judgement about a table that did not turn up, and it
+  // cannot be made before the table was due. Offered early it is a
+  // mis-tap waiting to happen — one that writes a no-show against a
+  // guest who is simply not late yet.
+  const due = Date.parse(reservation.at) <= Date.now();
+  const absent: CtaAction = {
+    action: {
+      kind: "command",
+      command: "reservation.noShow",
+      payload: { id: reservation.id },
+      label: "Absent",
+      icon: "user-x",
+    },
+    variant: "ghost",
+  };
+
   if (reservation.state === "requested") {
     return [
       {
@@ -1655,16 +1831,7 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
         },
         variant: "secondary",
       },
-      {
-        action: {
-          kind: "command",
-          command: "reservation.noShow",
-          payload: { id: reservation.id },
-          label: "Absent",
-          icon: "user-x",
-        },
-        variant: "ghost",
-      },
+      ...(due ? [absent] : []),
     ];
   }
   if (reservation.state === "confirmed") {
@@ -1679,16 +1846,7 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
         },
         variant: "primary",
       },
-      {
-        action: {
-          kind: "command",
-          command: "reservation.noShow",
-          payload: { id: reservation.id },
-          label: "Absent",
-          icon: "user-x",
-        },
-        variant: "ghost",
-      },
+      ...(due ? [absent] : []),
     ];
   }
   return undefined;

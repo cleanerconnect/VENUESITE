@@ -29,6 +29,9 @@ export function EntityListBlock({ block }: { block: Spec }) {
   const [tab, setTab] = useState(block.tabs?.[0]?.id ?? "");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState(block.sorts?.[0]?.id ?? "");
+  // A collapsible group opens on demand and stays open; nothing else on
+  // the screen collapses, so this is local rather than a stored setting.
+  const [expanded, setExpanded] = useState(false);
 
   // Counts are derived from the rows rather than passed in, so a tab can
   // never disagree with the list underneath it.
@@ -71,8 +74,13 @@ export function EntityListBlock({ block }: { block: Spec }) {
   return (
     <section>
       {block.heading ? (
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <h2 className="text-h2 text-ink">{block.heading}</h2>
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="min-w-0">
+            <h2 className="text-h2 text-ink">{block.heading}</h2>
+            {block.subheading ? (
+              <p className="text-meta text-ink-mute mt-1">{block.subheading}</p>
+            ) : null}
+          </div>
           {block.headingAction ? (
             <ActionLink action={block.headingAction} />
           ) : null}
@@ -137,7 +145,24 @@ export function EntityListBlock({ block }: { block: Spec }) {
         />
       ) : null}
 
-      {block.rows.length === 0 ? (
+      {block.collapsible && !expanded && block.rows.length > 0 ? (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="w-full flex items-center justify-between gap-3 bg-canvas-2 border border-line rounded-[var(--radius-lg)] px-4 py-3.5 text-left hover:border-ink/30 transition-colors"
+        >
+          <span className="text-body font-semibold text-ink">
+            {block.collapsible.summary}
+          </span>
+          <span className="text-meta text-ink-soft font-semibold shrink-0">
+            Afficher
+          </span>
+        </button>
+      ) : block.collapsible && block.rows.length === 0 ? (
+        <div className="bg-canvas-2 border border-line rounded-[var(--radius-lg)] px-4 py-3.5 text-body font-semibold text-ink-soft">
+          {block.collapsible.summary}
+        </div>
+      ) : block.rows.length === 0 ? (
         <EmptyState
           title={block.empty?.title ?? COPY.empty.nothingToShow}
           description={block.empty?.body}
@@ -160,11 +185,18 @@ export function EntityListBlock({ block }: { block: Spec }) {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
-          {rows.map((row) => (
-            <Row key={row.id} row={row} />
-          ))}
-        </div>
+        <>
+          <SlotGroups rows={rows} />
+          {block.collapsible ? (
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              className="mt-3 text-meta text-ink-soft font-semibold underline underline-offset-2 hover:text-ink transition-colors"
+            >
+              Masquer
+            </button>
+          ) : null}
+        </>
       )}
     </section>
   );
@@ -191,24 +223,114 @@ function searchText(row: EntityRow) {
     .toLowerCase();
 }
 
+/**
+ * Rows under the slot they belong to, the way a paper book is ruled off.
+ *
+ * A host does not read a booking list as a list — they read it as a
+ * sequence of sittings, and the question is always "what is coming at
+ * half past". Rows that carry no slot fall through as one ungrouped run,
+ * so every other screen is unchanged.
+ */
+function SlotGroups({ rows }: { rows: EntityRow[] }) {
+  const groups: { slot: string | null; rows: EntityRow[] }[] = [];
+  for (const row of rows) {
+    const slot = row.slot ?? null;
+    const last = groups[groups.length - 1];
+    if (last && last.slot === slot) last.rows.push(row);
+    else groups.push({ slot, rows: [row] });
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {groups.map((group, i) => (
+        <div key={`${group.slot ?? "_"}-${i}`} className="flex flex-col gap-3">
+          {group.slot ? (
+            <div className={cn("flex items-center gap-3", i > 0 && "mt-4")}>
+              <span className="text-host-slot text-ink">{group.slot}</span>
+              <span className="h-px flex-1 bg-line" aria-hidden />
+              <span className="text-host-detail">
+                {group.rows.length}
+                {group.rows.length === 1 ? " table" : " tables"}
+              </span>
+            </div>
+          ) : null}
+          {group.rows.map((row) => (
+            <Row key={row.id} row={row} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** The left-edge band, and the word it needs so greyscale still reads. */
+const STATUS_BAND: Record<
+  NonNullable<EntityRow["status"]>["tone"],
+  { bar: string; text: string }
+> = {
+  success: { bar: "bg-success", text: "text-success" },
+  warning: { bar: "bg-warning", text: "text-warning" },
+  neutral: { bar: "bg-ink-mute", text: "text-ink-soft" },
+  danger: { bar: "bg-danger", text: "text-danger" },
+};
+
 function Row({ row }: { row: EntityRow }) {
   const run = useCommandRunner();
   const openDetail = useDetailStore((s) => s.open);
 
+  // Host density draws the row differently: the time and the party size
+  // lead in the largest type, the name follows, and the state is a band
+  // rather than a pill. Everything else about the row — the note strip,
+  // the actions, the detail sheet — is the same component.
+  const host = Boolean(row.lead);
+
   const inner = (
     <div className="flex items-center gap-4">
-      <Leading row={row} />
+      {host ? null : <Leading row={row} />}
+
+      {host && row.lead ? (
+        <div className="shrink-0 text-right w-[104px]">
+          <div className="text-host-lead text-ink">{row.lead.time}</div>
+          <div className="text-host-lead text-ink mt-0.5">{row.lead.party}</div>
+        </div>
+      ) : null}
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <h4 className="text-h3 text-ink truncate">{row.title}</h4>
-          {row.badges?.map((badge, i) => (
+          <h4
+            className={cn(
+              "text-ink truncate",
+              host ? "text-host-name" : "text-h3",
+            )}
+          >
+            {row.title}
+          </h4>
+          {host && row.status ? (
+            <span
+              className={cn(
+                "text-host-detail font-semibold",
+                STATUS_BAND[row.status.tone].text,
+              )}
+            >
+              {row.status.label}
+            </span>
+          ) : null}
+          {/* Under host density the state is the band, so the pill that
+              carried it is not drawn a second time. */}
+          {(host ? row.badges?.slice(1) : row.badges)?.map((badge, i) => (
             <SpecBadge key={`${badge.label}-${i}`} badge={badge} />
           ))}
         </div>
 
         {row.meta ? (
-          <div className="text-meta text-ink-mute mt-1 num">{row.meta}</div>
+          <div
+            className={cn(
+              "mt-1 num",
+              host ? "text-host-detail" : "text-meta text-ink-mute",
+            )}
+          >
+            {row.meta}
+          </div>
         ) : null}
 
         {row.progress ? (
@@ -264,7 +386,16 @@ function Row({ row }: { row: EntityRow }) {
       whileHover={{ y: -1 }}
       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="relative bg-surface border border-line rounded-[var(--radius-lg)] hover:shadow-soft transition-shadow">
+      <div className="relative bg-surface border border-line rounded-[var(--radius-lg)] hover:shadow-soft transition-shadow overflow-hidden">
+        {row.status ? (
+          <span
+            aria-hidden
+            className={cn(
+              "absolute left-0 top-0 bottom-0 w-[6px]",
+              STATUS_BAND[row.status.tone].bar,
+            )}
+          />
+        ) : null}
         {/* Three row behaviours, in priority order: open the detail sheet,
             navigate, or sit still. A row that does nothing gets no hover
             affordance and no button semantics. */}
@@ -272,20 +403,20 @@ function Row({ row }: { row: EntityRow }) {
           <button
             type="button"
             onClick={() => row.detail && openDetail(row.detail)}
-            className="block w-full text-left p-4"
+            className={cn("block w-full text-left p-4", row.status && "pl-6")}
           >
             {inner}
           </button>
         ) : row.href ? (
-          <Link href={row.href} className="block p-4">
+          <Link href={row.href} className={cn("block p-4", row.status && "pl-6")}>
             {inner}
           </Link>
         ) : (
-          <div className="p-4">{inner}</div>
+          <div className={cn("p-4", row.status && "pl-6")}>{inner}</div>
         )}
 
         {row.actions?.length ? (
-          <div className="flex flex-wrap gap-2 px-4 pb-4 -mt-1">
+          <div className={cn("flex flex-wrap gap-2 px-4 pb-4 -mt-1", row.status && "pl-6")}>
             {row.actions.map((cta, i) => (
               <ActionControl
                 key={`${cta.action.label}-${i}`}

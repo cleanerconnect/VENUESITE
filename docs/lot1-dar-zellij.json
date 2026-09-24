@@ -4,7 +4,7 @@
   "account": "yassine@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-09-24T16:32:02.057Z",
+  "capturedAt": "2026-09-24T17:04:32.258Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -14,7 +14,7 @@
       "dependsOn": null,
       "roles": null,
       "workspace": "venue",
-      "title": "Bon après-midi, Yassine. Le service est lancé.",
+      "title": "Bon après-midi, Yassine.",
       "eyebrow": "Bon après-midi",
       "subtitle": "Dîner · 5 réservations aujourd'hui.",
       "venue": "YA",
@@ -29,7 +29,7 @@
           "facets": [],
           "texts": [
             "Bon après-midi",
-            "Le service est lancé.",
+            "Bon après-midi, Yassine.",
             "Dîner · 5 réservations aujourd'hui.",
             "Ouvrir le carnet →"
           ],
@@ -37,7 +37,7 @@
             {
               "lines": [
                 "Bon après-midi",
-                "Le service est lancé.",
+                "Bon après-midi, Yassine.",
                 "Dîner · 5 réservations aujourd'hui."
               ],
               "pills": [],
@@ -55,99 +55,166 @@
           ]
         },
         {
-          "kind": "list",
-          "heading": "Réservations du jour",
-          "subheading": "19h00 · 4 couverts · Patio · LYFE",
+          "kind": "split",
+          "left": {
+            "kind": "prose",
+            "heading": "À traiter",
+            "subheading": "Ces clients attendent une réponse.",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "À traiter",
+              "Ces clients attendent une réponse."
+            ],
+            "body": "À traiterCes clients attendent une réponse.",
+            "pills": []
+          },
+          "right": {
+            "kind": "list",
+            "heading": null,
+            "subheading": null,
+            "actions": [
+              "Accepter",
+              "Refuser"
+            ],
+            "facets": [],
+            "texts": [
+              "20h00",
+              "1 table",
+              "20h00",
+              "2 couverts",
+              "Nabil Cherkaoui",
+              "À confirmer",
+              "LYFE",
+              "Demande une table près de la fontaine"
+            ],
+            "items": [
+              {
+                "title": "Nabil Cherkaoui",
+                "meta": null,
+                "initials": "Dem",
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Accepter",
+                  "Refuser"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "split",
+          "left": {
+            "kind": "empty",
+            "heading": "Prochaines arrivées",
+            "subheading": "Confirmées, pas encore en salle.",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Prochaines arrivées",
+              "Confirmées, pas encore en salle."
+            ],
+            "body": "Prochaines arrivéesConfirmées, pas encore en salle.",
+            "pills": []
+          },
+          "right": {
+            "kind": "list",
+            "heading": null,
+            "subheading": null,
+            "actions": [
+              "Check-in",
+              "Check-in",
+              "Check-in",
+              "Check-in"
+            ],
+            "facets": [],
+            "texts": [
+              "19h00",
+              "1 table",
+              "19h00",
+              "4 couverts",
+              "Salma Bennani",
+              "Confirmée",
+              "Patio · LYFE",
+              "Anniversaire, dessert avec bougie",
+              "19h30",
+              "2 tables",
+              "19h30",
+              "6 couverts",
+              "Groupe Karam",
+              "Confirmée",
+              "Grande salle · Téléphone",
+              "Sans gluten pour deux couverts",
+              "19h30",
+              "4 couverts",
+              "Yasmine El Alaoui",
+              "Confirmée",
+              "Terrasse",
+              "20h30",
+              "1 table",
+              "20h30",
+              "5 couverts",
+              "Hind Tazi",
+              "Confirmée",
+              "Grande salle · Téléphone"
+            ],
+            "items": [
+              {
+                "title": "Salma Bennani",
+                "meta": null,
+                "initials": "Ann",
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Check-in"
+                ]
+              },
+              {
+                "title": "Groupe Karam",
+                "meta": null,
+                "initials": "San",
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Check-in"
+                ]
+              },
+              {
+                "title": "Yasmine El Alaoui",
+                "meta": null,
+                "initials": null,
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Check-in"
+                ]
+              },
+              {
+                "title": "Hind Tazi",
+                "meta": null,
+                "initials": null,
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Check-in"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "prose",
+          "heading": "Arrivés",
+          "subheading": null,
           "actions": [],
           "facets": [],
           "texts": [
-            "Réservations du jour",
-            "SB",
-            "Salma Bennani",
-            "19h00 · 4 couverts · Patio · LYFE",
-            "Anniversaire, dessert avec bougie",
-            "GK",
-            "Groupe Karam",
-            "19h30 · 6 couverts · Grande salle · Téléphone",
-            "Sans gluten pour deux couverts",
-            "YE",
-            "Yasmine El Alaoui",
-            "19h30 · 4 couverts · Terrasse",
-            "NC",
-            "Nabil Cherkaoui",
-            "20h00 · 2 couverts · LYFE",
-            "Demande une table près de la fontaine",
-            "HT",
-            "Hind Tazi",
-            "20h30 · 5 couverts · Grande salle · Téléphone"
+            "Arrivés",
+            "0 tables installées"
           ],
-          "items": [
-            {
-              "title": "Salma Bennani",
-              "meta": "19h00 · 4 couverts · Patio · LYFE",
-              "initials": "SB",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "CONFIRMÉE",
-                  "tone": "info-10"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Groupe Karam",
-              "meta": "19h30 · 6 couverts · Grande salle · Téléphone",
-              "initials": "GK",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "CONFIRMÉE",
-                  "tone": "info-10"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Yasmine El Alaoui",
-              "meta": "19h30 · 4 couverts · Terrasse",
-              "initials": "YE",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "CONFIRMÉE",
-                  "tone": "info-10"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Nabil Cherkaoui",
-              "meta": "20h00 · 2 couverts · LYFE",
-              "initials": "NC",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "À CONFIRMER",
-                  "tone": "warning-12"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Hind Tazi",
-              "meta": "20h30 · 5 couverts · Grande salle · Téléphone",
-              "initials": "HT",
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "CONFIRMÉE",
-                  "tone": "info-10"
-                }
-              ],
-              "actions": []
-            }
-          ]
+          "body": "Arrivés0 tables installées",
+          "pills": []
         }
       ]
     },
@@ -166,33 +233,25 @@
       "blocks": [
         {
           "kind": "settings",
-          "heading": "Journée",
+          "heading": null,
           "subheading": "Aujourd'hui.",
           "actions": [
-            "Jour précédent",
-            "Jour suivant",
-            "Exporter la journée",
-            "Imprimer"
+            "Déjeuner",
+            "Dîner"
           ],
           "facets": [],
           "texts": [
-            "Journée",
             "jeudi 24 septembre",
             "Aujourd'hui.",
-            "Service",
-            "Les services se définissent dans Disponibilités.",
+            "Choisir une date",
+            "Déjeuner",
             "Dîner"
           ],
           "fields": [
             {
-              "label": "jeudi 24 septembre",
+              "label": "Aujourd'hui.",
               "value": "2026-09-24",
               "type": "date"
-            },
-            {
-              "label": "Service",
-              "value": "Dîner",
-              "type": "select-one"
             }
           ],
           "toggles": []
@@ -203,16 +262,11 @@
           "subheading": "Trier par",
           "actions": [
             "Check-in",
-            "Absent",
             "Check-in",
-            "Absent",
             "Check-in",
-            "Absent",
             "Accepter",
             "Refuser",
-            "Absent",
-            "Check-in",
-            "Absent"
+            "Check-in"
           ],
           "facets": [
             {
@@ -235,6 +289,7 @@
           "texts": [
             "Carnet du service",
             "Trier par",
+            "Prochaine arrivée",
             "Heure · tôt → tard",
             "Heure · tard → tôt",
             "Couverts",
@@ -243,105 +298,93 @@
             "1",
             "4",
             "0",
-            "SB",
+            "19h00",
+            "1 table",
+            "19h00",
+            "4 couverts",
             "Salma Bennani",
-            "19h00 · 4 couverts · Patio · LYFE",
+            "Confirmée",
+            "Patio · LYFE",
             "Anniversaire, dessert avec bougie",
-            "GK",
+            "19h30",
+            "2 tables",
+            "19h30",
+            "6 couverts",
             "Groupe Karam",
-            "19h30 · 6 couverts · Grande salle · Téléphone",
+            "Confirmée",
+            "Grande salle · Téléphone",
             "Sans gluten pour deux couverts",
-            "YE",
+            "19h30",
+            "4 couverts",
             "Yasmine El Alaoui",
-            "19h30 · 4 couverts · Terrasse",
-            "NC",
+            "Confirmée",
+            "Terrasse",
+            "20h00",
+            "1 table",
+            "20h00",
+            "2 couverts",
             "Nabil Cherkaoui",
-            "20h00 · 2 couverts · LYFE",
+            "À confirmer",
+            "LYFE",
             "Demande une table près de la fontaine",
-            "HT",
+            "20h30",
+            "1 table",
+            "20h30",
+            "5 couverts",
             "Hind Tazi",
-            "20h30 · 5 couverts · Grande salle · Téléphone"
+            "Confirmée",
+            "Grande salle · Téléphone"
           ],
           "items": [
             {
               "title": "Salma Bennani",
-              "meta": "19h00 · 4 couverts · Patio · LYFE",
-              "initials": "SB",
+              "meta": null,
+              "initials": "Ann",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "CONFIRMÉE",
-                  "tone": "info-10"
-                }
-              ],
+              "pills": [],
               "actions": [
-                "Check-in",
-                "Absent"
+                "Check-in"
               ]
             },
             {
               "title": "Groupe Karam",
-              "meta": "19h30 · 6 couverts · Grande salle · Téléphone",
-              "initials": "GK",
+              "meta": null,
+              "initials": "San",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "CONFIRMÉE",
-                  "tone": "info-10"
-                }
-              ],
+              "pills": [],
               "actions": [
-                "Check-in",
-                "Absent"
+                "Check-in"
               ]
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "19h30 · 4 couverts · Terrasse",
-              "initials": "YE",
+              "meta": null,
+              "initials": null,
               "trailing": null,
-              "pills": [
-                {
-                  "label": "CONFIRMÉE",
-                  "tone": "info-10"
-                }
-              ],
+              "pills": [],
               "actions": [
-                "Check-in",
-                "Absent"
+                "Check-in"
               ]
             },
             {
               "title": "Nabil Cherkaoui",
-              "meta": "20h00 · 2 couverts · LYFE",
-              "initials": "NC",
+              "meta": null,
+              "initials": "Dem",
               "trailing": null,
-              "pills": [
-                {
-                  "label": "À CONFIRMER",
-                  "tone": "warning-12"
-                }
-              ],
+              "pills": [],
               "actions": [
                 "Accepter",
-                "Refuser",
-                "Absent"
+                "Refuser"
               ]
             },
             {
               "title": "Hind Tazi",
-              "meta": "20h30 · 5 couverts · Grande salle · Téléphone",
-              "initials": "HT",
+              "meta": null,
+              "initials": null,
               "trailing": null,
-              "pills": [
-                {
-                  "label": "CONFIRMÉE",
-                  "tone": "info-10"
-                }
-              ],
+              "pills": [],
               "actions": [
-                "Check-in",
-                "Absent"
+                "Check-in"
               ]
             }
           ]
@@ -658,7 +701,7 @@
         {
           "kind": "list",
           "heading": "Services",
-          "subheading": "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
+          "subheading": null,
           "actions": [
             "Ajouter un service"
           ],
@@ -677,7 +720,7 @@
           "items": [
             {
               "title": "Déjeuner",
-              "meta": "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
+              "meta": null,
               "initials": null,
               "trailing": null,
               "pills": [
@@ -690,7 +733,7 @@
             },
             {
               "title": "Dîner",
-              "meta": "tous les jours · 19h00 – 23h30 · dernière réservation 22h30 · 120 couverts · 14 par quart d'heure",
+              "meta": null,
               "initials": null,
               "trailing": null,
               "pills": [
@@ -780,7 +823,7 @@
         {
           "kind": "list",
           "heading": "Jours exceptionnels",
-          "subheading": "Privatisation",
+          "subheading": null,
           "actions": [
             "Fermer une journée"
           ],
@@ -794,7 +837,7 @@
           "items": [
             {
               "title": "mar. 6 oct.",
-              "meta": "Privatisation",
+              "meta": null,
               "initials": null,
               "trailing": null,
               "pills": [

@@ -26,7 +26,15 @@ const SCREENS = venueScreens();
 const width = Number(process.env.W ?? 1440);
 const height = Number(process.env.H ?? 900);
 const email = process.env.EMAIL ?? "yassine@darzellij.ma";
-const venue = process.env.VENUE ?? "";
+// Both venues by default, because they are not the same product.
+// `Détail Sprint` row 41 puts the same user story on Drinks/Cellar, so a
+// lounge renders these seven screens too — and it books créneaux rather
+// than services, which is a different vocabulary through every builder.
+// Walking only the restaurant let a lounge-only crash on Accueil sit
+// behind a clean 6/6 for as long as nobody passed VENUE by hand.
+const venues = process.env.VENUE
+  ? [process.env.VENUE]
+  : ["rst_dar_zellij", "bar_nomad_casa"];
 
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
@@ -52,51 +60,55 @@ await page.fill('input[type="password"]', "demo");
 await page.click('button[type="submit"]');
 await page.waitForTimeout(2000);
 
-if (venue) {
+let ok = 0;
+let expected = 0;
+
+for (const venue of venues) {
   const res = await page.request.post(`${BASE}/api/session/venue`, {
     data: { venueId: venue },
   });
   if (!res.ok()) problems.push(`venue switch failed: ${res.status()}`);
   await page.waitForTimeout(400);
-}
+  console.log(`\n${venue}`);
 
-let ok = 0;
-for (const [path, label] of SCREENS) {
-  const before = problems.length;
-  const response = await page.goto(`${BASE}/restaurant${path}`, {
-    waitUntil: "domcontentloaded",
-    timeout: 25000,
-  });
-  const status = response?.status() ?? 0;
-  await page.waitForTimeout(450);
+  for (const [path, label] of SCREENS) {
+    const before = problems.length;
+    const response = await page.goto(`${BASE}/restaurant${path}`, {
+      waitUntil: "domcontentloaded",
+      timeout: 25000,
+    });
+    const status = response?.status() ?? 0;
+    await page.waitForTimeout(450);
 
-  const bodyText = (await page.textContent("body")) ?? "";
-  const h1 = (await page.textContent("h1").catch(() => "")) ?? "";
-  // The phone-width failure that survives review: the page body itself
-  // scrolling sideways. Wide content must scroll inside its own box.
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  );
+    const bodyText = (await page.textContent("body")) ?? "";
+    const h1 = (await page.textContent("h1").catch(() => "")) ?? "";
+    // The phone-width failure that survives review: the page body itself
+    // scrolling sideways. Wide content must scroll inside its own box.
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
 
-  const issues = [];
-  if (status !== 200) issues.push(`HTTP ${status}`);
-  if (overflow > 2) issues.push(`overflow ${overflow}px`);
-  if (/Cette page n'a pas pu charger|Application error/i.test(bodyText)) {
-    issues.push("error page");
-  }
-  if (bodyText.trim().length < 200) issues.push("near-empty body");
-  const found = problems.slice(before);
+    const issues = [];
+    if (status !== 200) issues.push(`HTTP ${status}`);
+    if (overflow > 2) issues.push(`overflow ${overflow}px`);
+    if (/Cette page n'a pas pu charger|Application error/i.test(bodyText)) {
+      issues.push("error page");
+    }
+    if (bodyText.trim().length < 200) issues.push("near-empty body");
+    const found = problems.slice(before);
 
-  if (issues.length === 0 && found.length === 0) {
-    ok += 1;
-    console.log(`  ok   ${label.padEnd(20)} ${path || "/"}  · ${h1.trim().slice(0, 40)}`);
-  } else {
-    console.log(`  FAIL ${label.padEnd(20)} ${path || "/"}  · ${[...issues, ...found].join(" | ")}`);
+    expected += 1;
+    if (issues.length === 0 && found.length === 0) {
+      ok += 1;
+      console.log(`  ok   ${label.padEnd(20)} ${path || "/"}  · ${h1.trim().slice(0, 40)}`);
+    } else {
+      console.log(`  FAIL ${label.padEnd(20)} ${path || "/"}  · ${[...issues, ...found].join(" | ")}`);
+    }
   }
 }
 
 console.log(
-  `\n${ok}/${SCREENS.length} screens clean at ${width}×${height} · ${LOT_LABEL}${venue ? ` · ${venue}` : ""}`,
+  `\n${ok}/${expected} screens clean at ${width}×${height} · ${LOT_LABEL} · ${venues.join(", ")}`,
 );
 await browser.close();
-process.exit(ok === SCREENS.length ? 0 : 1);
+process.exit(ok === expected ? 0 : 1);

@@ -18,6 +18,7 @@ import { TableBlock } from "./blocks/TableBlock";
 import { ChartBlock } from "./blocks/ChartBlock";
 import { CalendarBlock } from "./blocks/CalendarBlock";
 import { SettingsBlock } from "./blocks/SettingsBlock";
+import { DayBarBlock } from "./blocks/DayBarBlock";
 import { cn } from "@/lib/utils/cn";
 
 // The renderer.
@@ -139,6 +140,8 @@ function BlockView({
       return <CalendarBlock block={block} />;
     case "settings":
       return <SettingsBlock block={block} />;
+    case "day-bar":
+      return <DayBarBlock block={block} />;
     case "split":
       return <Split block={block} surface={surface} />;
     case "group":

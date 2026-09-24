@@ -77,7 +77,21 @@ export const PRICE_RANGE_LABEL: Record<number, string> = {
 
 // ── Service ──────────────────────────────────────────────────
 
-export type ServiceKind = "petit_dejeuner" | "dejeuner" | "diner" | "tardif";
+/**
+ * What kind of sitting a service is.
+ *
+ * `creneau` is the lounge's: a bar sells a time slot, not a meal, and
+ * `Détail Sprint` row 41 puts the same user story on Drinks/Cellar, so
+ * it is as real a kind as dinner. The seed has written it since the
+ * nightlife dataset landed; the union did not admit it, so the row came
+ * back cast to a kind no lookup table had an entry for.
+ */
+export type ServiceKind =
+  | "petit_dejeuner"
+  | "dejeuner"
+  | "diner"
+  | "tardif"
+  | "creneau";
 
 export type ServiceState =
   | "scheduled"

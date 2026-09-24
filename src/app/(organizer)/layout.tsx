@@ -71,7 +71,13 @@ export default async function OrganizerLayout({
             : (account?.eventRole ?? "scanner")
         }
       />
-      <div className="min-h-screen flex">
+      {/* Lot 1 runs at host density: the same tokens and components, a
+          scale built for a stand rather than a desk. See the block in
+          globals.css — it is a mode, so nothing below has to know. */}
+      <div
+        className="min-h-screen flex"
+        data-density={access.lot === 1 ? "host" : undefined}
+      >
         <div className="no-print contents">
           <Sidebar
             venues={session.venues}

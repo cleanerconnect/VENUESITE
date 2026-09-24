@@ -150,13 +150,18 @@ function currentService(venueId: string, list: Service[]): Service | null {
  * nobody wrote.
  */
 function servicesOn(venueId: string, date: string, book: Reservation[]): Service[] {
+  // The live row is one service — the one running now — and a venue that
+  // serves lunch and dinner runs two. Réservations offers the day's
+  // services as tabs, so the day has to answer with all of them: the
+  // live row where it exists, because only it carries the booking
+  // engine's counters, and the definitions for the rest.
   const live = services(venueId).filter((s) => s.date === date);
-  if (live.length > 0) return live;
+  const liveByKind = new Map(live.map((s) => [s.kind + s.opensAt.slice(11, 16), s]));
 
   // ISO weekday, 1 = Monday, to match `service_definitions.weekdays`.
   const weekday = ((new Date(`${date}T12:00:00`).getDay() + 6) % 7) + 1;
 
-  return all(
+  const derived = all(
     "SELECT * FROM service_definitions WHERE venue_id = ? AND enabled = 1 ORDER BY position",
     venueId,
   )
@@ -182,6 +187,11 @@ function servicesOn(venueId: string, date: string, book: Reservation[]): Service
         held
           .filter((b) => states.includes(b.state))
           .reduce((n, b) => n + b.partySize, 0);
+
+      // Where the booking engine already wrote this sitting, that row
+      // wins: its counters are measured, not counted off the book.
+      const already = liveByKind.get(String(r.kind) + String(r.starts_at));
+      if (already) return already;
 
       return {
         // Synthetic, and never written back: it names the definition and
@@ -209,6 +219,8 @@ function servicesOn(venueId: string, date: string, book: Reservation[]): Service
         slotLoad: slotLoadFrom(held),
       } satisfies Service;
     });
+
+  return derived.length > 0 ? derived : live;
 }
 
 /** Half-hour buckets, so a derived curve lands on the same grid. */

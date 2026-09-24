@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { useState } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronRight } from "lucide-react";
@@ -30,6 +31,7 @@ export function VenueSwitcher({
   activeVenueId: string;
 }) {
   const router = useRouter();
+  const { lot } = useWorkspaceAccess();
   const [busy, setBusy] = useState(false);
   const active = venues.find((v) => v.id === activeVenueId) ?? venues[0];
   if (!active) return null;
@@ -58,7 +60,12 @@ export function VenueSwitcher({
           <div className="text-[13px] font-semibold text-ink truncate">
             {active.shortName}
           </div>
-          <div className="text-meta text-ink-mute truncate">{label(active)}</div>
+          {/* A host knows which restaurant they are standing in. The
+              type and the city are for an account holding several, and
+              the switcher below already names both. */}
+          {lot === 2 ? (
+            <div className="text-meta text-ink-mute truncate">{label(active)}</div>
+          ) : null}
         </div>
       </div>
     );
@@ -77,7 +84,11 @@ export function VenueSwitcher({
             <div className="text-[13px] font-semibold text-ink truncate">
               {active.shortName}
             </div>
-            <div className="text-meta text-ink-mute truncate">{label(active)}</div>
+            {lot === 2 ? (
+              <div className="text-meta text-ink-mute truncate">
+                {label(active)}
+              </div>
+            ) : null}
           </div>
           <ChevronRight size={14} className="text-ink-mute shrink-0" />
         </button>

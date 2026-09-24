@@ -214,6 +214,148 @@ body {
   font-weight: 700;
   text-transform: uppercase;
 }
+/* ─────────────────────────────────────────────────────────────
+   Host density — the Dashboard basique scale
+   ─────────────────────────────────────────────────────────────
+
+   Lot 1 is read by a restaurant owner who is not comfortable with
+   software, standing at a host stand, often at arm's length. The Lot 2
+   scale is a dense analyst's scale: 14px body, 12px meta, grey
+   secondary text. At a host stand that is a screen you lean into.
+
+   This is the same design system at a different density, not a second
+   one. Every token, colour and component is unchanged — the type steps
+   up, the secondary colour becomes ink at 70% rather than a separate
+   grey, and controls get a 44px minimum. A mode rather than a set of
+   per-screen overrides, so a component that never heard of Lot 1 still
+   comes out right inside it.
+
+   Applied by `data-density="host"` on the shell; `activeLot()` decides.
+
+   Rules, from the brief:
+     base 16px · nothing below 13px · secondary is ink/70, never grey   */
+
+[data-density="host"] {
+  /* The one colour change: secondary text is the ink at 70%, so it
+     stays in the same family as the primary rather than drifting to a
+     grey that reads as disabled. */
+  --host-soft: rgb(10 31 61 / 0.70);
+  --host-faint: rgb(10 31 61 / 0.55);
+}
+
+[data-density="host"] .text-body {
+  font-size: 16px;
+  line-height: 1.55;
+}
+[data-density="host"] .text-meta {
+  /* The floor. Meta was 12px, which is below it. */
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--host-soft);
+}
+[data-density="host"] .text-eyebrow {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--host-soft);
+}
+[data-density="host"] .text-h1 {
+  font-size: 30px;
+}
+[data-density="host"] .text-h2 {
+  font-size: 22px;
+}
+[data-density="host"] .text-h3 {
+  font-size: 18px;
+}
+
+/* Grey secondary text becomes ink/70 wherever a component reached for
+   the muted token directly. The token itself is untouched — Lot 2 still
+   gets the grey — this only retunes it inside the host shell. */
+[data-density="host"] .text-ink-mute {
+  color: var(--host-soft);
+}
+[data-density="host"] .text-ink-soft {
+  color: var(--host-soft);
+}
+
+/* Controls a hand finds without aiming. 44px is the smallest target
+   that does not need a second attempt, and it is the floor rather than
+   the size — a primary action is taller. */
+[data-density="host"] button,
+[data-density="host"] a[role="button"],
+[data-density="host"] select,
+[data-density="host"] input:not([type="checkbox"]):not([type="radio"]) {
+  min-height: 44px;
+}
+[data-density="host"] input[type="checkbox"],
+[data-density="host"] input[type="radio"] {
+  width: 20px;
+  height: 20px;
+}
+[data-density="host"] .text-control-sm {
+  font-size: 15px;
+}
+[data-density="host"] .text-control-md {
+  font-size: 15px;
+}
+[data-density="host"] .text-control-lg {
+  font-size: 16px;
+}
+
+/* ── Sidebar ──
+   Seven entries, each with its icon, read from a stand rather than a
+   desk. 20px is the brief's floor for a nav label; the row grows to
+   match so the target keeps its padding. */
+[data-density="host"] .sidebar-item {
+  font-size: 20px;
+  height: 52px;
+  gap: 14px;
+}
+[data-density="host"] .sidebar-item-icon {
+  width: 22px;
+  height: 22px;
+}
+/* The group labels above them are a wayfinding aid, not a heading — they
+   step up to the 13px floor and no further, or they compete with the
+   entries they are labelling. */
+[data-density="host"] nav p {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+/* ── The booking row ──
+   Time and party size are what a host reads first: they decide what
+   happens in the next ten minutes. The name is second, because it is
+   what they say out loud. Everything else — zone, channel, note — is
+   context, and context is tertiary. */
+.text-host-lead {
+  font-size: 22px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.text-host-name {
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+.text-host-detail {
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: rgb(10 31 61 / 0.70);
+}
+/* The slot header a paper book would have written across the page. */
+.text-host-slot {
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
 .text-metric-sm {
   font-size: var(--text-metric-sm);
   line-height: 1;

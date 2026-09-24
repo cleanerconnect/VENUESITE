@@ -49,6 +49,7 @@ export const SERVICE_KIND: Record<ServiceKind, Term> = {
   dejeuner: { label: "Déjeuner", tone: "neutral", icon: "sun" },
   diner: { label: "Dîner", tone: "violet", icon: "sunset" },
   tardif: { label: "Service tardif", tone: "muted", icon: "moon" },
+  creneau: { label: "Créneau", tone: "violet", icon: "martini" },
 };
 
 export const SERVICE_STATE: Record<ServiceState, Term> = {
@@ -88,6 +89,33 @@ export const ACTIVITY_TYPE: Record<RestaurantActivityType, Term> = {
 export function reservationBadge(state: ReservationState): Badge {
   const term = RESERVATION_STATE[state];
   return { label: term.label, tone: term.tone, dot: true };
+}
+
+/**
+ * The state, for the host row's left-edge band.
+ *
+ * Four states, four colours, each with its word beside it: the colour is
+ * what a host catches across the room, the word is what survives a
+ * greyscale print and a reader who does not distinguish the two warm
+ * hues. Sentence case rather than the pill's shouting caps — at 14px in
+ * a row of 22px figures, caps read as noise.
+ */
+export function reservationBand(
+  state: ReservationState,
+): { label: string; tone: "success" | "warning" | "neutral" | "danger" } {
+  switch (state) {
+    case "arrived":
+    case "completed":
+      return { label: "Arrivé", tone: "success" };
+    case "requested":
+      return { label: "À confirmer", tone: "warning" };
+    case "no_show":
+      return { label: "Absent", tone: "danger" };
+    case "cancelled":
+      return { label: "Annulée", tone: "danger" };
+    default:
+      return { label: "Confirmée", tone: "neutral" };
+  }
 }
 
 export function serviceBadge(state: ServiceState): Badge {

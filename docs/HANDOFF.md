@@ -296,6 +296,25 @@ groups and six screens a Prio 02 deployment renders — rather than
 detached. The lot changes which screens exist, and which screens exist
 is exactly what that component draws, so it earns a component of its own.
 
+**Host density.** Lot 1 is read by a restaurant owner who is not
+comfortable with software, standing at a host stand. Lot 2's scale is an
+analyst's — 14px body, 12px meta, grey secondary text — and at a stand
+that is a screen you lean into. The same design system runs at a second
+density: `data-density="host"` on the shell, set from `activeLot()`,
+steps the type to a 16px base with nothing below 13px, moves secondary
+text from grey to ink at 70 %, and puts a 44px floor under every
+control. It is a mode, not a set of per-screen overrides, so a component
+that never heard of Lot 1 still comes out right inside it.
+`/styleguide#tokens` renders both densities side by side.
+
+A booking row is drawn in that density rather than in the Lot 2 one: the
+time and the party size lead in 22px, because they decide what happens
+in the next ten minutes; the name follows at 17px, because it is what a
+host says out loud; zone, channel and note are tertiary. The state is a
+band down the row's left edge **and** a word beside it — the colour
+reads across the room, the word survives a greyscale print. Rows are
+grouped under their sitting, the way a paper book is ruled off.
+
 **What `09` holds.** Five Sections, named for the four sidebar groups
 plus the entry:
 
@@ -323,6 +342,12 @@ without the frame asserting two things at once. One message above the
 pair rather than two beneath it — a wrong address and a wrong password
 read the same, so the form cannot be used to find out which partners
 have accounts — and both fields marked without repeating the reason.
+
+**The sidebar knows which screen it is on.** `Chrome / Sidebar ·
+Dashboard basique` is a variant set with one property, `Écran actif`,
+and six values — one per Lot 1 screen. Every frame on `09` sets its own,
+so Réservations highlights Réservations. Before, all six instances
+highlighted Accueil, which is the one state the component could draw.
 
 **What no frame on `09` shows.** A sweep of every text node on the page
 returns nothing for any of: liste d'attente, walk-in, acompte, palier,

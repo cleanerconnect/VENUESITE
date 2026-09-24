@@ -236,6 +236,33 @@ export interface EntityRow {
   trailing?: { label: string; metric: Metric };
   /** Violet-soft insight strip under the row. */
   signal?: { text: string; icon?: IconKey };
+  /**
+   * Host density: the two figures that lead the row.
+   *
+   * A host reads a booking in one order — when, how many, who — because
+   * the first two decide what happens in the next ten minutes and the
+   * third is what they say out loud. Supplied separately from `meta` so
+   * they can be set in the largest type on the row instead of being
+   * buried in a dot-joined secondary line.
+   */
+  lead?: { time: string; party: string };
+  /**
+   * Host density: the state, as a band down the row's left edge and a
+   * word beside it.
+   *
+   * Replaces the status pill for Lot 1. A pill is a small target in a
+   * line of small targets; a full-height band is readable from across
+   * the room and survives a printed frame in greyscale because the word
+   * is there too.
+   */
+  status?: { label: string; tone: "success" | "warning" | "neutral" | "danger" };
+  /**
+   * Host density: the time-slot header this row files under.
+   *
+   * Rows carrying one are grouped beneath it, the way a paper book is
+   * ruled off by sitting.
+   */
+  slot?: string;
   href?: string;
   /** Kebab entries. They label themselves, so they carry a bare Intent. */
   menu?: { id: string; label: string; action: Intent; destructive?: boolean }[];
@@ -280,7 +307,17 @@ export interface SortOption {
 export interface EntityListBlock extends BlockBase {
   type: "entity-list";
   heading?: string;
+  /** One line under the heading saying what the group is for. */
+  subheading?: string;
   headingAction?: Action;
+  /**
+   * Collapses the list behind its own summary line.
+   *
+   * For a group whose work is finished — the parties already seated —
+   * where the count is the only thing worth the space mid-service, and
+   * the rows are one tap away when someone asks who is in.
+   */
+  collapsible?: { summary: string };
   rows: EntityRow[];
   /** Sliding-underline filter tabs. Omit for a plain list. */
   tabs?: FilterTab[];
@@ -493,6 +530,36 @@ export interface SettingsBlock extends BlockBase {
   footerActions?: CtaAction[];
 }
 
+// ── Day bar ──────────────────────────────────────────────────
+
+/**
+ * The day a screen is scoped to, as one row of controls.
+ *
+ * Réservations used to state the day in a settings card: a heading, a
+ * hint, a labelled row for the date, another for the service, and four
+ * buttons in the footer — a form, for something that is not a form. A
+ * host changing to tomorrow is not editing a setting, they are turning a
+ * page. This is the page-turn: back, the day, forward, a picker, and the
+ * day's services as tabs.
+ */
+export interface DayBarBlock extends BlockBase {
+  type: "day-bar";
+  /** French long form — "vendredi 25 septembre". */
+  label: string;
+  /** "Aujourd'hui." / "Demain." — omitted for any other day. */
+  hint?: string;
+  /** `yyyy-MM-dd`, for the picker. */
+  value: string;
+  min?: string;
+  max?: string;
+  /** Fires with `{ value: "yyyy-MM-dd" }`. */
+  command: string;
+  /** The services that day runs. One is shown, not offered. */
+  services: { id: string; label: string }[];
+  activeServiceId: string;
+  serviceCommand: string;
+}
+
 export type Block =
   | GreetingBlock
   | HeroBlock
@@ -505,6 +572,7 @@ export type Block =
   | ChartBlock
   | CalendarBlock
   | SettingsBlock
+  | DayBarBlock
   | SplitBlock
   | GroupBlock;
 
@@ -553,6 +621,16 @@ export interface ScreenSpec {
   /** Document + heading title. */
   title: string;
   subtitle?: string;
+  /**
+   * Actions on the page header, right-aligned.
+   *
+   * For the verbs that act on the whole screen rather than on anything
+   * inside it — exporting the day, printing it. They used to sit in a
+   * card's footer among the controls that change what the screen shows,
+   * where a host had to read four buttons to find the two that only
+   * take a copy away.
+   */
+  headerActions?: CtaAction[];
   /**
    * Blocks for wide viewports. `surface` on each block still applies, so
    * one list can serve both lanes when the screen doesn't need a

@@ -6,6 +6,7 @@ import { buildScreen, type ScreenContext } from "@/lib/restaurant/screens";
 import type { RestaurantOverview } from "@/lib/types/restaurant";
 import { containsBlockType } from "@/lib/dashboard/traverse";
 import { DashboardRenderer } from "@/components/dashboard/DashboardRenderer";
+import { ActionControl } from "@/components/dashboard/primitives";
 import type { CommandHandler } from "@/components/dashboard/commands";
 import { useDetailStore } from "@/lib/stores/detail";
 import {
@@ -210,10 +211,19 @@ export function RestaurantScreen({
   return (
     <>
       {selfTitled ? null : (
-        <header className="mb-6 md:mb-7">
-          <h1 className="text-h1 text-ink">{spec.title}</h1>
-          {spec.subtitle ? (
-            <p className="text-body text-ink-soft mt-2">{spec.subtitle}</p>
+        <header className="mb-6 md:mb-7 flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-h1 text-ink">{spec.title}</h1>
+            {spec.subtitle ? (
+              <p className="text-body text-ink-soft mt-2">{spec.subtitle}</p>
+            ) : null}
+          </div>
+          {spec.headerActions?.length ? (
+            <div className="flex flex-wrap gap-2 shrink-0">
+              {spec.headerActions.map((cta, i) => (
+                <ActionControl key={`${cta.action.label}-${i}`} cta={cta} size="sm" />
+              ))}
+            </div>
           ) : null}
         </header>
       )}

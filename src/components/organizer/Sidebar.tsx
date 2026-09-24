@@ -241,9 +241,14 @@ function SidebarBody({
           without clipping. */}
       <div className="px-6 pt-7 pb-5">
         <Brand height={44} />
-        <div className="text-meta text-ink-mute mt-2 lowercase">
-          {workspace.caption}
-        </div>
+        {/* The caption read "établissement" under a mark that is already
+            the only thing up there. It names the workspace to someone
+            who has exactly one, which is decoration. */}
+        {workspaces.lot === 2 ? (
+          <div className="text-meta text-ink-mute mt-2 lowercase">
+            {workspace.caption}
+          </div>
+        ) : null}
       </div>
 
       {/* Venue switcher on the venue side, organisation switcher on the
@@ -498,7 +503,9 @@ function NavGroup({
             key={item.href}
             href={item.href}
             className={cn(
-              "relative flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium",
+              // `sidebar-item` is the hook host density resizes; the
+              // sizes here stay the Lot 2 ones.
+              "sidebar-item relative flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium",
               "transition-colors duration-150",
               active
                 ? "text-ink"
@@ -518,7 +525,7 @@ function NavGroup({
               size={18}
               strokeWidth={1.6}
               className={cn(
-                "relative z-10 shrink-0",
+                "sidebar-item-icon relative z-10 shrink-0",
                 active ? "text-ink" : "text-ink-mute",
               )}
             />
