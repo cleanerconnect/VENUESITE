@@ -341,6 +341,7 @@ export function notificationPreferences(venueId: string): NotificationPreference
     venueId,
     newBooking: channels("new_booking"),
     cancellation: channels("cancellation"),
+    guestReminder: channels("guest_reminder_j1"),
     review: channels("review"),
     dailySummary: channels("daily_summary"),
   };
@@ -353,6 +354,7 @@ export function setNotificationPreferences(
     const rows: [string, string[]][] = [
       ["new_booking", prefs.newBooking],
       ["cancellation", prefs.cancellation],
+      ["guest_reminder_j1", prefs.guestReminder],
       ["review", prefs.review],
       ["daily_summary", prefs.dailySummary],
     ];

@@ -16,6 +16,7 @@ import { requireVenueAccess, resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
 import { StaleWriteError } from "@/lib/data/repository";
 import { COPY } from "@/lib/copy/fr";
+import type { NotificationChannel } from "@/lib/types/business";
 
 export interface CommandResult {
   ok: boolean;
@@ -668,6 +669,43 @@ export async function runScreenCommand(
         });
         return done("Service supprimé.");
 
+      // One field of one service. A service is drawn as a card of fields,
+      // so changing the closing time is one write and not a round trip
+      // through a ten-field dialog.
+      case "service.set": {
+        const config = await repo.getServiceConfiguration(venueId);
+        const existing = config.services.find((s) => s.id === str(values, "id"));
+        if (!existing) return { ok: false, message: "Service introuvable." };
+        const field = str(values, "field");
+        await repo.runConfigurationAction(venueId, {
+          kind: "service.save",
+          id: existing.id,
+          name: field === "name" ? str(values, "value", existing.name) : existing.name,
+          kindLabel: existing.kind,
+          weekdays: field === "weekdays" ? weekdays(values, "value") : existing.weekdays,
+          startsAt: field === "startsAt" ? str(values, "value", existing.startsAt) : existing.startsAt,
+          endsAt: field === "endsAt" ? str(values, "value", existing.endsAt) : existing.endsAt,
+          lastBookingAt:
+            field === "lastBookingAt"
+              ? str(values, "value", existing.lastBookingAt)
+              : existing.lastBookingAt,
+          capacityCovers:
+            field === "capacityCovers"
+              ? num(values, "value", existing.capacityCovers)
+              : existing.capacityCovers,
+          coversPerQuarter:
+            field === "coversPerQuarter"
+              ? num(values, "value", existing.coversPerQuarter)
+              : existing.coversPerQuarter,
+          turnMinutesSmall: existing.turnMinutesSmall,
+          turnMinutesLarge: existing.turnMinutesLarge,
+          zoneIds: existing.zoneIds,
+          enabled: field === "enabled" ? bool(values, "value") : existing.enabled,
+          expectedVersion: existing.version,
+        });
+        return done();
+      }
+
       case "pacing.set": {
         const config = await repo.getServiceConfiguration(venueId);
         const p = config.pacing;
@@ -734,6 +772,32 @@ export async function runScreenCommand(
       case "zone.setAvailable":
         await repo.setZoneAvailable(venueId, str(values, "id"), bool(values, "value"));
         return done("Zone mise à jour. L'application en tient compte immédiatement.");
+
+      // ── Notifications ──
+      //
+      // The channels one alert goes out on, as a list rather than a
+      // single choice: an alert that matters goes out by push *and*
+      // e-mail. An empty list is a muted alert, which is a legitimate
+      // answer and not a missing value.
+      case "notifications.set": {
+        const current = await repo.getNotificationPreferences(venueId);
+        const event = str(values, "event");
+        const channels = str(values, "value")
+          .split(",")
+          .map((c) => c.trim())
+          .filter((c): c is NotificationChannel =>
+            c === "push" || c === "email" || c === "whatsapp",
+          );
+        await repo.updateNotificationPreferences({
+          ...current,
+          ...(event === "newBooking" ? { newBooking: channels } : {}),
+          ...(event === "cancellation" ? { cancellation: channels } : {}),
+          ...(event === "guestReminder" ? { guestReminder: channels } : {}),
+          ...(event === "review" ? { review: channels } : {}),
+          ...(event === "dailySummary" ? { dailySummary: channels } : {}),
+        });
+        return done("Notifications enregistrées.");
+      }
 
       // ── Paramètres ──
       case "settings.set": {

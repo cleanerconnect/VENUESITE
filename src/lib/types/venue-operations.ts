@@ -579,6 +579,13 @@ export interface VenueSettings {
   googlePlaceUrl: string;
   instagramHandle: string;
   whatsappNumber: string;
+  /**
+   * Where the venue's own alerts land. Separate from the public contact
+   * on the fiche: the number a guest calls to book is not necessarily
+   * the one that should buzz at 23h when a table cancels.
+   */
+  alertPhone: string;
+  alertEmail: string;
   dressCode: string;
   minimumAge: number;
   apiAccessEnabled: boolean;

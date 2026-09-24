@@ -642,6 +642,7 @@ insert("review_replies", {
 [
   ["new_booking", ["push", "email"]],
   ["cancellation", ["push"]],
+  ["guest_reminder_j1", ["push", "whatsapp"]],
   ["review", ["email"]],
   ["daily_summary", ["email"]],
 ].forEach(([event_type, channels]) =>
@@ -987,7 +988,7 @@ function seedOperations(opts) {
     venue, prefix, configuration, service, serviceLabel, capacity,
     customers, staffName, staffId, transactions: hasTransactions,
     nightlife, legalName, ice, rc, iban, googleUrl, instagram, whatsapp,
-    dressCode, minimumAge, zones,
+    alertPhone, alertEmail, dressCode, minimumAge, zones,
   } = opts;
   const p = (s) => `${prefix}_${s}`;
 
@@ -1008,6 +1009,8 @@ function seedOperations(opts) {
     google_place_url: googleUrl,
     instagram_handle: instagram,
     whatsapp_number: whatsapp,
+    alert_phone: alertPhone,
+    alert_email: alertEmail,
     dress_code: dressCode,
     minimum_age: minimumAge,
     api_access_enabled: 0,
@@ -1544,6 +1547,8 @@ seedOperations({
   googleUrl: "https://g.page/dar-zellij",
   instagram: "@darzellij",
   whatsapp: "+212 661 00 26 00",
+  alertPhone: "+212 661 00 26 00",
+  alertEmail: "reservations@darzellij.ma",
   dressCode: "",
   minimumAge: 0,
   tripadvisorUrl: "https://www.tripadvisor.fr/dar-zellij",
@@ -1662,6 +1667,8 @@ seedOperations({
   googleUrl: "https://g.page/nomad-rooftop",
   instagram: "@nomadrooftop",
   whatsapp: "+212 661 47 11 90",
+  alertPhone: "+212 661 47 11 90",
+  alertEmail: "reservations@nomadrooftop.ma",
   dressCode: "Tenue soignée exigée. Ni short ni sandales après 22 h.",
   minimumAge: 21,
   tripadvisorUrl: "https://www.tripadvisor.fr/nomad-rooftop",

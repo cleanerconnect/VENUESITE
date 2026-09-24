@@ -392,12 +392,14 @@ const SURFACE = () => {
 };
 
 // Surfaces to open, per route. Each entry names what to click and what to
-// call the result. Selectors are text-based so they survive class churn.
-// A row in an EntityListBlock is an h4 title inside a clickable card, not
-// a table row — clicking the h4 opens the detail drawer.
+// call the result. Selectors are text-based, or read a `data-` hook, so
+// they survive class churn: the row selector used to be spelled out of
+// Tailwind classes and stopped matching the moment the row's actions
+// moved onto the row, which left a stale detail-sheet PNG in the
+// reference set with nothing saying so.
 const SURFACES = {
   "/restaurant/reservations": [
-    { name: "Détail réservation", click: "button.block.w-full:visible" },
+    { name: "Détail réservation", click: '[data-row="open"]:visible' },
     // Refuser only exists on a reservation still awaiting a decision, so
     // filter to "À confirmer" first, then open that row.
     // Refusing with a coded reason. The step used to go through the detail

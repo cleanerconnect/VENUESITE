@@ -31,7 +31,7 @@ export function SaveBar({
     // the field above fades out under it instead of being clipped by it.
     <div className="sticky bottom-0 z-10 -mx-1 px-1 pb-1 pt-6 bg-gradient-to-t from-canvas via-canvas to-transparent">
       <div className="flex items-center gap-3 flex-wrap border border-line bg-surface rounded-[var(--radius-md)] px-4 py-3">
-        <div className="flex-1 min-w-[180px] text-meta" role="status" aria-live="polite">
+        <div className="flex-1 min-w-[180px] text-[14px]" role="status" aria-live="polite">
           <AnimatePresence mode="wait" initial={false}>
             {state === "saved" ? (
               <motion.span
@@ -83,16 +83,18 @@ export function SaveBar({
         </div>
 
         {dirty ? (
-          <Button variant="ghost" size="sm" onClick={onReset} disabled={saving}>
+          <Button variant="ghost" onClick={onReset} disabled={saving}>
             {COPY.action.cancel}
           </Button>
         ) : null}
+        {/* 44px and filled: the one button on the screen that commits
+            what the host just typed should be the easiest thing on it to
+            hit. */}
         <Button
-          size="sm"
           onClick={onSave}
           disabled={!dirty || saving}
           iconLeft={
-            saving ? <Loader2 size={14} strokeWidth={2.2} className="animate-spin" /> : undefined
+            saving ? <Loader2 size={16} strokeWidth={2.2} className="animate-spin" /> : undefined
           }
         >
           {saving ? COPY.action.saving : COPY.action.save}

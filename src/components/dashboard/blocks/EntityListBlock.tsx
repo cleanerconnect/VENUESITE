@@ -419,6 +419,11 @@ function Row({ row }: { row: EntityRow }) {
           {row.detail ? (
             <button
               type="button"
+              // A stable hook for the capture tool: it has to open a row
+              // to photograph the detail sheet, and a selector written
+              // out of Tailwind classes silently stops matching the day
+              // the row's layout changes.
+              data-row="open"
               onClick={() => row.detail && openDetail(row.detail)}
               className={cn(
                 "flex-1 min-w-0 text-left p-4",
@@ -430,6 +435,7 @@ function Row({ row }: { row: EntityRow }) {
           ) : row.href ? (
             <Link
               href={row.href}
+              data-row="open"
               className={cn("flex-1 min-w-0 p-4", row.status && "pl-6")}
             >
               {inner}

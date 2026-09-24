@@ -4,11 +4,9 @@ import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Field } from "@/components/forms/Field";
 import { SaveBar } from "@/components/forms/SaveBar";
 import { useOptimisticForm } from "@/lib/forms/useOptimisticForm";
 import { saveVenueIdentity, type VenueIdentityInput } from "@/app/actions/venue";
-import { cn } from "@/lib/utils/cn";
 
 export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) {
   const { lot } = useWorkspaceAccess();
@@ -58,31 +56,14 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        {/* Restaurant or Bar is not something an owner changes on a
+            Tuesday — it decides the vocabulary of the whole portal, and
+            it is settled when the venue is created. Two chips asking the
+            question again on the fiche only invited a mis-tap that
+            renames every screen. The stored value is kept and simply not
+            asked for. */}
+        <div className="mt-4 md:max-w-[50%]">
           {text("category", "Catégorie", { hint: "Ex. Marocaine contemporaine" })}
-          <Field label="Type d'établissement" error={form.errorFor("kind")}>
-            {() => (
-              <div className="flex gap-2" role="radiogroup" aria-label="Type d'établissement">
-                {(["restaurant", "drinks"] as const).map((kind) => (
-                  <button
-                    key={kind}
-                    type="button"
-                    role="radio"
-                    aria-checked={form.value.kind === kind}
-                    onClick={() => form.set("kind", kind)}
-                    className={cn(
-                      "flex-1 h-11 rounded-[var(--radius-sm)] border text-[13.5px] font-medium transition-colors",
-                      form.value.kind === kind
-                        ? "border-ink bg-violet-soft text-ink"
-                        : "border-line bg-surface text-ink-soft hover:border-ink/40",
-                    )}
-                  >
-                    {kind === "restaurant" ? "Restaurant" : "Bar"}
-                  </button>
-                ))}
-              </div>
-            )}
-          </Field>
         </div>
       </Card>
 

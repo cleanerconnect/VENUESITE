@@ -41,7 +41,6 @@ export function buildAvailabilityScreen(
   configuration: VenueConfiguration,
   lot: Lot = 2,
 ): ScreenSpec {
-  const lot1 = lot === 1;
   const vocabulary = configFor(configuration);
 
   if (!config) {
@@ -66,51 +65,39 @@ export function buildAvailabilityScreen(
 
   const pacing = config.pacing;
 
+  // The switch the whole screen hangs off, drawn as the largest control
+  // on it. Everything below only matters while this is on.
   const master: Block = {
     id: "booking-switch",
     type: "settings",
-    heading: "Réservation en ligne",
-    subheading: "L'interrupteur général. Tout le reste de cet écran en dépend.",
     banner: pacing.onlineBookingOpen
       ? undefined
       : {
           tone: "danger",
           title: "La réservation en ligne est coupée",
-          body: pacing.reopenAt
-            ? `Réouverture programmée le ${shortDay(pacing.reopenAt)}.`
-            : "Aucune réouverture programmée : l'application n'accepte aucune réservation.",
+          body: "L'établissement reste visible dans l'application, mais aucun créneau n'y est proposé.",
         },
     rows: [
       {
         id: "online",
-        label: "Accepter les réservations depuis l'application",
+        label: "Accepter les réservations en ligne",
         hint: "Coupé, l'établissement reste visible mais n'est plus réservable.",
         control: { kind: "toggle", value: pacing.onlineBookingOpen },
         command: "pacing.set",
         payload: { field: "onlineBookingOpen" },
         allow: ["owner", "admin"],
-      },
-      {
-        id: "reopen",
-        label: "Réouverture programmée",
-        // A native date input renders whatever the browser's locale says,
-        // which on a French screen is a row of digits the rest of the
-        // portal never uses. The hint says the same date in words, so
-        // the row reads in French however the field is drawn.
-        hint: pacing.reopenAt
-          ? `Réouverture le ${dayLabel(pacing.reopenAt)}. Laissez vide pour rouvrir à la main.`
-          : "Laissez vide pour rouvrir à la main.",
-        control: { kind: "date", value: (pacing.reopenAt ?? "").slice(0, 10) },
-        command: "pacing.set",
-        payload: { field: "reopenAt" },
-        allow: ["owner", "admin"],
+        emphasis: "lead",
       },
     ],
   };
 
+  const serviceCards: Block[] = config.services.map((service) =>
+    serviceCard(service, configuration),
+  );
+
   const services: Block = {
     id: "services",
-    type: "entity-list",
+    type: "group",
     heading: vocabulary.service.many.replace(/^./, (c) => c.toUpperCase()),
     headingAction: {
       kind: "command",
@@ -118,25 +105,87 @@ export function buildAvailabilityScreen(
       label: `Ajouter un ${vocabulary.service.one}`,
       icon: "plus",
     },
-    rows: config.services.map((service) => serviceRow(service, configuration)),
-    empty: {
-      title: `Aucun ${vocabulary.service.one}`,
-      body: "Sans service défini, l'application n'a aucun créneau à proposer.",
-      icon: "sunset",
-      action: {
-        kind: "command",
-        command: "service.create",
-        label: `Ajouter un ${vocabulary.service.one}`,
-      },
-    },
+    children:
+      serviceCards.length > 0
+        ? serviceCards
+        : [
+            {
+              id: "services-empty",
+              type: "entity-list",
+              rows: [],
+              empty: {
+                title: `Aucun ${vocabulary.service.one}`,
+                body: "Sans service défini, l'application n'a aucun créneau à proposer.",
+                icon: "sunset",
+                action: {
+                  kind: "command",
+                  command: "service.create",
+                  label: `Ajouter un ${vocabulary.service.one}`,
+                },
+              },
+            },
+          ],
   };
 
-  const pacingBlock: Block = {
-    id: "pacing",
+  // The three rules a venue actually changes in a season. Groups that are
+  // too big for the room, how far ahead the book opens, and the hour
+  // after which tonight is closed.
+  const rules: Block = {
+    id: "rules",
     type: "settings",
-    heading: "Cadence et fenêtre de réservation",
-    subheading:
-      "Ce qui empêche la salle de recevoir vingt arrivées dans le même quart d'heure.",
+    heading: "Règles de réservation",
+    subheading: "Ce que l'application accepte sans vous demander.",
+    rows: [
+      {
+        id: "max-party",
+        label: "Groupe maximum en ligne",
+        hint: "Au-delà, la demande passe en validation manuelle.",
+        control: {
+          kind: "number",
+          value: pacing.maxPartyOnline,
+          min: 1,
+          max: 40,
+          suffix: "personnes",
+        },
+        command: "pacing.set",
+        payload: { field: "maxPartyOnline" },
+        allow: ["owner", "admin"],
+      },
+      {
+        id: "window",
+        label: "Réservation possible à l'avance",
+        hint: "Au-delà de ce nombre de jours, la date n'est pas encore ouverte.",
+        control: {
+          kind: "number",
+          value: pacing.bookingWindowDays,
+          min: 1,
+          max: 365,
+          suffix: "jours",
+        },
+        command: "pacing.set",
+        payload: { field: "bookingWindowDays" },
+        allow: ["owner", "admin"],
+      },
+      {
+        id: "cutoff",
+        label: "Heure limite le jour même",
+        hint: "Passé cette heure, l'application ne propose plus ce soir.",
+        control: { kind: "time", value: pacing.sameDayCutoff },
+        command: "pacing.set",
+        payload: { field: "sameDayCutoff" },
+        allow: ["owner", "admin"],
+      },
+    ],
+  };
+
+  // Set once, at installation, and then left alone for years. Open, they
+  // put eight fields between the host and the two they came for.
+  const advanced: Block = {
+    id: "advanced",
+    type: "settings",
+    heading: "Réglages avancés",
+    subheading: "La cadence en salle et les seuils. Réglés une fois, rarement revus.",
+    collapsed: true,
     rows: [
       {
         id: "arrivals",
@@ -168,23 +217,8 @@ export function buildAvailabilityScreen(
         allow: ["owner", "admin"],
       },
       {
-        id: "max-party",
-        label: "Groupe maximum accepté en ligne",
-        hint: "Au-delà, la demande passe en validation manuelle.",
-        control: {
-          kind: "number",
-          value: pacing.maxPartyOnline,
-          min: 1,
-          max: 40,
-          suffix: "personnes",
-        },
-        command: "pacing.set",
-        payload: { field: "maxPartyOnline" },
-        allow: ["owner", "admin"],
-      },
-      {
         id: "min-party",
-        label: "Groupe minimum accepté en ligne",
+        label: "Groupe minimum en ligne",
         control: {
           kind: "number",
           value: pacing.minPartyOnline,
@@ -212,29 +246,6 @@ export function buildAvailabilityScreen(
         allow: ["owner", "admin"],
       },
       {
-        id: "window",
-        label: "Réservation possible à l'avance",
-        hint: "Au-delà de ce nombre de jours, la date n'est pas encore ouverte.",
-        control: {
-          kind: "number",
-          value: pacing.bookingWindowDays,
-          min: 1,
-          max: 365,
-          suffix: "jours",
-        },
-        command: "pacing.set",
-        payload: { field: "bookingWindowDays" },
-        allow: ["owner", "admin"],
-      },
-      {
-        id: "cutoff",
-        label: "Heure limite le jour même",
-        control: { kind: "time", value: pacing.sameDayCutoff },
-        command: "pacing.set",
-        payload: { field: "sameDayCutoff" },
-        allow: ["owner", "admin"],
-      },
-      {
         id: "lead",
         label: "Délai minimum avant une réservation",
         hint: "Entre le moment où le client réserve et l'heure demandée.",
@@ -256,7 +267,7 @@ export function buildAvailabilityScreen(
   const closures: Block = {
     id: "closures",
     type: "entity-list",
-    heading: "Jours exceptionnels",
+    heading: "Jours de fermeture",
     headingAction: {
       kind: "command",
       command: "calendar.close",
@@ -268,7 +279,6 @@ export function buildAvailabilityScreen(
       title: shortDay(closure.date),
       icon: "ban" as const,
       meta: closure.reason || "Fermeture exceptionnelle",
-      badges: [{ label: "FERMÉ", tone: "muted" as const }],
       menu: [
         {
           id: "open",
@@ -285,95 +295,137 @@ export function buildAvailabilityScreen(
       title: "Aucune fermeture",
       body: "Fériés, privatisations, congés : ce qui retire une journée du carnet.",
       icon: "calendar",
-      // Calendrier is Lot 2; without it the empty state says what a
-      // closure is and leaves it there.
-      action: lot1
-        ? undefined
-        : {
-            kind: "link",
-            href: restaurantHref("calendrier"),
-            label: "Ouvrir le calendrier",
-          },
+      action: {
+        kind: "command",
+        command: "calendar.close",
+        label: "Fermer une journée",
+      },
     },
   };
 
-  // What a guest sees, from the same values the rows above edit. A
-  // preview built from a second source is a preview that lies.
-  const preview: Block = {
-    id: "guest-preview",
-    type: "nudge",
-    eyebrow: "Ce que voit un client",
-    icon: "phone",
-    headline: pacing.onlineBookingOpen
-      ? "Réservation ouverte"
-      : "Réservation fermée",
-    body: pacing.onlineBookingOpen
-      ? `Réservable jusqu'à ${pacing.bookingWindowDays} jours à l'avance, de ${pacing.minPartyOnline} à ${pacing.maxPartyOnline} personnes, au plus tard ${pacing.minLeadMinutes} minutes avant. Le jour même, jusqu'à ${clock(pacing.sameDayCutoff)}. Au-delà de ${pacing.requestOnlyAbove} personnes, la demande est envoyée à l'établissement.`
-      : "L'établissement apparaît dans l'application mais aucun créneau n'est proposé.",
-    actions: lot1
-      ? []
-      : [
-          {
-            action: {
-              kind: "link",
-              href: restaurantHref("calendrier"),
-              label: "Voir la charge par jour",
-              icon: "calendar",
+  // Lot 2 adds the load calendar; Lot 1 stops at the closure list.
+  const calendarLink: Block[] = lot === 1
+    ? []
+    : [
+        {
+          id: "calendar-link",
+          type: "nudge",
+          eyebrow: "Calendrier",
+          icon: "calendar",
+          headline: "La charge jour par jour",
+          body: "Le calendrier montre ce que chaque journée a déjà pris, et où il reste de la place.",
+          actions: [
+            {
+              action: {
+                kind: "link",
+                href: restaurantHref("calendrier"),
+                label: "Ouvrir le calendrier",
+                icon: "calendar",
+              },
+              variant: "secondary",
             },
-            variant: "secondary",
-          },
-        ],
-  };
+          ],
+        },
+      ];
 
   return {
     slug: "disponibilites",
     title: "Disponibilités",
     subtitle: "Ce qui décide de ce que l'application propose",
-    blocks: [master, services, pacingBlock, closures, preview],
+    blocks: [master, services, rules, advanced, closures, ...calendarLink],
   };
 }
 
-function serviceRow(service: ServiceDefinition, configuration: VenueConfiguration) {
+const WEEKDAY_OPTIONS = WEEKDAY_SHORT.map((label, i) => ({
+  value: String(i + 1),
+  label: label.replace(/^./, (c) => c.toUpperCase()),
+}));
+
+/**
+ * A service, as a card of fields.
+ *
+ * It used to be a row of run-together text — "lun, mar, mer · 19:00 –
+ * 23:00 · dernière réservation 22:00 · 60 couverts" — with a menu that
+ * opened a ten-field dialog to change any of it. A host moving the
+ * closing time forward by half an hour should see a closing time and
+ * type in it.
+ */
+function serviceCard(
+  service: ServiceDefinition,
+  configuration: VenueConfiguration,
+): Block {
   const vocabulary = configFor(configuration);
+  const id = (field: string) => `svc-${service.id}-${field}`;
+  const write = (field: string) => ({
+    command: "service.set",
+    payload: { id: service.id, field },
+    allow: ["owner", "admin"] as string[],
+  });
+
   return {
-    id: service.id,
-    title: service.name,
-    icon: "sunset" as const,
-    meta: [
-      weekdayLabel(service.weekdays),
-      `${clock(service.startsAt)} – ${clock(service.endsAt)}`,
-      `dernière réservation ${clock(service.lastBookingAt)}`,
-      `${service.capacityCovers} ${vocabulary.cover.many}`,
-      `${service.coversPerQuarter} par quart d'heure`,
-    ].join(" · "),
-    badges: [
-      service.enabled
-        ? { label: "ACTIF", tone: "success" as const }
-        : { label: "DÉSACTIVÉ", tone: "muted" as const },
-    ],
-    signal:
-      service.zoneIds.length > 0
-        ? { text: `${service.zoneIds.length} zones réservables sur ce service.`, icon: "map" as const }
-        : { text: "Aucune zone associée : le client ne choisit pas où s'asseoir.", icon: "info" as const },
-    menu: [
+    id: `service-${service.id}`,
+    type: "settings",
+    heading: service.name,
+    subheading: `${weekdayLabel(service.weekdays)} · ${clock(service.startsAt)} – ${clock(service.endsAt)}`,
+    rows: [
       {
-        id: "edit",
-        label: "Modifier",
-        action: {
-          kind: "command" as const,
-          command: "service.edit",
-          payload: { id: service.id },
+        id: id("weekdays"),
+        label: "Jours",
+        control: {
+          kind: "switches",
+          value: service.weekdays.map(String).join(","),
+          options: WEEKDAY_OPTIONS,
         },
+        ...write("weekdays"),
       },
       {
-        id: "remove",
-        label: "Supprimer",
-        destructive: true,
+        id: id("startsAt"),
+        label: "Ouverture",
+        control: { kind: "time", value: service.startsAt },
+        ...write("startsAt"),
+      },
+      {
+        id: id("endsAt"),
+        label: "Fermeture",
+        control: { kind: "time", value: service.endsAt },
+        ...write("endsAt"),
+      },
+      {
+        id: id("lastBookingAt"),
+        label: "Dernière réservation acceptée",
+        hint: "L'heure après laquelle l'application ne propose plus ce service.",
+        control: { kind: "time", value: service.lastBookingAt },
+        ...write("lastBookingAt"),
+      },
+      {
+        id: id("capacityCovers"),
+        label: "Capacité",
+        control: {
+          kind: "number",
+          value: service.capacityCovers,
+          min: 1,
+          max: 2000,
+          suffix: vocabulary.cover.many,
+        },
+        ...write("capacityCovers"),
+      },
+      {
+        id: id("enabled"),
+        label: "Service ouvert à la réservation",
+        control: { kind: "toggle", value: service.enabled },
+        ...write("enabled"),
+      },
+    ],
+    footerActions: [
+      {
         action: {
-          kind: "command" as const,
+          kind: "command",
           command: "service.remove",
+          label: "Retirer ce service",
           payload: { id: service.id },
         },
+        variant: "ghost",
+        allow: ["owner", "admin"],
       },
     ],
   };
@@ -385,7 +437,28 @@ const CHANNELS = [
   { value: "push", label: "Push" },
   { value: "email", label: "E-mail" },
   { value: "whatsapp", label: "WhatsApp" },
-  { value: "none", label: "Aucun" },
+];
+
+/** The three alerts a basic dashboard sends, and what each one is. */
+const ALERTS: { id: string; event: string; label: string; hint: string }[] = [
+  {
+    id: "new-booking",
+    event: "newBooking",
+    label: "Nouvelle demande de réservation",
+    hint: "Dès qu'un client demande une table.",
+  },
+  {
+    id: "cancellation",
+    event: "cancellation",
+    label: "Annulation par le client",
+    hint: "Une table qui se libère est une table à remplir.",
+  },
+  {
+    id: "guest-reminder",
+    event: "guestReminder",
+    label: "Rappel au client la veille",
+    hint: "Le message qui fait le plus baisser les absences. Il part au client, pas à vous.",
+  },
 ];
 
 /** The guest messages LYFE sends on the venue's behalf. */
@@ -400,12 +473,6 @@ const GUEST_MESSAGES: {
     label: "Confirmation",
     hint: "Envoyée dès que la réservation est acceptée.",
     timing: "immédiat",
-  },
-  {
-    id: "reminder_j1",
-    label: "Rappel la veille",
-    hint: "Le rappel qui fait le plus baisser les absences.",
-    timing: "J-1 à 18h00",
   },
   {
     id: "reminder_h3",
@@ -435,108 +502,106 @@ const GUEST_MESSAGES: {
 
 export function buildNotificationsScreen(
   prefs: NotificationPreferences | undefined,
+  settings: VenueSettings | undefined,
   messages: { id: string; recipient: string; kind: string; status: string; at: string; channel: string; failureReason: string }[],
   lot: Lot = 2,
 ): ScreenSpec {
   const lot1 = lot === 1;
-  const channelOf = (list: string[] | undefined) =>
-    list && list.length > 0 ? list[0] : "none";
+  const channelsOf = (list: string[] | undefined) => (list ?? []).join(",");
 
-  const team: Block = {
-    id: "team-alerts",
+  // Three alerts, three channels each, as switches. A select made the
+  // channels exclusive, which was wrong twice over: an alert that matters
+  // goes out by push *and* WhatsApp, and an alert nobody wants is muted
+  // by turning all three off, not by choosing "Aucun".
+  const alerts: Block = {
+    id: "alerts",
     type: "settings",
-    heading: "Alertes de l'équipe",
-    subheading: "Choisissez par quel canal chaque alerte vous parvient.",
+    heading: "Alertes",
+    subheading: "Par quel canal chaque alerte part. Plusieurs canaux à la fois si vous voulez.",
+    rows: ALERTS.map((alert) => ({
+      id: alert.id,
+      label: alert.label,
+      hint: alert.hint,
+      control: {
+        kind: "switches" as const,
+        value: channelsOf(
+          alert.event === "newBooking"
+            ? prefs?.newBooking
+            : alert.event === "cancellation"
+              ? prefs?.cancellation
+              : prefs?.guestReminder,
+        ),
+        options: CHANNELS,
+      },
+      command: "notifications.set",
+      payload: { event: alert.event },
+      allow: ["owner", "admin"],
+    })),
+  };
+
+  // Where they land. Kept apart from the public contact on the fiche: the
+  // number a guest calls to book is not necessarily the one that should
+  // buzz at 23h when a table cancels.
+  const recipients: Block = {
+    id: "recipients",
+    type: "settings",
+    heading: "Qui les reçoit",
+    subheading: "Le numéro et l'adresse de l'établissement, pas ceux de la fiche publique.",
     rows: [
       {
-        id: "new-booking",
-        label: "Nouvelle demande de réservation",
-        hint: "Envoyée dès qu'un client demande une table.",
-        control: { kind: "select", value: channelOf(prefs?.newBooking), options: CHANNELS },
-        command: "notifications.channel",
-        payload: { event: "newBooking" },
-        allow: ["owner", "admin"],
+        id: "alert-phone",
+        label: "Numéro qui reçoit les alertes",
+        hint: "Push et WhatsApp partent sur ce numéro.",
+        control: {
+          kind: "text",
+          value: settings?.alertPhone ?? "",
+          placeholder: "+212 6 00 00 00 00",
+        },
+        command: "settings.set",
+        payload: { field: "alertPhone" },
+        allow: ["owner"],
       },
-      // Lot 1 buys one alert: the booking that needs a decision. The
-      // other three are the same control over events Lot 1 does not act
-      // on anywhere in the portal.
-      ...(lot1
-        ? []
-        : ([
-            {
-              id: "cancellation",
-              label: "Annulation",
-              control: {
-                kind: "select" as const,
-                value: channelOf(prefs?.cancellation),
-                options: CHANNELS,
-              },
-              command: "notifications.channel",
-              payload: { event: "cancellation" },
-              allow: ["owner", "admin"] as Role[],
-            },
-            {
-              id: "review",
-              label: "Avis reçu",
-              control: { kind: "select" as const, value: channelOf(prefs?.review), options: CHANNELS },
-              command: "notifications.channel",
-              payload: { event: "review" },
-              allow: ["owner", "admin"] as Role[],
-            },
-            {
-              id: "summary",
-              label: "Résumé quotidien",
-              hint: "Un récapitulatif du service de la veille, le matin.",
-              control: {
-                kind: "select" as const,
-                value: channelOf(prefs?.dailySummary),
-                options: CHANNELS,
-              },
-              command: "notifications.channel",
-              payload: { event: "dailySummary" },
-              allow: ["owner", "admin"] as Role[],
-            },
-          ] satisfies SettingRow[])),
+      {
+        id: "alert-email",
+        label: "Adresse e-mail qui reçoit les alertes",
+        control: {
+          kind: "text",
+          value: settings?.alertEmail ?? "",
+          placeholder: "reservations@etablissement.ma",
+        },
+        command: "settings.set",
+        payload: { field: "alertEmail" },
+        allow: ["owner"],
+      },
     ],
   };
 
   const guest: Block = {
     id: "guest-messages",
     type: "settings",
-    heading: "Messages aux clients",
+    heading: "Autres messages aux clients",
     subheading:
       "Envoyés par LYFE au nom de l'établissement. Le texte reste dans les gabarits validés ; le moment vous appartient.",
     banner: {
       tone: "info",
       title: "Ces messages ne sont pas des campagnes",
-      body: lot1
-        ? "Ils partent quel que soit le consentement marketing, parce qu'ils concernent une réservation que le client a faite. Les campagnes marketing arrivent avec le lot 2."
-        : "Ils partent quel que soit le consentement marketing, parce qu'ils concernent une réservation que le client a faite. Les campagnes vivent dans Campagnes.",
-      action: lot1
-        ? undefined
-        : {
-            kind: "link",
-            href: restaurantHref("campagnes"),
-            label: "Ouvrir Campagnes",
-          },
-    },
-    // Lot 1 sends one guest message: the confirmation of a booking it
-    // accepted. The rest are the reminder and survey cadence Lot 2 buys.
-    rows: (lot1
-      ? GUEST_MESSAGES.filter((m) => m.id === "confirmation")
-      : GUEST_MESSAGES
-    ).flatMap((message): SettingRow[] => [
-      {
-        id: `${message.id}-channel`,
-        label: message.label,
-        hint: message.hint,
-        control: { kind: "select", value: "whatsapp", options: CHANNELS },
-        command: "notifications.guestChannel",
-        payload: { message: message.id },
-        badge: { label: message.timing.toUpperCase(), tone: "neutral" },
-        allow: ["owner", "admin"],
+      body: "Ils partent quel que soit le consentement marketing, parce qu'ils concernent une réservation que le client a faite. Les campagnes vivent dans Campagnes.",
+      action: {
+        kind: "link",
+        href: restaurantHref("campagnes"),
+        label: "Ouvrir Campagnes",
       },
-    ]),
+    },
+    rows: GUEST_MESSAGES.map((message): SettingRow => ({
+      id: `${message.id}-channel`,
+      label: message.label,
+      hint: message.hint,
+      control: { kind: "switches", value: "whatsapp", options: CHANNELS },
+      command: "notifications.guestChannel",
+      payload: { message: message.id },
+      badge: { label: message.timing.toUpperCase(), tone: "neutral" },
+      allow: ["owner", "admin"],
+    })),
     footerActions: [
       {
         action: {
@@ -559,13 +624,7 @@ export function buildNotificationsScreen(
       { id: "all", label: "Tout" },
       { id: "failed", label: "Échecs", match: { facet: "status", values: ["echoue"] } },
     ],
-    // The journal records what went out. Under Lot 1 that is the one
-    // message Lot 1 sends: a log showing reminders and survey invites
-    // beside a screen that offers neither reads as a screen with hidden
-    // settings rather than as a narrower product.
-    rows: (lot1 ? messages.filter((m) => m.kind === "confirmation") : messages)
-      .slice(0, 50)
-      .map((m) => ({
+    rows: messages.slice(0, 50).map((m) => ({
       id: m.id,
       title: m.recipient,
       icon: "message-square" as const,
@@ -589,17 +648,17 @@ export function buildNotificationsScreen(
 
   // Notifications, under sprint Prio 02.
   //
-  // One alert: the booking that needs a decision. The guest-message
-  // cadence and the delivery journal both describe messages LYFE sends
-  // on the venue's behalf, and the screen that owns that conversation —
+  // Three alerts and the two addresses they reach. The wider guest-message
+  // cadence and the delivery journal both describe messages LYFE sends on
+  // the venue's behalf, and the screen that owns that conversation —
   // Campagnes — is Prio 08. A journal listing sends the partner cannot
   // configure reads as a screen with settings hidden from them.
   if (lot1) {
     return {
       slug: "notifications",
       title: "Notifications",
-      subtitle: "Comment vous êtes prévenu d'une nouvelle demande",
-      blocks: [team],
+      subtitle: "Ce dont vous êtes prévenu, et par quel canal",
+      blocks: [alerts, recipients],
     };
   }
 
@@ -607,7 +666,7 @@ export function buildNotificationsScreen(
     slug: "notifications",
     title: "Notifications",
     subtitle: "Qui reçoit quoi, et par quel canal",
-    blocks: [team, guest, log],
+    blocks: [alerts, recipients, guest, log],
   };
 }
 

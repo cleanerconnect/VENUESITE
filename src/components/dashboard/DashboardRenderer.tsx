@@ -18,7 +18,9 @@ import { TableBlock } from "./blocks/TableBlock";
 import { ChartBlock } from "./blocks/ChartBlock";
 import { CalendarBlock } from "./blocks/CalendarBlock";
 import { SettingsBlock } from "./blocks/SettingsBlock";
+import { SettingsSaveBar } from "./blocks/SettingsSaveBar";
 import { DayBarBlock } from "./blocks/DayBarBlock";
+import { containsBlockType } from "@/lib/dashboard/traverse";
 import { cn } from "@/lib/utils/cn";
 
 // The renderer.
@@ -45,6 +47,12 @@ export function DashboardRenderer({
   className?: string;
 }) {
   const hasMobileLane = Boolean(spec.mobileBlocks?.length);
+  // A screen with settings on it is a form, however many cards it is
+  // drawn as, so it gets one Enregistrer at its foot and the rows stage
+  // into it. Screens with no editable row get no button to press.
+  const editable =
+    containsBlockType(spec.blocks, "settings") ||
+    containsBlockType(spec.mobileBlocks ?? [], "settings");
 
   return (
     <CommandProvider register={commands}>
@@ -70,6 +78,8 @@ export function DashboardRenderer({
           wrap={(child, key) => <StaggerItem key={key}>{child}</StaggerItem>}
         />
       </Stagger>
+
+      {editable ? <SettingsSaveBar /> : null}
 
       {/* Mounted once per screen — any row or tile in the spec can raise it. */}
       <DetailDrawer />

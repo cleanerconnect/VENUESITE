@@ -417,14 +417,14 @@ const BLOCKS: { type: string; note: string; blocks: Block[] }[] = [
   },
   {
     type: "settings",
-    note: "réglages déclarés — chaque contrôle est une valeur, pas un composant",
+    note: "réglages déclarés — un champ visible par valeur, un interrupteur par oui/non, un seul Enregistrer",
     blocks: [
       {
         id: "set",
         type: "settings",
         heading: "La liste en ligne",
         subheading:
-          "Chaque ligne est optimiste et le dit : la valeur bouge tout de suite, « Enregistré » confirme.",
+          "Chaque valeur modifiable est un champ bordé, son libellé au-dessus. Rien n'est écrit à la frappe : l'écran porte un seul Enregistrer, en bas.",
         banner: {
           tone: "warning",
           title: "Inscriptions suspendues",
@@ -434,8 +434,24 @@ const BLOCKS: { type: string; note: string; blocks: Block[] }[] = [
           {
             id: "s1",
             label: "Accepter les inscriptions depuis l'app",
-            hint: "Coupez pendant un coup de feu ; les groupes sur place restent inscriptibles.",
+            hint: "L'interrupteur dont dépend le reste de la carte : le plus grand contrôle de l'écran.",
             control: { kind: "toggle", value: false },
+            command: "noop",
+            emphasis: "lead",
+          },
+          {
+            id: "s0",
+            label: "Canaux de l'alerte",
+            hint: "Plusieurs à la fois, parce qu'une alerte qui compte part par push *et* par WhatsApp.",
+            control: {
+              kind: "switches",
+              value: "push,whatsapp",
+              options: [
+                { value: "push", label: "Push" },
+                { value: "email", label: "E-mail" },
+                { value: "whatsapp", label: "WhatsApp" },
+              ],
+            },
             command: "noop",
           },
           {
@@ -481,6 +497,24 @@ const BLOCKS: { type: string; note: string; blocks: Block[] }[] = [
           {
             action: { kind: "command", command: "noop", label: "Ajouter une règle", icon: "plus" },
             variant: "secondary",
+          },
+        ],
+      },
+      // Set once at installation and then left alone for years. Open,
+      // these put eight fields between the host and the two they came
+      // for, so they sit behind one summary line.
+      {
+        id: "set-advanced",
+        type: "settings",
+        heading: "Réglages avancés",
+        subheading: "Réglés une fois, rarement revus.",
+        collapsed: true,
+        rows: [
+          {
+            id: "sa1",
+            label: "Délai minimum avant une réservation",
+            control: { kind: "number", value: 30, min: 0, max: 1440, step: 15, suffix: "minutes" },
+            command: "noop",
           },
         ],
       },

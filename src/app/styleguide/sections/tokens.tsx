@@ -183,6 +183,18 @@ export function TokensSection() {
           chaque contrôle. C&apos;est un mode : un composant qui n&apos;a
           jamais entendu parler du Lot 1 sort juste à l&apos;intérieur.
         </p>
+        <p className="text-body text-ink-soft mb-5 max-w-2xl">
+          Quatre règles s&apos;y ajoutent pour tout ce qui se modifie.
+          Chaque valeur modifiable est un champ visible, bordé, son
+          libellé au-dessus — jamais un libellé à gauche et une valeur
+          nue à droite, qui se lit comme une liste imprimée. Chaque
+          oui/non est un interrupteur, jamais une pastille qui dit
+          ACTIVÉ : une pastille annonce un état et ne laisse pas deviner
+          qu&apos;on peut la presser. Chaque écran modifiable porte un
+          seul Enregistrer, en bas, plein et haut de 44 px, avec un état
+          « Enregistré » visible. Et l&apos;action principale de
+          l&apos;écran est le plus grand contrôle qui s&apos;y trouve.
+        </p>
 
         <div className="grid gap-5 lg:grid-cols-2">
           <div>

@@ -86,11 +86,16 @@ export const SERVER_COMMANDS = [
   "service.create",
   "service.edit",
   "service.remove",
+  // One field of one service, so a service can be a card of fields
+  // rather than a row that opens a ten-field dialog to change a time.
+  "service.set",
   "pacing.set",
   // Avis
   "survey.set",
   // Ma fiche
   "zone.setAvailable",
+  // Notifications
+  "notifications.set",
   // Paramètres
   "settings.set",
   // Support

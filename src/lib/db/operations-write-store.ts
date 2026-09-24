@@ -1390,9 +1390,9 @@ export function saveVenueSettingsRow(venueId: string, s: VenueSettings): void {
     `INSERT INTO venue_settings
        (venue_id, configuration, legal_name, ice, rc, billing_address, iban,
         language, timezone, consent_text, retention_months, google_place_url,
-        instagram_handle, whatsapp_number, dress_code, minimum_age,
-        api_access_enabled, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        instagram_handle, whatsapp_number, alert_phone, alert_email,
+        dress_code, minimum_age, api_access_enabled, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(venue_id) DO UPDATE SET
        configuration = excluded.configuration, legal_name = excluded.legal_name,
        ice = excluded.ice, rc = excluded.rc,
@@ -1403,6 +1403,8 @@ export function saveVenueSettingsRow(venueId: string, s: VenueSettings): void {
        google_place_url = excluded.google_place_url,
        instagram_handle = excluded.instagram_handle,
        whatsapp_number = excluded.whatsapp_number,
+       alert_phone = excluded.alert_phone,
+       alert_email = excluded.alert_email,
        dress_code = excluded.dress_code, minimum_age = excluded.minimum_age,
        api_access_enabled = excluded.api_access_enabled,
        updated_at = excluded.updated_at`,
@@ -1420,6 +1422,8 @@ export function saveVenueSettingsRow(venueId: string, s: VenueSettings): void {
     s.googlePlaceUrl.trim(),
     s.instagramHandle.trim(),
     s.whatsappNumber.trim(),
+    s.alertPhone.trim(),
+    s.alertEmail.trim(),
     s.dressCode.trim(),
     s.minimumAge,
     s.apiAccessEnabled ? 1 : 0,

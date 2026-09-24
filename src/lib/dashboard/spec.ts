@@ -484,6 +484,20 @@ export type SettingControl =
   | { kind: "number"; value: number; min?: number; max?: number; step?: number; suffix?: string }
   | { kind: "text"; value: string; placeholder?: string; multiline?: boolean }
   | { kind: "select"; value: string; options: { value: string; label: string }[] }
+  /**
+   * Several independent on/off choices under one label — the channels an
+   * alert goes out on, for instance.
+   *
+   * A `select` would have made them exclusive, which is wrong: an alert
+   * that matters goes out by push *and* e-mail. The value is the enabled
+   * options joined by commas, so the control stays a string like every
+   * other one and a spec remains JSON.
+   */
+  | {
+      kind: "switches";
+      value: string;
+      options: { value: string; label: string }[];
+    }
   | { kind: "time"; value: string }
   /**
    * `min`/`max` bound the picker to the days the dataset can answer for.
@@ -518,6 +532,12 @@ export interface SettingRow {
   badge?: Badge;
   /** Roles allowed to change it. Others see the value, disabled. */
   allow?: string[];
+  /**
+   * The row that decides what the screen above it is even for — the
+   * master switch on Disponibilités. Drawn at twice the weight, because
+   * the largest control on a screen should be its primary one.
+   */
+  emphasis?: "lead";
 }
 
 export interface SettingsBlock extends BlockBase {
@@ -528,6 +548,15 @@ export interface SettingsBlock extends BlockBase {
   /** Shown above the rows when something is off, e.g. a paused list. */
   banner?: { tone: SemanticTone; title: string; body?: string; action?: Action };
   footerActions?: CtaAction[];
+  /**
+   * Folded shut until asked for.
+   *
+   * The rules a venue sets once and forgets are not the rules it changes
+   * in a season. Keeping both in the same open list means the host scrolls
+   * past eight fields to reach the two that matter, so the rest sits
+   * behind one summary line.
+   */
+  collapsed?: boolean;
 }
 
 // ── Day bar ──────────────────────────────────────────────────

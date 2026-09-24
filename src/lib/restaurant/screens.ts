@@ -2437,6 +2437,7 @@ export const RESTAURANT_SCREENS: Record<
   notifications: (ctx) =>
     buildNotificationsScreen(
       ctx.notificationPreferences,
+      ctx.settings,
       (ctx.marketing ?? EMPTY_MARKETING).messages,
       ctx.lot,
     ),
@@ -2458,6 +2459,8 @@ export const RESTAURANT_SCREENS: Record<
         googlePlaceUrl: "",
         instagramHandle: "",
         whatsappNumber: "",
+        alertPhone: "",
+        alertEmail: "",
         dressCode: "",
         minimumAge: 0,
         apiAccessEnabled: false,

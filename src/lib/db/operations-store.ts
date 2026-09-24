@@ -969,6 +969,8 @@ export function venueSettings(venueId: string): VenueSettings {
     googlePlaceUrl: text(r?.google_place_url),
     instagramHandle: text(r?.instagram_handle),
     whatsappNumber: text(r?.whatsapp_number),
+    alertPhone: text(r?.alert_phone),
+    alertEmail: text(r?.alert_email),
     dressCode: text(r?.dress_code),
     minimumAge: Number(r?.minimum_age ?? 0),
     apiAccessEnabled: r ? bool(r.api_access_enabled as number) : false,

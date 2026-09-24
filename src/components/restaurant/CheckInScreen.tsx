@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { QrCode } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -17,10 +18,16 @@ import { cn } from "@/lib/utils/cn";
 
 // Validating an arrival in under three seconds.
 //
-// Three ways in, in the order a door actually uses them: the camera,
-// because most guests show the code in the app; a typed code, because a
-// cracked screen or a flat battery happens every night; and a name
-// search, because some guests booked by phone and have no code at all.
+// The screen is one button and one list. Scanner le code is the largest
+// control on it because it is what happens at the door ninety times out
+// of a hundred; under it, the arrivals still expected, each with its own
+// Check-in, because tapping a name is faster than any code when the
+// guest is already standing there.
+//
+// The two fallbacks sit below that list, where they belong: a typed code,
+// because a cracked screen or a flat battery happens every night, and a
+// name filter, because some guests booked by phone and have no code at
+// all.
 //
 // Every refusal says which rule it broke. "Code invalide" tells the host
 // nothing they can act on, and the guest is standing right there.
@@ -107,7 +114,7 @@ export function CheckInScreen({
 
   const matches = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return waiting.slice(0, 8);
+    if (!needle) return waiting.slice(0, 20);
     return waiting.filter((g) => g.guestName.toLowerCase().includes(needle));
   }, [query, waiting]);
 
@@ -256,88 +263,78 @@ export function CheckInScreen({
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-5 min-w-0">
-          <Card variant="surface" size="md">
-            <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
-              <div>
-                <h2 className="text-h3 text-ink">Scanner le code</h2>
-                <p className="text-meta text-ink-mute mt-1">
-                  Le client présente le code reçu dans son application. Vous
-                  pouvez aussi le saisir à la main.
-                </p>
-              </div>
+          {/* The door's own button. Full width and 56px tall: the largest
+              control on the screen, because it is the one that gets
+              pressed. */}
+          {cameraOn ? (
+            <Card variant="surface" size="md">
+              <QrViewfinder scanner={scanner} hint={`Réservation · ${venueName}`} />
               <Button
-                variant={cameraOn ? "secondary" : "ink"}
-                size="sm"
-                onClick={() => setCameraOn((on) => !on)}
+                variant="secondary"
+                size="lg"
+                fullWidth
+                className="mt-4"
+                onClick={() => setCameraOn(false)}
               >
-                {cameraOn ? "Éteindre la caméra" : "Allumer la caméra"}
+                Éteindre la caméra
               </Button>
+            </Card>
+          ) : (
+            <Button
+              size="lg"
+              fullWidth
+              iconLeft={<QrCode size={22} strokeWidth={2.2} />}
+              onClick={() => setCameraOn(true)}
+              className="h-14"
+            >
+              Scanner le code
+            </Button>
+          )}
+
+          {error ? (
+            <p
+              role="alert"
+              className="rounded-[var(--radius-sm)] border border-danger/40 bg-danger/[0.04] px-3.5 py-3 text-body text-danger"
+            >
+              {error}
+            </p>
+          ) : null}
+
+          <Card variant="surface" size="md">
+            <div className="mb-4">
+              <h2 className="text-h3 text-ink">Prochaines arrivées</h2>
+              <p className="text-meta text-ink-mute mt-1">
+                {query.trim()
+                  ? `Filtré sur « ${query.trim()} ».`
+                  : "Appuyez sur Check-in pour enregistrer une arrivée sans code."}
+              </p>
             </div>
 
-            {cameraOn ? (
-              <QrViewfinder scanner={scanner} hint={`Billet · ${venueName}`} />
-            ) : (
-              <div className="rounded-[var(--radius-lg)] border border-dashed border-line p-8 text-center">
-                <p className="text-meta text-ink-mute">
-                  La caméra est éteinte. La saisie manuelle et la recherche par
-                  nom fonctionnent sans elle.
-                </p>
-              </div>
-            )}
-
-            <form
-              className="mt-4 flex gap-2 flex-wrap"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void redeem(code);
-              }}
-            >
-              <Input
-                label="Code de réservation"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="LYFE-…"
-                className="flex-1 min-w-[12rem] font-mono"
+            {matches.length === 0 ? (
+              <EmptyState
+                title={query.trim() ? "Personne ne correspond" : "Plus personne n'est attendu"}
+                description={
+                  query.trim()
+                    ? "Aucune réservation en attente à ce nom sur ce service."
+                    : "Toutes les réservations de ce service sont enregistrées."
+                }
               />
-              <Button type="submit" variant="ink" disabled={pending}>
-                {pending ? "Vérification…" : "Valider"}
-              </Button>
-            </form>
-
-            {error ? (
-              <p role="alert" className="text-meta text-danger mt-3">
-                {error}
-              </p>
-            ) : null}
-          </Card>
-
-          <Card variant="surface" size="md">
-            <h2 className="text-h3 text-ink mb-1">Chercher par nom</h2>
-            <p className="text-meta text-ink-mute mb-4">
-              Pour un client qui a réservé par téléphone et n'a pas de code.
-            </p>
-            <Input
-              label="Nom du client"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nom du client…"
-            />
-
-            <div className="mt-4 space-y-2">
-              {matches.length === 0 ? (
-                <EmptyState
-                  title="Personne ne correspond"
-                  description="Aucune réservation en attente à ce nom sur ce service."
-                />
-              ) : (
-                matches.map((guest) => (
-                  <div
+            ) : (
+              <ul className="divide-y divide-line">
+                {matches.map((guest) => (
+                  <li
                     key={guest.id}
-                    className="flex items-center justify-between gap-3 rounded-[var(--radius-sm)] border border-line p-3"
+                    className="flex flex-wrap items-center gap-x-4 gap-y-3 py-3.5 first:pt-0 last:pb-0"
                   >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[14px] font-semibold text-ink truncate">
+                    {/* Time and party size first, at the size a host reads
+                        across a counter; the name second, because it is
+                        what they say out loud. */}
+                    <span className="text-host-lead text-ink num w-[4.5rem] shrink-0">
+                      {formatTimeFR(guest.at)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-host-name text-ink truncate">
                           {guest.guestName}
                         </span>
                         {guest.vip ? <Pill tone="violet">Habitué</Pill> : null}
@@ -345,26 +342,59 @@ export function CheckInScreen({
                           <Pill tone="info">Acompte {guest.depositMad} MAD</Pill>
                         ) : null}
                       </div>
-                      <p className="text-meta text-ink-mute num mt-0.5">
-                        {formatTimeFR(guest.at)} ·{" "}
+                      <p className="text-host-detail num mt-0.5">
                         {coversIn(configuration, guest.partySize)}
                         {guest.zone ? ` · ${guest.zone}` : ""}
                       </p>
                       {guest.note ? (
-                        <p className="text-meta text-ink-soft mt-1">{guest.note}</p>
+                        <p className="text-host-detail mt-1">{guest.note}</p>
                       ) : null}
                     </div>
                     <Button
                       variant="ink"
-                      size="sm"
                       disabled={pending}
                       onClick={() => void arriveByName(guest)}
                     >
                       Check-in
                     </Button>
-                  </div>
-                ))
-              )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          {/* Below the list, because they are what you reach for when the
+              list and the camera both failed you. */}
+          <Card variant="surface" size="md">
+            <h2 className="text-h3 text-ink mb-1">Sans le code du client</h2>
+            <p className="text-meta text-ink-mute mb-4">
+              Cherchez le nom dans la liste ci-dessus, ou saisissez le code à la main.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="Chercher par nom"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Nom du client…"
+              />
+              <form
+                className="flex items-start gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void redeem(code);
+                }}
+              >
+                <Input
+                  label="Code de réservation"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="LYFE-…"
+                  className="flex-1 min-w-0 font-mono"
+                />
+                <Button type="submit" variant="ink" disabled={pending}>
+                  {pending ? "Vérification…" : "Valider"}
+                </Button>
+              </form>
             </div>
           </Card>
         </div>
@@ -392,10 +422,8 @@ export function CheckInScreen({
                   )}
                 >
                   <div className="min-w-0">
-                    <p className="text-[13.5px] font-semibold text-ink truncate">
-                      {entry.name}
-                    </p>
-                    <p className="text-meta text-ink-mute num">
+                    <p className="text-host-name text-ink truncate">{entry.name}</p>
+                    <p className="text-host-detail num">
                       {coversIn(configuration, entry.partySize)} ·{" "}
                       {formatTimeFR(new Date(entry.at).toISOString())}
                     </p>

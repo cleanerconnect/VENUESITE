@@ -1014,6 +1014,11 @@ CREATE TABLE IF NOT EXISTS venue_settings (
   google_place_url   TEXT NOT NULL DEFAULT '',
   instagram_handle   TEXT NOT NULL DEFAULT '',
   whatsapp_number    TEXT NOT NULL DEFAULT '',
+  -- Who the venue's own alerts reach. Separate from the public contact
+  -- on the fiche: the number a guest calls to book is not necessarily
+  -- the one that should buzz at 23h when a table cancels.
+  alert_phone        TEXT NOT NULL DEFAULT '',
+  alert_email        TEXT NOT NULL DEFAULT '',
   dress_code         TEXT NOT NULL DEFAULT '',
   minimum_age        INTEGER NOT NULL DEFAULT 0,
   api_access_enabled INTEGER NOT NULL DEFAULT 0,

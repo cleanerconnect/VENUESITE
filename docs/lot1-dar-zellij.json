@@ -4,7 +4,7 @@
   "account": "yassine@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-09-24T17:59:00.731Z",
+  "capturedAt": "2026-09-24T18:55:20.311Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -14,7 +14,7 @@
       "dependsOn": null,
       "roles": null,
       "workspace": "venue",
-      "title": "Bon après-midi, Yassine.",
+      "title": "Bonsoir, Yassine.",
       "eyebrow": null,
       "subtitle": "Dîner · 5 réservations aujourd'hui.",
       "venue": "YA",
@@ -28,13 +28,13 @@
           ],
           "facets": [],
           "texts": [
-            "Bon après-midi, Yassine.",
+            "Bonsoir, Yassine.",
             "Dîner · 5 réservations aujourd'hui."
           ],
           "rows": [
             {
               "lines": [
-                "Bon après-midi, Yassine.",
+                "Bonsoir, Yassine.",
                 "Dîner · 5 réservations aujourd'hui."
               ],
               "pills": [],
@@ -404,6 +404,35 @@
       ],
       "surfaces": [
         {
+          "name": "Détail réservation",
+          "title": "Salma Bennani",
+          "lines": [
+            "Salma Bennani",
+            "19h00 · 4 couverts · LYFE",
+            "La réservation",
+            "Heure",
+            "19h00",
+            "Personnes",
+            "4",
+            "Espace",
+            "Patio",
+            "Canal",
+            "LYFE",
+            "Le client",
+            "Téléphone",
+            "+212 661 20 44 18",
+            "Note de salle",
+            "Anniversaire, dessert avec bougie"
+          ],
+          "pills": [
+            "CONFIRMÉE"
+          ],
+          "buttons": [
+            "Marquer comme arrivé"
+          ],
+          "width": 460
+        },
+        {
           "name": "Refuser",
           "title": "Refuser la demande",
           "lines": [
@@ -462,77 +491,68 @@
           "pills": []
         },
         {
-          "kind": "split",
-          "left": {
-            "kind": "settings",
-            "heading": "Scanner le code",
-            "subheading": "Le client présente le code reçu dans son application. Vous pouvez aussi le saisir à la main.",
-            "actions": [
-              "Allumer la caméra",
-              "Valider"
-            ],
-            "facets": [],
-            "texts": [
-              "Scanner le code",
-              "Le client présente le code reçu dans son application. Vous pouvez aussi le saisir à la main.",
-              "Allumer la caméra",
-              "La caméra est éteinte. La saisie manuelle et la recherche par nom fonctionnent sans elle.",
-              "Code de réservation",
-              "Valider"
-            ],
-            "fields": [
-              {
-                "label": "Code de réservation",
-                "value": "",
-                "type": "text"
-              }
-            ],
-            "toggles": []
-          },
-          "right": {
-            "kind": "settings",
-            "heading": "Chercher par nom",
-            "subheading": "Pour un client qui a réservé par téléphone et n'a pas de code.",
-            "actions": [
-              "Check-in",
-              "Check-in",
-              "Check-in",
-              "Check-in",
-              "Check-in"
-            ],
-            "facets": [],
-            "texts": [
-              "Chercher par nom",
-              "Pour un client qui a réservé par téléphone et n'a pas de code.",
-              "Nom du client",
-              "Salma Bennani",
-              "19h00 · 4 couverts · Patio",
-              "Anniversaire, dessert avec bougie",
-              "Check-in",
-              "Groupe Karam",
-              "19h30 · 6 couverts · Grande salle",
-              "Sans gluten pour deux couverts",
-              "Check-in",
-              "Yasmine El Alaoui",
-              "19h30 · 4 couverts · Terrasse",
-              "Check-in",
-              "Nabil Cherkaoui",
-              "20h00 · 2 couverts",
-              "Demande une table près de la fontaine",
-              "Check-in",
-              "Hind Tazi",
-              "20h30 · 5 couverts · Grande salle",
-              "Check-in"
-            ],
-            "fields": [
-              {
-                "label": "Nom du client",
-                "value": "",
-                "type": "text"
-              }
-            ],
-            "toggles": []
-          }
+          "kind": "settings",
+          "heading": "Prochaines arrivées",
+          "subheading": "Appuyez sur Check-in pour enregistrer une arrivée sans code.",
+          "actions": [
+            "Scanner le code",
+            "Check-in",
+            "Check-in",
+            "Check-in",
+            "Check-in",
+            "Check-in",
+            "Valider"
+          ],
+          "facets": [],
+          "texts": [
+            "Prochaines arrivées",
+            "Appuyez sur Check-in pour enregistrer une arrivée sans code.",
+            "19h00",
+            "Salma Bennani",
+            "4 couverts · Patio",
+            "Anniversaire, dessert avec bougie",
+            "Check-in",
+            "19h30",
+            "Groupe Karam",
+            "6 couverts · Grande salle",
+            "Sans gluten pour deux couverts",
+            "Check-in",
+            "19h30",
+            "Yasmine El Alaoui",
+            "4 couverts · Terrasse",
+            "Check-in",
+            "20h00",
+            "Nabil Cherkaoui",
+            "2 couverts",
+            "Demande une table près de la fontaine",
+            "Check-in",
+            "20h30",
+            "Hind Tazi",
+            "5 couverts · Grande salle",
+            "Check-in",
+            "Sans le code du client",
+            "Cherchez le nom dans la liste ci-dessus, ou saisissez le code à la main.",
+            "Chercher par nom",
+            "Code de réservation",
+            "Valider",
+            "Trente dernières minutes",
+            "Une erreur de scan se voit dans les cinq minutes. Au-delà, l'annulation passe par le carnet.",
+            "Aucune arrivée",
+            "Les clients validés depuis cet écran apparaîtront ici."
+          ],
+          "fields": [
+            {
+              "label": "Chercher par nom",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "label": "Code de réservation",
+              "value": "",
+              "type": "text"
+            }
+          ],
+          "toggles": []
         }
       ]
     },
@@ -545,7 +565,7 @@
       "roles": "Propriétaire, Gérant",
       "workspace": "venue",
       "title": "Ma fiche",
-      "eyebrow": "Description",
+      "eyebrow": null,
       "subtitle": "L'établissement tel que l'application le montre : identité, adresse, contact, photos et horaires.",
       "venue": "YA",
       "blocks": [
@@ -557,8 +577,6 @@
             "Identité",
             "Horaires",
             "Photos",
-            "Restaurant",
-            "Bar",
             "Enregistrer"
           ],
           "facets": [],
@@ -576,9 +594,6 @@
             "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
             "Catégorie",
             "Ex. Marocaine contemporaine",
-            "Type d'établissement",
-            "Restaurant",
-            "Bar",
             "Adresse et contact",
             "Adresse",
             "Ville",
@@ -654,196 +669,18 @@
       "venue": "YA",
       "blocks": [
         {
-          "kind": "settings",
-          "heading": "Réservation en ligne",
-          "subheading": "L'interrupteur général. Tout le reste de cet écran en dépend.",
-          "actions": [],
-          "facets": [],
-          "texts": [
-            "Réservation en ligne",
-            "L'interrupteur général. Tout le reste de cet écran en dépend.",
-            "Accepter les réservations depuis l'application",
-            "Coupé, l'établissement reste visible mais n'est plus réservable.",
-            "Réouverture programmée",
-            "Laissez vide pour rouvrir à la main."
-          ],
-          "fields": [
-            {
-              "label": "Réouverture programmée",
-              "value": "",
-              "type": "date"
-            }
-          ],
-          "toggles": [
-            {
-              "label": "",
-              "on": true
-            }
-          ]
-        },
-        {
-          "kind": "list",
-          "heading": "Services",
-          "subheading": null,
-          "actions": [
-            "Ajouter un service"
-          ],
-          "facets": [],
-          "texts": [
-            "Services",
-            "Déjeuner",
-            "ACTIF",
-            "tous les jours · 12h00 – 15h00 · dernière réservation 14h30 · 72 couverts · 10 par quart d'heure",
-            "3 zones réservables sur ce service.",
-            "Dîner",
-            "ACTIF",
-            "tous les jours · 19h00 – 23h30 · dernière réservation 22h30 · 120 couverts · 14 par quart d'heure",
-            "3 zones réservables sur ce service."
-          ],
-          "items": [
-            {
-              "title": "Déjeuner",
-              "meta": null,
-              "initials": null,
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ACTIF",
-                  "tone": "success-10"
-                }
-              ],
-              "actions": []
-            },
-            {
-              "title": "Dîner",
-              "meta": null,
-              "initials": null,
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "ACTIF",
-                  "tone": "success-10"
-                }
-              ],
-              "actions": []
-            }
-          ]
-        },
-        {
-          "kind": "settings",
-          "heading": "Cadence et fenêtre de réservation",
-          "subheading": "Ce qui empêche la salle de recevoir vingt arrivées dans le même quart d'heure.",
-          "actions": [],
-          "facets": [],
-          "texts": [
-            "Cadence et fenêtre de réservation",
-            "Ce qui empêche la salle de recevoir vingt arrivées dans le même quart d'heure.",
-            "Arrivées maximum par quart d'heure",
-            "Au-delà, l'application propose le créneau suivant.",
-            "arrivées",
-            "Couverts maximum par service",
-            "couverts",
-            "Groupe maximum accepté en ligne",
-            "Au-delà, la demande passe en validation manuelle.",
-            "personnes",
-            "Groupe minimum accepté en ligne",
-            "personnes",
-            "Validation manuelle à partir de",
-            "Les groupes de cette taille ne sont plus confirmés automatiquement.",
-            "personnes",
-            "Réservation possible à l'avance",
-            "Au-delà de ce nombre de jours, la date n'est pas encore ouverte.",
-            "jours",
-            "Heure limite le jour même",
-            "Délai minimum avant une réservation",
-            "Entre le moment où le client réserve et l'heure demandée.",
-            "minutes"
-          ],
-          "fields": [
-            {
-              "label": "arrivées",
-              "value": "12",
-              "type": "number"
-            },
-            {
-              "label": "couverts",
-              "value": "120",
-              "type": "number"
-            },
-            {
-              "label": "personnes",
-              "value": "8",
-              "type": "number"
-            },
-            {
-              "label": "personnes",
-              "value": "1",
-              "type": "number"
-            },
-            {
-              "label": "personnes",
-              "value": "8",
-              "type": "number"
-            },
-            {
-              "label": "jours",
-              "value": "60",
-              "type": "number"
-            },
-            {
-              "label": "Heure limite le jour même",
-              "value": "18:00",
-              "type": "time"
-            },
-            {
-              "label": "minutes",
-              "value": "60",
-              "type": "number"
-            }
-          ],
-          "toggles": []
-        },
-        {
-          "kind": "list",
-          "heading": "Jours exceptionnels",
-          "subheading": null,
-          "actions": [
-            "Fermer une journée"
-          ],
-          "facets": [],
-          "texts": [
-            "Jours exceptionnels",
-            "mar. 6 oct.",
-            "FERMÉ",
-            "Privatisation"
-          ],
-          "items": [
-            {
-              "title": "mar. 6 oct.",
-              "meta": null,
-              "initials": null,
-              "trailing": null,
-              "pills": [
-                {
-                  "label": "FERMÉ",
-                  "tone": "ink-mute-12"
-                }
-              ],
-              "actions": []
-            }
-          ]
-        },
-        {
           "kind": "prose",
           "heading": null,
           "subheading": null,
-          "actions": [],
+          "actions": [
+            "Enregistrer"
+          ],
           "facets": [],
           "texts": [
-            "Ce que voit un client",
-            "Réservation ouverte"
+            "À jour",
+            "Enregistrer"
           ],
-          "body": "Ce que voit un clientRéservation ouverte Réservable jusqu'à 60 jours à l'avance, de 1 à 8 personnes, au plus tard 60 minutes avant. Le jour même, jusqu'à 18h00. Au-delà de 8 personnes, la demande est envoyée à l'établissement.",
+          "body": "À jourEnregistrer",
           "pills": []
         }
       ]
@@ -858,33 +695,23 @@
       "workspace": "venue",
       "title": "Notifications",
       "eyebrow": null,
-      "subtitle": "Comment vous êtes prévenu d'une nouvelle demande",
+      "subtitle": "Ce dont vous êtes prévenu, et par quel canal",
       "venue": "YA",
       "blocks": [
         {
-          "kind": "settings",
-          "heading": "Alertes de l'équipe",
-          "subheading": "Choisissez par quel canal chaque alerte vous parvient.",
-          "actions": [],
+          "kind": "prose",
+          "heading": null,
+          "subheading": null,
+          "actions": [
+            "Enregistrer"
+          ],
           "facets": [],
           "texts": [
-            "Alertes de l'équipe",
-            "Choisissez par quel canal chaque alerte vous parvient.",
-            "Nouvelle demande de réservation",
-            "Envoyée dès qu'un client demande une table.",
-            "Push",
-            "E-mail",
-            "WhatsApp",
-            "Aucun"
+            "À jour",
+            "Enregistrer"
           ],
-          "fields": [
-            {
-              "label": "Nouvelle demande de réservation",
-              "value": "Push",
-              "type": "select-one"
-            }
-          ],
-          "toggles": []
+          "body": "À jourEnregistrer",
+          "pills": []
         }
       ]
     },

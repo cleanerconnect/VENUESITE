@@ -8,6 +8,7 @@ import { Brand } from "./Brand";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/dashboard/primitives";
 import { RoleGate } from "@/lib/auth/role";
+import { restaurantHref } from "@/lib/restaurant/slugs";
 import { resolveWorkspace } from "@/lib/nav/workspaces";
 import { pathInLot } from "@/lib/nav/routes";
 import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
@@ -23,8 +24,16 @@ import { useSearchStore } from "@/lib/stores/search";
 export function Topbar() {
   const pathname = usePathname();
   const workspace = resolveWorkspace(pathname);
-  const { searchPlaceholder, quickAction, primaryAction: topbarAction } =
-    workspace.topbar;
+  const { searchPlaceholder, primaryAction: topbarAction } = workspace.topbar;
+  // The quick action is a shortcut to somewhere else. On the screen it
+  // shortcuts to, it is a button that does what the page already does —
+  // and the largest control on Check-in has to be Scanner le code, not a
+  // pill in the chrome above it.
+  const quickAction =
+    workspace.topbar.quickAction?.command === "checkin.open" &&
+    pathname.startsWith(restaurantHref("check-in"))
+      ? undefined
+      : workspace.topbar.quickAction;
   // The venue topbar's primary action opens the new-booking drawer,
   // which Lot 2 buys. It is gated on what it does rather than on where
   // it points: Réservations is a Lot 1 screen, and `?nouvelle=1` is the

@@ -210,12 +210,24 @@ export interface VisibilityMetrics {
 
 // ── Notifications ────────────────────────────────────────────
 
-export type NotificationChannel = "push" | "email";
+/**
+ * WhatsApp is not a nicety here. In Morocco it is where a host already
+ * lives: an e-mail read the next morning is a table lost tonight.
+ */
+export type NotificationChannel = "push" | "email" | "whatsapp";
 
 export interface NotificationPreferences {
   venueId: string;
   newBooking: NotificationChannel[];
   cancellation: NotificationChannel[];
+  /**
+   * The evening-before reminder LYFE sends the guest.
+   *
+   * It sits with the venue's own alerts because the partner decides
+   * whether it goes out and over which channel, even though the message
+   * reaches the guest rather than the stand.
+   */
+  guestReminder: NotificationChannel[];
   review: NotificationChannel[];
   dailySummary: NotificationChannel[];
 }

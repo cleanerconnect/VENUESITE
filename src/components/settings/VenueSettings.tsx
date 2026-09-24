@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
-import { Card } from "@/components/ui/Card";
 import { VenueIdentityForm } from "./VenueIdentityForm";
 import { VenueListingForm } from "./VenueListingForm";
 import { MenuListingForm } from "./MenuListingForm";
@@ -107,7 +106,9 @@ export function VenueSettings({
           <AssetManager
             kind="photo"
             title="Photos"
-            description="La première photo sert de couverture dans l'application. Glissez pour réordonner."
+            description="La première est la couverture. Sur les autres, Couverture la met en premier."
+            layout="gallery"
+            addLabel="Ajouter une photo"
             initial={photos}
           />
           {/* The carte is a Lot 2 screen, and its file belongs with it:
