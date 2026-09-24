@@ -319,6 +319,19 @@ are named for screens rather than for the nav groups of
 `src/lib/nav/workspaces.ts` — a prototype reads in the order it is
 played, not in the order the sidebar groups its entries.
 
+Each section holds two sub-sections side by side, also 240px apart:
+`Ordinateur` at 1440 on the left, `Téléphone` at 390 on the right. Under
+the screen in each, its related states are grouped and labelled — the
+camera, the confirmations, the two journées and their two services, the
+three Ma fiche tabs, the « Enregistré » states. So a section reads down
+as one screen and across as one screen at two widths, and nothing on the
+page is a frame whose relationship to its neighbours you have to guess.
+
+Where the page came from — the capture command, the workbook rows the
+scope is read off, and what happened to the eleven screens Lot 1 leaves
+out — is stated on `00 Lisez-moi` under « D'où vient la page 09 », not
+on the page itself. `09` keeps only its title and the four form rules.
+
 The phone flow starts on `Téléphone`, the second starting point, and
 plays the same seven screens at 390: a fixed header, a scrolling column
 and a fixed bottom bar of four tabs. Attente is Liste d'attente, which
