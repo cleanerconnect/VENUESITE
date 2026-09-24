@@ -9,8 +9,8 @@ import { Specimen } from "../Shell";
 
 // The four things a screen shows when the happy path is not happening.
 //
-// These are the states nobody sees during a demo and everybody sees in
-// production. Rendering them side by side here — from literal props, no
+// These are the states nobody sees on a healthy day and everybody sees
+// eventually. Rendering them side by side here — from literal props, no
 // data layer — is the only way they stay maintained.
 
 // A few of each side. The two workspaces reach the same three states by

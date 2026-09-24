@@ -4,7 +4,7 @@ import { Brand } from "@/components/organizer/Brand";
 
 // Placeholder contact / demo request page. Real product will route this
 // through a Calendly embed or HubSpot form. For now it's a polite stub
-// so the "Demander une démo" link from /login resolves cleanly.
+// a public page for an establishment that is not on LYFE yet.
 export default function ContactPage() {
   return (
     <main className="min-h-screen bg-canvas flex flex-col">
@@ -39,7 +39,7 @@ export default function ContactPage() {
           <p className="text-body text-ink-soft mt-4 leading-relaxed">
             LYFE est en accès anticipé pour les organisateurs marocains.
             Écrivez-nous, un membre de l&apos;équipe vous répondra sous 24
-            heures avec une démo personnalisée.
+            heures.
           </p>
 
           <a

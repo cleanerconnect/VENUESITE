@@ -1,4 +1,4 @@
-// The demo state switch.
+// The forced-state switch.
 //
 // Deliberately neither "use client" nor "server-only": both workspaces
 // read it, from opposite sides of the boundary. Marking it client-only
@@ -8,7 +8,7 @@
 //
 // An external team reproducing this portal has to be able to *see* what
 // a failed load looks like, and what an empty reservation day looks
-// like. Those states are unreachable in a healthy demo, so without a way
+// like. Those states are unreachable on a healthy day, so without a way
 // to force them they get built once, never looked at, and rot.
 //
 // `?etat=` on any route forces one for the whole page:
@@ -21,9 +21,11 @@
 // partner the rest of the portal addresses, and a debug affordance in a
 // second language is a second vocabulary to learn.
 //
-// This is a demo affordance, not a feature flag: it is read from the URL
-// only, never persisted, and it cannot change what a real backend
-// returns.
+// This is a QA affordance, not a feature flag and not a way in: it is
+// read from the URL only, never persisted, it grants nothing, and it
+// cannot change what a real backend returns. It is the one thing in
+// the portal still named `demo`, and it is named that in identifiers
+// only — nothing renders the word.
 
 export const DEMO_STATES = ["chargement", "vide", "erreur"] as const;
 export type DemoState = (typeof DEMO_STATES)[number];

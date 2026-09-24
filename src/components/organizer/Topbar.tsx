@@ -15,6 +15,7 @@ import { useChromeCommand } from "@/lib/nav/chrome-commands";
 import { useScannerStore } from "@/lib/stores/scanner";
 import { useAssistantStore } from "@/lib/stores/assistant";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
+import { useSearchStore } from "@/lib/stores/search";
 
 // Search copy, the dark quick-action pill and the primary CTA all come
 // from the active workspace. The keyboard shortcuts stay global because
@@ -40,6 +41,13 @@ export function Topbar() {
   const runQuickAction = useChromeCommand();
   const openDrawer = useMobileNavStore((s) => s.setDrawerOpen);
 
+  // The one search box. A screen with a searchable list claims it and
+  // supplies the placeholder; where none has, the box says what the
+  // workspace searches and is inert, exactly as it was before.
+  const query = useSearchStore((s) => s.query);
+  const setQuery = useSearchStore((s) => s.setQuery);
+  const scoped = useSearchStore((s) => s.placeholder);
+
   // Global keyboard shortcuts:
   // ⌘+Shift+S  → scanner
   // ⌘+J         → AI assistant (⌘+K is already the search-bar shortcut)
@@ -53,6 +61,16 @@ export function Topbar() {
       if (meta && !e.shiftKey && e.key.toLowerCase() === "j") {
         e.preventDefault();
         openAssistant(true);
+      }
+      // The kbd hint has always said ⌘K; now there is a box for it to
+      // land in.
+      if (meta && !e.shiftKey && e.key.toLowerCase() === "k") {
+        const box = document.getElementById("chrome-search");
+        if (box instanceof HTMLInputElement && !box.disabled) {
+          e.preventDefault();
+          box.focus();
+          box.select();
+        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -93,15 +111,26 @@ export function Topbar() {
 
         {/* === DESKTOP: search + scanner + bell + create CTA === */}
         <div className="hidden md:flex flex-1 max-w-[480px]">
-          <button className="group w-full h-11 px-4 bg-surface rounded-full border border-line flex items-center gap-3 text-left hover:border-ink/40 transition-colors">
-            <Search size={16} className="text-ink-mute" strokeWidth={1.8} />
-            <span className="flex-1 text-[13px] text-ink-mute">
-              {searchPlaceholder}
-            </span>
-            <kbd className="text-[11px] font-semibold text-ink-mute bg-canvas-2 border border-line px-1.5 py-0.5 rounded">
+          <div className="relative w-full">
+            <Search
+              size={16}
+              strokeWidth={1.8}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-mute pointer-events-none"
+            />
+            <input
+              id="chrome-search"
+              type="search"
+              value={scoped ? query : ""}
+              onChange={(e) => setQuery(e.target.value)}
+              disabled={!scoped}
+              placeholder={scoped ?? searchPlaceholder}
+              aria-label={scoped ?? searchPlaceholder}
+              className="w-full h-11 pl-11 pr-14 bg-surface rounded-full border border-line text-[13px] text-ink outline-none focus:border-ink transition-colors disabled:cursor-default"
+            />
+            <kbd className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-ink-mute bg-canvas-2 border border-line px-1.5 py-0.5 rounded pointer-events-none">
               ⌘K
             </kbd>
-          </button>
+          </div>
         </div>
 
         <div className="hidden md:flex items-center gap-2 ml-auto">

@@ -1,18 +1,22 @@
 import "server-only";
 
-// The demo account directory.
+// The account directory.
+//
+// This is the credential store, standing in for the one the Business
+// Service will own. It is not a demo affordance: nothing in the portal
+// lists it, the login form offers no way to pick from it, and the only
+// way in is an address and a password typed in full.
 //
 // One partner, one login. What they see afterwards depends on what the
 // account holds — event organisations, venues, or both — and that is
 // resolved here rather than by two separate entrances.
 //
 // This is the file a real backend replaces. Credentials are literals in
-// a demo dataset with no production counterpart, which is the only
+// a fixture dataset with no production counterpart, which is the only
 // reason that is acceptable; the check is isolated in one function so
 // swapping it for a hash comparison is a one-line change.
 
 import { directory, type DirectoryMembership } from "./directory";
-import type { Lot } from "@/lib/lot/shared";
 import { PROFILES } from "./static/profiles";
 import type { OrganizerProfile } from "@/lib/types/domain";
 
@@ -30,12 +34,10 @@ interface DemoAccount {
    * role vocabularies and an account can hold both.
    */
   eventRole: "owner" | "admin" | "scanner";
-  /** Shown on the login screen's account picker. Omit to hide it there. */
-  demo?: { label: string; description: string };
 }
 
 /**
- * Every account the demo can sign in as.
+ * Every account the portal can authenticate.
  *
  * Venues are not listed: they come from the venue directory, keyed by
  * user id, so the two never disagree about who may open what. Only the
@@ -50,10 +52,6 @@ const ACCOUNTS: DemoAccount[] = [
     fallbackName: "Mido Reffas",
     organizations: ["org_jazzablanca", "org_rooftop_mansour"],
     eventRole: "owner",
-    demo: {
-      label: "Organisateur d'événements",
-      description: "Jazzablanca · deux organisations, aucun lieu",
-    },
   },
   {
     // Two venues *and* an organisation — the account that exercises both
@@ -64,10 +62,6 @@ const ACCOUNTS: DemoAccount[] = [
     fallbackName: "Yassine Alami",
     organizations: ["org_rooftop_mansour"],
     eventRole: "owner",
-    demo: {
-      label: "Les deux espaces",
-      description: "Deux lieux et une organisation",
-    },
   },
   {
     userId: "usr_sofia",
@@ -76,10 +70,6 @@ const ACCOUNTS: DemoAccount[] = [
     fallbackName: "Sofia Bennis",
     organizations: [],
     eventRole: "scanner",
-    demo: {
-      label: "Partenaire lieu",
-      description: "Nomad Rooftop · gérante, un seul lieu",
-    },
   },
   {
     // Two venues, no organisation — the account that has to choose which
@@ -90,10 +80,6 @@ const ACCOUNTS: DemoAccount[] = [
     fallbackName: "Rachid Amrani",
     organizations: [],
     eventRole: "scanner",
-    demo: {
-      label: "Plusieurs lieux",
-      description: "Gérant de deux lieux · doit choisir",
-    },
   },
   {
     userId: "usr_imane",
@@ -113,10 +99,6 @@ const ACCOUNTS: DemoAccount[] = [
     fallbackName: "Nouveau partenaire",
     organizations: [],
     eventRole: "scanner",
-    demo: {
-      label: "Compte sans espace",
-      description: "Inscrit, rien encore rattaché",
-    },
   },
 ];
 
@@ -218,29 +200,4 @@ export function verifyCredentials(
   const resolved = resolveAccount(account.userId);
   if (!resolved) return { ok: false, reason: "unknown_account" };
   return { ok: true, account: resolved };
-}
-
-/**
- * The accounts offered on the login screen, for walking the states.
- *
- * Lot 1 has no event side, so an account whose only destination is the
- * events dashboard leads somewhere this build does not register. It is
- * filtered out rather than left to 404 — except the account with nothing
- * attached, whose whole purpose is the state it lands on.
- */
-export function demoAccounts(lot: Lot = 2) {
-  const offered =
-    lot === 2
-      ? ACCOUNTS
-      : ACCOUNTS.filter(
-          (a) =>
-            a.userId === "usr_nouveau" ||
-            directory().findById(a.userId)?.venues.length,
-        );
-  return offered.filter((a) => a.demo).map((a) => ({
-    email: a.email,
-    password: a.password,
-    label: a.demo!.label,
-    description: a.demo!.description,
-  }));
 }

@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { MoreVertical, Search } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import type { EntityListBlock as Spec, EntityRow } from "@/lib/dashboard/spec";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterTabs } from "@/components/ui/FilterTabs";
 import { COPY } from "@/lib/copy/fr";
 import { useDetailStore } from "@/lib/stores/detail";
+import { useSearchStore } from "@/lib/stores/search";
 import {
   ActionControl,
   ActionLink,
@@ -27,7 +28,18 @@ import { cn } from "@/lib/utils/cn";
 // signal strip — never about what any of them mean.
 export function EntityListBlock({ block }: { block: Spec }) {
   const [tab, setTab] = useState(block.tabs?.[0]?.id ?? "");
-  const [query, setQuery] = useState("");
+  // The query comes from the chrome's box, which this block claims on
+  // mount. Two search fields on one screen — a stub above and a real one
+  // in the card — made the host guess which one did the work.
+  const query = useSearchStore((s) => s.query);
+  const claim = useSearchStore((s) => s.claim);
+  const release = useSearchStore((s) => s.release);
+  const placeholder = block.search?.placeholder;
+  useEffect(() => {
+    if (!placeholder) return;
+    claim(placeholder);
+    return () => release();
+  }, [placeholder, claim, release]);
   const [sort, setSort] = useState(block.sorts?.[0]?.id ?? "");
   // A collapsible group opens on demand and stays open; nothing else on
   // the screen collapses, so this is local rather than a stored setting.
@@ -68,43 +80,14 @@ export function EntityListBlock({ block }: { block: Spec }) {
     });
   }, [block.rows, block.sorts, block.tabs, query, sort, tab]);
 
-  const hasControls = Boolean(block.search || block.sorts?.length);
+  // The search box is the chrome's now, so only a sort control still
+  // needs a row of its own here.
+  const hasControls = Boolean(block.sorts?.length);
   const filteredToNothing = block.rows.length > 0 && rows.length === 0;
 
-  return (
-    <section>
-      {block.heading ? (
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="min-w-0">
-            <h2 className="text-h2 text-ink">{block.heading}</h2>
-            {block.subheading ? (
-              <p className="text-meta text-ink-mute mt-1">{block.subheading}</p>
-            ) : null}
-          </div>
-          {block.headingAction ? (
-            <ActionLink action={block.headingAction} />
-          ) : null}
-        </div>
-      ) : null}
-
-      {hasControls ? (
-        <div className="flex flex-col md:flex-row gap-3 mb-4">
-          {block.search ? (
-            <div className="md:flex-1 md:max-w-xl relative">
-              <Search
-                size={16}
-                strokeWidth={1.8}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-mute pointer-events-none"
-              />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={block.search.placeholder}
-                aria-label={block.search.placeholder}
-                className="w-full h-12 pl-10 pr-4 bg-surface border border-line rounded-full text-[14px] outline-none focus:border-ink transition-colors"
-              />
-            </div>
-          ) : null}
+  // One control, rendered once and placed by whoever has room for it.
+  const sortControl = hasControls ? (
+    <>
 
           {/* The select used to carry its name in `aria-label` alone, so
               a sighted user read "Heure" in a box and had to work out
@@ -128,7 +111,32 @@ export function EntityListBlock({ block }: { block: Spec }) {
               </select>
             </label>
           ) : null}
+    </>
+  ) : null;
+
+  return (
+    <section>
+      {block.heading ? (
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="min-w-0">
+            <h2 className="text-h2 text-ink">{block.heading}</h2>
+            {block.subheading ? (
+              <p className="text-meta text-ink-mute mt-1">{block.subheading}</p>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            {sortControl}
+            {block.headingAction ? (
+              <ActionLink action={block.headingAction} />
+            ) : null}
+          </div>
         </div>
+      ) : null}
+
+      {/* A list with no heading has nowhere to hang the sort, so it keeps
+          a row — the only case that still needs one. */}
+      {!block.heading && sortControl ? (
+        <div className="flex md:justify-end mb-4">{sortControl}</div>
       ) : null}
 
       {block.tabs?.length ? (
@@ -396,27 +404,59 @@ function Row({ row }: { row: EntityRow }) {
             )}
           />
         ) : null}
-        {/* Three row behaviours, in priority order: open the detail sheet,
-            navigate, or sit still. A row that does nothing gets no hover
-            affordance and no button semantics. */}
-        {row.detail ? (
-          <button
-            type="button"
-            onClick={() => row.detail && openDetail(row.detail)}
-            className={cn("block w-full text-left p-4", row.status && "pl-6")}
-          >
-            {inner}
-          </button>
-        ) : row.href ? (
-          <Link href={row.href} className={cn("block p-4", row.status && "pl-6")}>
-            {inner}
-          </Link>
-        ) : (
-          <div className={cn("p-4", row.status && "pl-6")}>{inner}</div>
-        )}
+        {/* The clickable region and the decisions sit side by side rather
+            than nested: the region is a <button> when it opens a sheet,
+            and a button inside a button is invalid HTML that React
+            refuses to hydrate.
 
+            The decisions are on the right, level with the time and the
+            covers, so a booking is one line tall. Stacked under the row
+            they cost ~60px each, and a service of fifteen ran to nearly
+            three screens of scrolling to reach the last sitting. Below
+            the breakpoint they move under the row, where a thumb can
+            reach them — see the block after this one. */}
+        <div className="flex items-center">
+          {row.detail ? (
+            <button
+              type="button"
+              onClick={() => row.detail && openDetail(row.detail)}
+              className={cn(
+                "flex-1 min-w-0 text-left p-4",
+                row.status && "pl-6",
+              )}
+            >
+              {inner}
+            </button>
+          ) : row.href ? (
+            <Link
+              href={row.href}
+              className={cn("flex-1 min-w-0 p-4", row.status && "pl-6")}
+            >
+              {inner}
+            </Link>
+          ) : (
+            <div className={cn("flex-1 min-w-0 p-4", row.status && "pl-6")}>
+              {inner}
+            </div>
+          )}
+
+          {row.actions?.length ? (
+            <div className="hidden md:flex items-center gap-2 shrink-0 pl-3 pr-4">
+              {row.actions.map((cta, i) => (
+                <ActionControl
+                  key={`${cta.action.label}-${i}`}
+                  cta={cta}
+                  size="sm"
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        {/* Phone only. On a wide screen the same buttons sit on the
+            row's right, inside `inner` — see the note there. */}
         {row.actions?.length ? (
-          <div className={cn("flex flex-wrap gap-2 px-4 pb-4 -mt-1", row.status && "pl-6")}>
+          <div className={cn("md:hidden flex flex-wrap gap-2 px-4 pb-4 -mt-1", row.status && "pl-6")}>
             {row.actions.map((cta, i) => (
               <ActionControl
                 key={`${cta.action.label}-${i}`}

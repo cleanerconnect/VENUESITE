@@ -50,11 +50,7 @@ type Stage =
   | { name: "choose_venue"; venues: VenueChoice[] }
   | { name: "no_workspace"; fullName: string };
 
-export function SignInPanel({
-  demoAccounts,
-}: {
-  demoAccounts: { email: string; password: string; label: string; description: string }[];
-}) {
+export function SignInPanel() {
   const router = useRouter();
   const params = useSearchParams();
   const expired = params.get("expired") === "1";
@@ -247,51 +243,6 @@ export function SignInPanel({
               </a>
             </p>
 
-            <div className="mt-7 pt-6 border-t border-line-soft">
-              <div className="text-eyebrow text-ink-soft">
-                {COPY.auth.demoAccounts}
-              </div>
-              <p className="text-meta text-ink-mute mt-1.5">
-                {COPY.auth.demoAccountsHint}
-              </p>
-              <div className="mt-3 flex flex-col gap-2">
-                {demoAccounts.map((a) => (
-                  <button
-                    key={a.email}
-                    type="button"
-                    disabled={pending}
-                    // Fills the form rather than signing in, so the
-                    // credentials are visible and the form is still the
-                    // thing being demonstrated.
-                    onClick={() => {
-                      setEmail(a.email);
-                      setPassword(a.password);
-                      setError(null);
-                      setNotice(null);
-                    }}
-                    className={cn(
-                      "group text-left rounded-[var(--radius-sm)] border border-line",
-                      "bg-surface hover:border-ink/40 transition-colors px-3.5 py-2.5",
-                      "disabled:opacity-50",
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-[13.5px] font-semibold text-ink">
-                        {a.label}
-                      </span>
-                      <ArrowRight
-                        size={14}
-                        strokeWidth={2}
-                        className="text-ink-mute shrink-0 group-hover:text-ink transition-colors"
-                      />
-                    </div>
-                    <div className="text-meta text-ink-mute mt-0.5">
-                      {a.description}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
           </motion.div>
         ) : stage.name === "choose_venue" ? (
           <motion.div

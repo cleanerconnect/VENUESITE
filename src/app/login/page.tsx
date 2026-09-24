@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Brand } from "@/components/organizer/Brand";
-import { demoAccounts } from "@/lib/auth/accounts";
-import { activeLot } from "@/lib/lot";
 import { COPY } from "@/lib/copy/fr";
 import { SignInPanel } from "./SignInPanel";
 
@@ -18,14 +16,14 @@ import { SignInPanel } from "./SignInPanel";
 // the portal to run tonight's service. It is now the mark, one sentence
 // about what is behind the form, and the country.
 //
-// Server component: the demo account list is read here and passed down,
-// so the client bundle never carries the account directory.
+// The form is the whole of it: an address and a password. There is no
+// account list to pick from, no guest entry and no demo shortcut — every
+// one of those is a way into the portal that does not exist in
+// production, and a reviewer who uses one is not reviewing the product.
 
 export const metadata: Metadata = { title: "Connexion · LYFE" };
 
 export default function LoginPage() {
-  const accounts = demoAccounts(activeLot());
-
   return (
     <main className="min-h-screen flex flex-col md:flex-row">
       {/* === Left column — the mark, on the dark panel === */}
@@ -61,7 +59,7 @@ export default function LoginPage() {
         {/* The panel reads `?expired=1`, so it needs a boundary for the
             static shell to render around. */}
         <Suspense fallback={<div className="w-full max-w-[400px] h-[420px]" />}>
-          <SignInPanel demoAccounts={accounts} />
+          <SignInPanel />
         </Suspense>
       </section>
     </main>

@@ -655,10 +655,9 @@ function DangerSection() {
           <div>
             <h2 className="text-h2 text-ink">Réinitialiser l&apos;onboarding</h2>
             <p className="text-body text-ink-soft mt-1.5 max-w-xl leading-relaxed">
-              Outil démo — efface l&apos;état d&apos;avancement du wizard de
+              Efface l&apos;état d&apos;avancement du wizard de
               configuration et ré-affiche la bannière en haut du tableau de
-              bord. Pratique pour rejouer le parcours nouveau-venu sur le
-              profil actif.
+              bord, pour reprendre la mise en route depuis le début.
             </p>
           </div>
         </div>

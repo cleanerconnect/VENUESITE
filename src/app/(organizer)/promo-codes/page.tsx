@@ -312,7 +312,7 @@ export default function PromoCodesPage() {
                               onSelect={() =>
                                 toast({
                                   tone: "info",
-                                  title: "Action non disponible en démo",
+                                  title: "Action non disponible",
                                 })
                               }
                               className="px-3 h-9 flex items-center rounded-[var(--radius-sm)] text-[13.5px] hover:bg-ink/[0.04] cursor-pointer outline-none text-ink"
@@ -323,7 +323,7 @@ export default function PromoCodesPage() {
                               onSelect={() =>
                                 toast({
                                   tone: "info",
-                                  title: "Action non disponible en démo",
+                                  title: "Action non disponible",
                                 })
                               }
                               className="px-3 h-9 flex items-center rounded-[var(--radius-sm)] text-[13.5px] hover:bg-ink/[0.04] cursor-pointer outline-none text-danger"

@@ -4,7 +4,7 @@
   "account": "yassine@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-09-24T17:04:32.258Z",
+  "capturedAt": "2026-09-24T17:38:50.482Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -75,6 +75,8 @@
             "subheading": null,
             "actions": [
               "Accepter",
+              "Refuser",
+              "Accepter",
               "Refuser"
             ],
             "facets": [],
@@ -96,6 +98,8 @@
                 "trailing": null,
                 "pills": [],
                 "actions": [
+                  "Accepter",
+                  "Refuser",
                   "Accepter",
                   "Refuser"
                 ]
@@ -123,6 +127,10 @@
             "heading": null,
             "subheading": null,
             "actions": [
+              "Check-in",
+              "Check-in",
+              "Check-in",
+              "Check-in",
               "Check-in",
               "Check-in",
               "Check-in",
@@ -167,6 +175,7 @@
                 "trailing": null,
                 "pills": [],
                 "actions": [
+                  "Check-in",
                   "Check-in"
                 ]
               },
@@ -177,6 +186,7 @@
                 "trailing": null,
                 "pills": [],
                 "actions": [
+                  "Check-in",
                   "Check-in"
                 ]
               },
@@ -187,6 +197,7 @@
                 "trailing": null,
                 "pills": [],
                 "actions": [
+                  "Check-in",
                   "Check-in"
                 ]
               },
@@ -197,6 +208,7 @@
                 "trailing": null,
                 "pills": [],
                 "actions": [
+                  "Check-in",
                   "Check-in"
                 ]
               }
@@ -264,8 +276,14 @@
             "Check-in",
             "Check-in",
             "Check-in",
+            "Check-in",
+            "Check-in",
+            "Check-in",
             "Accepter",
             "Refuser",
+            "Accepter",
+            "Refuser",
+            "Check-in",
             "Check-in"
           ],
           "facets": [
@@ -343,6 +361,7 @@
               "trailing": null,
               "pills": [],
               "actions": [
+                "Check-in",
                 "Check-in"
               ]
             },
@@ -353,6 +372,7 @@
               "trailing": null,
               "pills": [],
               "actions": [
+                "Check-in",
                 "Check-in"
               ]
             },
@@ -363,6 +383,7 @@
               "trailing": null,
               "pills": [],
               "actions": [
+                "Check-in",
                 "Check-in"
               ]
             },
@@ -374,6 +395,8 @@
               "pills": [],
               "actions": [
                 "Accepter",
+                "Refuser",
+                "Accepter",
                 "Refuser"
               ]
             },
@@ -384,6 +407,7 @@
               "trailing": null,
               "pills": [],
               "actions": [
+                "Check-in",
                 "Check-in"
               ]
             }
@@ -391,35 +415,6 @@
         }
       ],
       "surfaces": [
-        {
-          "name": "Détail réservation",
-          "title": "Salma Bennani",
-          "lines": [
-            "Salma Bennani",
-            "19h00 · 4 couverts · LYFE",
-            "La réservation",
-            "Heure",
-            "19h00",
-            "Personnes",
-            "4",
-            "Espace",
-            "Patio",
-            "Canal",
-            "LYFE",
-            "Le client",
-            "Téléphone",
-            "+212 661 20 44 18",
-            "Note de salle",
-            "Anniversaire, dessert avec bougie"
-          ],
-          "pills": [
-            "CONFIRMÉE"
-          ],
-          "buttons": [
-            "Marquer comme arrivé"
-          ],
-          "width": 460
-        },
         {
           "name": "Refuser",
           "title": "Refuser la demande",
@@ -938,17 +933,7 @@
             "Se souvenir de moi",
             "Mot de passe oublié ?",
             "Se connecter",
-            "contact@lyfemaroc.org",
-            "Comptes de démonstration",
-            "Mot de passe : demo. Chaque compte mène à un espace différent.",
-            "Les deux espaces",
-            "Deux lieux et une organisation",
-            "Partenaire lieu",
-            "Nomad Rooftop · gérante, un seul lieu",
-            "Plusieurs lieux",
-            "Gérant de deux lieux · doit choisir",
-            "Compte sans espace",
-            "Inscrit, rien encore rattaché"
+            "contact@lyfemaroc.org"
           ],
           "fields": [
             {
@@ -988,7 +973,7 @@
       "blocks": []
     },
     "/contact": {
-      "label": "Demander une démo",
+      "label": "Nous contacter",
       "purpose": "Formulaire public pour un partenaire sans accès.",
       "status": "built",
       "gap": null,
@@ -1005,10 +990,10 @@
           "facets": [],
           "texts": [
             "Parlons de votre événement.",
-            "LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures avec une démo personnalisée.",
+            "LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures.",
             "Casablanca · Rabat · Marrakech"
           ],
-          "body": "Parlons de votre événement.LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures avec une démo personnalisée.hello@lyfe.maCasablanca · Rabat · Marrakech",
+          "body": "Parlons de votre événement.LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures.hello@lyfe.maCasablanca · Rabat · Marrakech",
           "pills": []
         }
       ]

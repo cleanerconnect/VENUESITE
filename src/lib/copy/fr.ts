@@ -74,9 +74,6 @@ export const COPY = {
     noWorkspaceTitle: "Votre compte n'est rattaché à aucun espace",
     noWorkspaceBody:
       "Un membre de l'équipe LYFE finalise votre inscription. Vous recevrez un e-mail dès que votre espace sera prêt.",
-    demoAccounts: "Comptes de démonstration",
-    demoAccountsHint:
-      "Mot de passe : demo. Chaque compte mène à un espace différent.",
   },
 
   /** The visible state of a form. */

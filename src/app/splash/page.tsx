@@ -2,15 +2,14 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { readSession, seedDemoSession, type Role } from "@/lib/auth/session";
+import { readSession } from "@/lib/auth/session";
 
 const HOLD_MS = 2000;
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function SplashPage() {
-  // useSearchParams must live inside a Suspense boundary in Next 14.
   return (
     <Suspense fallback={<SplashShell />}>
       <SplashInner />
@@ -29,22 +28,15 @@ function SplashShell() {
 
 function SplashInner() {
   const router = useRouter();
-  const search = useSearchParams();
   const [visible, setVisible] = useState(true);
 
+  // `?demo=1&role=…` used to mint a session here and drop straight into
+  // the dashboard, skipping the form entirely. A way in that does not
+  // exist in production is a way in nobody should be reviewing against.
   useEffect(() => {
-    if (search.get("demo") === "1") {
-      const roleParam = search.get("role");
-      const role: Role =
-        roleParam === "scanner" || roleParam === "admin" ? roleParam : "owner";
-      seedDemoSession(role);
-      router.replace("/dashboard");
-      return;
-    }
-
     const t = window.setTimeout(() => setVisible(false), HOLD_MS);
     return () => window.clearTimeout(t);
-  }, [router, search]);
+  }, []);
 
   const handleAnimationComplete = () => {
     if (visible) return;

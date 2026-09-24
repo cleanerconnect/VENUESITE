@@ -34,8 +34,6 @@ import {
   ROLE_LABEL,
   type Role,
   clearSession,
-  switchProfile,
-  switchRole,
 } from "@/lib/auth/session";
 import { PROFILES } from "@/lib/auth/static/profiles";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
@@ -74,18 +72,6 @@ export function Sidebar({
     void signOut().then(() => router.replace("/login"));
   };
 
-  const handleSwitchRole = (next: Role) => {
-    switchRole(next);
-    emitSessionChanged();
-    router.refresh();
-  };
-
-  const handleSwitchProfile = (organizerId: string) => {
-    switchProfile(organizerId);
-    emitSessionChanged();
-    router.refresh();
-  };
-
   // Which product this route belongs to decides the whole sidebar:
   // caption, identity card, nav groups. Nothing below knows the names of
   // any of them.
@@ -112,8 +98,6 @@ export function Sidebar({
         activeVenueId={activeVenueId}
         viewerName={viewerName}
         viewerRole={viewerRole}
-        handleSwitchRole={handleSwitchRole}
-        handleSwitchProfile={handleSwitchProfile}
         handleLogout={handleLogout}
       />
     </aside>
@@ -204,8 +188,6 @@ function SidebarBody({
   activeVenueId,
   viewerName,
   viewerRole,
-  handleSwitchRole,
-  handleSwitchProfile,
   handleLogout,
 }: {
   pathname: string | null;
@@ -218,8 +200,6 @@ function SidebarBody({
   activeVenueId: string;
   viewerName: string;
   viewerRole?: string;
-  handleSwitchRole: (next: Role) => void;
-  handleSwitchProfile: (organizerId: string) => void;
   handleLogout: () => void;
 }) {
   // The workspace supplies its own identity when it has one (the
@@ -392,81 +372,6 @@ function SidebarBody({
                   Calendrier
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
-
-                {/* Demo-only role switcher. Removed in production. */}
-                <DropdownMenu.Sub>
-                  <DropdownMenu.SubTrigger
-                    className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none data-[state=open]:bg-ink/[0.04]"
-                  >
-                    <UserCog size={14} strokeWidth={1.8} className="text-ink-mute" />
-                    <span className="flex-1">Vue démo</span>
-                    <ChevronRight size={12} strokeWidth={2} className="text-ink-mute" />
-                  </DropdownMenu.SubTrigger>
-                  <DropdownMenu.Portal>
-                    <DropdownMenu.SubContent
-                      sideOffset={4}
-                      className="min-w-[200px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
-                    >
-                      {(["owner", "admin", "scanner"] as Role[]).map((r) => {
-                        const active = role === r;
-                        return (
-                          <DropdownMenu.Item
-                            key={r}
-                            onSelect={() => handleSwitchRole(r)}
-                            className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
-                          >
-                            <span className="flex-1">{ROLE_LABEL[r]}</span>
-                            {active ? (
-                              <Check size={14} strokeWidth={2} className="text-violet-deep" />
-                            ) : null}
-                          </DropdownMenu.Item>
-                        );
-                      })}
-                    </DropdownMenu.SubContent>
-                  </DropdownMenu.Portal>
-                </DropdownMenu.Sub>
-
-                {/* Demo-only profile switcher (festival vs venue). Drives
-                    the conditional rendering of Settings → Détails du
-                    lieu and the chrome's org card. */}
-                <DropdownMenu.Sub>
-                  <DropdownMenu.SubTrigger
-                    className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none data-[state=open]:bg-ink/[0.04]"
-                  >
-                    <Building2 size={14} strokeWidth={1.8} className="text-ink-mute" />
-                    <span className="flex-1">Profil démo</span>
-                    <ChevronRight size={12} strokeWidth={2} className="text-ink-mute" />
-                  </DropdownMenu.SubTrigger>
-                  <DropdownMenu.Portal>
-                    <DropdownMenu.SubContent
-                      sideOffset={4}
-                      className="min-w-[260px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
-                    >
-                      {Object.values(PROFILES).map((p) => {
-                        const active = profile?.id === p.id;
-                        return (
-                          <DropdownMenu.Item
-                            key={p.id}
-                            onSelect={() => handleSwitchProfile(p.id)}
-                            className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <div className="font-semibold truncate">
-                                {p.shortName}
-                              </div>
-                              <div className="text-meta text-ink-mute truncate">
-                                {p.type === "venue" ? "Lieu" : p.type === "festival" ? "Festival" : "Promoteur"} · {p.city}
-                              </div>
-                            </div>
-                            {active ? (
-                              <Check size={14} strokeWidth={2} className="text-violet-deep shrink-0" />
-                            ) : null}
-                          </DropdownMenu.Item>
-                        );
-                      })}
-                    </DropdownMenu.SubContent>
-                  </DropdownMenu.Portal>
-                </DropdownMenu.Sub>
 
                 <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
                 <DropdownMenu.Item

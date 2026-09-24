@@ -71,7 +71,7 @@ export const ROUTES: RouteEntry[] = [
   {
     path: "/contact",
     lot: 1,
-    label: "Demander une démo",
+    label: "Nous contacter",
     purpose: "Formulaire public pour un partenaire sans accès.",
     workspace: "entry",
     status: "built",

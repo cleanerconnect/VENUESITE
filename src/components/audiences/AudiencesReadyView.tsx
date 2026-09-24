@@ -74,7 +74,7 @@ export function AudiencesReadyView({
     else
       toast({
         tone: "info",
-        title: "Profil détaillé indisponible en démo",
+        title: "Profil détaillé indisponible",
       });
   };
 

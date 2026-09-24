@@ -154,9 +154,12 @@ npm install
 npm run dev          # http://localhost:3000 → /dashboard
 ```
 
-That serves the committed static dataset. Sign in with any demo account
-on `/login` — the password is `demo`; `yassine@darzellij.ma` is the owner
-of both venues and the account every capture and check uses.
+That serves the committed static dataset. `/login` takes an address and
+a password and nothing else — there is no account list to pick from, no
+guest entry and no shortcut past the form, because none of those exists
+in production. The credentials live in `src/lib/auth/accounts.ts`, the
+file a real backend replaces; `yassine@darzellij.ma` owns both venues
+and is the account every capture and check uses.
 
 Optionally promote to a real database, after which edits persist across
 restarts:
@@ -296,6 +299,15 @@ groups and six screens a Prio 02 deployment renders — rather than
 detached. The lot changes which screens exist, and which screens exist
 is exactly what that component draws, so it earns a component of its own.
 
+**One search box.** There were two: a stub in the topbar that opened
+nothing, and a real one inside the Carnet that filtered the rows under
+it. A host looking for a booking had to know which of the two did the
+work, and the answer changed per screen. The topbar's is the real one
+and the only one — a screen with a searchable list claims it on mount
+and supplies the placeholder, so the chrome says what *this* screen
+searches. ⌘K focuses it, which is what the hint beside it always
+claimed.
+
 **Host density.** Lot 1 is read by a restaurant owner who is not
 comfortable with software, standing at a host stand. Lot 2's scale is an
 analyst's — 14px body, 12px meta, grey secondary text — and at a stand
@@ -429,7 +441,7 @@ was not there.
 ## 8. The schema is the Business Service contract
 
 `db/schema.sql` — **65 tables**. It is not an implementation detail of
-the demo; it is the specification of what the Business Service must
+this repository; it is the specification of what the Business Service must
 store. It is written on the Postgres/SQLite intersection precisely so it
 ports without translation, and `db/seed.mjs` fills it with a dataset the
 whole portal renders from.
@@ -577,7 +589,7 @@ they exist.
 
 | Item | Current state | What the team builds |
 |---|---|---|
-| **Real authentication** | A demo session driver behind a `SessionDriver` interface, plus a presence cookie for the middleware | Implement `SessionDriver` against the Business Service. `resolveSession()` already re-checks venue access on every request |
+| **Real authentication** | A local credential store behind a `SessionDriver` interface, plus a presence cookie for the middleware. Nothing in the portal lists it, and there is no guest or demo path around it | Implement `SessionDriver` against the Business Service. `resolveSession()` already re-checks venue access on every request |
 | **PostgreSQL** | SQLite via `node:sqlite`, on the Postgres/SQLite intersection of SQL | Point the store at Postgres. The schema is written to port; no SQLite-only syntax |
 | **S3 + CloudFront** | A local filesystem driver behind a `StorageDriver` interface | Implement the driver with presigned PUT and CloudFront reads. The portal must never see a raw credential — that constraint is already structural, since it only ever handles object keys |
 | **The `/api/business/*` backend** | `HttpRestaurantRepository` is written against it and unused | Stand the service up; flip the env var |

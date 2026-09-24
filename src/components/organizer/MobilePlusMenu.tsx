@@ -25,8 +25,6 @@ import {
   ROLE_LABEL,
   type Role,
   clearSession,
-  switchProfile,
-  switchRole,
 } from "@/lib/auth/session";
 import { PROFILES } from "@/lib/auth/static/profiles";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
@@ -73,7 +71,6 @@ export function MobilePlusMenu({
   const workspace = resolveWorkspace(pathname);
   const orgName = workspace.entity?.shortName ?? profile?.shortName ?? "";
   const closeDrawer = useMobileNavStore((s) => s.setDrawerOpen);
-  const [pickerOpen, setPickerOpen] = useState(false);
 
   const handleLogout = () => {
     // Clears the client mirror and the server cookies. Clearing only the
@@ -104,22 +101,6 @@ export function MobilePlusMenu({
     },
   ];
 
-  const handlePickProfile = (organizerId: string) => {
-    switchProfile(organizerId);
-    emitSessionChanged();
-    router.refresh();
-    setPickerOpen(false);
-    toast({ tone: "success", title: "Profil changé" });
-  };
-
-  const handlePickRole = (next: Role) => {
-    switchRole(next);
-    emitSessionChanged();
-    router.refresh();
-    setPickerOpen(false);
-    toast({ tone: "success", title: `Rôle ${ROLE_LABEL[next]}` });
-  };
-
   return (
     <div className="space-y-5">
       {!bareHeader ? (
@@ -131,13 +112,12 @@ export function MobilePlusMenu({
         </div>
       ) : null}
 
-      {/* Profile switcher card — tap to open the picker sheet */}
+      {/* The active profile, stated. It used to open a sheet that swapped
+          profile and role at will — a switch that exists in no signed-in
+          product and let a reviewer land in a role they were never
+          granted. */}
       {profile ? (
-        <button
-          type="button"
-          onClick={() => setPickerOpen(true)}
-          className="w-full text-left bg-surface border border-line hover:border-violet-soft rounded-[var(--radius-lg)] p-4 transition-colors"
-        >
+        <div className="w-full bg-surface border border-line rounded-[var(--radius-lg)] p-4">
           <div className="flex items-center gap-3">
             <div
               className="h-12 w-12 rounded-chip flex items-center justify-center text-violet-deep font-bold text-[14px] shrink-0"
@@ -154,13 +134,8 @@ export function MobilePlusMenu({
                 {profile.subline}
               </div>
             </div>
-            <ChevronRight
-              size={14}
-              strokeWidth={1.8}
-              className="text-ink-mute shrink-0"
-            />
           </div>
-        </button>
+        </div>
       ) : null}
 
       {/* Vertical menu list */}
@@ -231,181 +206,6 @@ export function MobilePlusMenu({
           .join(" · ")}
       </div>
 
-      {/* Profile + role picker bottom sheet */}
-      <ProfilePicker
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
-        currentProfileId={profile?.id ?? null}
-        currentRole={role}
-        onPickProfile={handlePickProfile}
-        onPickRole={handlePickRole}
-      />
     </div>
-  );
-}
-
-function ProfilePicker({
-  open,
-  onOpenChange,
-  currentProfileId,
-  currentRole,
-  onPickProfile,
-  onPickRole,
-}: {
-  open: boolean;
-  onOpenChange: (next: boolean) => void;
-  currentProfileId: string | null;
-  currentRole: Role | null;
-  onPickProfile: (id: string) => void;
-  onPickRole: (role: Role) => void;
-}) {
-  return (
-    <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
-      <AnimatePresence>
-        {open ? (
-          <RadixDialog.Portal forceMount>
-            <RadixDialog.Overlay asChild>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.18 }}
-                className="fixed inset-0 z-[60] bg-ink/60 backdrop-blur-sm"
-              />
-            </RadixDialog.Overlay>
-            <RadixDialog.Content asChild>
-              <motion.div
-                initial={{ y: "20%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "20%", opacity: 0 }}
-                transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-                className="fixed bottom-0 inset-x-0 z-[60] bg-surface text-ink rounded-t-[var(--radius-xl)] max-h-[80vh] overflow-hidden flex flex-col"
-              >
-                <header className="px-5 pt-5 pb-3 border-b border-line-soft flex items-start justify-between gap-3">
-                  <div>
-                    <RadixDialog.Title asChild>
-                      <h2
-                        style={{
-                          fontFamily: "var(--font-serif)",
-                          fontWeight: 600,
-                          fontSize: "20px",
-                          lineHeight: 1.15,
-                          letterSpacing: "-0.02em",
-                        }}
-                      >
-                        Changer de profil
-                      </h2>
-                    </RadixDialog.Title>
-                    <p className="text-meta text-ink-soft mt-1">
-                      Profils + rôles démo — recharge l&apos;app sur la sélection.
-                    </p>
-                  </div>
-                  <RadixDialog.Close asChild>
-                    <button
-                      type="button"
-                      aria-label="Fermer"
-                      className="h-9 w-9 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink-mute shrink-0 transition-colors"
-                    >
-                      <X size={16} strokeWidth={1.8} />
-                    </button>
-                  </RadixDialog.Close>
-                </header>
-                <div className="overflow-y-auto scroll-thin">
-                  <div className="px-5 pt-4">
-                    <div className="text-eyebrow text-ink-mute mb-2 inline-flex items-center gap-1.5">
-                      <Building2 size={11} strokeWidth={1.9} />
-                      Profil organisateur
-                    </div>
-                  </div>
-                  <ul>
-                    {Object.values(PROFILES).map((p) => {
-                      const active = p.id === currentProfileId;
-                      return (
-                        <li key={p.id}>
-                          <button
-                            type="button"
-                            onClick={() => onPickProfile(p.id)}
-                            className={cn(
-                              "w-full px-5 h-16 flex items-center gap-3 text-left transition-colors",
-                              active
-                                ? "bg-violet-soft/60"
-                                : "hover:bg-canvas-2/40",
-                            )}
-                          >
-                            <div
-                              className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[12px] shrink-0"
-                              style={{ background: "var(--color-violet-soft)" }}
-                            >
-                              {p.initials}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-[14px] font-semibold text-ink truncate">
-                                {p.shortName}
-                              </div>
-                              <div className="text-meta text-ink-mute truncate">
-                                {p.type === "venue"
-                                  ? "Lieu"
-                                  : p.type === "festival"
-                                    ? "Festival"
-                                    : "Promoteur"}{" "}
-                                · {p.city}
-                              </div>
-                            </div>
-                            {active ? (
-                              <Check
-                                size={16}
-                                strokeWidth={2.2}
-                                className="text-violet-deep shrink-0"
-                              />
-                            ) : null}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-
-                  <div className="px-5 pt-5 mt-2 border-t border-line-soft">
-                    <div className="text-eyebrow text-ink-mute mb-2 inline-flex items-center gap-1.5">
-                      <UserCog size={11} strokeWidth={1.9} />
-                      Vue démo
-                    </div>
-                  </div>
-                  <ul>
-                    {(["owner", "admin", "scanner"] as Role[]).map((r) => {
-                      const active = r === currentRole;
-                      return (
-                        <li key={r}>
-                          <button
-                            type="button"
-                            onClick={() => onPickRole(r)}
-                            className={cn(
-                              "w-full px-5 h-12 flex items-center gap-3 text-left transition-colors",
-                              active
-                                ? "bg-violet-soft/60"
-                                : "hover:bg-canvas-2/40",
-                            )}
-                          >
-                            <span className="flex-1 text-[14px] text-ink">
-                              {ROLE_LABEL[r]}
-                            </span>
-                            {active ? (
-                              <Check
-                                size={16}
-                                strokeWidth={2.2}
-                                className="text-violet-deep shrink-0"
-                              />
-                            ) : null}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </motion.div>
-            </RadixDialog.Content>
-          </RadixDialog.Portal>
-        ) : null}
-      </AnimatePresence>
-    </RadixDialog.Root>
   );
 }

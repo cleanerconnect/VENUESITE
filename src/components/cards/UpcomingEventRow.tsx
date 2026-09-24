@@ -56,7 +56,7 @@ export function UpcomingEventRow({
         setCancelOpen(true);
         return;
       case "scan":
-        // Real wiring: open ScannerModal scoped to this event. For demo
+        // Real wiring: open ScannerModal scoped to this event. Until
         // we just navigate to the detail page where the Scanner tab lives.
         router.push(`/events/${event.id}#scanner`);
         return;
@@ -64,7 +64,7 @@ export function UpcomingEventRow({
         router.push(`/events/${event.id}#bilan`);
         return;
       default:
-        toast({ tone: "info", title: "Action non disponible en démo" });
+        toast({ tone: "info", title: "Action non disponible" });
     }
   };
 
