@@ -16,12 +16,15 @@ import "server-only";
 import {
   RepositoryError,
   type AnalyticsInput,
+  type AssetAction,
   type CheckInInput,
   type NoShowInput,
   type RejectBookingInput,
   type ReservationRefInput,
   type RestaurantRepository,
   type ReviewReplyInput,
+  type VenueListingPatch,
+  type VenueProfilePatch,
 } from "./repository";
 import {
   staticBusinessAccount,
@@ -46,8 +49,9 @@ import type {
   DayBook,
   Reservation,
   RestaurantOverview,
+  RestaurantProfile,
 } from "@/lib/types/restaurant";
-import type { AssetKind } from "@/lib/assets/types";
+import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type {
   CheckInResult,
   Customer,
@@ -67,6 +71,15 @@ const operationsOverlay = new Map<string, OperationsBundle>();
  * of their own — the overview carries a service, not a CRM.
  */
 const customersOverlay = new Map<string, Customer[]>();
+/**
+ * Ma fiche's record and its photos, once the forms have been used.
+ *
+ * The snapshot is a committed capture, so a write cannot persist — but
+ * it can hold for the life of the process, which is what makes the form
+ * demonstrable on a machine with no database at all.
+ */
+const profileOverlay = new Map<string, RestaurantProfile>();
+const assetOverlay = new Map<string, VenueAsset[]>();
 const readNotifications = new Set<string>();
 
 export class StaticRestaurantRepository implements RestaurantRepository {
@@ -117,10 +130,11 @@ export class StaticRestaurantRepository implements RestaurantRepository {
   }
 
   async rejectReservation({ restaurantId, reservationId }: RejectBookingInput) {
-    // Refusal is not cancellation — the coded reason is what makes them
-    // separable downstream — but both leave the book the same way, and
-    // the static driver has no analytics sink to tell them apart in.
-    return this.transition(restaurantId, reservationId, "cancelled");
+    // Refusal is not cancellation: the coded reason is what makes the two
+    // separable downstream, and the schema keeps them as different
+    // states. The snapshot has no analytics sink to put the reason in,
+    // but it can at least stop collapsing the state.
+    return this.transition(restaurantId, reservationId, "rejected");
   }
 
   async reportNoShow({ restaurantId, reservationId }: NoShowInput) {
@@ -130,16 +144,26 @@ export class StaticRestaurantRepository implements RestaurantRepository {
   async checkIn(input: CheckInInput): Promise<CheckInResult> {
     const data = await this.getOverview(input.restaurantId);
     const code = input.qrCode.trim().toUpperCase();
-    const match = [...data.upcomingReservations, ...data.waitlist].find(
-      (r) => `LYFE-${r.id}`.toUpperCase() === code || r.id.toUpperCase() === code,
-    );
+    const rows = [...data.upcomingReservations, ...data.waitlist];
+    // A code means the scanner; no code and a booking id means the host
+    // tapped a name off the list.
+    const method: CheckInResult["method"] = code ? "qr" : "manual";
+    const match = code
+      ? rows.find(
+          (r) => `LYFE-${r.id}`.toUpperCase() === code || r.id.toUpperCase() === code,
+        )
+      : rows.find((r) => r.id === input.reservationId);
 
-    if (!match) return { ok: false, method: "manual", error: "unknown_code" };
+    if (!match) return { ok: false, method, error: "unknown_code" };
     if (match.state === "arrived") {
-      return { ok: false, method: "manual", error: "already_used" };
+      return { ok: false, method, error: "already_used" };
     }
-    if (match.state === "cancelled" || match.state === "no_show") {
-      return { ok: false, method: "manual", error: "expired" };
+    if (
+      match.state === "cancelled" ||
+      match.state === "rejected" ||
+      match.state === "no_show"
+    ) {
+      return { ok: false, method, error: "expired" };
     }
 
     // Persisted into the overlay, not left to the client's optimistic
@@ -152,7 +176,7 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       bookingId: match.id,
       guestName: match.guestName,
       partySize: match.partySize,
-      method: "manual",
+      method,
     };
   }
 
@@ -179,7 +203,52 @@ export class StaticRestaurantRepository implements RestaurantRepository {
   // ── Venue profile and settings ──
 
   async getVenueProfile(venueId: string) {
-    return clone(this.bundle(venueId).profile);
+    const held = profileOverlay.get(venueId);
+    return clone(held ?? this.bundle(venueId).profile);
+  }
+
+  async saveVenueProfile(venueId: string, patch: VenueProfilePatch) {
+    const current = await this.getVenueProfile(venueId);
+    if (!current) {
+      throw new RepositoryError("Lieu introuvable.", 404, "venue_not_found");
+    }
+    const next: RestaurantProfile = {
+      ...current,
+      name: patch.name,
+      shortName: patch.shortName,
+      description: patch.description,
+      cuisine: patch.category,
+      address: patch.address,
+      city: patch.city,
+      latitude: patch.latitude ?? undefined,
+      longitude: patch.longitude ?? undefined,
+      contactEmail: patch.contactEmail,
+      contactPhone: patch.contactPhone,
+      website: patch.website,
+      // `patch.kind` is the venue's configuration — restaurant or
+      // drinks — which the subline reads and `RestaurantProfile.kind`
+      // does not hold: that field is the cuisine. Two different things
+      // that share a name, so the patch's value goes to the subline.
+      subline: `${patch.kind === "drinks" ? "Bar" : "Restaurant"} · ${patch.city}`,
+    };
+    profileOverlay.set(venueId, next);
+    return clone(next);
+  }
+
+  async saveVenueListing(venueId: string, patch: VenueListingPatch) {
+    const current = await this.getVenueProfile(venueId);
+    if (!current) {
+      throw new RepositoryError("Lieu introuvable.", 404, "venue_not_found");
+    }
+    const next: RestaurantProfile = {
+      ...current,
+      priceRange: patch.priceRange,
+      tags: patch.tags,
+      features: patch.features as RestaurantProfile["features"],
+      ambience: patch.ambience,
+    };
+    profileOverlay.set(venueId, next);
+    return clone(next);
   }
 
   async listMenuItems(venueId: string) {
@@ -191,8 +260,56 @@ export class StaticRestaurantRepository implements RestaurantRepository {
   }
 
   async listAssets(venueId: string, kind: AssetKind) {
+    const held = assetOverlay.get(`${venueId}:${kind}`);
+    if (held) return clone(held);
     const bundle = this.bundle(venueId);
     return clone(kind === "photo" ? bundle.photos : bundle.menuFiles);
+  }
+
+  async runAssetAction(venueId: string, action: AssetAction) {
+    const kind =
+      action.kind === "asset.remove" ? "photo" : action.assetKind;
+    const key = `${venueId}:${kind}`;
+    const current = await this.listAssets(venueId, kind);
+
+    if (action.kind === "asset.record") {
+      const next: VenueAsset = {
+        id: `ast_${Math.random().toString(36).slice(2, 10)}`,
+        venueId,
+        kind: action.assetKind,
+        objectKey: action.objectKey,
+        contentType: action.contentType,
+        sizeBytes: action.sizeBytes,
+        position: current.length,
+        createdAt: new Date().toISOString(),
+      };
+      assetOverlay.set(key, [...current, next]);
+      return clone(assetOverlay.get(key)!);
+    }
+
+    if (action.kind === "asset.remove") {
+      // The snapshot's two kinds are small; finding which one holds the
+      // id beats making the caller say.
+      for (const k of ["photo", "menu_file"] as AssetKind[]) {
+        const list = await this.listAssets(venueId, k);
+        if (list.some((a) => a.id === action.id)) {
+          const next = list.filter((a) => a.id !== action.id);
+          assetOverlay.set(`${venueId}:${k}`, next);
+          return clone(next);
+        }
+      }
+      throw new RepositoryError("Média introuvable.", 404, "asset_not_found");
+    }
+
+    const byId = new Map(current.map((a) => [a.id, a]));
+    const ordered = action.orderedIds
+      .map((id, index) => {
+        const found = byId.get(id);
+        return found ? { ...found, position: index } : null;
+      })
+      .filter((a): a is VenueAsset => a !== null);
+    assetOverlay.set(key, ordered);
+    return clone(ordered);
   }
 
   // ── Availability ──
@@ -602,7 +719,7 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       current.waitlist = current.waitlist.filter((r) => r.id !== reservationId);
       current.currentService.bookedCovers += target.partySize;
     }
-    if (to === "cancelled") {
+    if (to === "cancelled" || to === "rejected") {
       current.upcomingReservations = current.upcomingReservations.filter(
         (r) => r.id !== reservationId,
       );

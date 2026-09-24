@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
-  SCREEN_NEEDS,
   isFormRoute,
+  screenNeeds,
   restaurantScreenTitle,
   type ScreenContext,
   type SpecSlug,
@@ -176,7 +176,10 @@ async function loadContext(
   day: string,
   dayService: string | undefined,
 ): Promise<Omit<ScreenContext, "overview">> {
-  const needs = SCREEN_NEEDS[slug];
+  // Filtered by lot: a Lot 1 deployment asks for what it renders and
+  // nothing else. See `screenNeeds`.
+  const lot = activeLot();
+  const needs = screenNeeds(slug, lot);
 
   const settings = await repo.getVenueSettings(venueId);
   const ctx: Omit<ScreenContext, "overview"> = {
@@ -187,7 +190,7 @@ async function loadContext(
     // Resolved here rather than in each builder: a builder that read the
     // environment itself would be a builder the styleguide and the
     // capture tools could not drive.
-    lot: activeLot(),
+    lot,
     dayService,
   };
 

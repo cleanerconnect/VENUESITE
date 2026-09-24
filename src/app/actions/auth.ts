@@ -52,7 +52,7 @@ export async function signIn(
   // a choice the partner makes rather than the default they discover.
   remember = true,
 ): Promise<SignInResult> {
-  const result = verifyCredentials(email, password);
+  const result = await verifyCredentials(email, password);
 
   if (!result.ok) {
     // One message for both an unknown address and a wrong password: two
@@ -144,7 +144,7 @@ export async function availableWorkspaces(): Promise<{
 }> {
   const session = await resolveSession();
   if (!session) return { event: false, venue: false };
-  const account = resolveAccount(session.userId);
+  const account = await resolveAccount(session.userId);
   return {
     event: (account?.organizations.length ?? 0) > 0,
     venue: (account?.venues.length ?? 0) > 0,

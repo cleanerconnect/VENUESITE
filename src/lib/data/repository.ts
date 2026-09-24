@@ -63,6 +63,55 @@ export interface NoShowInput {
   reservationId: string;
 }
 
+/**
+ * What Ma fiche's Identité form writes.
+ *
+ * A patch rather than a whole `RestaurantProfile`: the form owns twelve
+ * fields, and sending back the fifty the read returns would let a stale
+ * tab overwrite a tag list it never showed.
+ */
+export interface VenueProfilePatch {
+  name: string;
+  shortName: string;
+  description: string;
+  category: string;
+  address: string;
+  city: string;
+  latitude: number | null;
+  longitude: number | null;
+  contactEmail: string;
+  contactPhone: string;
+  website: string;
+  kind: "restaurant" | "drinks";
+}
+
+/** What the Fiche form writes. Lot 2 — the curated listing. */
+export interface VenueListingPatch {
+  /** 1–4, rendered in the app as € to €€€€. */
+  priceRange: number;
+  tags: string[];
+  features: string[];
+  ambience: string[];
+}
+
+/**
+ * The three things a partner does to a photo, as one action.
+ *
+ * One endpoint rather than three, for the reason the Phase 5 bundles
+ * give: an action is already JSON, and three routes to write, secure and
+ * version buy nothing over one that switches on `kind`.
+ */
+export type AssetAction =
+  | {
+      kind: "asset.record";
+      assetKind: AssetKind;
+      objectKey: string;
+      contentType: string;
+      sizeBytes: number;
+    }
+  | { kind: "asset.remove"; id: string }
+  | { kind: "asset.reorder"; assetKind: AssetKind; orderedIds: string[] };
+
 export interface AnalyticsInput {
   restaurantId: string;
   period: AnalyticsPeriod;
@@ -123,6 +172,23 @@ export interface RestaurantRepository extends VenueOperationsRepository {
   // store, which meant it was the one screen that still required a
   // database. They belong on the seam like everything else.
   getVenueProfile(venueId: string): Promise<RestaurantProfile | null>;
+  /**
+   * Ma fiche's two forms and its photo manager, on the seam.
+   *
+   * They used to call the SQLite store directly from the server action,
+   * which meant a deployment pointed at a backend read that backend and
+   * wrote its own database — the screen showed one venue's data and
+   * saved another's.
+   */
+  saveVenueProfile(
+    venueId: string,
+    patch: VenueProfilePatch,
+  ): Promise<RestaurantProfile>;
+  saveVenueListing(
+    venueId: string,
+    patch: VenueListingPatch,
+  ): Promise<RestaurantProfile>;
+  runAssetAction(venueId: string, action: AssetAction): Promise<VenueAsset[]>;
   listMenuItems(venueId: string): Promise<MenuItem[]>;
   listStaff(venueId: string): Promise<StaffMemberRow[]>;
   listAssets(venueId: string, kind: AssetKind): Promise<VenueAsset[]>;

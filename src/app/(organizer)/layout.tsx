@@ -32,7 +32,7 @@ export default async function OrganizerLayout({
   const session = await resolveSession();
   if (!session) redirect("/login?expired=1");
 
-  const account = resolveAccount(session.userId);
+  const account = await resolveAccount(session.userId);
 
   // The active venue's configuration decides whether Vie nocturne is
   // part of the navigation at all. Read here, once, and published — the

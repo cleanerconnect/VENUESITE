@@ -8,7 +8,6 @@
 
 import { requireVenueAccess, resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
-import { transitionBooking } from "@/lib/db/overview-store";
 import { COPY } from "@/lib/copy/fr";
 import { revalidatePath } from "next/cache";
 import type { CheckInResult } from "@/lib/types/business";
@@ -36,9 +35,13 @@ export async function checkInByCode(code: string): Promise<CheckInResult> {
 
 /**
  * The manual path: a host taps a name off the list instead of scanning.
- * Same destination as `checkInByCode`, same venue scoping — the id is
- * validated against the session's venue by the transition itself, which
- * matches on `venue_id` and does nothing for a row it does not own.
+ *
+ * Same destination as `checkInByCode`, and now the same road: it goes
+ * through the repository rather than reaching into the SQLite store, so
+ * a deployment pointed at the Business Service validates the arrival
+ * there instead of writing a local database nobody reads. The venue
+ * still comes from the session, so an id from another establishment is
+ * refused rather than served.
  */
 export async function markGuestArrived(
   reservationId: string,
@@ -52,7 +55,30 @@ export async function markGuestArrived(
     return { ok: false, message: COPY.error.forbidden };
   }
 
-  transitionBooking(session.venueId, reservationId, "arrived", "venue");
+  // No code: the booking id carries the call, and the result says
+  // `manual` rather than `qr` so the two paths stay distinguishable in
+  // whatever the service logs.
+  const result = await getRestaurantRepository().checkIn({
+    restaurantId: session.venueId,
+    reservationId,
+    qrCode: "",
+  });
+
+  if (!result.ok) {
+    return { ok: false, message: CHECK_IN_REFUSAL[result.error ?? "unknown_code"] };
+  }
+
   revalidatePath(RESTAURANT_PATH, "page");
   return { ok: true };
 }
+
+/** What each refusal means to a host standing at the door. */
+const CHECK_IN_REFUSAL: Record<
+  NonNullable<CheckInResult["error"]>,
+  string
+> = {
+  unknown_code: "Cette réservation n'est pas dans le carnet du jour.",
+  already_used: "Cette table est déjà enregistrée comme arrivée.",
+  wrong_venue: COPY.error.forbidden,
+  expired: "Cette réservation n'est plus active.",
+};

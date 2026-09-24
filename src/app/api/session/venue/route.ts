@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   if (!venueId) {
     return Response.json({ error: "venue_required" }, { status: 400 });
   }
-  if (!directory().canAccessVenue(session.userId, venueId)) {
+  if (!(await directory().canAccessVenue(session.userId, venueId))) {
     // Deliberately not 404: the caller is authenticated and asking for
     // something they may not have. Saying "forbidden" leaks nothing they
     // could not already infer from their own venue list.

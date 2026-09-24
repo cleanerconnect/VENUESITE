@@ -13,8 +13,17 @@
 import type { DayBook, RestaurantOverview } from "@/lib/types/restaurant";
 import type { CheckInResult, NotificationPreferences } from "@/lib/types/business";
 import * as store from "@/lib/db/venue-store";
-import { listStaff as listStaffRows } from "@/lib/db/venue-write-store";
-import { listAssets as listAssetRows } from "@/lib/db/asset-store";
+import {
+  listStaff as listStaffRows,
+  updateVenueIdentity,
+  updateVenueListing,
+} from "@/lib/db/venue-write-store";
+import {
+  deleteAsset,
+  listAssets as listAssetRows,
+  recordAsset,
+  reorderAssets,
+} from "@/lib/db/asset-store";
 import type { AssetKind } from "@/lib/assets/types";
 import {
   analytics as analyticsFromStore,
@@ -31,12 +40,15 @@ import {
 } from "./repository";
 import type {
   AnalyticsInput,
+  AssetAction,
   CheckInInput,
   NoShowInput,
   RejectBookingInput,
   ReservationRefInput,
   RestaurantRepository,
   ReviewReplyInput,
+  VenueListingPatch,
+  VenueProfilePatch,
 } from "./repository";
 
 import * as ops from "@/lib/db/operations-store";
@@ -75,12 +87,18 @@ export class MockRestaurantRepository implements RestaurantRepository {
     return dayBookFromStore(venueId, date);
   }
 
-  async confirmReservation(_input: ReservationRefInput) {
-    return this.getOverview(_input.restaurantId);
+  async confirmReservation({ restaurantId, reservationId }: ReservationRefInput) {
+    // These three used to return the overview and write nothing, which
+    // made accepting a booking a thing that survived until the next
+    // reload. The transition is appended to the booking's history the
+    // same way a check-in is.
+    transitionBooking(restaurantId, reservationId, "confirmed", "venue");
+    return this.getOverview(restaurantId);
   }
 
-  async cancelReservation(_input: ReservationRefInput) {
-    return this.getOverview(_input.restaurantId);
+  async cancelReservation({ restaurantId, reservationId }: ReservationRefInput) {
+    transitionBooking(restaurantId, reservationId, "cancelled", "venue");
+    return this.getOverview(restaurantId);
   }
 
   async sendReminder(_input: ReservationRefInput) {
@@ -104,6 +122,17 @@ export class MockRestaurantRepository implements RestaurantRepository {
 
   // ── Booking lifecycle ──
   async rejectReservation(input: RejectBookingInput) {
+    // `rejected`, not `cancelled`: the schema keeps them apart, and the
+    // coded reason is what makes a refusal aggregable. It is carried into
+    // the status history so quality analytics has a column to read.
+    transitionBooking(
+      input.restaurantId,
+      input.reservationId,
+      "rejected",
+      "venue",
+      input.reason,
+      input.note,
+    );
     return this.getOverview(input.restaurantId);
   }
 
@@ -111,21 +140,33 @@ export class MockRestaurantRepository implements RestaurantRepository {
    * Resolves a code against the live book. Codes are `LYFE-<id>` in the
    * demo; the real QR is opaque and resolved server-side, which is why the
    * portal never parses it beyond passing it along.
+   *
+   * With no code and a booking id, this is the host tapping a name off
+   * the list instead of scanning — the same destination, and the same
+   * `method` distinction the result carries.
    */
   async checkIn(input: CheckInInput): Promise<CheckInResult> {
-    const { qrCode } = input;
+    const { qrCode, reservationId } = input;
     const data = await this.getOverview(input.restaurantId);
     const code = qrCode.trim().toUpperCase();
-    const match = [...data.upcomingReservations, ...data.waitlist].find(
-      (r) => `LYFE-${r.id}`.toUpperCase() === code || r.id.toUpperCase() === code,
-    );
+    const rows = [...data.upcomingReservations, ...data.waitlist];
+    const method: CheckInResult["method"] = code ? "qr" : "manual";
+    const match = code
+      ? rows.find(
+          (r) => `LYFE-${r.id}`.toUpperCase() === code || r.id.toUpperCase() === code,
+        )
+      : rows.find((r) => r.id === reservationId);
 
-    if (!match) return { ok: false, method: "manual", error: "unknown_code" };
+    if (!match) return { ok: false, method, error: "unknown_code" };
     if (match.state === "arrived") {
-      return { ok: false, method: "manual", error: "already_used" };
+      return { ok: false, method, error: "already_used" };
     }
-    if (match.state === "cancelled" || match.state === "no_show") {
-      return { ok: false, method: "manual", error: "expired" };
+    if (
+      match.state === "cancelled" ||
+      match.state === "rejected" ||
+      match.state === "no_show"
+    ) {
+      return { ok: false, method, error: "expired" };
     }
 
     // The transition is persisted here, not left to the client's
@@ -138,7 +179,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
       bookingId: match.id,
       guestName: match.guestName,
       partySize: match.partySize,
-      method: "manual",
+      method,
     };
   }
 
@@ -163,6 +204,52 @@ export class MockRestaurantRepository implements RestaurantRepository {
     return listAssetRows(venueId, kind);
   }
 
+  // ── Ma fiche's writes ──
+  //
+  // The server action used to call these stores itself. Going through
+  // the repository is what lets the same form write to a backend.
+  async saveVenueProfile(venueId: string, patch: VenueProfilePatch) {
+    updateVenueIdentity(venueId, patch);
+    const profile = venueProfile(venueId);
+    if (!profile) {
+      throw new RepositoryError("Lieu introuvable.", 404, "venue_not_found");
+    }
+    return profile;
+  }
+
+  async saveVenueListing(venueId: string, patch: VenueListingPatch) {
+    updateVenueListing(venueId, patch);
+    const profile = venueProfile(venueId);
+    if (!profile) {
+      throw new RepositoryError("Lieu introuvable.", 404, "venue_not_found");
+    }
+    return profile;
+  }
+
+  async runAssetAction(venueId: string, action: AssetAction) {
+    switch (action.kind) {
+      case "asset.record":
+        recordAsset({
+          venueId,
+          kind: action.assetKind,
+          objectKey: action.objectKey,
+          contentType: action.contentType,
+          sizeBytes: action.sizeBytes,
+        });
+        return listAssetRows(venueId, action.assetKind);
+      case "asset.remove": {
+        const removed = deleteAsset(venueId, action.id);
+        if (!removed) {
+          throw new RepositoryError("Média introuvable.", 404, "asset_not_found");
+        }
+        return listAssetRows(venueId, removed.kind);
+      }
+      case "asset.reorder":
+        reorderAssets(venueId, action.assetKind, action.orderedIds);
+        return listAssetRows(venueId, action.assetKind);
+    }
+  }
+
   // ── Availability ── persisted
   async getAvailability(venueId: string) {
     return store.availability(venueId);
@@ -178,6 +265,8 @@ export class MockRestaurantRepository implements RestaurantRepository {
     venueId: string,
     next: Omit<import("@/lib/types/business").VenueAvailability, "updatedAt">,
   ) {
+    const current = store.availability(venueId);
+
     for (const slot of next.slots) {
       store.updateSlot(venueId, slot.id, {
         opensAt: slot.opensAt,
@@ -186,6 +275,20 @@ export class MockRestaurantRepository implements RestaurantRepository {
         enabled: slot.enabled,
       });
     }
+
+    // Closures are a set, not a list of rows to patch: the whole-object
+    // write is the contract, so reconcile it. This used to write the
+    // slots and silently drop every closure change, which made
+    // « Fermer une journée » a button that did nothing through the seam.
+    const keep = new Set(next.closures.map((c) => c.id));
+    for (const gone of current.closures.filter((c) => !keep.has(c.id))) {
+      store.removeClosure(venueId, gone.id);
+    }
+    const known = new Set(current.closures.map((c) => c.id));
+    for (const added of next.closures.filter((c) => !known.has(c.id))) {
+      store.addClosure(venueId, added.date, added.reason);
+    }
+
     return store.availability(venueId);
   }
 

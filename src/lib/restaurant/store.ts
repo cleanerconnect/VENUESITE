@@ -138,7 +138,10 @@ export const useRestaurantStore = create<RestaurantState>((set, get) => ({
       const reservation = findReservation(draft, id);
       if (!reservation) return null;
 
-      reservation.state = "cancelled";
+      // Refused, not cancelled. The optimistic copy carries the same
+      // distinction the schema and the server do, or a rollback would
+      // restore a row into the wrong state.
+      reservation.state = "rejected";
       draft.upcomingReservations = draft.upcomingReservations.filter(
         (r) => r.id !== id,
       );

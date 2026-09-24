@@ -21,6 +21,12 @@ import {
 import { REJECTION_REASONS } from "@/lib/types/business";
 import { COPY } from "@/lib/copy/fr";
 import { markGuestArrived } from "@/app/actions/checkin";
+import {
+  cancelBooking,
+  confirmBooking,
+  rejectBooking,
+  reportNoShowBooking,
+} from "@/app/actions/bookings";
 import { FormDialog } from "@/components/dashboard/FormDialog";
 import { useVenueCommands } from "./useVenueCommands";
 
@@ -71,6 +77,21 @@ export function RestaurantScreen({
       toast({ tone, title, undo: () => useRestaurantStore.getState().undo() });
     };
 
+    // The write goes out behind the optimistic update; if the server
+    // refuses it, the store's own undo snapshot puts the row back and
+    // the host is told why. Without this the four decisions on a row
+    // lived in one browser until the next reload.
+    const persist = (pending: Promise<{ ok: boolean; message?: string }>) => {
+      void pending.then((result) => {
+        if (result.ok) return;
+        useRestaurantStore.getState().undo();
+        toast({
+          tone: "danger",
+          title: result.message ?? COPY.form.savingFailed,
+        });
+      });
+    };
+
     return {
       "reservation.arrive": (payload) => {
         const id = String(payload?.id ?? "");
@@ -81,25 +102,25 @@ export function RestaurantScreen({
         // Persist behind the optimistic update, and roll back if the
         // server refuses. A check-in that lives only in this browser
         // would let the same guest through twice.
-        void markGuestArrived(id).then((result) => {
-          if (result.ok) return;
-          useRestaurantStore.getState().undo();
-          toast({ tone: "danger", title: result.message ?? COPY.form.savingFailed });
-        });
+        persist(markGuestArrived(id));
       },
 
       "reservation.confirm": (payload) => {
+        const id = String(payload?.id ?? "");
         const before = store().data;
-        store().confirmReservation(String(payload?.id ?? ""));
+        store().confirmReservation(id);
         if (store().data === before) return;
         withUndo(COPY.toast.confirmed);
+        persist(confirmBooking(id));
       },
 
       "reservation.cancel": (payload) => {
+        const id = String(payload?.id ?? "");
         const before = store().data;
-        store().cancelReservation(String(payload?.id ?? ""));
+        store().cancelReservation(id);
         if (store().data === before) return;
         withUndo(COPY.toast.cancelled, "danger");
+        persist(cancelBooking(id));
       },
 
       "reservation.reject": (payload) =>
@@ -109,10 +130,12 @@ export function RestaurantScreen({
         }),
 
       "reservation.noShow": (payload) => {
+        const id = String(payload?.id ?? "");
         const before = store().data;
-        store().reportNoShow(String(payload?.id ?? ""));
+        store().reportNoShow(id);
         if (store().data === before) return;
         withUndo(COPY.toast.noShow, "danger");
+        persist(reportNoShowBooking(id));
       },
 
       "reservation.remind": () =>
@@ -238,10 +261,11 @@ export function RestaurantScreen({
         onClose={() => setRejectTarget(null)}
         onConfirm={(reason) => {
           if (!rejectTarget) return;
+          const id = rejectTarget.id;
           const before = useRestaurantStore.getState().data;
           useRestaurantStore
             .getState()
-            .rejectReservation(rejectTarget.id, REJECTION_REASONS[reason]);
+            .rejectReservation(id, REJECTION_REASONS[reason]);
           if (useRestaurantStore.getState().data === before) return;
           closeDetail();
           toast({
@@ -249,6 +273,16 @@ export function RestaurantScreen({
             title: COPY.toast.rejected,
             description: REJECTION_REASONS[reason],
             undo: () => useRestaurantStore.getState().undo(),
+          });
+          // The coded reason travels, not the label: `fully_booked`
+          // aggregates, "Complet sur ce créneau" does not.
+          void rejectBooking(id, reason).then((result) => {
+            if (result.ok) return;
+            useRestaurantStore.getState().undo();
+            toast({
+              tone: "danger",
+              title: result.message ?? COPY.form.savingFailed,
+            });
           });
         }}
       />

@@ -11,8 +11,6 @@ import { revalidatePath } from "next/cache";
 import { dataMode } from "@/lib/data/mode";
 import { requireVenueAccess, type PortalRole } from "@/lib/auth/server-session";
 import {
-  updateVenueIdentity,
-  updateVenueListing,
   updateMenuItem,
   UnknownMenuItemError,
   inviteStaff,
@@ -22,22 +20,10 @@ import {
   LastOwnerError,
   type StaffMemberRow,
 } from "@/lib/db/venue-write-store";
-import {
-  AvailabilityConflict,
-  addClosure,
-  availability,
-  removeClosure,
-  updateSlot,
-} from "@/lib/db/venue-store";
-import {
-  deleteAsset,
-  listAssets,
-  recordAsset,
-  reorderAssets,
-} from "@/lib/db/asset-store";
+import { getRestaurantRepository } from "@/lib/data";
+import { RepositoryError, StaleWriteError } from "@/lib/data/repository";
 import { storageDriver } from "@/lib/assets";
 import { validateAsset, type AssetKind, type VenueAsset } from "@/lib/assets/types";
-import { venueProfile } from "@/lib/db/overview-store";
 import { failed, invalid, ok, type WriteResult } from "@/lib/forms/result";
 import {
   email as emailRule,
@@ -72,6 +58,17 @@ const RESTAURANT_PATH = "/restaurant/[[...section]]";
  * screens still render from the snapshot; it is only saving that needs
  * somewhere to save to.
  */
+/**
+ * The guard for what still writes SQLite directly — the menu and the
+ * staff list.
+ *
+ * Ma fiche's own forms no longer need it: identity, the listing, the
+ * opening hours and the photos go through the repository, and every
+ * driver answers them — the snapshot holds the edit in a per-process
+ * overlay the way it already did for a check-in. So a cold clone can
+ * demonstrate the forms, and only the two surfaces that never crossed
+ * the seam still say « lancez db:reset ».
+ */
 function requireWritableStore(): string | null {
   return dataMode() === "static"
     ? "Aucune base de données : les écrans s'affichent depuis le jeu de données statique, mais l'enregistrement a besoin d'un store. Lancez `npm run db:reset`, puis rechargez."
@@ -102,9 +99,6 @@ export interface VenueIdentityInput {
 export async function saveVenueIdentity(
   input: VenueIdentityInput,
 ): Promise<WriteResult<RestaurantProfile>> {
-  const unwritable = requireWritableStore();
-  if (unwritable) return failed(unwritable);
-
   let session;
   try {
     session = await requireVenueAccess(await currentVenueId());
@@ -134,24 +128,45 @@ export async function saveVenueIdentity(
   );
   if (errors.length) return invalid(errors);
 
-  updateVenueIdentity(session.venueId, {
-    name: input.name.trim(),
-    shortName: input.shortName.trim(),
-    description: input.description.trim(),
-    category: input.category.trim(),
-    address: input.address.trim(),
-    city: input.city.trim(),
-    latitude: lat,
-    longitude: lng,
-    contactEmail: input.contactEmail.trim(),
-    contactPhone: input.contactPhone.trim(),
-    website: input.website.trim(),
-    kind: input.kind,
-  });
+  // Through the repository, not into the store: this form used to write
+  // SQLite directly, so a deployment pointed at the Business Service
+  // read that service and saved somewhere else entirely.
+  return write(() =>
+    getRestaurantRepository().saveVenueProfile(session.venueId, {
+      name: input.name.trim(),
+      shortName: input.shortName.trim(),
+      description: input.description.trim(),
+      category: input.category.trim(),
+      address: input.address.trim(),
+      city: input.city.trim(),
+      latitude: lat,
+      longitude: lng,
+      contactEmail: input.contactEmail.trim(),
+      contactPhone: input.contactPhone.trim(),
+      website: input.website.trim(),
+      kind: input.kind,
+    }),
+  );
+}
 
-  revalidatePath(RESTAURANT_PATH, "page");
-  const profile = venueProfile(session.venueId);
-  return profile ? ok(profile) : failed(COPY.error.venueNotFound);
+/**
+ * One try/catch for every write that now crosses the seam.
+ *
+ * A refused write is three different things to a partner — the record
+ * moved, the service said no, or the network did — and each one wants
+ * its own sentence rather than a generic failure.
+ */
+async function write<T>(run: () => Promise<T>): Promise<WriteResult<T>> {
+  try {
+    const value = await run();
+    revalidatePath(RESTAURANT_PATH, "page");
+    revalidateForms();
+    return ok(value);
+  } catch (error) {
+    if (error instanceof StaleWriteError) return failed(COPY.error.stale);
+    if (error instanceof RepositoryError) return failed(error.message);
+    throw error;
+  }
 }
 
 // ── Listing facets ───────────────────────────────────────────
@@ -169,9 +184,6 @@ export interface VenueListingInput {
 export async function saveVenueListing(
   input: VenueListingInput,
 ): Promise<WriteResult<RestaurantProfile>> {
-  const unwritable = requireWritableStore();
-  if (unwritable) return failed(unwritable);
-
   let session;
   try {
     session = await requireVenueAccess(await currentVenueId());
@@ -203,19 +215,16 @@ export async function saveVenueListing(
   ];
   if (errors.length) return invalid(errors);
 
-  updateVenueListing(session.venueId, {
-    priceRange: input.priceRange,
-    // Trimmed and de-duplicated here rather than in the form: the client
-    // is one caller of this action, not the only one.
-    tags: unique(input.tags),
-    features: unique(input.features),
-    ambience: unique(input.ambience),
-  });
-
-  revalidatePath(RESTAURANT_PATH, "page");
-  revalidateForms();
-  const profile = venueProfile(session.venueId);
-  return profile ? ok(profile) : failed(COPY.error.venueNotFound);
+  return write(() =>
+    getRestaurantRepository().saveVenueListing(session.venueId, {
+      priceRange: input.priceRange,
+      // Trimmed and de-duplicated here rather than in the form: the
+      // client is one caller of this action, not the only one.
+      tags: unique(input.tags),
+      features: unique(input.features),
+      ambience: unique(input.ambience),
+    }),
+  );
 }
 
 function unique(values: string[]): string[] {
@@ -296,9 +305,6 @@ export async function saveSlot(input: {
   capacity: number;
   enabled: boolean;
 }): Promise<WriteResult<VenueAvailability>> {
-  const unwritable = requireWritableStore();
-  if (unwritable) return failed(unwritable);
-
   const venueId = await currentVenueId();
   try {
     const session = await requireVenueAccess(venueId);
@@ -312,33 +318,36 @@ export async function saveSlot(input: {
   const errors = validateSlot(input);
   if (errors.length) return invalid(errors);
 
-  try {
-    updateSlot(venueId, input.slotId, {
-      opensAt: input.opensAt,
-      closesAt: input.closesAt,
-      capacity: input.capacity,
-      enabled: input.enabled,
+  // Read, patch the one window, write the whole record. The endpoint the
+  // chiffrage names is a PUT on the venue's availability — a set, not a
+  // row — and availability is the one edit that changes what a guest can
+  // book right now, so a lost update here is a double-booking. That is
+  // what `updatedAt` on the record is for.
+  const repo = getRestaurantRepository();
+  return write(async () => {
+    const current = await repo.getAvailability(venueId);
+    return repo.updateAvailability(venueId, {
+      venueId,
+      slots: current.slots.map((slot) =>
+        slot.id === input.slotId
+          ? {
+              ...slot,
+              opensAt: input.opensAt,
+              closesAt: input.closesAt,
+              capacity: input.capacity,
+              enabled: input.enabled,
+            }
+          : slot,
+      ),
+      closures: current.closures,
     });
-  } catch (error) {
-    if (error instanceof AvailabilityConflict) {
-      // Availability is the one edit that changes what customers can book
-      // right now, so a lost update is a double-booking.
-      return failed(COPY.error.stale);
-    }
-    throw error;
-  }
-
-  revalidatePath(RESTAURANT_PATH, "page");
-  return ok(availability(venueId));
+  });
 }
 
 export async function saveClosure(input: {
   date: string;
   reason: string;
 }): Promise<WriteResult<VenueAvailability>> {
-  const unwritable = requireWritableStore();
-  if (unwritable) return failed(unwritable);
-
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
@@ -348,26 +357,40 @@ export async function saveClosure(input: {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
     return invalid([{ field: "date", message: "Date invalide." }]);
   }
-  addClosure(venueId, input.date, input.reason.trim());
-  revalidatePath(RESTAURANT_PATH, "page");
-  return ok(availability(venueId));
+  const repo = getRestaurantRepository();
+  return write(async () => {
+    const current = await repo.getAvailability(venueId);
+    return repo.updateAvailability(venueId, {
+      venueId,
+      slots: current.slots,
+      // The id is provisional: a driver inserting the row mints its own
+      // and the response carries the real list back.
+      closures: [
+        ...current.closures,
+        { id: `clo_${Date.now().toString(36)}`, date: input.date, reason: input.reason.trim() },
+      ],
+    });
+  });
 }
 
 export async function deleteClosure(
   id: string,
 ): Promise<WriteResult<VenueAvailability>> {
-  const unwritable = requireWritableStore();
-  if (unwritable) return failed(unwritable);
-
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
   } catch {
     return failed(COPY.error.sessionExpired);
   }
-  removeClosure(venueId, id);
-  revalidatePath(RESTAURANT_PATH, "page");
-  return ok(availability(venueId));
+  const repo = getRestaurantRepository();
+  return write(async () => {
+    const current = await repo.getAvailability(venueId);
+    return repo.updateAvailability(venueId, {
+      venueId,
+      slots: current.slots,
+      closures: current.closures.filter((c) => c.id !== id),
+    });
+  });
 }
 
 // ── Assets ───────────────────────────────────────────────────
@@ -378,9 +401,6 @@ export async function requestUpload(input: {
   contentType: string;
   sizeBytes: number;
 }): Promise<WriteResult<{ url: string; method: string; headers: Record<string, string>; objectKey: string }>> {
-  const unwritable = requireWritableStore();
-  if (unwritable) return failed(unwritable);
-
   const venueId = await currentVenueId();
   try {
     const session = await requireVenueAccess(venueId);
@@ -416,9 +436,6 @@ export async function confirmUpload(input: {
   contentType: string;
   sizeBytes: number;
 }): Promise<WriteResult<VenueAsset[]>> {
-  const unwritable = requireWritableStore();
-  if (unwritable) return failed(unwritable);
-
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
@@ -429,46 +446,56 @@ export async function confirmUpload(input: {
   if (!input.objectKey.startsWith(`venues/${venueId}/`)) {
     return failed("Fichier refusé.");
   }
-  recordAsset({ venueId, ...input });
-  revalidatePath(RESTAURANT_PATH, "page");
-  return ok(listAssets(venueId, input.kind));
+  return write(() =>
+    getRestaurantRepository().runAssetAction(venueId, {
+      kind: "asset.record",
+      assetKind: input.kind,
+      objectKey: input.objectKey,
+      contentType: input.contentType,
+      sizeBytes: input.sizeBytes,
+    }),
+  );
 }
 
 export async function removeAsset(
   id: string,
   kind: AssetKind,
 ): Promise<WriteResult<VenueAsset[]>> {
-  const unwritable = requireWritableStore();
-  if (unwritable) return failed(unwritable);
-
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
   } catch {
     return failed(COPY.error.sessionExpired);
   }
-  const asset = deleteAsset(venueId, id);
   // Row first, object second: an orphaned object is invisible, an
-  // orphaned row is a broken image.
-  if (asset) await storageDriver().remove(asset.objectKey);
-  revalidatePath(RESTAURANT_PATH, "page");
-  return ok(listAssets(venueId, kind));
+  // orphaned row is a broken image. The key is read before the row goes,
+  // because afterwards nothing knows what to delete from storage.
+  const repo = getRestaurantRepository();
+  const doomed = (await repo.listAssets(venueId, kind)).find((a) => a.id === id);
+  const result = await write(() =>
+    repo.runAssetAction(venueId, { kind: "asset.remove", id }),
+  );
+  if (result.ok && doomed) await storageDriver().remove(doomed.objectKey);
+  return result;
 }
 
 export async function saveAssetOrder(
   kind: AssetKind,
   orderedIds: string[],
 ): Promise<WriteResult<VenueAsset[]>> {
-  const unwritable = requireWritableStore();
-  if (unwritable) return failed(unwritable);
-
   const venueId = await currentVenueId();
   try {
     await requireVenueAccess(venueId);
   } catch {
     return failed(COPY.error.sessionExpired);
   }
-  return ok(reorderAssets(venueId, kind, orderedIds));
+  return write(() =>
+    getRestaurantRepository().runAssetAction(venueId, {
+      kind: "asset.reorder",
+      assetKind: kind,
+      orderedIds,
+    }),
+  );
 }
 
 // ── Staff ────────────────────────────────────────────────────

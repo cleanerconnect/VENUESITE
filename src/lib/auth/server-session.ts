@@ -93,13 +93,16 @@ export async function resolveSession(): Promise<PortalSession | null> {
   const userId = await sessionDriver().currentUserId();
   if (!userId) return null;
 
-  const account = directory().findById(userId);
+  const account = await directory().findById(userId);
   const venues = account?.venues ?? [];
 
   const jar = await cookies();
   const requested = jar.get(COOKIE_VENUE)?.value;
+  // Re-checked against the account the directory just returned rather
+  // than asked again: one session read per request, and the answer
+  // cannot disagree with itself halfway through.
   const venueId =
-    requested && directory().canAccessVenue(userId, requested)
+    requested && venues.some((v) => v.id === requested)
       ? requested
       : (venues[0]?.id ?? "");
 
@@ -124,7 +127,7 @@ export async function resolveSession(): Promise<PortalSession | null> {
 export async function requireVenueAccess(venueId: string): Promise<PortalSession> {
   const session = await resolveSession();
   if (!session) throw new Error("not_authenticated");
-  if (!directory().canAccessVenue(session.userId, venueId)) {
+  if (!(await directory().canAccessVenue(session.userId, venueId))) {
     throw new Error("venue_forbidden");
   }
   return session;

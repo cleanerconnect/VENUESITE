@@ -147,6 +147,13 @@ export type ReservationState =
   | "arrived"
   | "completed"
   | "no_show"
+  /**
+   * The venue refused a request. Distinct from `cancelled`, which is the
+   * guest withdrawing — `db/schema.sql` says the two must never be
+   * collapsed, because a refusal carries a coded reason and a
+   * cancellation does not.
+   */
+  | "rejected"
   | "cancelled";
 
 export type ReservationChannel =

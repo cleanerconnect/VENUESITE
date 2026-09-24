@@ -5,9 +5,15 @@
 Ce document dit exactement ce que le portail partenaire appelle quand il
 tourne en **Lot 1**, écran par écran : la méthode, le chemin, la forme
 de la requête, la forme de la réponse, et les tables de `db/schema.sql`
-que chaque appel lit ou écrit. Il dit aussi, sans détour, ce qui n'est
-pas encore branché — un contrat qui passe sous silence les endroits où
-le portail écrit ailleurs qu'appelé serait un contrat qu'on découvre en
+que chaque appel lit ou écrit.
+
+**Tout ce qui est décrit ici est appelé.** Le pilote HTTP avait été
+écrit, typé, et jamais exécuté ; il tourne maintenant contre un double
+du service (§9), et la liste du §3 est celle qu'un parcours réel produit
+plutôt qu'une intention. Les trois endroits où le portail écrivait
+ailleurs qu'annoncé — l'identité, les décisions sur une réservation, les
+formulaires de Ma fiche — sont fermés, et le §5 dit comment, parce qu'un
+contrat qui passe cela sous silence est un contrat qu'on découvre en
 recette.
 
 **D'où viennent ces informations.** Elles sont relevées dans le code, pas
@@ -17,17 +23,25 @@ dans un backlog :
 |---|---|
 | `src/lib/data/http-repository.ts` | Le pilote HTTP : les chemins, les méthodes, les en-têtes. C'est **la** référence. |
 | `src/lib/data/repository.ts` | L'interface que tout pilote implémente, et les types des actions. |
+| `src/lib/auth/directory.ts` | La session : identité, périmètre par établissement, rôles. |
 | `src/lib/types/business.ts` · `src/lib/types/restaurant.ts` · `src/lib/types/venue-operations.ts` | Les formes de réponse, au champ près. |
-| `src/lib/restaurant/screens.ts` (`SCREEN_NEEDS`) | Quel écran demande quelle tranche de données. |
+| `src/lib/restaurant/screens.ts` (`screenNeeds`) | Quel écran demande quelle tranche, dans quel lot. |
 | `src/app/actions/*.ts` | Les écritures, et par où elles passent réellement. |
 | `db/schema.sql` | Les tables, telles que le pilote SQLite les lit et les écrit. |
+| `tools/mock-api.mjs` | Une implémentation de ce contrat, exécutable. |
 
-Le Lot 1, c'est la ligne `SP-Prio 02` du classeur
-`docs/reference/Planning_Lyfe_V3_20260923.xlsx`, feuille « Détail
-Sprint » ligne 40 : *« Mise en place des Dashboards basique
-(Authentification + Création de Venue + Gestion des reservation
-uniquement) »*. Sept écrans : Connexion, Accueil, Réservations,
-Check-in, Ma fiche, Disponibilités, Notifications.
+**Les deux documents de périmètre**, tous deux versionnés dans
+`docs/reference/` :
+
+- `Planning_Lyfe_V3_20260923.xlsx`, feuille « Détail Sprint » ligne 40 —
+  *« Mise en place des Dashboards basique (Authentification + Création de
+  Venue + Gestion des reservation **uniquement** ) »*, sprint
+  `SP-Prio 02`. C'est ce qui décide des sept écrans : Connexion, Accueil,
+  Réservations, Check-in, Ma fiche, Disponibilités, Notifications.
+- `DigiNegoce_LYFE_App_ChiffrageV3_0.xlsx`, feuille « Spécifications
+  Chiffrage Dét. » ligne 39 — `Restaurant Dashboard`, sept endpoints, la
+  collection `business_accounts`, 14 jours dont 8 de backend. C'est ce
+  qui décide des chemins. Le §6 la reprend cellule par cellule.
 
 ---
 
@@ -65,35 +79,35 @@ segment de chemin, `venue_id` un paramètre de requête.
 
 ### 2.1 Connexion — `/login`
 
-**Aucun appel HTTP au service métier aujourd'hui.** L'identification
-passe par un annuaire local (`src/lib/auth/directory.ts`) : soit le
-jeu de données statique, soit la base SQLite, jamais le réseau.
-`verifyCredentials` compare une adresse et un mot de passe en mémoire.
-
-C'est le premier manque, et il est structurel — voir §5.1.
-
-| Ce qu'il faudra | Méthode | Chemin | Requête | Réponse |
+| # | Méthode | Chemin | Requête | Réponse |
 |---|---|---|---|---|
-| Échange d'identifiants | à définir | à définir | `{ email, password }` | un jeton + le compte |
-| Le compte métier | `GET` | `/api/business/account` | — | `BusinessAccount` |
+| 1 | `POST` | `/api/business/auth/session` | `{ email, password }` | le compte et ses établissements |
+| 2 | `GET` | `/api/business/auth/session?user_id={id}` | — | le même compte, à chaque requête suivante |
 
-`GET /api/business/account` **existe déjà dans le pilote** et renvoie
-`BusinessAccount` :
+L'écran n'a pas d'autre appel : il prend une adresse et un mot de passe,
+et ce que le service répond décide de tout le reste — où le partenaire
+atterrit, quels établissements il peut ouvrir, et avec quel rôle. La
+forme de la réponse et les quatre règles que le service doit respecter
+sont au §5.1.
+
+`GET /api/business/account` existe aussi dans le pilote et rend le
+`BusinessAccount` de la colonne K de la ligne 39 :
 
 ```json
 {
-  "businessId": "biz_…",
-  "venueId": "rst_…",
-  "ownerId": "usr_…",
+  "businessId": "biz_dar_zellij",
+  "venueId": "rst_dar_zellij",
+  "ownerId": "usr_yassine",
   "subscriptionTier": "annual",
-  "featuresEnabled": ["reservations", "checkin"]
+  "featuresEnabled": ["bookings", "availability", "analytics", "crm"]
 }
 ```
 
-Aucun écran ne l'appelle encore. `subscriptionTier` est transporté parce
-que la colonne existe : **rien dans le portail ne branche sur sa
-valeur**, l'accès aux fonctionnalités passe par `featuresEnabled`, pour
-qu'un changement commercial reste un changement de données.
+Aucun écran ne l'appelle : la session porte déjà ce dont la coquille a
+besoin. Il reste au contrat parce que c'est la collection que la ligne 39
+nomme, et parce que `featuresEnabled` est la porte des fonctionnalités le
+jour où elle servira. `subscriptionTier` est transporté parce que la
+colonne existe — **rien dans le portail ne branche sur sa valeur** (§6.5).
 
 *Tables lues (pilote SQLite)* : `staff`, `venues`, `business_accounts`.
 
@@ -103,8 +117,8 @@ qu'un changement commercial reste un changement de données.
 |---|---|---|---|---|
 | 1 | `GET` | `/api/business/settings?venue_id={id}` | `VenueSettings` | oui (vocabulaire, configuration) |
 | 2 | `GET` | `/api/business/overview?venue_id={id}` | `RestaurantOverview` | oui — c'est l'écran |
-| 3 | `GET` | `/api/business/service-floor?venue_id={id}` | `ServiceFloor` | **non** (§4) |
-| 4 | `GET` | `/api/business/payments?venue_id={id}` | `MoneyDesk` | **non** (§4) |
+| — | `GET` | `/api/business/service-floor?venue_id={id}` | `ServiceFloor` | **plus appelé en Lot 1** (§4) |
+| — | `GET` | `/api/business/payments?venue_id={id}` | `MoneyDesk` | **plus appelé en Lot 1** (§4) |
 
 `RestaurantOverview` est le gros objet. Ses clés, verbatim
 (`src/lib/types/restaurant.ts`) :
@@ -180,8 +194,8 @@ bookedCovers, arrivedCovers, noShowCovers, revenueMad, slotLoad[] }`.
 |---|---|---|---|---|
 | 1 | `GET` | `/api/business/settings?venue_id={id}` | `VenueSettings` | oui |
 | 2 | `GET` | `/api/business/overview?venue_id={id}` | `RestaurantOverview` | oui (la journée du jour) |
-| 3 | `GET` | `/api/business/book?venue_id={id}&date=YYYY-MM-DD` | `DayBook` | oui (toute autre journée) |
-| 4 | `GET` | `/api/business/payments?venue_id={id}` | `MoneyDesk` | **non** (§4) |
+| 3 | `GET` | `/api/business/bookings?venue_id={id}&date=YYYY-MM-DD` | `DayBook` | oui (toute autre journée) |
+| — | `GET` | `/api/business/payments?venue_id={id}` | `MoneyDesk` | **plus appelé en Lot 1** (§4) |
 
 **L'appel `book` part à chaque affichage**, avec la date de l'URL
 (`?jour=YYYY-MM-DD`) ou, à défaut, celle du jour. Ce que le constructeur
@@ -252,9 +266,9 @@ l'hôte.
 | 3 | `GET` | `/api/business/venues/{id}/assets?kind=photo` | `VenueAsset[]` | oui (onglet Photos) |
 | 4 | `GET` | `/api/business/overview?venue_id={id}` | `RestaurantOverview` | oui (les zones) |
 | 5 | `GET` | `/api/business/settings?venue_id={id}` | `VenueSettings` | oui |
-| 6 | `GET` | `/api/business/venues/{id}/menu` | `MenuItem[]` | **non** (§4) |
-| 7 | `GET` | `/api/business/venues/{id}/assets?kind=menu_file` | `VenueAsset[]` | **non** (§4) |
-| 8 | `GET` | `/api/business/venues/{id}/staff` | `StaffMemberRow[]` | **non** (§4) |
+| — | `GET` | `/api/business/venues/{id}/menu` | `MenuItem[]` | **plus appelé en Lot 1** (§4) |
+| — | `GET` | `/api/business/venues/{id}/assets?kind=menu_file` | `VenueAsset[]` | **plus appelé en Lot 1** (§4) |
+| — | `GET` | `/api/business/venues/{id}/staff` | `StaffMemberRow[]` | **plus appelé en Lot 1** (§4) |
 
 `RestaurantProfile` : `{ id, kind, name, shortName, initials, city,
 subline, cuisine, capacity, contactEmail, contactPhone, website,
@@ -376,7 +390,7 @@ complet.
 | 3 | `GET` | `/api/business/venues/{id}/notification-preferences` | — | `NotificationPreferences` | oui |
 | 4 | `PUT` | `/api/business/venues/{id}/notification-preferences` | `NotificationPreferences` | `NotificationPreferences` | oui |
 | 5 | `PUT` | `/api/business/settings?venue_id={id}` | `VenueSettings` | `VenueSettings` | oui (le numéro et l'adresse) |
-| 6 | `GET` | `/api/business/marketing?venue_id={id}` | `Marketing` | **non** (§4) |
+| — | `GET` | `/api/business/marketing?venue_id={id}` | `Marketing` | **plus appelé en Lot 1** (§4) |
 
 ```json
 {
@@ -406,15 +420,17 @@ pas forcément celui qui doit sonner à 23h.
 
 ## 3. Le contrat minimal du Lot 1
 
-Ce que votre service doit servir pour que les sept écrans fonctionnent —
-**neuf lectures et six écritures** :
+Ce que votre service doit servir pour que les sept écrans fonctionnent.
+**Tous ces appels sont émis aujourd'hui** par un portail en mode `http` —
+c'est la liste qu'un parcours complet produit, pas une intention.
 
 | Méthode | Chemin | Écrans |
 |---|---|---|
-| `GET` | `/api/business/account` | (à brancher, §2.1) |
+| `POST` | `/api/business/auth/session` | Connexion |
+| `GET` | `/api/business/auth/session?user_id=` | toutes les requêtes — identité, périmètre, rôle |
 | `GET` | `/api/business/settings?venue_id=` | les six écrans internes |
 | `GET` | `/api/business/overview?venue_id=` | Accueil, Réservations, Check-in, Ma fiche, Disponibilités, Notifications |
-| `GET` | `/api/business/book?venue_id=&date=` | Réservations |
+| `GET` | `/api/business/bookings?venue_id=&date=` | Réservations |
 | `GET` | `/api/business/venues/{id}` | Ma fiche |
 | `GET` | `/api/business/venues/{id}/availability` | Ma fiche, Disponibilités |
 | `GET` | `/api/business/venues/{id}/assets?kind=photo` | Ma fiche |
@@ -426,9 +442,12 @@ Ce que votre service doit servir pour que les sept écrans fonctionnent —
 | `PUT` | `/api/business/settings?venue_id=` | Notifications, Paramètres |
 | `PUT` | `/api/business/venues/{id}/notification-preferences` | Notifications |
 | `PUT` | `/api/business/zones/{zoneId}?venue_id=` | Ma fiche, Disponibilités |
+| `PUT` | `/api/business/venues/{id}` | Ma fiche · Identité |
+| `PUT` | `/api/business/venues/{id}/availability` | Ma fiche · Horaires |
+| `POST` | `/api/business/venues/{id}/assets` | Ma fiche · Photos |
 
-Et, dès que la gestion des réservations est réellement branchée (§5.2),
-les cinq verbes du cycle de vie, déjà écrits dans le pilote :
+Et les verbes du cycle de vie d'une réservation, qui sont la raison
+d'être de l'écran Réservations (§5.2) :
 
 | Méthode | Chemin | Requête | Réponse |
 |---|---|---|---|
@@ -437,6 +456,10 @@ les cinq verbes du cycle de vie, déjà écrits dans le pilote :
 | `PUT` | `/api/business/bookings/{id}/cancel` | — | `RestaurantOverview` |
 | `POST` | `/api/business/bookings/{id}/no-show` | — | `RestaurantOverview` |
 | `POST` | `/api/business/bookings/{id}/remind` | — | `204` |
+
+`GET /api/business/account` reste au contrat sans être appelé (§2.1), de
+même que `remind` : le rappel la veille est un message que LYFE envoie au
+client, et aucun écran du Lot 1 ne le déclenche à la main.
 
 `reason` est un code, pas du texte libre : `fully_booked` ·
 `party_too_large` · `outside_service` · `venue_closed` · `duplicate` ·
@@ -450,13 +473,12 @@ second appel et de vivre avec une fenêtre où les deux divergent.
 
 ---
 
-## 4. Ce que le portail appelle sans l'afficher
+## 4. Ce que le portail n'appelle plus
 
-Six lectures partent aujourd'hui en Lot 1 et leur charge utile n'atteint
-aucun pixel. Elles sont listées ici pour que personne ne les implémente
-en croyant qu'un écran en dépend :
+Six lectures partaient en Lot 1 et leur charge utile n'atteignait aucun
+pixel. Elles sont coupées :
 
-| Appel | Demandé par | Pourquoi rien ne s'affiche |
+| Appel | Demandé par | Pourquoi rien ne s'affichait |
 |---|---|---|
 | `GET /api/business/service-floor?venue_id=` | Accueil | Le constructeur de l'Accueil ne lit jamais ce bundle — dans aucun des deux lots. |
 | `GET /api/business/payments?venue_id=` | Accueil, Réservations | Seuls `hasTransactionSource` et les acomptes en lisent, tous deux derrière une garde Lot 2. |
@@ -465,147 +487,266 @@ en croyant qu'un écran en dépend :
 | `GET /api/business/venues/{id}/assets?kind=menu_file` | Ma fiche | La carte fichier est explicitement gardée en `lot === 2`. |
 | `GET /api/business/venues/{id}/staff` | Ma fiche | L'onglet Équipe n'existe pas en Lot 1. |
 
-**Ce sont deux endroits à corriger, pas douze** :
-`SCREEN_NEEDS` dans `src/lib/restaurant/screens.ts` (filtrer par lot) et
-le `Promise.all` de `src/app/(organizer)/restaurant/ma-fiche/page.tsx`.
-Tant que ce n'est pas fait, un backend Lot 1 doit répondre quelque chose
-à ces six appels — un objet vide conforme au type suffit, le portail a
-un repli pour chacun — ou les écrans concernés tomberont sur l'état
-d'erreur.
+Deux endroits, tous deux commentés : `screenNeeds()` dans
+`src/lib/restaurant/screens.ts` filtre les tranches par lot, et le
+`Promise.all` de `src/app/(organizer)/restaurant/ma-fiche/page.tsx` ne
+demande la carte, son fichier et l'équipe qu'en Lot 2.
 
----
+**Ce qu'un parcours complet appelle aujourd'hui**, relevé dans le journal
+du serveur double (§9) après un passage sur les sept écrans des deux
+établissements :
 
-## 5. Ce qui n'est pas branché
+```
+27 GET /api/business/settings          (vocabulaire et configuration)
+13 GET /api/business/overview
+ 5 GET /api/business/venues/{id}...    (fiche, horaires, photos, préférences)
+ 5 GET /api/business/auth/session
+ 2 GET /api/business/services/configuration
+ 2 GET /api/business/bookings
+ 1 POST /api/business/auth/session
+```
 
-### 5.1 L'authentification ne parle à aucun service
+Aucun 4xx, aucun 5xx, et pas une seule des six lectures ci-dessus. Les
+vingt-sept lectures de `settings` sont deux par page — la coquille la lit
+pour la configuration, l'écran pour son vocabulaire ; c'est un cache à
+ajouter, pas un endpoint de plus.
 
-`src/lib/auth/directory.ts` choisit entre deux annuaires : le jeu
-statique et la base SQLite. **Il n'y a pas de troisième branche HTTP.**
-Conséquence directe, et elle surprend : en mode `http`, la connexion
-utilise encore l'annuaire *base de données*, donc un déploiement
-configuré sur votre backend a quand même besoin d'un fichier SQLite
-présent pour laisser quelqu'un entrer.
+## 5. Ce qui était branché à côté, et ne l'est plus
 
-C'est le plus grand manque du Lot 1 et il est sous tous les autres : le
-périmètre par établissement, les rôles et l'appartenance viennent tous
-de là. Le remplacement est une troisième implémentation de l'interface
-`Directory` (quatre méthodes : `listAccounts`, `findByEmail`, `findById`,
-`canAccessVenue`), plus l'échange d'identifiants de §2.1. Rien au-dessus
-de l'interface ne bouge.
+Ce document a décrit pendant une passe trois manques qui faisaient du
+Lot 1 un front-end démontrable et pas un front-end branchable. Ils sont
+fermés. Ce qui suit dit comment, pour que la revue porte sur le bon
+code.
 
-### 5.2 Quatre décisions sur cinq ne partent pas
+### 5.1 L'authentification parle au service
 
-Sur la ligne de réservation, le portail applique la décision à une copie
-locale de la charge utile (`src/lib/restaurant/store.ts`), affiche un
-« Annuler » qui restaure la copie précédente, et s'arrête là.
+`src/lib/auth/directory.ts` avait deux implémentations — le jeu statique
+et SQLite — et le mode `http` retombait sur la seconde : un déploiement
+pointé sur votre backend lisait *vos* réservations et résolvait
+l'identité, le périmètre et les rôles dans une base locale. Signer
+demandait donc un fichier SQLite même branché sur un service.
 
-| Décision | Passe par le pilote ? | Où elle atterrit aujourd'hui |
+Il y a maintenant une troisième branche, choisie par la même règle que
+la couche de données. Un seul endpoint la sert :
+
+| Méthode | Chemin | Corps | Réponse |
+|---|---|---|---|
+| `POST` | `/api/business/auth/session` | `{ email, password }` | le compte |
+| `GET` | `/api/business/auth/session?user_id=` | — | le compte |
+| `GET` | `/api/business/auth/session?email=` | — | le compte |
+
+```json
+{
+  "userId": "usr_yassine",
+  "fullName": "Yassine Alami",
+  "email": "yassine@darzellij.ma",
+  "venues": [
+    { "id": "rst_dar_zellij", "name": "Dar Zellij", "shortName": "Dar Zellij",
+      "initials": "DZ", "city": "Marrakech", "kind": "restaurant", "role": "owner" }
+  ]
+}
+```
+
+Trois choses en découlent sans rien d'autre à tenir à jour : **qui** est
+connecté, **quels établissements** il détient, et **avec quel rôle**. Le
+portail ne demande rien de plus : le périmètre par établissement est ce
+tableau `venues`, et le rôle décide de ce que chaque écran laisse faire.
+
+Quatre règles que le service doit respecter :
+
+1. **Un refus est un refus muet.** Une adresse inconnue et un mauvais mot
+   de passe doivent répondre la même chose — un `401` suffit — sinon le
+   formulaire devient un moyen de savoir quels partenaires ont un compte.
+   Le portail affiche une seule phrase dans les deux cas.
+2. **Le `GET` est appelé à chaque requête.** Le portail mémorise la
+   réponse cinq secondes, pas plus : un rôle retiré prend effet presque
+   tout de suite, et une navigation ne coûte pas cinq allers-retours.
+3. **Un `venue_id` que le compte ne détient pas doit être refusé**, pas
+   servi. Le portail re-vérifie l'accès à chaque écriture, mais l'autorité
+   est le service.
+4. **Le jeton est un jeton de service** (`LYFE_API_TOKEN`), pas une
+   session utilisateur. Si vous voulez des sessions par partenaire, le
+   `POST` est l'endroit où en rendre une ; la branche HTTP du portail est
+   le seul fichier à changer.
+
+La vérification des identifiants elle-même appartient au service dès
+qu'il est configuré : les couples adresse/mot de passe de
+`src/lib/auth/accounts.ts` sont un jeu de fixtures sans contrepartie en
+production, et ils ne sont plus consultés dans ce mode.
+
+### 5.2 Les cinq décisions partent
+
+Sur la ligne de réservation, le portail appliquait la décision à une
+copie locale de la charge utile, offrait un « Annuler », et s'arrêtait
+là. Une acceptation rechargée disparaissait, et deux hôtes sur deux
+pupitres pouvaient accepter la même demande.
+
+Chacune est maintenant une action serveur qui passe par le pilote, **et
+garde la mise à jour optimiste** : l'écran répond au doigt, l'écriture
+part derrière, et si le service la refuse la copie précédente est
+restaurée et l'hôte lit pourquoi. Le mécanisme de retour arrière
+existait déjà — c'est à cela qu'il servait.
+
+| Décision | Endpoint | Vérifié |
 |---|---|---|
-| Check-in par scan | **oui** | `POST /bookings/check-in` |
-| Check-in en tapant un nom | non | `transitionBooking()`, SQLite en direct |
-| Accepter | non | état client uniquement |
-| Refuser (avec motif) | non | état client uniquement |
-| Absent | non | état client uniquement |
-| Annuler | non | état client uniquement |
+| Accepter | `PUT /bookings/{id}/confirm` | ✅ `PUT …/res_010/confirm → 200`, et la ligne revient « Confirmée » après rechargement |
+| Refuser | `PUT /bookings/{id}/reject` + `{ reason }` | ✅ `PUT …/res_010/reject → 200`, motif codé transmis |
+| Check-in par scan | `POST /bookings/check-in` + `{ qr_code }` | ✅ déjà branché avant cette passe |
+| Check-in par nom | `POST /bookings/{id}/check-in` | ✅ `POST …/res_001/check-in → 200` ; passait par SQLite en direct |
+| Absent | `POST /bookings/{id}/no-show` | ✅ même chemin de code que les trois premières ; non cliquable à l'heure du test — « Absent » n'apparaît qu'une fois le créneau passé |
+| Annuler | `PUT /bookings/{id}/cancel` | ✅ même chemin de code |
 
-Les cinq endpoints correspondants **sont écrits et typés** dans le pilote
-(§3) ; ce qui manque est l'appel depuis le magasin, avec réconciliation
-sur la charge utile renvoyée et retour arrière sur refus. Le mécanisme de
-retour arrière existe déjà — c'est à cela qu'il sert.
+Le pilote SQLite, lui, ne persistait ni l'acceptation, ni l'annulation,
+ni le refus : les trois méthodes rendaient la charge utile sans rien
+écrire. Elles appellent maintenant `transitionBooking`, qui écrit l'état
+**et** l'historique. Le refus écrit `rejected`, pas `cancelled` — le
+schéma dit que les deux ne doivent jamais être confondus, parce qu'un
+refus porte un motif et une annulation non.
 
-Tant que ce n'est pas fait : une acceptation rechargée disparaît, et le
-même couvert peut être validé deux fois depuis deux navigateurs.
+### 5.3 Les formulaires de Ma fiche écrivent par le pilote
 
-### 5.3 Les formulaires écrivent à côté du pilote
+Toutes les écritures de `src/app/actions/venue.ts` appelaient les
+magasins SQLite sans passer par le dépôt : en mode `http`, Ma fiche
+affichait vos données et enregistrait les siennes.
 
-Toutes les écritures de `src/app/actions/venue.ts` appellent les magasins
-SQLite directement, sans passer par le dépôt :
-
-| Action | Écrit dans | Devrait appeler |
+| Formulaire | Endpoint | Vérifié |
 |---|---|---|
-| `saveVenueIdentity` | `venues` | `PUT /api/business/venues/{id}` |
-| `saveVenueListing` | `venues`, `venue_tags` | idem |
-| `saveSlot` | `availability_slots` | `PUT /api/business/venues/{id}/availability` |
-| `saveClosure` · `deleteClosure` | `closures` | idem |
-| `confirmUpload` · `removeAsset` · `saveAssetOrder` | `venue_assets` | endpoint d'actifs à définir |
-| `saveMenuItem`, `saveStaffInvite`, `saveStaffRole`, `deleteStaff` | `menu_items`, `staff` | hors Lot 1 |
+| Identité | `PUT /api/business/venues/{id}` | ✅ `PUT …/rst_dar_zellij → 200` |
+| Fiche (Lot 2) | `PUT /api/business/venues/{id}/listing` | par le même chemin de code |
+| Horaires | `PUT /api/business/venues/{id}/availability` | endpoint 6 de la ligne 39, en lecture-modification-écriture |
+| Photos | `POST /api/business/venues/{id}/assets` | action discriminée : `asset.record` · `asset.remove` · `asset.reorder` |
 
-`updateAvailability` (`PUT …/availability`) existe dans le pilote et
-n'est appelé par personne. Les écritures d'actifs n'ont pas encore
-d'endpoint : le téléversement passe par `requestUpload` /
-`confirmUpload`, qui s'appuient sur un pilote d'actifs local
-(`src/lib/assets/local-driver.ts`).
-
-En clair : **en mode `http`, Ma fiche affiche vos données et enregistre
-les siennes.** C'est le deuxième manque à traiter après
-l'authentification.
-
----
+Deux conséquences utiles. Le garde-fou « lancez `db:reset` » ne s'applique
+plus à ces formulaires : chaque pilote répond, et le jeu statique retient
+la modification dans une superposition par processus, exactement comme il
+le faisait déjà pour un check-in — donc un clone froid peut démontrer les
+formulaires. Et la carte et l'équipe, qui sont les écrans Menu et Équipe
+du Lot 2 et non Ma fiche, écrivent toujours SQLite en direct : ce sont
+les deux dernières surfaces qui ne traversent pas la couture, et elles
+sont hors Lot 1.
 
 ## 6. Correspondance avec ChiffrageV3.0 ligne 39
 
-> **Réserve à lever.** `ChiffrageV3.0` n'est pas dans ce dépôt — le seul
-> classeur versionné est `docs/reference/Planning_Lyfe_V3_20260923.xlsx`,
-> qui n'a pas de feuille de ce nom, et dont la ligne 39 (« Détail Sprint »
-> comme « Planning V3 ») porte autre chose : EP02-US04 d'un côté, la
-> ligne Prio 02 de l'autre. La correspondance ci-dessous est donc établie
-> avec **les sept endpoints que ce dépôt garde en mémoire du cadrage** —
-> le tableau de `docs/INTEGRATION.md` §1 — et avec la table
-> `business_accounts` de `db/schema.sql`. Déposez le classeur dans
-> `docs/reference/` ou collez la ligne 39 et je reprends la
-> correspondance au libellé près.
+Le classeur est versionné : `docs/reference/DigiNegoce_LYFE_App_ChiffrageV3_0.xlsx`.
+La ligne 39 de la feuille **« Spécifications Chiffrage Dét. »**, colonne
+par colonne, et ce que le portail en fait.
 
-### 6.1 Les sept endpoints du cadrage, tels que le dépôt les enregistre
+### 6.1 La ligne, cellule par cellule
 
-| # | Endpoint du cadrage | État dans le pilote HTTP | Différence |
+| Col. | Intitulé | Valeur ligne 39 | État dans le portail |
+|---|---|---|---|
+| A | Catégorie | `ADMIN` | — |
+| B | Écran/Composant | `Restaurant Dashboard` | Les sept écrans du §2 |
+| C | Version | `Beta` | Lot 1, sprint Prio 02 |
+| D | Type | `Écran (Business)` | Portail partenaire séparé, pas l'app cliente |
+| E | Fonctionnalité | `Dashboard restaurant partenaire` | ✅ |
+| F | Boutons/Actions | huit actions | six en Lot 1, deux en Prio 08 — voir §6.3 |
+| G | Flow Utilisateur | `Separate business app/web` · `Login restaurant → Dashboard → Réservations list → Actions` · `Analytics temps réel` | Le flow est exactement celui-là ; « Analytics temps réel » est Prio 08 |
+| H | Endpoints Backend (FastAPI) | sept endpoints | **7/7 alignés**, 6/7 appelés en Lot 1 — voir §6.2 |
+| I | Microservice | `Business Service` | `LYFE_API_BASE_URL` pointe sa racine |
+| J | Collections PostgreSQL | `business_accounts` | Une collection nommée, vingt tables nécessaires — voir §6.4 |
+| K | Champs Principaux | `business_id, venue_id, owner_id, subscription_tier, features_enabled` | `BusinessAccount`, au champ près |
+| L | Estimation FE | `4 j` | Le front-end existe : les sept écrans sont rendus et branchés sur le pilote |
+| M | Estimation BE | `8 j` | Le travail restant, et ce document en est la spécification |
+| N | Estimation DB | `2 j` | Voir §7 pour ce que les écrans lisent et écrivent réellement |
+| O | Estimation Totale | `14 j` | — |
+| P | Complexité | `Complexe` | — |
+| Q | Notes Techniques | `QR scanner app, analytics dashboards (Chart.js), revenue tracking, subscription tiers (Free/Premium/Enterprise), notification système nouvelles réservations` | Voir §6.5 |
+
+### 6.2 Les sept endpoints de la colonne H
+
+Ils sont recopiés ici tels quels, puis comparés au pilote
+(`src/lib/data/http-repository.ts`).
+
+| # | Ligne 39 | Pilote HTTP | Écart |
 |---:|---|---|---|
-| 1 | `GET /restaurants/{id}/overview` | `GET /api/business/overview?venue_id=` | Même charge utile (`RestaurantOverview`). **Le chemin a changé** : préfixe `/api/business`, et l'établissement passe en paramètre de requête, pas en segment. |
-| 2 | `POST /restaurants/{id}/reservations/{rid}/seat` | `POST /api/business/bookings/{id}/check-in` | Renommé : « seat » est devenu le check-in, qui est le verbe du produit. Un second chemin sans `{id}` existe pour le scan. |
-| 3 | `POST /restaurants/{id}/reservations/{rid}/confirm` | `PUT /api/business/bookings/{id}/confirm` | **Méthode changée** : `PUT`, la confirmation étant idempotente. Aucun appelant aujourd'hui (§5.2). |
-| 4 | `POST /restaurants/{id}/reservations/{rid}/cancel` | `PUT /api/business/bookings/{id}/cancel` | Idem. Un `reject` distinct, **absent du cadrage**, a été ajouté : refuser une demande et annuler une réservation confirmée ne sont pas le même acte, et le refus porte un motif codé. |
-| 5 | `POST /restaurants/{id}/tables/{tid}/clear` | *aucun* | **Supprimé.** Le plan de salle est un écran Prio 08 ; aucun écran du Lot 1 ne libère une table. |
-| 6 | `POST /restaurants/{id}/reservations/{rid}/remind` | `POST /api/business/bookings/{id}/remind` | Même verbe, nouveau préfixe. Aucun appelant. |
-| 7 | `POST /restaurants/{id}/reviews/{rid}/reply` | `POST /api/business/reviews/{id}/reply` | Même verbe, nouveau préfixe. **Hors Lot 1** : Avis est Prio 08. |
+| 1 | `GET /api/business/bookings?venue_id=&date=` | `GET /api/business/bookings?venue_id=&date=` | **Aucun.** Le pilote écrivait `/book` ; il a été renommé pour coller à la ligne. Rend un `DayBook` (§2.3). |
+| 2 | `PUT /api/business/bookings/{id}/confirm` | `PUT /api/business/bookings/{id}/confirm` | **Aucun.** Appelé par « Accepter » depuis cette passe. |
+| 3 | `PUT /api/business/bookings/{id}/reject` | `PUT /api/business/bookings/{id}/reject` | Chemin identique. **Le corps est un ajout** : `{ reason, note }`, où `reason` est un code — `fully_booked`, `party_too_large`, `outside_service`, `venue_closed`, `duplicate`, `other`. La ligne dit « Accepter/Refuser » sans dire avec quoi ; un motif en texte libre ne s'agrège pas. |
+| 4 | `POST /api/business/bookings/{id}/check-in {qr_code}` | `POST /api/business/bookings/{id}/check-in` avec `{ qr_code }` | Chemin et corps identiques. **Un second chemin s'y ajoute** : `POST /api/business/bookings/check-in`, sans identifiant, pour un code scanné qui identifie la réservation à lui seul. |
+| 5 | `POST /api/business/bookings/{id}/no-show` | `POST /api/business/bookings/{id}/no-show` | **Aucun.** Appelé par « Absent ». |
+| 6 | `PUT /api/business/venues/{id}/availability` | `PUT /api/business/venues/{id}/availability` | **Aucun.** Appelé par les horaires de Ma fiche, en lecture-modification-écriture sur l'objet complet. |
+| 7 | `GET /api/business/analytics?venue_id=` | `GET /api/business/analytics?venue_id=&period=` | Chemin identique, **`period` ajouté** (`7d` · `30d` · `90d` · `12m`). **Aucun écran du Lot 1 ne l'appelle** : les chiffres sont Performance et Bilans, Prio 08. |
 
-**Ce que le cadrage ne prévoyait pas et que le Lot 1 exige** : les neuf
-lectures et six écritures de §3 — la fiche, les horaires, les photos, la
-configuration des services, le pacing, les préférences de notification,
-les réglages, le carnet d'une autre journée, et l'absence (`no-show`).
-« Création de Venue » et « Gestion des réservations » sont deux des trois
-noms de la ligne Prio 02 ; sept endpoints centrés sur une réservation
-n'en couvrent qu'un.
+Autrement dit : les sept chemins de la ligne 39 sont ceux du pilote, et
+six des sept sont appelés par les écrans du Lot 1. C'est la bonne
+nouvelle du document.
 
-`docs/INTEGRATION.md` §1 est donc **périmé sur les chemins** : il décrit
-encore `/restaurants/{id}/…`. Le présent document le remplace pour tout
-ce qui touche au Lot 1.
+**Ce que la ligne 39 ne prévoit pas et que le Lot 1 exige.** Trois de ses
+mots — « Authentification », « Création de Venue » de la ligne Prio 02 du
+Planning V3, et la session que suppose son propre flow « Login
+restaurant → … » — n'ont pas d'endpoint dans la colonne H. Il en faut
+**neuf de plus**, tous déjà écrits dans le pilote :
 
-### 6.2 `business_accounts`
-
-La table existe dans `db/schema.sql` et le type existe dans
-`src/lib/types/business.ts` :
-
-| Colonne | Type TS | Lue par |
+| Méthode | Chemin | Pourquoi la ligne 39 ne l'a pas |
 |---|---|---|
-| `business_id` | `businessId: string` | `businessAccountForUser()` |
+| `GET`/`POST` | `/api/business/auth/session` | Son flow commence par « Login restaurant » sans dire contre quoi. C'est la session : qui vous êtes, quels établissements vous détenez, avec quel rôle. |
+| `GET` | `/api/business/overview?venue_id=` | La charge utile du tableau de bord. La ligne nomme la liste des réservations, pas l'écran qui les résume. |
+| `GET`/`PUT` | `/api/business/settings?venue_id=` | La configuration de l'établissement — restaurant ou lounge — qui décide du vocabulaire, et les coordonnées qui reçoivent les alertes. |
+| `GET`/`PUT` | `/api/business/venues/{id}` | « Création de Venue » : le dossier lui-même. |
+| `GET`/`POST` | `/api/business/venues/{id}/assets?kind=photo` | Les photos de la fiche. |
+| `GET`/`POST` | `/api/business/services/configuration?venue_id=` | Les services, leur capacité, leur cadence et la fenêtre de réservation. La ligne 39 dit « Modifier disponibilités » et ne couvre, par son endpoint 6, que les horaires d'ouverture. |
+| `GET`/`PUT` | `/api/business/venues/{id}/notification-preferences` | L'alerte « nouvelle réservation » de la colonne Q, côté réglage. |
+| `PUT` | `/api/business/zones/{zoneId}?venue_id=` | Ouvrir ou fermer une zone — terrasse, patio — sans toucher au service. |
+| `PUT` | `/api/business/bookings/{id}/cancel` | Annuler une réservation confirmée. La ligne 39 a `reject` pour refuser une demande ; annuler une table déjà confirmée est un autre acte, et le schéma garde les deux états séparés. |
+
+`POST /api/business/bookings/{id}/remind` et `GET /api/business/account`
+existent aussi dans le pilote ; aucun écran du Lot 1 ne les appelle
+aujourd'hui.
+
+### 6.3 Les huit actions de la colonne F
+
+| Action ligne 39 | Où elle est | État |
+|---|---|---|
+| `Voir réservations du jour` | Accueil et Réservations | ✅ |
+| `Accepter/Refuser réservation` | Accueil et Réservations | ✅ passe par le pilote |
+| `Marquer présence (QR scan)` | Check-in | ✅ scan **et** par nom |
+| `Signaler no-show` | Accueil et Réservations | ✅ passe par le pilote |
+| `Modifier disponibilités` | Disponibilités et Ma fiche · Horaires | ✅ |
+| `Voir analytics: Taux remplissage, revenue estimé, taux no-show` | Performance, Bilans | ⛔ **Prio 08** |
+| `Promouvoir restaurant (boost listing)` | Visibilité | ⛔ **Prio 08** |
+| `Répondre reviews` | Avis | ⛔ **Prio 08** |
+
+C'est le seul désaccord de fond entre les deux documents, et il vaut
+d'être dit clairement : la ligne 39 met les analyses, la mise en avant et
+la réponse aux avis dans la même cellule que la gestion des
+réservations, alors que la ligne Prio 02 du `Planning V3` dit
+« Authentification + Création de Venue + Gestion des reservation
+**uniquement** ». Le portail suit le second : ces trois surfaces sont
+construites et rendues, mais elles vivent en Lot 2 et aucun écran du
+Lot 1 n'y mène. Si le chiffrage l'entend autrement, c'est une décision
+de périmètre à prendre — pas un manque de code.
+
+### 6.4 `business_accounts` (colonnes J et K)
+
+La colonne K donne cinq champs. Le type les porte tous, au nom près :
+
+| Colonne K | `BusinessAccount` (`src/lib/types/business.ts`) | Lu par |
+|---|---|---|
+| `business_id` | `businessId: string` | `GET /api/business/account` |
 | `venue_id` | `venueId: string` | idem |
 | `owner_id` | `ownerId: string` | idem |
-| `subscription_tier` | `subscriptionTier: string` | **personne** |
+| `subscription_tier` | `subscriptionTier: string` | **personne** — voir §6.5 |
 | `features_enabled` | `featuresEnabled: string[]` | la porte des fonctionnalités |
 
-Deux choses à dire clairement :
+La colonne J nomme **une** collection. Les sept écrans en lisent ou en
+écrivent **vingt** (§7) : les réservations et leur historique d'états,
+les clients, l'établissement et ses étiquettes, ses services et leur
+charge, ses créneaux, ses jours de fermeture, ses zones, ses médias, ses
+préférences de notification, ses réglages. `business_accounts` est le
+dossier du partenaire, pas le carnet — et la ligne 39 ne nomme pas la
+collection que ses propres endpoints 1 à 5 manipulent. Le §7 est la
+liste que l'estimation DB de 2 jours doit couvrir.
 
-1. **Aucun écran n'appelle encore `GET /api/business/account`.** Le
-   compte métier est typé, servi par les trois pilotes, et consommé par
-   rien. C'est l'autre face de §5.1 : sans échange d'identifiants, il n'y
-   a pas de moment où le portail demande « qui suis-je ».
-2. **Il n'y a aucune logique de palier d'abonnement dans le code.** Une
-   recherche complète n'en trouve nulle part. `subscription_tier` est
-   transporté parce que la colonne existe ; l'accès passe par
-   `features_enabled`, pour qu'un changement commercial reste un
-   changement de données et pas un déploiement. Si le chiffrage suppose
-   du Free/Premium/Enterprise, l'écart est dans le chiffrage, pas ici.
+### 6.5 Les notes techniques (colonne Q)
 
----
+| Note ligne 39 | État |
+|---|---|
+| `QR scanner app` | Le QR est frappé côté application (EP20-US9). Le portail le transmet **opaque** et ne l'interprète jamais : c'est le point, pas une facilité. |
+| `analytics dashboards (Chart.js)` | Les graphiques existent, en SVG écrit à la main plutôt qu'en Chart.js — une dépendance de moins pour un gain nul, et c'est un écart signalé de longue date dans `docs/SCOPE_AUDIT.md`. Écrans Prio 08 de toute façon. |
+| `revenue tracking` | Prio 08. **Aucun montant n'apparaît sur les sept écrans du Lot 1**, et `tools/verify/configuration.mjs` fait échouer la vérification si un dirham s'y glisse. |
+| `subscription tiers (Free/Premium/Enterprise)` | **Il n'y a aucune logique de palier dans le code.** Une recherche complète n'en trouve nulle part. `subscription_tier` est transporté parce que la colonne existe ; l'accès passe par `features_enabled`, pour qu'un changement commercial reste un changement de données. Si le chiffrage suppose trois paliers vendus, l'écart est dans le chiffrage. |
+| `notification système nouvelles réservations` | L'écran Notifications règle l'alerte et ses canaux (push, e-mail, WhatsApp) et l'enregistre. **L'expédition attend un compte Twilio ou Infobip** ; le portail n'envoie rien. |
 
 ## 7. Les tables du Lot 1
 
@@ -679,29 +820,63 @@ présentes, sinon `db` si un fichier SQLite existe, sinon `static`. Ce
 repli est ce qui permet à un clone frais de tourner sans rien ; c'est
 aussi ce qui fait qu'un déploiement mal configuré a l'air en bonne santé.
 
-**Trois pièges, dans l'ordre où on les rencontre :**
+**Deux pièges, dans l'ordre où on les rencontre :**
 
-1. **La connexion a besoin d'une base même en mode `http`** (§5.1).
-   Pour une recette de bout en bout : `npm run db:reset` pour un fichier
-   SQLite seedé qui sert l'annuaire, pendant que les écrans lisent votre
-   service. Ce n'est pas élégant, c'est l'état des lieux.
-2. **Répondez aux six appels de §4**, même par un objet vide conforme,
-   ou l'Accueil, Réservations, Ma fiche et Notifications tomberont sur
-   l'état d'erreur.
-3. **Le mode `http` n'est pas couvert par les outils de vérification.**
-   `tools/verify/*.mjs` marchent sur `db` et `static`. Pour valider votre
-   backend, lancez-les avec `LYFE_LOT=1` contre votre instance — ils
-   parcourent les sept écrans, forcent les trois états et vérifient le
-   vocabulaire :
-
-   ```bash
-   BASE=https://portail-de-recette LYFE_LOT=1 node tools/verify/walk.mjs
-   BASE=https://portail-de-recette LYFE_LOT=1 node tools/verify/states.mjs
-   ```
+1. **`LYFE_DATA=http` vaut la peine en recette.** Sans lui, un fichier
+   `.data/lyfe.db` oublié sur la machine ne change rien — la règle
+   ci-dessus donne la priorité au backend — mais l'inverse est vrai le
+   jour où l'une des deux variables manque : le portail retombe
+   silencieusement sur SQLite, et `/api/health` est le seul endroit qui
+   le dit.
+2. **La session est appelée à chaque requête** (§5.1). Un service qui
+   répond en 400 ms à `GET /auth/session` ajoute 400 ms à chaque
+   navigation. Le portail mémorise la réponse cinq secondes ; au-delà,
+   c'est votre latence.
 
 **Mapper une autre forme.** Si votre service ne renvoie pas exactement
 ces objets, écrivez la conversion dans `http-repository.ts` — une
-fonction `mapOverview()`, `mapDayBook()` — et nulle part ailleurs. Tout
+fonction `mapOverview()`, `mapDayBook()` — et nulle part ailleurs, plus
+`readAccount()` dans `src/lib/auth/directory.ts` pour la session. Tout
 l'intérêt de la couture est qu'un seul fichier connaisse le format du
 fil ; une conversion répandue dans les écrans est une migration qu'on ne
 peut plus faire.
+
+---
+
+## 9. Vérifier sans attendre le backend
+
+`tools/mock-api.mjs` est un Business Service qui répond à ce contrat. Il
+sert le jeu de données capturé — `src/lib/data/static/venue-snapshot.json`,
+tiré de la base seedée par `tools/verify/extract.mjs` — sur les chemins
+exacts du pilote, et il applique les écritures du Lot 1 en mémoire.
+
+Il existe parce que le pilote HTTP avait été écrit, typé, et jamais
+exécuté : le portail a trois pilotes de données et deux seulement avaient
+déjà servi un écran. Rien ne vérifiait que les chemins correspondaient,
+que les formes étaient celles que les types annoncent, ni qu'une écriture
+revenait sous une forme que la lecture suivante accepte — et « ça
+compile » n'est pas cette vérification.
+
+```bash
+npm run db:reset                       # une fois, pour la capture
+node tools/mock-api.mjs &              # :3311
+LYFE_LOT=1 LYFE_DATA=http \
+  LYFE_API_BASE_URL=http://localhost:3311 LYFE_API_TOKEN=mock \
+  npm run build && npm start &
+
+LYFE_LOT=1 node tools/verify/walk.mjs          # les sept écrans
+LYFE_LOT=1 node tools/verify/states.mjs        # les trois états
+LYFE_LOT=1 node tools/verify/configuration.mjs # vocabulaire et périmètre
+```
+
+`GET /__health` répond sans jeton, pour qu'un script d'amorçage puisse
+l'attendre. `MOCK_API_PASSWORD` change le mot de passe (par défaut
+`demo`), `MOCK_API_TOKEN` exige un jeton précis, `PORT` change le port.
+
+**Ce qu'il est.** Un double de test : l'état vit dans le processus et
+meurt avec lui, le mot de passe est le même pour tous les comptes, et les
+endpoints d'action du Lot 2 renvoient leur bundle sans l'appliquer. Le
+reste est fidèle — y compris le refus `409 { code: "stale" }` sur une
+version périmée, et le refus d'un `venue_id` que le compte ne détient
+pas. Ce document est la spécification ; ce fichier est une
+implémentation, tenue honnête par le fait d'être exécutée.

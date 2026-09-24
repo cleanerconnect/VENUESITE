@@ -33,6 +33,9 @@ export const RESERVATION_STATE: Record<ReservationState, Term> = {
   arrived: { label: "ARRIVÉ", tone: "live", icon: "user-check" },
   completed: { label: "TERMINÉE", tone: "success", icon: "receipt" },
   no_show: { label: "ABSENT", tone: "danger", icon: "user-x" },
+  // Refused by the venue, against cancelled by the guest. Two words, so
+  // a partner reading the book knows which of them ended the booking.
+  rejected: { label: "REFUSÉE", tone: "muted", icon: "ban" },
   cancelled: { label: "ANNULÉE", tone: "muted", icon: "ban" },
 };
 

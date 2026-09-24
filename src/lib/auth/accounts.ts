@@ -17,6 +17,7 @@ import "server-only";
 // swapping it for a hash comparison is a one-line change.
 
 import { directory, type DirectoryMembership } from "./directory";
+import { dataMode } from "@/lib/data/mode";
 import { PROFILES } from "./static/profiles";
 import type { OrganizerProfile } from "@/lib/types/domain";
 
@@ -110,8 +111,16 @@ export function accountName(userId: string): string | null {
   return byId.get(userId)?.fallbackName ?? null;
 }
 
-/** True when the id names a real account, whatever it holds. */
+/**
+ * True when the id names a real account, whatever it holds.
+ *
+ * With a backend configured this list is not the authority — the
+ * service is, and `resolveSession` asks it on the next line. Rejecting
+ * an unknown id here would have fallen back to the seeded owner, which
+ * is a silent identity swap rather than a failed sign-in.
+ */
 export function isKnownAccount(userId: string): boolean {
+  if (dataMode() === "http") return userId.length > 0;
   return byId.has(userId);
 }
 
@@ -127,22 +136,32 @@ export interface ResolvedAccount {
 
 export type Workspace = "event" | "venue";
 
-/** Everything the portal knows about a user, both workspaces at once. */
-export function resolveAccount(userId: string): ResolvedAccount | null {
-  const account = byId.get(userId);
-  if (!account) return null;
-
-  const fromVenues = directory().findById(userId);
+/**
+ * Everything the portal knows about a user, both workspaces at once.
+ *
+ * Two halves, and either one can be missing. The venue side comes from
+ * the directory — the backend when one is configured — and the event
+ * side from the fixture below, because there is no event backend yet.
+ * An account the service knows and the fixture does not is a real
+ * account holding venues and no organisation; requiring both was what
+ * made a backend user unable to sign in at all.
+ */
+export async function resolveAccount(
+  userId: string,
+): Promise<ResolvedAccount | null> {
+  const local = byId.get(userId);
+  const fromVenues = await directory().findById(userId);
+  if (!local && !fromVenues) return null;
 
   return {
     userId,
-    fullName: fromVenues?.fullName ?? account.fallbackName,
-    email: account.email,
-    organizations: account.organizations
+    fullName: fromVenues?.fullName ?? local?.fallbackName ?? userId,
+    email: fromVenues?.email ?? local?.email ?? "",
+    organizations: (local?.organizations ?? [])
       .map((id) => PROFILES[id])
       .filter((p): p is OrganizerProfile => Boolean(p)),
     venues: fromVenues?.venues ?? [],
-    eventRole: account.eventRole,
+    eventRole: local?.eventRole ?? "scanner",
   };
 }
 
@@ -189,15 +208,29 @@ export type SignInFailure = "unknown_account" | "bad_password";
  * The caller reports one message for both failures, so the form cannot
  * be used to enumerate which partners have accounts.
  */
-export function verifyCredentials(
+export async function verifyCredentials(
   email: string,
   password: string,
-): { ok: true; account: ResolvedAccount } | { ok: false; reason: SignInFailure } {
+): Promise<
+  { ok: true; account: ResolvedAccount } | { ok: false; reason: SignInFailure }
+> {
+  // A configured backend owns the credential check. The fixture pairs
+  // below have no production counterpart and are never consulted then.
+  const dir = directory();
+  if (dir.verify) {
+    const found = await dir.verify(email, password);
+    if (!found) return { ok: false, reason: "bad_password" };
+    const resolved = await resolveAccount(found.userId);
+    return resolved
+      ? { ok: true, account: resolved }
+      : { ok: false, reason: "unknown_account" };
+  }
+
   const account = byEmail.get(email.trim().toLowerCase());
   if (!account) return { ok: false, reason: "unknown_account" };
   if (account.password !== password) return { ok: false, reason: "bad_password" };
 
-  const resolved = resolveAccount(account.userId);
+  const resolved = await resolveAccount(account.userId);
   if (!resolved) return { ok: false, reason: "unknown_account" };
   return { ok: true, account: resolved };
 }

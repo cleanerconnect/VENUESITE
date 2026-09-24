@@ -32,17 +32,32 @@ which is why a lounge renders the same seven screens as a restaurant.
 [`docs/LOT1_API_CONTRACT.md`](LOT1_API_CONTRACT.md).** Read it before
 writing any service code. It lists, per Lot 1 screen, every call the
 portal makes — method, path, request body, response shape — and the
-tables of `db/schema.sql` each one reads or writes; the nine reads and
-six writes that are the minimum for the seven screens; the six reads
-the portal makes today whose payload Lot 1 never renders; the
-correspondence with the seven endpoints the scoping recorded and with
-`business_accounts`; and the three things that are **not** wired —
-authentication talks to no service, four of the five booking decisions
-never leave the browser, and the Ma fiche forms write straight to
-SQLite instead of through the driver. It also gives the environment
-variables for running the portal in Lot 1 against a real backend.
-`docs/INTEGRATION.md` §1 predates it and still lists the old
-`/restaurants/{id}/…` paths; for anything Lot 1, the contract wins.
+tables of `db/schema.sql` each one reads or writes; it maps, cell by
+cell, row 39 of `ChiffrageV3.0`'s « Spécifications Chiffrage Dét. »
+sheet, whose seven endpoints the driver now matches 7/7 with six of them
+called; and it says where the two scope documents disagree — row 39 puts
+analytics, boost and review replies in the same cell as the booking
+work, and `Planning V3`'s Prio 02 row says *« Gestion des reservation
+uniquement »*.
+
+**Everything the contract describes is actually called.** The HTTP driver
+had been written, typed and never run; it now runs against
+`tools/mock-api.mjs`, a Business Service that answers the contract out of
+the committed capture, and the three places where the portal wrote
+somewhere other than where it said are closed:
+
+- **authentication resolves from the service** — `directory.ts` has a
+  third branch, and one session endpoint carries identity, venue scoping
+  and roles;
+- **all five booking decisions reach the driver** — accepter, refuser
+  with its coded reason, check-in by scan and by name, absent, annuler,
+  each behind the optimistic update with a rollback on refusal;
+- **every Ma fiche form writes through the driver** — identity, the
+  listing, the opening hours and the photos.
+
+A Lot 1 deployment also stopped asking for six reads it renders nothing
+from. `docs/INTEGRATION.md` §1 predates all of this and still lists the
+old `/restaurants/{id}/…` paths; for anything Lot 1, the contract wins.
 
 **Maquettes are due 2 October 2026.** That date is derived, not quoted:
 the prerequisite column of `Planning V3` is headed *« Prérequis à
@@ -250,6 +265,24 @@ lounge does not see Vie nocturne either.
 Run them against a **production build**, not `npm run dev`. Three of them
 fill the login form before React has hydrated in dev, and the submit gate
 never opens; the symptom is a timeout on a disabled button.
+
+**And run them a third time, on the HTTP driver.** `tools/mock-api.mjs`
+is a Business Service that answers `docs/LOT1_API_CONTRACT.md` out of the
+committed capture, which is what lets the seam be exercised rather than
+only compiled:
+
+```bash
+node tools/mock-api.mjs &                       # :3311, GET /__health needs no token
+LYFE_LOT=1 LYFE_DATA=http \
+  LYFE_API_BASE_URL=http://localhost:3311 LYFE_API_TOKEN=mock \
+  npx next start -p 3210 &
+LYFE_LOT=1 node tools/verify/walk.mjs           # same assertions, other driver
+```
+
+Check `/api/health` says `"data":"http"` before you believe the run: a
+stray server from an earlier session on the same port will answer, and
+then a phase you think is testing SQLite is testing something else. That
+is not hypothetical — it happened while writing this.
 
 `extract.mjs` is the odd one out: it asserts nothing, it *records*. At
 its default depth it writes the route outline; at `DEPTH=full` it writes
@@ -599,6 +632,11 @@ open. Read in order, they are the history of the repository:
 | `docs/PHASE6.md` | The Figma export: variables, components, frames, and §5 — the écarts found by reading the code against the documents, all now closed |
 | `docs/PHASE7.md` | The worked example: one venue, every screen, populated from the seed; §6 — six observations, four of them defects still open here; §9 — the coherence pass, frame by frame |
 
+`tools/mock-api.mjs` sits with them rather than with the docs: it is a
+Business Service that answers `LOT1_API_CONTRACT.md` out of the committed
+capture, so the HTTP driver can be run rather than only compiled. See the
+contract's §9.
+
 Five reference documents sit beside them:
 `docs/LOT1_API_CONTRACT.md` (**the Lot 1 backend contract**, in French —
 every call the seven screens make, the tables behind them, and what is
@@ -711,8 +749,10 @@ they exist.
 
 | # | Gap | Consequence | Size |
 |---|---|---|---|
+| 0 | ~~Authentication talked to no service; four booking decisions never left the browser; Ma fiche wrote past the driver~~ — **closed.** See `docs/LOT1_API_CONTRACT.md` §5, and `tools/mock-api.mjs` for the double they were verified against | — | — |
 | 1 | ~~Event workspace reads fixtures directly~~ — **done in Phase 4.** What remains is the *write* path: there is no `EventRepository` mutation surface, because there is no event backend to shape one against | Creating an event, promo code or boost persists nothing | Large. The venue side is the worked example to copy |
 | 2 | No add/remove for menu items | A venue with a new dish has to call support | Small |
+| 2b | Menu items and the staff list are the last two writes that still call SQLite directly instead of the repository | Those two screens cannot run against a backend | Small, and the four Ma fiche forms are the worked example |
 | 3 | ~~No editor for seating areas~~ — **done in Phase 5.** Zones open and close from Ma fiche, and the write reaches the app immediately | — | — |
 | 4 | ~~No preview of the app listing~~ — **done in Phase 5.** Ma fiche renders the listing from the same values the form edits | — | — |
 | 5 | ~500 French literals inline, almost all one-off headings | A copy change means a code change | Medium, mechanical |

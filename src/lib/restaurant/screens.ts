@@ -2264,6 +2264,33 @@ export function isFormRoute(slug: string): slug is FormRouteSlug {
 }
 
 /** Which extra slices each screen requires. */
+/**
+ * The slices a screen needs **in this lot**.
+ *
+ * Four Lot 1 screens declared a need whose payload no Lot 1 builder
+ * reads: the dashboard never touches the service floor at all, the money
+ * desk is read for `hasTransactionSource` and the deposits — both behind
+ * a Lot 2 guard — and the marketing bundle feeds a delivery journal that
+ * belongs to Campagnes. Fetching them anyway is not just waste: against
+ * a real backend it makes a Lot 1 deployment *demand* endpoints no Lot 1
+ * screen renders, which is work the integrator pays for nothing.
+ *
+ * See docs/LOT1_API_CONTRACT.md §4.
+ */
+export function screenNeeds(slug: SpecSlug, lot: Lot): ScreenDataNeed[] {
+  const declared = SCREEN_NEEDS[slug];
+  if (lot === 2) return declared;
+  const unread = LOT1_UNREAD[slug];
+  return unread ? declared.filter((need) => !unread.includes(need)) : declared;
+}
+
+/** Declared, fetched, and then not read — per screen, under Lot 1. */
+const LOT1_UNREAD: Partial<Record<SpecSlug, ScreenDataNeed[]>> = {
+  "": ["serviceFloor", "money"],
+  reservations: ["money"],
+  notifications: ["marketing"],
+};
+
 export const SCREEN_NEEDS: Record<SpecSlug, ScreenDataNeed[]> = {
   "": ["serviceFloor", "money"],
   reservations: ["money", "dayBook"],

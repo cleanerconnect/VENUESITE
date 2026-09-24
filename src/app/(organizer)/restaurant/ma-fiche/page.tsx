@@ -50,14 +50,19 @@ export default async function MaFichePage({ searchParams }: Props) {
   const venueId = session.venueId;
 
   try {
+  // Three of these eight are Lot 2's: the carte, its file and the staff
+  // list belong to Menu and Équipe, and the panels that render them are
+  // not in this route's `only` under Lot 1. Asking for them anyway made
+  // a basique deployment require three endpoints it draws nothing from.
+  const lot2 = lot === 2;
   const [profile, menu, availability, photos, menuFiles, staff, overview, settings] =
     await Promise.all([
       repo.getVenueProfile(venueId),
-      repo.listMenuItems(venueId),
+      lot2 ? repo.listMenuItems(venueId) : [],
       repo.getAvailability(venueId),
       repo.listAssets(venueId, "photo"),
-      repo.listAssets(venueId, "menu_file"),
-      repo.listStaff(venueId),
+      lot2 ? repo.listAssets(venueId, "menu_file") : [],
+      lot2 ? repo.listStaff(venueId) : [],
       repo.getOverview(venueId),
       repo.getVenueSettings(venueId),
     ]);

@@ -25,12 +25,15 @@ import type {
 import {
   RepositoryError,
   type AnalyticsInput,
+  type AssetAction,
   type CheckInInput,
   type NoShowInput,
   type RejectBookingInput,
   type ReservationRefInput,
   type RestaurantRepository,
   type ReviewReplyInput,
+  type VenueListingPatch,
+  type VenueProfilePatch,
 } from "./repository";
 import type { MenuItem, Reservation, RestaurantProfile } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
@@ -82,9 +85,12 @@ export class HttpRestaurantRepository implements RestaurantRepository {
   }
 
   getDayBook(venueId: string, date: string) {
+    // `bookings`, spelled as ChiffrageV3.0 row 39 spells it. It read
+    // `/book` here for one pass, which is the kind of difference that
+    // costs an afternoon on the day of the integration.
     return this.request<DayBook>(
       "GET",
-      `/api/business/book?venue_id=${encodeURIComponent(
+      `/api/business/bookings?venue_id=${encodeURIComponent(
         venueId,
       )}&date=${encodeURIComponent(date)}`,
     );
@@ -162,6 +168,37 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     return this.request<VenueAsset[]>(
       "GET",
       `/api/business/venues/${venueId}/assets?kind=${encodeURIComponent(kind)}`,
+    );
+  }
+
+  // ── Ma fiche's writes ──
+  //
+  // Identity is a PUT on the venue itself; the curated listing is a PUT
+  // of its own, because the two forms are different screens in different
+  // lots and a single endpoint taking either patch could not say which
+  // fields it was allowed to leave alone.
+  saveVenueProfile(venueId: string, patch: VenueProfilePatch) {
+    return this.request<RestaurantProfile>(
+      "PUT",
+      `/api/business/venues/${venueId}`,
+      patch,
+    );
+  }
+
+  saveVenueListing(venueId: string, patch: VenueListingPatch) {
+    return this.request<RestaurantProfile>(
+      "PUT",
+      `/api/business/venues/${venueId}/listing`,
+      patch,
+    );
+  }
+
+  /** Record, remove, reorder — one endpoint that switches on `kind`. */
+  runAssetAction(venueId: string, action: AssetAction) {
+    return this.request<VenueAsset[]>(
+      "POST",
+      `/api/business/venues/${venueId}/assets`,
+      action,
     );
   }
 
