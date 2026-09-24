@@ -48,11 +48,14 @@ export function GreetingBlock({ block }: { block: Spec }) {
         {block.actions?.length ? (
           <div className="flex items-center gap-3 flex-wrap">
             {primary ? <ActionControl cta={primary} size="lg" /> : null}
+            {/* Filled then outlined, the pair the event Overview draws:
+                the primary at 56px, the outlined one at the 44px floor
+                every control in host density answers to. */}
             {rest.map((cta, i) => (
               <ActionControl
                 key={`${cta.action.label}-${i}`}
                 cta={{ ...cta, variant: cta.variant ?? "secondary" }}
-                size="sm"
+                size="md"
               />
             ))}
           </div>

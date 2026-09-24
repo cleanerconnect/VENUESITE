@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { useState } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Check, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeftRight, Check, ChevronRight } from "lucide-react";
 
 // The venue switcher.
 //
@@ -26,12 +26,14 @@ export interface SwitchableVenue {
 export function VenueSwitcher({
   venues,
   activeVenueId,
+  eventSpaceHref,
 }: {
   venues: SwitchableVenue[];
   activeVenueId: string;
+  /** Set when the account also holds the event space. */
+  eventSpaceHref?: string;
 }) {
   const router = useRouter();
-  const { lot } = useWorkspaceAccess();
   const [busy, setBusy] = useState(false);
   const active = venues.find((v) => v.id === activeVenueId) ?? venues[0];
   if (!active) return null;
@@ -51,32 +53,17 @@ export function VenueSwitcher({
     if (res.ok) router.refresh();
   };
 
-  // One venue is not a choice — render the card without the menu.
-  if (venues.length === 1) {
-    return (
-      <div className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5">
-        <Avatar initials={active.initials} />
-        <div className="min-w-0 flex-1 leading-tight">
-          <div className="text-[13px] font-semibold text-ink truncate">
-            {active.shortName}
-          </div>
-          {/* A host knows which restaurant they are standing in. The
-              type and the city are for an account holding several, and
-              the switcher below already names both. */}
-          {lot === 2 ? (
-            <div className="text-meta text-ink-mute truncate">{label(active)}</div>
-          ) : null}
-        </div>
-      </div>
-    );
-  }
-
+  // Always a menu, even for one venue. The event sidebar's identity card
+  // always carries its chevron and always opens — it is the one control
+  // that moves you between spaces — and this is the same card. With a
+  // single venue the menu names it, ticked, and offers the other space
+  // when the account holds it.
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <button
           disabled={busy}
-          className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow disabled:opacity-60"
+          className="w-full flex items-center gap-2.5 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow disabled:opacity-60"
           aria-label={`Lieu actif : ${active.shortName}. Changer de lieu.`}
         >
           <Avatar initials={active.initials} />
@@ -84,11 +71,9 @@ export function VenueSwitcher({
             <div className="text-[13px] font-semibold text-ink truncate">
               {active.shortName}
             </div>
-            {lot === 2 ? (
-              <div className="text-meta text-ink-mute truncate">
-                {label(active)}
-              </div>
-            ) : null}
+            <div className="text-meta text-ink-mute truncate">
+              {label(active)}
+            </div>
           </div>
           <ChevronRight size={14} className="text-ink-mute shrink-0" />
         </button>
@@ -115,6 +100,20 @@ export function VenueSwitcher({
               ) : null}
             </DropdownMenu.Item>
           ))}
+          {eventSpaceHref ? (
+            <>
+              <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
+              <DropdownMenu.Item asChild>
+                <Link
+                  href={eventSpaceHref}
+                  className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                >
+                  <ArrowLeftRight size={14} strokeWidth={1.8} className="text-ink-mute" />
+                  Espace événements
+                </Link>
+              </DropdownMenu.Item>
+            </>
+          ) : null}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

@@ -77,10 +77,10 @@ const METRIC_SCALE = [
 // Shown twice — once at each density — so the difference is the
 // specimen rather than a paragraph claiming there is one.
 const HOST_SPECIMEN = [
-  { cls: "text-h2", sample: "Prochaines arrivées" },
   { cls: "text-body", sample: "Confirmées, pas encore en salle." },
   { cls: "text-meta", sample: "Grande salle · Téléphone" },
   { cls: "text-eyebrow", sample: "Aujourd'hui" },
+  { cls: "text-control-md", sample: "Enregistrer" },
 ];
 
 const HOST_BANDS = [
@@ -194,6 +194,19 @@ export function TokensSection() {
           seul Enregistrer, en bas, plein et haut de 44 px, avec un état
           « Enregistré » visible. Et l&apos;action principale de
           l&apos;écran est le plus grand contrôle qui s&apos;y trouve.
+        </p>
+
+        <p className="text-body text-ink-soft mb-5 max-w-2xl">
+          Deux choses ne sont délibérément pas remises à l&apos;échelle :
+          les titres et la barre latérale. Elles l&apos;ont été — 36 px
+          de h1 ramenés à 30, des entrées de 20 px sur des lignes de
+          52 px — et le résultat était deux produits : le tableau de
+          bord d&apos;un établissement ne ressemblait plus à celui d&apos;un
+          organisateur. Les titres restent donc à 36/24/18 et les entrées
+          à 13,5 px sur 40 px, comme la barre latérale de l&apos;espace
+          événements. La densité host agit sur le corps de texte, les
+          libellés, les contrôles et la ligne de réservation, là où un
+          hôte lit et appuie.
         </p>
 
         <div className="grid gap-5 lg:grid-cols-2">

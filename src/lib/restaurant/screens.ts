@@ -129,7 +129,7 @@ import {
   restaurantHref,
 } from "./slugs";
 import { COUNT, MAD } from "@/lib/dashboard/formats";
-import { coversIn, dayLabel, hm, initialsOf, mobileTiles, money } from "./format";
+import { coversIn, dayLabel, hm, inWords, initialsOf, mobileTiles, money, openSentence } from "./format";
 
 /**
  * The venue's word for a booked head.
@@ -337,30 +337,45 @@ export function buildDashboardScreen(
       }
     : null;
 
+  // The three groups below are the screen, and the greeting says in one
+  // sentence what they add up to — so their counts are taken here,
+  // before the card that reports them.
+  const dayRowsForGreeting = data.upcomingReservations;
+  const pendingCount = dayRowsForGreeting.filter((r) => r.state === "requested").length;
+  const arrivedCount = dayRowsForGreeting.filter((r) => r.state === "arrived").length;
+  const totalCount = dayRowsForGreeting.length;
+  const hostSubline = [
+    totalCount === 0
+      ? "Aucune réservation aujourd'hui"
+      : `${openSentence(inWords(totalCount))} ${
+          totalCount === 1 ? "réservation" : "réservations"
+        } aujourd'hui`,
+    pendingCount === 0
+      ? "rien en attente de réponse"
+      : `${inWords(pendingCount)} en attente de réponse`,
+    arrivedCount === 0
+      ? "personne encore arrivé"
+      : `${inWords(arrivedCount)} déjà ${arrivedCount === 1 ? "arrivée" : "arrivées"}`,
+  ].join(", ") + ".";
+
   const greetingBlock: Block = {
     id: "greeting",
     type: "greeting",
-    // The eyebrow was the salutation, set above a headline whose first
-    // two words are the same salutation: "BON APRÈS-MIDI" over "Bon
-    // après-midi, Yassine." Lot 2 has a denser header where it earns
-    // its line; here it is the same words twice.
-    eyebrow: lot1 ? undefined : data.greeting.salutation,
+    // Both home screens are the same card: the salutation as an eyebrow,
+    // the salutation again as the headline's lead, and the serif italic
+    // clause after it. It is the house gesture on the event Overview and
+    // it is the house gesture here — a partner who holds both should not
+    // meet two different products.
+    eyebrow: data.greeting.salutation,
     title: `${data.greeting.salutation}, ${data.greeting.firstName}.`,
-    // The clause was a serif italic flourish — "Le service est lancé." —
-    // that told a host nothing they could act on and took the largest
-    // line on the screen to do it. Lot 2 keeps it; a stand does not.
-    emphasis: lot1 ? undefined : data.greeting.clause,
+    emphasis: data.greeting.clause,
     // The store composes one subline for both lots, because the payload
-    // is lot-agnostic by design. Lot 1 drops its waitlist clause here:
-    // Liste d'attente is a Lot 2 screen, and a count of people queueing
-    // is no use on a dashboard with nowhere to work the queue.
-    // A capacity is a figure Pilotage reports; the basique dashboard
-    // states what it can show, which is the book directly underneath.
-    subline: lot1
-      ? `${service.label} · ${data.upcomingReservations.length} ${
-          data.upcomingReservations.length === 1 ? "réservation" : "réservations"
-        } aujourd'hui.`
-      : data.greeting.subline,
+    // is lot-agnostic by design. Lot 1 writes its own: the store's names
+    // a waitlist and a remaining capacity, and Liste d'attente and
+    // Pilotage are both Lot 2 — a count of people queueing is no use on
+    // a dashboard with nowhere to work the queue. What a basique
+    // dashboard can answer is the three groups underneath, in words.
+    subline: lot1 ? hostSubline : data.greeting.subline,
     // The shortcuts the specification names are Nouvelle réservation,
     // Liste d'attente and Briefing — all three Lot 2. Under Lot 1 the
     // greeting keeps the one shortcut that lands somewhere: the carnet.
@@ -373,11 +388,21 @@ export function buildDashboardScreen(
               href: restaurantHref("reservations"),
               icon: "book",
             },
-            // Filled, like every other primary action in host density.
-            // A white outline beside a violet card read as a link, and
-            // the one shortcut off this screen should look like the
-            // button it is.
             variant: "primary",
+          },
+          // Two shortcuts side by side, filled then outlined, the way
+          // the event Overview pairs Créer un événement with Voir tous
+          // les événements. The second one is the door: a host reading
+          // this screen is either about to open the book or about to
+          // take an arrival.
+          {
+            action: {
+              kind: "link",
+              label: "Check-in",
+              href: restaurantHref("check-in"),
+              icon: "user-check",
+            },
+            variant: "secondary",
           },
         ]
       : [

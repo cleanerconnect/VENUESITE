@@ -386,7 +386,7 @@ export function visibleGroups(
   configuration: VenueConfiguration,
   lot: Lot = 2,
 ): NavGroup[] {
-  return workspace.groups
+  const groups = workspace.groups
     .filter(
       (group) =>
         !group.configurations ||
@@ -399,6 +399,25 @@ export function visibleGroups(
     // does not render as a heading with nothing under it: it is absent,
     // the way Vie nocturne is absent from a restaurant.
     .filter((group) => group.items.length > 0);
+  // Ten groups over thirty screens is wayfinding. Four groups over six
+  // is filing, and it made the basique sidebar read as a different
+  // product from the event sidebar, which groups its own eleven entries
+  // into two: the work, then the account. So does this one.
+  return lot === 1 && workspace.id === "restaurant"
+    ? mergeIntoTwo(groups)
+    : groups;
+}
+
+/** Everything operational, then everything about the establishment. */
+function mergeIntoTwo(groups: NavGroup[]): NavGroup[] {
+  const isSetup = (group: NavGroup) =>
+    group.label === "Établissement" || group.label === "Compte";
+  const work = groups.filter((g) => !isSetup(g)).flatMap((g) => g.items);
+  const setup = groups.filter(isSetup).flatMap((g) => g.items);
+  return [
+    { label: "Service", items: work },
+    { label: "Établissement", items: setup },
+  ].filter((g) => g.items.length > 0);
 }
 
 /**

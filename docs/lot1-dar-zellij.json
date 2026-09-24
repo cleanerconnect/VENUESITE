@@ -4,7 +4,7 @@
   "account": "yassine@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-09-24T18:55:20.311Z",
+  "capturedAt": "2026-09-24T21:39:14.283Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -14,9 +14,9 @@
       "dependsOn": null,
       "roles": null,
       "workspace": "venue",
-      "title": "Bonsoir, Yassine.",
-      "eyebrow": null,
-      "subtitle": "Dîner · 5 réservations aujourd'hui.",
+      "title": "Bonsoir, Yassine. Le service est lancé.",
+      "eyebrow": "Bonsoir",
+      "subtitle": "Cinq réservations aujourd'hui, une en attente de réponse, personne encore arrivé.",
       "venue": "YA",
       "blocks": [
         {
@@ -24,18 +24,21 @@
           "heading": null,
           "subheading": null,
           "actions": [
-            "Ouvrir le carnet"
+            "Ouvrir le carnet",
+            "Check-in"
           ],
           "facets": [],
           "texts": [
-            "Bonsoir, Yassine.",
-            "Dîner · 5 réservations aujourd'hui."
+            "Bonsoir",
+            "Le service est lancé.",
+            "Cinq réservations aujourd'hui, une en attente de réponse, personne encore arrivé."
           ],
           "rows": [
             {
               "lines": [
-                "Bonsoir, Yassine.",
-                "Dîner · 5 réservations aujourd'hui."
+                "Bonsoir",
+                "Le service est lancé.",
+                "Cinq réservations aujourd'hui, une en attente de réponse, personne encore arrivé."
               ],
               "pills": [],
               "actions": []
@@ -64,8 +67,10 @@
             "actions": [
               "Accepter",
               "Refuser",
+              "Absent",
               "Accepter",
-              "Refuser"
+              "Refuser",
+              "Absent"
             ],
             "facets": [],
             "texts": [
@@ -88,8 +93,8 @@
                 "actions": [
                   "Accepter",
                   "Refuser",
-                  "Accepter",
-                  "Refuser"
+                  "Absent",
+                  "Accepter"
                 ]
               }
             ]
@@ -116,13 +121,21 @@
             "subheading": null,
             "actions": [
               "Check-in",
+              "Absent",
               "Check-in",
+              "Absent",
               "Check-in",
+              "Absent",
               "Check-in",
+              "Absent",
               "Check-in",
+              "Absent",
               "Check-in",
+              "Absent",
               "Check-in",
-              "Check-in"
+              "Absent",
+              "Check-in",
+              "Absent"
             ],
             "facets": [],
             "texts": [
@@ -164,7 +177,9 @@
                 "pills": [],
                 "actions": [
                   "Check-in",
-                  "Check-in"
+                  "Absent",
+                  "Check-in",
+                  "Absent"
                 ]
               },
               {
@@ -175,7 +190,9 @@
                 "pills": [],
                 "actions": [
                   "Check-in",
-                  "Check-in"
+                  "Absent",
+                  "Check-in",
+                  "Absent"
                 ]
               },
               {
@@ -186,7 +203,9 @@
                 "pills": [],
                 "actions": [
                   "Check-in",
-                  "Check-in"
+                  "Absent",
+                  "Check-in",
+                  "Absent"
                 ]
               },
               {
@@ -197,7 +216,9 @@
                 "pills": [],
                 "actions": [
                   "Check-in",
-                  "Check-in"
+                  "Absent",
+                  "Check-in",
+                  "Absent"
                 ]
               }
             ]
@@ -262,17 +283,27 @@
           "subheading": "Trier par",
           "actions": [
             "Check-in",
+            "Absent",
             "Check-in",
+            "Absent",
             "Check-in",
+            "Absent",
             "Check-in",
+            "Absent",
             "Check-in",
+            "Absent",
             "Check-in",
+            "Absent",
             "Accepter",
             "Refuser",
+            "Absent",
             "Accepter",
             "Refuser",
+            "Absent",
             "Check-in",
-            "Check-in"
+            "Absent",
+            "Check-in",
+            "Absent"
           ],
           "facets": [
             {
@@ -350,7 +381,9 @@
               "pills": [],
               "actions": [
                 "Check-in",
-                "Check-in"
+                "Absent",
+                "Check-in",
+                "Absent"
               ]
             },
             {
@@ -361,7 +394,9 @@
               "pills": [],
               "actions": [
                 "Check-in",
-                "Check-in"
+                "Absent",
+                "Check-in",
+                "Absent"
               ]
             },
             {
@@ -372,7 +407,9 @@
               "pills": [],
               "actions": [
                 "Check-in",
-                "Check-in"
+                "Absent",
+                "Check-in",
+                "Absent"
               ]
             },
             {
@@ -384,8 +421,8 @@
               "actions": [
                 "Accepter",
                 "Refuser",
-                "Accepter",
-                "Refuser"
+                "Absent",
+                "Accepter"
               ]
             },
             {
@@ -396,7 +433,9 @@
               "pills": [],
               "actions": [
                 "Check-in",
-                "Check-in"
+                "Absent",
+                "Check-in",
+                "Absent"
               ]
             }
           ]
@@ -815,51 +854,6 @@
     }
   },
   "nav": {
-    "groups": [
-      {
-        "label": "Aujourd'hui",
-        "items": [
-          {
-            "label": "Accueil",
-            "href": "/restaurant"
-          },
-          {
-            "label": "Réservations",
-            "href": "/restaurant/reservations"
-          }
-        ]
-      },
-      {
-        "label": "En service",
-        "items": [
-          {
-            "label": "Check-in",
-            "href": "/restaurant/check-in"
-          }
-        ]
-      },
-      {
-        "label": "Ma présence",
-        "items": [
-          {
-            "label": "Ma fiche",
-            "href": "/restaurant/ma-fiche"
-          }
-        ]
-      },
-      {
-        "label": "Établissement",
-        "items": [
-          {
-            "label": "Disponibilités",
-            "href": "/restaurant/disponibilites"
-          },
-          {
-            "label": "Notifications",
-            "href": "/restaurant/notifications"
-          }
-        ]
-      }
-    ]
+    "groups": []
   }
 }

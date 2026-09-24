@@ -92,3 +92,24 @@ export function waitLabel(minutes: number): string {
   const m = minutes % 60;
   return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, "0")}`;
 }
+
+/**
+ * Small counts, spelled out.
+ *
+ * A greeting is a sentence, and a sentence does not open with a numeral:
+ * "Cinq réservations aujourd'hui" reads, "5 réservations aujourd'hui"
+ * is a readout. Feminine, because every noun a dashboard counts here is
+ * — réservation, arrivée, table. Past twenty a figure is clearer than a
+ * word, so it stays a figure.
+ */
+const FEMININE = [
+  "zéro", "une", "deux", "trois", "quatre", "cinq", "six", "sept", "huit",
+  "neuf", "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize",
+  "dix-sept", "dix-huit", "dix-neuf", "vingt",
+];
+export const inWords = (n: number) =>
+  Number.isInteger(n) && n >= 0 && n <= 20 ? FEMININE[n] : String(n);
+
+/** First letter up, for a count that opens a sentence. */
+export const openSentence = (s: string) =>
+  s.charAt(0).toUpperCase() + s.slice(1);

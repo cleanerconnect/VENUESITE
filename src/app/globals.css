@@ -258,15 +258,12 @@ body {
   letter-spacing: 0.06em;
   color: var(--host-soft);
 }
-[data-density="host"] .text-h1 {
-  font-size: 30px;
-}
-[data-density="host"] .text-h2 {
-  font-size: 22px;
-}
-[data-density="host"] .text-h3 {
-  font-size: 18px;
-}
+/* Headings are NOT retuned here. They were — 36/24/18 stepped down to
+   30/22/18 — and that made the basique dashboard's headlines smaller
+   than the event dashboard's, which is the wrong way round for the one
+   deployment read standing up. A partner who holds both spaces meets
+   one product, so the greeting card and the page titles keep the
+   type scale of the event Overview. */
 
 /* Grey secondary text becomes ink/70 wherever a component reached for
    the muted token directly. The token itself is untouched — Lot 2 still
@@ -303,26 +300,13 @@ body {
 }
 
 /* ── Sidebar ──
-   Seven entries, each with its icon, read from a stand rather than a
-   desk. 20px is the brief's floor for a nav label; the row grows to
-   match so the target keeps its padding. */
-[data-density="host"] .sidebar-item {
-  font-size: 20px;
-  height: 52px;
-  gap: 14px;
-}
-[data-density="host"] .sidebar-item-icon {
-  width: 22px;
-  height: 22px;
-}
-/* The group labels above them are a wayfinding aid, not a heading — they
-   step up to the 13px floor and no further, or they compete with the
-   entries they are labelling. */
-[data-density="host"] nav p {
-  font-size: 13px;
-  letter-spacing: 0.08em;
-}
-
+   Also NOT retuned. The nav entries were 20px on a 52px row here and
+   13.5px on a 40px row on the event side, and the two sidebars sat
+   beside each other in the same account looking like two products. The
+   chrome is shared, so it is sized once: whatever the event sidebar
+   does. Host density still governs the content beside it — the rows, the
+   fields, the 44px controls — which is where reading from a stand
+   actually bites. */
 /* ── The booking row ──
    Time and party size are what a host reads first: they decide what
    happens in the next ten minutes. The name is second, because it is

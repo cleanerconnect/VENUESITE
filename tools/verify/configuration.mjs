@@ -20,12 +20,22 @@ const GROUPS = ["Aujourd'hui", "En service", "Clients", "Ma présence",
   "Croissance", "Vie nocturne", "Paiements", "Pilotage", "Établissement", "Compte"];
 
 // Lot 1 is the Dashboard basique of Planning V3's Prio 02 row:
-// authentication, the venue's own record, and the booking work. Six of
-// the ten groups have no screen left in it, so the sidebar shows four —
-// to a lounge as much as to a restaurant, since Détail Sprint row 41
-// puts the same user story on Drinks/Cellar.
-const LOT1_GROUPS = ["Aujourd'hui", "En service", "Ma présence", "Établissement"];
-const EXPECTED = LOT === 2 ? GROUPS : LOT1_GROUPS;
+// authentication, the venue's own record, and the booking work. Its
+// sidebar now follows the event dashboard's — the entries listed one
+// after another, a single hairline before the establishment ones, and
+// no group headers at all — so under Lot 1 there is no group label left
+// to count. What identifies the lot is the six entries themselves, and
+// the absence of every screen it does not buy. The same six to a lounge
+// as to a restaurant, since Détail Sprint row 41 puts the identical
+// user story on Drinks/Cellar.
+const LOT1_ITEMS = ["Accueil", "Réservations", "Check-in", "Ma fiche",
+  "Disponibilités", "Notifications"];
+const LOT2_ITEMS = ["Calendrier", "Liste d'attente", "Briefing",
+  "Liste clients", "Tags et segments", "Audience", "Menu", "Avis",
+  "Visibilité", "Offres", "Expériences", "Guest list", "Tables minimums",
+  "Promoteurs", "Acomptes", "Annulations", "Lyfe Pay", "Performance",
+  "Bilans", "Campagnes", "Équipe et rôles", "Paramètres", "Abonnement",
+  "Support"];
 
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
@@ -58,7 +68,7 @@ async function inspect(venueId, label, expectNightlife, expectWord) {
 
   const nav = (await page.textContent("aside")) ?? "";
   const body = (await page.textContent("body")) ?? "";
-  const present = GROUPS.filter((g) => nav.includes(g));
+  const labels = GROUPS.filter((g) => nav.includes(g));
   const nightlife = nav.includes("Vie nocturne");
   const word = body.includes(expectWord);
 
@@ -93,12 +103,38 @@ async function inspect(venueId, label, expectNightlife, expectWord) {
   // configuration, because every screen in it belongs to Lot 2.
   const wantNightlife = LOT === 2 && expectNightlife;
 
+  // Lot 2 still names its groups, and is counted on them — two filters
+  // stacking, the lot dropping Vie nocturne and Paiements and then the
+  // configuration dropping Vie nocturne again for a restaurant. Lot 1's
+  // sidebar names nothing, so it is counted on its entries instead, and
+  // a group header appearing there is itself the failure.
+  let navLine;
+  let navFail = false;
+  if (LOT === 2) {
+    const want = GROUPS.filter((g) => g !== "Vie nocturne" || wantNightlife);
+    navFail = labels.length !== want.length;
+    navLine = `groupes      ${labels.length}/${want.length} · ${
+      labels.join(" · ")
+    }${navFail ? ` ✗ ${want.length} attendus en ${LOT_LABEL}` : ""}`;
+  } else {
+    const missing = LOT1_ITEMS.filter((i) => !nav.includes(i));
+    const extra = LOT2_ITEMS.filter((i) => nav.includes(i));
+    navFail = missing.length > 0 || extra.length > 0 || labels.length > 0;
+    navLine = navFail
+      ? `entrées      ✗ ${[
+          missing.length ? `manquantes : ${missing.join(", ")}` : null,
+          extra.length ? `hors lot : ${extra.join(", ")}` : null,
+          labels.length ? `en-têtes rendus : ${labels.join(", ")}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")}`
+      : `entrées      ${LOT1_ITEMS.length}/${LOT1_ITEMS.length} · ${
+          LOT1_ITEMS.join(" · ")
+        } · sans en-tête ✓`;
+  }
+
   console.log(label);
-  console.log(
-    `  groupes      ${present.length}/${
-      EXPECTED.filter((g) => g !== "Vie nocturne" || wantNightlife).length
-    } · ${present.join(" · ")}`,
-  );
+  console.log(`  ${navLine}`);
   console.log(
     `  Vie nocturne ${nightlife ? "présente" : "absente"} ${
       nightlife === wantNightlife
@@ -114,15 +150,7 @@ async function inspect(venueId, label, expectNightlife, expectWord) {
   if (nightlife !== wantNightlife) fails += 1;
   if (!word) fails += 1;
   if (payFail) fails += 1;
-  // Two filters stack: the lot drops Vie nocturne and Paiements, then
-  // the configuration drops Vie nocturne again for a restaurant. The
-  // expected count has to apply both, or Lot 2's restaurant reads as a
-  // failure for showing the nine groups it should.
-  const want = EXPECTED.filter((g) => g !== "Vie nocturne" || wantNightlife).length;
-  if (present.length !== want) {
-    console.log(`  ✗ ${want} groupes attendus en ${LOT_LABEL}`);
-    fails += 1;
-  }
+  if (navFail) fails += 1;
 }
 
 await inspect("rst_dar_zellij", "Dar Zellij (restaurant)", false, "couverts");

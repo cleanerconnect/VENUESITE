@@ -7,14 +7,10 @@ import { AnimatePresence, motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as RadixDialog from "@radix-ui/react-dialog";
 import {
-  ArrowLeftRight,
-  Building2,
-  CalendarDays,
   Check,
   ChevronRight,
   LogOut,
   MoreVertical,
-  UserCog,
 } from "lucide-react";
 import { Icon } from "@/components/dashboard/primitives";
 import { VenueSwitcher, type SwitchableVenue } from "./VenueSwitcher";
@@ -213,6 +209,8 @@ function SidebarBody({
   // Read from context rather than props: the mobile drawer renders
   // this same body without going through <Sidebar>.
   const workspaces = useWorkspaceAccess();
+  // Labels earn their place over ten groups, not over two.
+  const labelGroups = groups.length > 2;
 
   return (
     <>
@@ -221,14 +219,14 @@ function SidebarBody({
           without clipping. */}
       <div className="px-6 pt-7 pb-5">
         <Brand height={44} />
-        {/* The caption read "établissement" under a mark that is already
-            the only thing up there. It names the workspace to someone
-            who has exactly one, which is decoration. */}
-        {workspaces.lot === 2 ? (
-          <div className="text-meta text-ink-mute mt-2 lowercase">
-            {workspace.caption}
-          </div>
-        ) : null}
+        {/* The caption names which of the two spaces you are in —
+            "organisateur" or "établissement" — and it says it in the
+            same place, at the same size, on both. An account that holds
+            both switches between them from the card below; the label is
+            what tells you where you landed. */}
+        <div className="text-meta text-ink-mute mt-2 lowercase">
+          {workspace.caption}
+        </div>
       </div>
 
       {/* Venue switcher on the venue side, organisation switcher on the
@@ -236,22 +234,20 @@ function SidebarBody({
           only when the account holds it. */}
       <div className="px-4 mb-3">
         {venues.length > 0 && workspace.id === "restaurant" ? (
-          <>
-            <VenueSwitcher venues={venues} activeVenueId={activeVenueId} />
-            {workspaces.event ? (
-              <Link
-                href={WORKSPACES[0].home}
-                className="mt-2 flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-meta font-semibold text-ink-mute hover:text-ink hover:bg-ink/[0.04] transition-colors"
-              >
-                <ArrowLeftRight size={13} strokeWidth={2} />
-                Espace événements
-              </Link>
-            ) : null}
-          </>
+          // The link to the other space used to sit under the card as a
+          // row of its own. On the event side the same switch is an item
+          // inside the card's menu, so it is an item inside this card's
+          // menu too — one identity card per sidebar, and it is the
+          // thing you press to go anywhere else.
+          <VenueSwitcher
+            venues={venues}
+            activeVenueId={activeVenueId}
+            eventSpaceHref={workspaces.event ? WORKSPACES[0].home : undefined}
+          />
         ) : (
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow">
+              <button className="w-full flex items-center gap-2.5 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow">
                 <div
                   className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
                   style={{ background: "var(--color-violet-soft)" }}
@@ -300,17 +296,22 @@ function SidebarBody({
       {/* Groups render with a hairline between them and no spelled-out
           labels — the grouping reads visually. Any number of groups. */}
       <nav className="flex-1 px-3 overflow-y-auto scroll-thin">
-        {/* Ten named groups on the venue side, two on the event side.
-            The label is what makes thirty links readable — an unlabelled
-            list of thirty is a list nobody scans. */}
+        {/* Ten named groups on the venue side under Lot 2: the label is
+            what makes thirty links readable, and an unlabelled list of
+            thirty is a list nobody scans. Six links do not need them,
+            and the event sidebar does not label its two groups either —
+            the hairline between them is the grouping. So a basique
+            deployment draws the entries and the rule, and nothing else. */}
         {groups.map((group, i) => (
           <div key={group.label}>
             {i > 0 ? (
               <div aria-hidden className="my-3 mx-3 h-px bg-line-soft" />
             ) : null}
-            <p className="px-3 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-ink-mute/70">
-              {group.label}
-            </p>
+            {labelGroups ? (
+              <p className="px-3 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-ink-mute/70">
+                {group.label}
+              </p>
+            ) : null}
             <NavGroup items={group.items} pathname={pathname} home={workspace.home} />
           </div>
         ))}
@@ -334,19 +335,16 @@ function SidebarBody({
             <div className="text-[13px] font-semibold text-ink truncate">
               {viewerName || user?.name}
             </div>
-            {/* Role and organisation both follow the active workspace, so
-                neither product claims the other's identity: the venue
-                side names the venue, the event side names the festival. */}
+            {/* The role, and only the role. The establishment was named
+                twice — here and in the card at the top of the same
+                column — and the event sidebar's footer says "Owner" on
+                its own. */}
             <div className="text-meta text-ink-mute truncate">
-              {[
-                viewerRole ? PORTAL_ROLE_LABEL[viewerRole] ?? viewerRole : role ? ROLE_LABEL[role] : null,
-                workspace.id === "restaurant"
-                  ? (venues.find((v) => v.id === activeVenueId)?.shortName ??
-                    entity.shortName)
-                  : entity.shortName,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
+              {viewerRole
+                ? PORTAL_ROLE_LABEL[viewerRole] ?? viewerRole
+                : role
+                  ? ROLE_LABEL[role]
+                  : null}
             </div>
           </div>
           <DropdownMenu.Root>
@@ -365,15 +363,9 @@ function SidebarBody({
                 sideOffset={8}
                 className="min-w-[200px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
               >
-                <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
-                >
-                  <CalendarDays size={14} strokeWidth={1.8} className="text-ink-mute" />
-                  Calendrier
-                </DropdownMenu.Item>
-                <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
-
-                <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
+                {/* It held a Calendrier row that navigated nowhere and two
+                    separators around it. Signing out is what a kebab on
+                    an account card is for. */}
                 <DropdownMenu.Item
                   onSelect={handleLogout}
                   className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"

@@ -54,7 +54,9 @@ LYFE_LOT=2 npm run dev      # Lot 2 — everything this repo renders
 
 At `LYFE_LOT=1` the twenty-five Lot 2 routes are not registered — they
 404, the way they would in a build that never had them — their nav
-entries do not render, and the sidebar shows four groups instead of ten.
+entries do not render, and the sidebar lists six entries under no group
+header at all — the event dashboard's sidebar rules its two groups with
+a hairline and names neither, and this is the same sidebar.
 `GET /api/health` reports the lot in force. The field lives on every row
 of the route index (`lib/nav/routes.ts`), which is what the styleguide
 table, the navigation and the capture tools all read.
@@ -74,8 +76,15 @@ Three nouns in the sprint row, and the word that decides the rest:
 | 6 | Check-in | `/restaurant/check-in` | Gestion des réservations | Validate a booking at the door, by code or by name. |
 | 7 | Notifications | `/restaurant/notifications` | Gestion des réservations | One alert: a new booking needs a decision. |
 
-The sidebar collapses to four groups — Aujourd'hui, En service,
-Ma présence, Établissement.
+The sidebar collapses to two hairline-separated runs — the four
+operational screens, then the two that configure the establishment —
+and drops the group names with them: a label earns its place over ten
+groups, not over two, and the event sidebar labels neither of its own.
+Structurally it is now that sidebar entry for entry: the wordmark, the
+workspace caption (`établissement` against `organisateur`), the identity
+card that opens the switcher, the entries at 13.5 px on 40 px rows with
+an 18 px icon each, and a footer card carrying the signed-in person,
+their role and a kebab holding Se déconnecter.
 
 ### What a Lot 1 deployment must never show
 
@@ -215,9 +224,12 @@ LYFE_LOT=2 node tools/verify/walk.mjs
 
 Both modes pass. Under Lot 1 `audience.mjs` reports that its screen is
 not registered and exits clean rather than failing on a 404 it asked for
-itself, and `configuration.mjs` expects eight sidebar groups rather than
-ten — Vie nocturne and Paiements are entirely Lot 2, so a lounge does not
-see Vie nocturne either.
+itself, and `configuration.mjs` asserts a different sidebar in each lot:
+in Lot 2 the nine or ten named groups, in Lot 1 the six entries, the
+absence of every screen the lot does not buy, and no group header at
+all — the header is what Lot 1 dropped, so a header appearing there is
+itself the failure. Vie nocturne and Paiements are entirely Lot 2, so a
+lounge does not see Vie nocturne either.
 
 Run them against a **production build**, not `npm run dev`. Three of them
 fill the login form before React has hydrated in dev, and the submit gate
@@ -400,16 +412,21 @@ band down the row's left edge **and** a word beside it — the colour
 reads across the room, the word survives a greyscale print. Rows are
 grouped under their sitting, the way a paper book is ruled off.
 
-**What `09` holds.** Five Sections, named for the four sidebar groups
-plus the entry:
+**What `09` holds.** Seven Sections, one per screen, in the order a
+partner meets them, 240 px apart. Each splits into two sub-sections —
+`Ordinateur` on the left at 1440, `Téléphone` on the right at 390 — and
+the support frames (refused state, switcher states, overlays, saved
+states, day and tab variants) sit under the frame they belong to:
 
-| Section | Frames |
-|---|---|
-| `Entrée` | Connexion · **Sélecteur d'établissement · états** · **Connexion · identifiants refusés** |
-| `1 · Aujourd'hui` | Accueil · Réservations |
-| `2 · En service` | Check-in |
-| `3 · Ma présence` | Ma fiche |
-| `4 · Établissement` | Disponibilités · Notifications |
+| Section | Ordinateur | Téléphone |
+|---|---|---|
+| `1 · Connexion` | Connexion · **Sélecteur d'établissement · états** · **Connexion · identifiants refusés** | Connexion |
+| `2 · Accueil` | Accueil | Accueil · Plus |
+| `3 · Réservations` | Réservations · Déjeuner · jour précédent (+ Déjeuner) · jour suivant (+ Déjeuner) · Overlay réservation confirmée | Réservations · Overlay réservation confirmée |
+| `4 · Check-in` | Check-in · Overlay caméra | Check-in · Overlay caméra |
+| `5 · Ma fiche` | Ma fiche · Enregistré · Horaires (+ Enregistré) · Photos | Ma fiche · Enregistré |
+| `6 · Disponibilités` | Disponibilités · Enregistré | Disponibilités · Enregistré |
+| `7 · Notifications` | Notifications · Enregistré | Notifications · Enregistré |
 
 Two frames on the page are not screen captures. The switcher frame is
 three states of the venue picker at the top of the sidebar — one
