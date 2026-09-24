@@ -1,10 +1,12 @@
 // Which lot this deployment is running, resolved server side.
 //
-// The portal ships in two lots. Lot 1 is the dashboard DigiNegoce wires
-// — the screens priced on row 39 of ChiffrageV3.0 and confirmed in the
-// September scope email. Lot 2 is the rest of the venue dashboard:
-// designed, built and rendered in this repo, but handed over as
-// front-end and design for a later phase.
+// The portal ships in two lots. Lot 1 is the *Dashboard basique* of
+// Planning Lyfe V3, sprint Prio 02, 12 to 30 October 2026 —
+// « Authentification + Création de Venue + Gestion des reservation
+// uniquement », `docs/reference/Planning_Lyfe_V3_20260923.xlsx`. Lot 2
+// is the rest of the venue dashboard: designed, built and rendered in
+// this repo, but handed over as front-end and design for the advanced
+// dashboards of sprint Prio 08.
 //
 // `LYFE_LOT` decides which of the two a running instance is. It
 // defaults to 1, so a cold clone shows the contracted product and a
@@ -14,8 +16,8 @@
 // One rule, resolved once:
 //
 //   1  Lot 2 routes are not registered, their nav entries do not
-//      render, and the sidebar shows only the groups holding Lot 1
-//      screens
+//      render, and the sidebar shows the four groups holding the seven
+//      Prio 02 screens
 //   2  everything renders
 //
 // Deliberately not a per-venue setting. The lot is a commercial fact

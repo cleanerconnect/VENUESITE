@@ -5,77 +5,117 @@ linked from here.
 
 ---
 
-## 1. What DigiNegoce wires: Lot 1
+## 1. What DigiNegoce wires: the Dashboard basique
 
 The portal ships in **two lots**, and only the first is being wired.
 
-**Lot 1 is the dashboard DigiNegoce connects to the Business Service** —
-the screens priced on **row 39 of ChiffrageV3.0** and confirmed in the
-**September scope email**. Eighteen screens, listed below. This is the
-product a partner is sold, and the only scope against which "is it
-finished?" is a fair question.
+**Lot 1 is the *Dashboard basique* of sprint Prio 02**, 12 to
+30 October 2026. The scope is one line of DigiNegoce's own plan, which
+is committed here as `docs/reference/Planning_Lyfe_V3_20260923.xlsx`:
 
-**Lot 2 is the rest of the venue dashboard.** Fourteen further screens,
-designed, built and rendered in this repository — but handed over as
-**front-end and design only, for a later phase**. Nothing in Lot 2 is
-being connected now, nothing in Lot 2 should be demonstrated as
-available, and no Lot 1 screen links into one.
+> **Planning V3**, row `Prio 02` — `Restau & Drinks :` ·
+> `- Dashobaord basique (Authentification + Création de Venue + Gestion
+> des reservation uniquement)`
+
+and the same sentence again as the user story:
+
+> **Détail Sprint**, row 40 — EPIC `Dashboard` · US-Name
+> `Dashboard restaurant partenaire web` · User Story
+> `Mise en place des Dashboards basique (Authentification + Création de
+> Venue + Gestion des reservation uniquement)` · `BETA` · `SP-Prio 02` ·
+> `A faire`
+
+Row 41 is the identical story for `Dashboard Drinks/Cellar partenaire`,
+which is why a lounge renders the same seven screens as a restaurant.
+
+**Maquettes are due 2 October 2026.** That date is derived, not quoted:
+the prerequisite column of `Planning V3` is headed *« Prérequis à
+préparer 10 jours avant le démarrage du Sprint »*, and its Prio 02 cell
+asks for *« Mauettes pour Dasboard Restau & Drinks »* and *« Maquettes
+pour authentification partenaire Venue »*. Ten days before 12 October is
+2 October. The Figma page `09 Dashboard basique · Dar Zellij` is that
+delivery.
+
+**Lot 2 is everything else this repository renders.** Twenty-five further
+screens, designed, built and rendered here — but handed over as
+**front-end and design only**. They are the *« Mise en place des
+Dashboards avancés »* of `Détail Sprint` row 133, sprint **Prio 08**,
+22 February to 12 March 2027. Nothing in Lot 2 is being connected now,
+nothing in Lot 2 should be demonstrated as available, and no Lot 1
+screen links into one.
 
 The split is a setting, not a branch. `LYFE_LOT` decides which product a
 running instance is, and it **defaults to 1**:
 
 ```bash
-npm run dev                 # Lot 1 — the contracted dashboard
+npm run dev                 # Lot 1 — the Dashboard basique
 LYFE_LOT=2 npm run dev      # Lot 2 — everything this repo renders
 ```
 
-At `LYFE_LOT=1` the fourteen Lot 2 routes are not registered — they 404,
-the way they would in a build that never had them — their nav entries do
-not render, and the sidebar shows only the groups holding Lot 1 screens.
+At `LYFE_LOT=1` the twenty-five Lot 2 routes are not registered — they
+404, the way they would in a build that never had them — their nav
+entries do not render, and the sidebar shows four groups instead of ten.
 `GET /api/health` reports the lot in force. The field lives on every row
 of the route index (`lib/nav/routes.ts`), which is what the styleguide
 table, the navigation and the capture tools all read.
 
-### The eighteen Lot 1 screens
+### The seven Lot 1 screens
 
-| # | Screen | Route | What Lot 1 buys |
-|---:|---|---|---|
-| 1 | Connexion | `/login` | The one entry point: resolve the account to its venue. |
-| 2 | Accueil | `/restaurant` | Today's reservations, the attention queue, and three numbers — taux de remplissage, revenu estimé, taux de no-show. |
-| 3 | Réservations | `/restaurant/reservations` | The day's book: view, accepter, refuser with a coded reason, check-in, no-show. |
-| 4 | Check-in | `/restaurant/check-in` | Validate a booking at the door, by code or by name. |
-| 5 | Disponibilités | `/restaurant/disponibilites` | Services, capacity, pacing and the booking window — what the app is allowed to offer. |
-| 6 | Performance | `/restaurant/performance` | The same three numbers over a chosen period, and nothing else. |
-| 7 | Visibilité | `/restaurant/visibilite` | The boost, and the boost only. |
-| 8 | Avis | `/restaurant/avis` | Reviews and replies. |
-| 9 | Liste clients | `/restaurant/clients` | The guest base, filtered and exportable. |
-| 10 | Fiche client | `/restaurant/clients/:id` | Identity, visits, preferences, no-show history, reviews. |
-| 11 | Équipe et rôles | `/restaurant/equipe` | Who can open what. |
-| 12 | Notifications | `/restaurant/notifications` | One team alert — a new booking — and one guest message — the confirmation. |
-| 13 | Paramètres | `/restaurant/parametres` | Legal entity, bank details, language, privacy. |
-| 14 | Abonnement | `/restaurant/abonnement` | One annual plan, its invoices, and what it has been used for. |
-| 15 | Support | `/restaurant/support` | Guides and a ticket. |
-| 16 | Bilans | `/restaurant/bilans` | The period in two minutes, from Performance's figures. |
-| 17 | Ma fiche | `/restaurant/ma-fiche` | The listing a guest sees. |
-| 18 | Menu | `/restaurant/menu` | The card, as the app displays it. |
+Three nouns in the sprint row, and the word that decides the rest:
+*uniquement*.
 
-### The fourteen Lot 2 screens
+| # | Screen | Route | Which noun | What Lot 1 buys |
+|---:|---|---|---|---|
+| 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. |
+| 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. |
+| 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Services, capacity, pacing and the booking window — the hours the venue can be booked for. |
+| 4 | Accueil | `/restaurant` | Gestion des réservations | Today's book, and the sentence above it. No tiles. |
+| 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | The day and the service it is scoped to, then the book — and the four decisions on the row: accepter, refuser with a coded reason, check-in, no-show. |
+| 6 | Check-in | `/restaurant/check-in` | Gestion des réservations | Validate a booking at the door, by code or by name. |
+| 7 | Notifications | `/restaurant/notifications` | Gestion des réservations | One alert: a new booking needs a decision. |
 
-Calendrier · Liste d'attente · Briefing · Tags et segments · Audience ·
-Offres · Expériences · Guest list · Tables minimums · Promoteurs ·
-Acomptes · Annulations · Lyfe Pay · Campagnes.
+The sidebar collapses to four groups — Aujourd'hui, En service,
+Ma présence, Établissement.
 
-Front-end and design are complete for all fourteen and are the deliverable
+### What a Lot 1 deployment must never show
+
+Eight concepts, each belonging to a screen that arrives with Prio 08.
+They are gated twice — in the builders, so the rule holds on all three
+drivers, and in the seed, so a Lot 1 dataset does not contain the state
+to leak in the first place:
+
+| Concept | The screen that owns it |
+|---|---|
+| Liste d'attente, walk-in | Liste d'attente |
+| Acompte | Acomptes |
+| Palier de fidélité | the loyalty service |
+| Étiquettes, segments | Tags et segments |
+| Any KPI, any amount | Performance, Bilans, Lyfe Pay |
+| Avis | Avis |
+| Boost, and the acquisition channels that name one | Visibilité |
+| Visit counts, no-show risk scores | Liste clients, Performance |
+
+`tools/verify/configuration.mjs` checks the money half outright: Lot 1
+reports on nothing, so a dirham anywhere on the seven screens fails the
+run.
+
+### The Lot 2 screens
+
+Calendrier · Liste d'attente · Briefing · Liste clients · Fiche client ·
+Tags et segments · Audience · Menu · Avis · Visibilité · Offres ·
+Expériences · Guest list · Tables minimums · Promoteurs · Acomptes ·
+Annulations · Lyfe Pay · Performance · Bilans · Campagnes ·
+Équipe et rôles · Paramètres · Abonnement · Support.
+
+Front-end and design are complete for all of them and are the deliverable
 for them. `docs/PHASE7.md` is the worked example of the whole dashboard,
 both lots, and `08 Exemple complet · Dar Zellij` in Figma is its design;
-`09 Lot 1 · Dar Zellij` is the Lot 1 product on its own.
+`09 Dashboard basique · Dar Zellij` is the Prio 02 product on its own.
 
-**Where the two sources are.** Row 39 of ChiffrageV3.0 and the September
-scope email are the contract for the list above; they are held by LYFE
-and DigiNegoce, not in this repository. The screen list, the per-screen
-feature set and the wording of this section were given by LYFE against
-those two documents — treat them, not this file, as authoritative if
-they ever disagree.
+**Where the source is.** `docs/reference/Planning_Lyfe_V3_20260923.xlsx`,
+with `docs/reference/README.md` quoting the two rows and showing how the
+2 October date follows from the plan's own prerequisite column. If the
+plan and this file ever disagree, the plan wins.
 
 ---
 
@@ -84,9 +124,9 @@ they ever disagree.
 The partner portal for **LYFE**, Morocco's lifestyle discovery platform.
 Two workspaces behind one login:
 
-- **Espace partenaire** — the venue side: eighteen screens in Lot 1,
-  thirty-one across both lots, from tonight's service to the monthly
-  payout. The worked example for everything else.
+- **Espace partenaire** — the venue side: six screens in Lot 1's
+  Dashboard basique, thirty-one across both lots, from tonight's service
+  to the monthly payout. The worked example for everything else.
 - **Espace organisateur** — the event side: sixteen screens for a
   promoter selling tickets. Outside the lot split, and unchanged by it.
   Reads are real; writes have no backend to shape them against yet
@@ -237,45 +277,64 @@ follow.
 | `01 Fondations` | `src/app/globals.css` | the token block, 1:1 |
 | `02 Composants` | `src/components/ui/` | 29 components, 175 variants; a component is named for its file |
 | `03 Entrée` | `/login`, `/splash`, `/contact` | built without the shell, as the code renders them |
-| `04 Espace partenaire` | the 31 venue screens | structure, in ten Sections named for the ten nav groups of `src/lib/nav/workspaces.ts`. Every screen frame carries its lot in the frame name — `[lot 1]` or `[lot 2]`, 17 and 14 |
+| `04 Espace partenaire` | the 31 venue screens | structure, in ten Sections named for the ten nav groups of `src/lib/nav/workspaces.ts`. Every screen frame carries its lot in the frame name — `[lot 1]` or `[lot 2]`, 6 and 25 |
 | `05 Espace organisateur` | the 16 event screens | structure, in two Sections |
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
-| `09 Lot 1 · Dar Zellij` | the eighteen Lot 1 screens, cut to the contracted feature set | `docs/lot1-dar-zellij.json` and the 40 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
+| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens, plus the establishment switcher's three states | `docs/lot1-dar-zellij.json` and the 17 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
 
 Two rules the file keeps, and a designer extending it should keep too:
 the library on `02 Composants` is the source for components, and `08` is
 the **only** page where detaching from it is allowed — because a Figma
 instance cannot be given rows.
 
-`09` keeps that rule. Its eighteen frames are clones of `08`'s, cut to
-the contracted feature set, and their sidebars are swapped to a second
-library component — `Chrome / Sidebar · Lot 1`, holding the eight Lot 1
-groups — rather than detached. The lot changes which screens exist, and
-which screens exist is exactly what that component draws, so it earns a
-component of its own.
+`09` keeps that rule. Its frames are clones of `08`'s, cut to the sprint
+row's scope, and their sidebars are instances of a second library
+component — `Chrome / Sidebar · Dashboard basique`, holding the four
+groups and six screens a Prio 02 deployment renders — rather than
+detached. The lot changes which screens exist, and which screens exist
+is exactly what that component draws, so it earns a component of its own.
 
-**What `09` now shows, after the Lot 2 purge.** No frame on the page
-carries a queue, a walk-in source, an acompte pill or amount, a loyalty
-palier, a Lyfe Pay figure or an ISO date — the same four concepts the
-builders gate, checked frame by frame against the text on the canvas.
+**What `09` holds.** Five Sections, named for the four sidebar groups
+plus the entry:
+
+| Section | Frames |
+|---|---|
+| `Entrée` | Connexion · **Sélecteur d'établissement · états** |
+| `1 · Aujourd'hui` | Accueil · Réservations |
+| `2 · En service` | Check-in |
+| `3 · Ma présence` | Ma fiche |
+| `4 · Établissement` | Disponibilités · Notifications |
+
+The switcher frame is the one thing on the page that is not a screen
+capture: three states of the venue picker at the top of the sidebar —
+one establishment (a card with no affordance), several closed, several
+open with the active one checked. It is there because `Détail Sprint`
+row 41 puts the same user story on `Dashboard Drinks/Cellar partenaire`,
+so one account holding a restaurant and a bar is the normal case, not an
+edge one.
+
+**What no frame on `09` shows.** A sweep of every text node on the page
+returns nothing for any of: liste d'attente, walk-in, acompte, palier,
+étiquette, segment, avis, boost, any KPI label, any amount in MAD, an
+ISO date, or a time off the half-hour grid. That is the same list the
+builders and the seed gate, checked against the glyphs on the canvas
+rather than against the code that drew them.
+
 Réservations is the service resolved from the clock: a French long-form
-day, the service and its hours in the header, four tiles that each name
-their unit and their service, six half-hour bars that add up to the
-réservés tile above them, five filter chips instead of eight, and
-fifteen rows in the order the portal sorts them. The row the service is
-waiting on — Nabil Cherkaoui, à confirmer — is drawn in its hover state,
-so **accepter, refuser and signaler une absence** are readable without
-opening anything. Accueil reads the same service in its greeting and in
-all three numbers, over a day list that says it is the day's.
+day and the service with its hours in the header, the Journée block, and
+the book — four filter chips and fifteen rows. The row the service is
+waiting on, Nabil Cherkaoui, is drawn in its **hover state**, so
+**accepter, refuser and signaler une absence** are readable without
+opening anything; a confirmed row shows check-in and absent. Accueil is
+the greeting and the same fifteen bookings, with no tile and no action —
+the decisions are taken on Réservations, which is the screen that shows
+the outcome.
 
-Two things are deliberately left as designed. A row's note ("Anniversaire,
-dessert avec bougie") is not drawn: no frame on `08` or `09` has ever
-drawn one, and the omission is consistent rather than contradictory. And
-the four review timestamps on Avis sit off the half-hour grid — a review
-is written at whatever minute the guest writes it, which is not a
-bookable slot.
+One thing is deliberately left as designed: a row's note ("Anniversaire,
+dessert avec bougie") is drawn on Accueil but not in the Réservations
+book, which is how `08` has always drawn both.
 
 Page and component ids, the variable collections and the verification
 record live in `docs/phase6-figma-state.json`.

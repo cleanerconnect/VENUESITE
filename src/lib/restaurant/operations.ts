@@ -261,12 +261,15 @@ export function buildPerformanceScreen(
   ];
 
   /**
-   * The three Lot 1 buys, in the order row 39 lists them.
+   * The three figures a Performance screen leads with.
+   *
+   * Kept for Lot 2, which is where Performance now lives: sprint Prio 02
+   * buys « Gestion des reservation uniquement » and reports on nothing,
+   * so under Lot 1 this screen is not registered at all.
    *
    * Revenue is the projection the analytics slice already carries, not a
-   * Lyfe Pay total — Lyfe Pay is a Lot 2 screen, and a figure that
-   * disappeared with it would make the tile a lie on half the venues.
-   * The word on the tile says so.
+   * Lyfe Pay total — a figure that disappeared with Lyfe Pay would make
+   * the tile a lie on half the venues. The word on the tile says so.
    */
   const lot1Tiles: KpiTile[] = [
     {
