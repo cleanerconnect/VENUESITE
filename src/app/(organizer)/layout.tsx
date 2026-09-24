@@ -15,7 +15,7 @@ import { activeLot } from "@/lib/lot";
 // Shell, sticky sidebar (desktop), top app bar, mobile bottom tabs.
 // ScannerModal, CheckInSheet and AssistantFAB live here so they're
 // persistent across every route. Keyboard shortcuts (⌘+Shift+S, ⌘+J)
-// are wired in Topbar.
+// are wired in Topbar. The assistant renders in Lot 2 only.
 //
 // The gate is server-side: the middleware bounces a request with no
 // session cookie, and this layout redirects if the cookie resolves to
@@ -104,7 +104,11 @@ export default async function OrganizerLayout({
           {/* Persistent global surfaces */}
           <ScannerModal />
           <CheckInSheet />
-          <AssistantFAB />
+          {/* The assistant is not in the Dashboard basique row, so a
+              Lot 1 deployment does not carry it — and it is the one
+              floating surface, which on a booking list is a violet disc
+              sitting over a row's covers. Lot 2 keeps it. */}
+          {access.lot === 2 ? <AssistantFAB /> : null}
         </div>
       </div>
     </WorkspaceAccessProvider>

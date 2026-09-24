@@ -67,7 +67,9 @@ export function Topbar() {
         e.preventDefault();
         openScanner(true);
       }
-      if (meta && !e.shiftKey && e.key.toLowerCase() === "j") {
+      // Lot 1 does not mount the assistant, so the shortcut that opens
+      // it would set a store nothing is listening to.
+      if (lot === 2 && meta && !e.shiftKey && e.key.toLowerCase() === "j") {
         e.preventDefault();
         openAssistant(true);
       }
@@ -84,11 +86,11 @@ export function Topbar() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [openScanner, openAssistant]);
+  }, [openScanner, openAssistant, lot]);
 
   // The topbar lives outside any screen's CommandProvider, so it maps its
-  // own verbs. Unknown verbs fall through to the assistant rather than
-  // dead-ending on a silent button.
+  // own verbs — see lib/nav/chrome-commands.ts, where an unknown verb
+  // warns rather than opening something arbitrary.
 
   return (
     <header className="sticky top-0 z-20 h-14 md:h-[72px] bg-canvas/80 backdrop-blur-md border-b border-line-soft">
