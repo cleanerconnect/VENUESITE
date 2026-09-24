@@ -256,6 +256,27 @@ groups — rather than detached. The lot changes which screens exist, and
 which screens exist is exactly what that component draws, so it earns a
 component of its own.
 
+**What `09` now shows, after the Lot 2 purge.** No frame on the page
+carries a queue, a walk-in source, an acompte pill or amount, a loyalty
+palier, a Lyfe Pay figure or an ISO date — the same four concepts the
+builders gate, checked frame by frame against the text on the canvas.
+Réservations is the service resolved from the clock: a French long-form
+day, the service and its hours in the header, four tiles that each name
+their unit and their service, six half-hour bars that add up to the
+réservés tile above them, five filter chips instead of eight, and
+fifteen rows in the order the portal sorts them. The row the service is
+waiting on — Nabil Cherkaoui, à confirmer — is drawn in its hover state,
+so **accepter, refuser and signaler une absence** are readable without
+opening anything. Accueil reads the same service in its greeting and in
+all three numbers, over a day list that says it is the day's.
+
+Two things are deliberately left as designed. A row's note ("Anniversaire,
+dessert avec bougie") is not drawn: no frame on `08` or `09` has ever
+drawn one, and the omission is consistent rather than contradictory. And
+the four review timestamps on Avis sit off the half-hour grid — a review
+is written at whatever minute the guest writes it, which is not a
+bookable slot.
+
 Page and component ids, the variable collections and the verification
 record live in `docs/phase6-figma-state.json`.
 
