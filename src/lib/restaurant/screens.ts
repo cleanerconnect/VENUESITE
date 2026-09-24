@@ -340,7 +340,11 @@ export function buildDashboardScreen(
   const greetingBlock: Block = {
     id: "greeting",
     type: "greeting",
-    eyebrow: data.greeting.salutation,
+    // The eyebrow was the salutation, set above a headline whose first
+    // two words are the same salutation: "BON APRÈS-MIDI" over "Bon
+    // après-midi, Yassine." Lot 2 has a denser header where it earns
+    // its line; here it is the same words twice.
+    eyebrow: lot1 ? undefined : data.greeting.salutation,
     title: `${data.greeting.salutation}, ${data.greeting.firstName}.`,
     // The clause was a serif italic flourish — "Le service est lancé." —
     // that told a host nothing they could act on and took the largest
@@ -365,10 +369,15 @@ export function buildDashboardScreen(
           {
             action: {
               kind: "link",
-              label: "Ouvrir le carnet →",
+              label: "Ouvrir le carnet",
               href: restaurantHref("reservations"),
+              icon: "book",
             },
-            variant: "secondary",
+            // Filled, like every other primary action in host density.
+            // A white outline beside a violet card read as a link, and
+            // the one shortcut off this screen should look like the
+            // button it is.
+            variant: "primary",
           },
         ]
       : [

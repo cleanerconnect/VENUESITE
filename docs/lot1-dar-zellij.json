@@ -4,7 +4,7 @@
   "account": "yassine@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-09-24T17:38:50.482Z",
+  "capturedAt": "2026-09-24T17:59:00.731Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -15,7 +15,7 @@
       "roles": null,
       "workspace": "venue",
       "title": "Bon après-midi, Yassine.",
-      "eyebrow": "Bon après-midi",
+      "eyebrow": null,
       "subtitle": "Dîner · 5 réservations aujourd'hui.",
       "venue": "YA",
       "blocks": [
@@ -24,33 +24,21 @@
           "heading": null,
           "subheading": null,
           "actions": [
-            "Ouvrir le carnet →"
+            "Ouvrir le carnet"
           ],
           "facets": [],
           "texts": [
-            "Bon après-midi",
             "Bon après-midi, Yassine.",
-            "Dîner · 5 réservations aujourd'hui.",
-            "Ouvrir le carnet →"
+            "Dîner · 5 réservations aujourd'hui."
           ],
           "rows": [
             {
               "lines": [
-                "Bon après-midi",
                 "Bon après-midi, Yassine.",
                 "Dîner · 5 réservations aujourd'hui."
               ],
               "pills": [],
               "actions": []
-            },
-            {
-              "lines": [
-                "Ouvrir le carnet →"
-              ],
-              "pills": [],
-              "actions": [
-                "Ouvrir le carnet →"
-              ]
             }
           ]
         },
