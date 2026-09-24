@@ -510,7 +510,8 @@ pas forcément celui qui doit sonner à 23h.
 
 ## 3. Le contrat minimal du Lot 1
 
-Ce que votre service doit servir pour que les sept écrans fonctionnent.
+Ce que votre service doit servir pour que l'inscription et les sept
+écrans fonctionnent.
 **Tous ces appels sont émis aujourd'hui** par un portail en mode `http` —
 c'est la liste qu'un parcours complet produit, pas une intention.
 
