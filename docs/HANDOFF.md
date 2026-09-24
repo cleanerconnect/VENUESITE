@@ -285,7 +285,7 @@ follow.
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
-| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens, plus the establishment switcher's three states, the day and service states of Réservations, the two overlays and the three « Enregistré » states — and it plays as a prototype, see §5.1 | `docs/lot1-dar-zellij.json` and the 17 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
+| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states — 35 frames, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the 17 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
 
 Two rules the file keeps, and a designer extending it should keep too:
 the library on `02 Composants` is the source for components, and `08` is
@@ -319,13 +319,45 @@ are named for screens rather than for the nav groups of
 `src/lib/nav/workspaces.ts` — a prototype reads in the order it is
 played, not in the order the sidebar groups its entries.
 
-Two details a designer extending it should know. The overlays carry
-their own scrim as a child rectangle, because `overlayBackground` and
-`overlayBackgroundInteraction` are read-only through the Plugin API:
-that rectangle is what dims the screen behind and what closes the
-overlay when clicked. And the entry for the screen you are already on is
-deliberately unwired — Figma refuses a navigation whose destination is
-the frame the reaction lives on, and there is nowhere to go.
+The phone flow starts on `Téléphone`, the second starting point, and
+plays the same seven screens at 390: a fixed header, a scrolling column
+and a fixed bottom bar of four tabs. Attente is Liste d'attente, which
+Lot 1 does not buy, so the bar a basique deployment draws has four tabs
+and not five — `Chrome / BottomTabs · Dashboard basique` on `02`, one
+variant per active tab, for the same reason the sidebar earned its own
+basique variant set. Ma fiche, Disponibilités and Notifications sit
+behind the Plus tab, which is the hub the four tabs do not carry.
+
+Réservations models two days either side of today and both services, six
+frames in all: the day arrow at each edge of that range is drawn
+disabled rather than left to do nothing, and moving day keeps the
+service you were looking at. The phone flow models one day and one
+service and points at the desktop section for the rest.
+
+Four details a designer extending it should know.
+
+The overlays carry their own scrim as a child rectangle, because
+`overlayBackground` and `overlayBackgroundInteraction` are read-only
+through the Plugin API: that rectangle is what dims the screen behind
+and what closes the overlay when clicked.
+
+The entry for the screen you are already on is deliberately unwired —
+Figma refuses a navigation whose destination is the frame the reaction
+lives on, and there is nowhere to go. The same holds for the active tab
+of a tab set.
+
+Each phone frame declares its chrome through `numberOfFixedChildren`,
+which counts from the *end* of the child list, so the header, its
+hairline and the tab bar are the last three children of every phone
+frame. Reorder them and the chrome starts scrolling.
+
+The phone headers carry a dashed `LYFE · marque couleur (à téléverser)`
+slot rather than the wordmark. The file holds only the white-on-dark
+artwork, which is invisible on a white header, and `figma.createImage`
+decodes bytes locally without uploading them — an image made through the
+Plugin API renders blank. The slot names itself so the colour asset
+drops straight in; it is not a hand-drawn stand-in, which is what this
+file already replaced three of.
 
 **One search box.** There were two: a stub in the topbar that opened
 nothing, and a real one inside the Carnet that filtered the rows under
