@@ -21,7 +21,7 @@ import {
 import { storageDriver } from "@/lib/assets";
 import { describeAssetError, validateAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
-import { ONBOARDING_LAST_STEP } from "@/lib/types/onboarding";
+import { ONBOARDING_LAST_STEP, isOnboardingCity } from "@/lib/types/onboarding";
 import { PRESENCE_COOKIE, USER_COOKIE, VENUE_COOKIE } from "@/lib/auth/server-session";
 
 const DRAFT_COOKIE = "lyfe.inscription";
@@ -109,6 +109,16 @@ export async function saveOnboardingStep(
   const id = (await cookies()).get(DRAFT_COOKIE)?.value;
   if (!id) {
     return { ok: false, message: "Reprenez l'inscription depuis le début." };
+  }
+  // The city is a closed list on the screen, so it is a closed list
+  // here too: a select is a suggestion to anything that is not the
+  // browser, and this value is what the app groups venues by.
+  if (patch.city !== undefined && patch.city !== "" && !isOnboardingCity(patch.city)) {
+    return {
+      ok: false,
+      field: "city",
+      message: "Choisissez une ville dans la liste.",
+    };
   }
   try {
     const draft = await getRestaurantRepository().saveOnboardingDraft(id, patch);

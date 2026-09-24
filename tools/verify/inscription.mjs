@@ -84,8 +84,17 @@ await shot("2-etablissement");
 
 // ── Step 2 · the establishment ──
 await page.getByLabel("Nom de l'établissement").fill("Le Petit Riad");
-await page.locator('button:has-text("Un bar")').click();
-await page.getByLabel("Ville").fill("Marrakech");
+await page.locator('button:has-text("Un bar ou lounge")').click();
+// The city is a list of five, not a field: a typed city is five
+// spellings of Marrakech in the database by the end of the month.
+const cities = await page.getByLabel("Ville").locator("option").allTextContents();
+check(
+  "la ville se choisit dans une liste",
+  ["Casablanca", "Marrakech", "Rabat", "Tanger", "Agadir"].every((c) => cities.includes(c)),
+  cities.join(" · "),
+);
+await page.getByLabel("Ville").selectOption("Marrakech");
+await page.waitForTimeout(300);
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1500);
 check("étape 3 · Adresse", (await heading()) === "Adresse");
@@ -131,6 +140,10 @@ check(
 );
 const summary = (await page.textContent("body")) ?? "";
 check("le récapitulatif porte les réponses", summary.includes("Le Petit Riad"));
+check(
+  "le type est nommé comme sur la question",
+  summary.includes("Bar ou lounge"),
+);
 
 // ── Step 6 · the establishment exists, and it is theirs ──
 await page.locator('button:has-text("Ouvrir mon tableau de bord")').click();

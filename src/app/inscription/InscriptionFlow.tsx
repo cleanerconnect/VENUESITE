@@ -22,12 +22,16 @@ import { Brand } from "@/components/organizer/Brand";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Switch } from "@/components/ui/Switch";
 import { TimeSelect } from "@/components/ui/TimeSelect";
 import { cn } from "@/lib/utils/cn";
 import {
+  ONBOARDING_CITIES,
   ONBOARDING_LAST_STEP,
   ONBOARDING_STEPS,
+  ONBOARDING_TYPE_CHOICE,
+  ONBOARDING_TYPE_LABEL,
   WEEKDAY_LABEL,
   defaultHours,
   type OnboardingDay,
@@ -260,8 +264,8 @@ export function InscriptionFlow({
                     <div className="grid grid-cols-2 gap-3">
                       {(
                         [
-                          { value: "restaurant", label: "Un restaurant" },
-                          { value: "bar", label: "Un bar" },
+                          { value: "restaurant", label: ONBOARDING_TYPE_CHOICE.restaurant },
+                          { value: "bar", label: ONBOARDING_TYPE_CHOICE.bar },
                         ] as const
                       ).map((option) => (
                         <button
@@ -280,11 +284,16 @@ export function InscriptionFlow({
                       ))}
                     </div>
                   </div>
-                  <Input
+                  {/* A list, not a field: see ONBOARDING_CITIES for why
+                      five names beat free text here. */}
+                  <Select
                     label="Ville"
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    autoComplete="address-level2"
+                    onChange={setCity}
+                    options={[
+                      { value: "", label: "Choisissez votre ville" },
+                      ...ONBOARDING_CITIES.map((name) => ({ value: name, label: name })),
+                    ]}
                   />
                 </>
               ) : null}
@@ -622,7 +631,7 @@ function Summary({
   const openDays = useMemo(() => hours.filter((h) => !h.closed), [hours]);
   const rows = [
     { label: "Établissement", value: venueName || "—" },
-    { label: "Type", value: venueType === "bar" ? "Bar" : "Restaurant" },
+    { label: "Type", value: ONBOARDING_TYPE_LABEL[venueType] },
     { label: "Ville", value: city || "—" },
     { label: "Adresse", value: address || "—" },
     { label: "Photo", value: hasCover ? "Ajoutée" : "À ajouter plus tard" },

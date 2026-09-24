@@ -68,6 +68,49 @@ export const ONBOARDING_STEPS = [
 export const ONBOARDING_LAST_STEP = 6;
 
 /**
+ * The cities LYFE opens in, and a closed list on purpose.
+ *
+ * A free-text city is five spellings of Marrakech in the database
+ * within a month — « marrakech », « Marrakesh », « MARAKECH » — and the
+ * app searches and groups by that string. Picking from five is also one
+ * tap rather than a word typed on a phone keyboard. A sixth city is one
+ * line here and a deployment, which is the right amount of ceremony
+ * for opening a market.
+ */
+export const ONBOARDING_CITIES = [
+  "Casablanca",
+  "Marrakech",
+  "Rabat",
+  "Tanger",
+  "Agadir",
+] as const;
+
+export type OnboardingCity = (typeof ONBOARDING_CITIES)[number];
+
+export function isOnboardingCity(value: string): value is OnboardingCity {
+  return (ONBOARDING_CITIES as readonly string[]).includes(value);
+}
+
+/**
+ * What the two types are called on the question, and in the summary.
+ *
+ * « Un bar ou lounge » rather than « Un bar »: the second half of the
+ * sprint row is `Dashboard Drinks/Cellar`, and a rooftop lounge whose
+ * only choice reads « Un bar » is being asked to accept a word for
+ * their place that is not theirs. The stored value is still `bar` —
+ * this is the label, not the enum.
+ */
+export const ONBOARDING_TYPE_CHOICE: Record<OnboardingVenueType, string> = {
+  restaurant: "Un restaurant",
+  bar: "Un bar ou lounge",
+};
+
+export const ONBOARDING_TYPE_LABEL: Record<OnboardingVenueType, string> = {
+  restaurant: "Restaurant",
+  bar: "Bar ou lounge",
+};
+
+/**
  * Mondays to Sundays open, lunch and dinner in one window.
  *
  * A grid that starts empty is a grid the partner has to fill seven

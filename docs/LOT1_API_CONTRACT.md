@@ -126,10 +126,23 @@ seule erreur de champ du parcours.
 
 `venueType` est le mot du partenaire — `restaurant` ou `bar` — et il est
 traduit en vocabulaire de l'application (`restaurant` / `drinks`) au
-moment où l'établissement est créé, pas avant. `step` est l'étape la
-plus avancée atteinte : c'est ce qui fait qu'un onglet fermé ne perd
-rien, et le portail rouvre le parcours là où il s'est arrêté plutôt
-qu'au début.
+moment où l'établissement est créé, pas avant. Le libellé à l'écran est
+« Un restaurant » et « Un bar ou lounge » : la seconde moitié de la
+ligne du sprint est `Dashboard Drinks/Cellar`, et un rooftop dont le
+seul choix se lit « Un bar » se voit imposer un mot qui n'est pas le
+sien. **La valeur stockée reste `bar`** — c'est le libellé qui change,
+pas l'énumération. `step` est l'étape la plus avancée atteinte : c'est
+ce qui fait qu'un onglet fermé ne perd rien, et le portail rouvre le
+parcours là où il s'est arrêté plutôt qu'au début.
+
+**`city` est une liste fermée de cinq valeurs** — `Casablanca`,
+`Marrakech`, `Rabat`, `Tanger`, `Agadir` — et le service doit la
+valider, pas seulement l'écran : une ville saisie librement, c'est cinq
+orthographes de Marrakech dans la base au bout d'un mois, et
+l'application cherche et regroupe sur cette chaîne. Une valeur hors
+liste se refuse en `400 { code: "city_unknown" }` ; c'est ce que fait
+`tools/mock-api.mjs`. Ouvrir une sixième ville est une ligne de
+constante (`ONBOARDING_CITIES`) et un déploiement.
 
 **L'appel 4 est « Création de Venue » elle-même**, et il doit être
 idempotent : un brouillon déjà soumis rend l'établissement qu'il a déjà

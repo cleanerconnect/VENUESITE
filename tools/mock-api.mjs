@@ -250,6 +250,13 @@ const ROUTES = [
   ["PUT", /^\/api\/business\/onboarding\/([^/]+)$/, (m, _q, body) => {
     const draft = drafts.get(m[1]);
     if (!draft) throw new Refused(404, "draft_not_found", "Inscription introuvable.");
+    // The city is one of five. The screen offers a list, so a value
+    // outside it reached the service some other way, and a service that
+    // accepts it is how « Marrakesh » gets into the database.
+    const city = body?.city;
+    if (city !== undefined && city !== "" && !CITIES.includes(city)) {
+      throw new Refused(400, "city_unknown", "Ville hors de la liste.");
+    }
     Object.assign(draft, body ?? {}, { updatedAt: isoNow() });
     return draft;
   }],
@@ -429,6 +436,8 @@ const ROUTES = [
   ["POST", /^\/api\/business\/support\/tickets$/, (_m, q) =>
     scoped(q).operations.supportTickets],
 ];
+
+const CITIES = ["Casablanca", "Marrakech", "Rabat", "Tanger", "Agadir"];
 
 const WEEK = [1, 2, 3, 4, 5, 6, 7];
 const drafts = new Map();
