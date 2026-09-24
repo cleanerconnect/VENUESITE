@@ -285,7 +285,7 @@ follow.
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
-| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens, plus the establishment switcher's three states | `docs/lot1-dar-zellij.json` and the 17 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
+| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens, plus the establishment switcher's three states, the day and service states of Réservations, the two overlays and the three « Enregistré » states — and it plays as a prototype, see §5.1 | `docs/lot1-dar-zellij.json` and the 17 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
 
 Two rules the file keeps, and a designer extending it should keep too:
 the library on `02 Composants` is the source for components, and `08` is
@@ -298,6 +298,34 @@ component — `Chrome / Sidebar · Dashboard basique`, holding the four
 groups and six screens a Prio 02 deployment renders — rather than
 detached. The lot changes which screens exist, and which screens exist
 is exactly what that component draws, so it earns a component of its own.
+
+### 5.1 `09` plays
+
+Press Present on `09` and it starts on Connexion and behaves like the
+portal: Se connecter lands on Accueil, every sidebar entry goes to its
+screen, Ouvrir le carnet opens the book, the topbar pill goes to
+Check-in, the day arrows and the service tabs on Réservations move
+between that screen's day and service states, Accepter on Nabil
+Cherkaoui's row raises the confirmation, Scanner le code raises the
+camera, and Enregistrer on Ma fiche, Disponibilités and Notifications
+shows the saved state. Navigation is instant and keeps its scroll
+position, because every frame but Connexion carries the same sidebar and
+a host moving between screens should not be thrown back to the top.
+Overlays dissolve in over 0.2s.
+
+Seven sections, one per screen, left to right in the order a partner
+meets them, 240px apart. This is the one page in the file whose sections
+are named for screens rather than for the nav groups of
+`src/lib/nav/workspaces.ts` — a prototype reads in the order it is
+played, not in the order the sidebar groups its entries.
+
+Two details a designer extending it should know. The overlays carry
+their own scrim as a child rectangle, because `overlayBackground` and
+`overlayBackgroundInteraction` are read-only through the Plugin API:
+that rectangle is what dims the screen behind and what closes the
+overlay when clicked. And the entry for the screen you are already on is
+deliberately unwired — Figma refuses a navigation whose destination is
+the frame the reaction lives on, and there is nowhere to go.
 
 **One search box.** There were two: a stub in the topbar that opened
 nothing, and a real one inside the Carnet that filtered the rows under
