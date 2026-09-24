@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { Card } from "@/components/ui/Card";
 import { VenueIdentityForm } from "./VenueIdentityForm";
 import { VenueListingForm } from "./VenueListingForm";
@@ -71,6 +72,7 @@ export function VenueSettings({
   menuFiles: VenueAsset[];
   staff: StaffMemberRow[];
 }) {
+  const { lot } = useWorkspaceAccess();
   const visible = SECTIONS.filter(
     (s) => s.minRole.includes(role) && (!only || only.includes(s.id)),
   );
@@ -108,12 +110,17 @@ export function VenueSettings({
             description="La première photo sert de couverture dans l'application. Glissez pour réordonner."
             initial={photos}
           />
-          <AssetManager
-            kind="menu_file"
-            title="Carte (fichier)"
-            description="PDF ou image. Les clients la consultent depuis votre fiche."
-            initial={menuFiles}
-          />
+          {/* The carte is a Lot 2 screen, and its file belongs with it:
+              uploading one under Lot 1 would put a document in the app
+              that the partner has no screen to keep current. */}
+          {lot === 2 ? (
+            <AssetManager
+              kind="menu_file"
+              title="Carte (fichier)"
+              description="PDF ou image. Les clients la consultent depuis votre fiche."
+              initial={menuFiles}
+            />
+          ) : null}
         </div>
       ) : null}
       {active === "staff" ? (

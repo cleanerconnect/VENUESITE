@@ -32,6 +32,7 @@ interface Props {
 export default async function CheckInPage({ searchParams }: Props) {
   const session = await resolveSession();
   if (!session) redirect("/login");
+  const lot = activeLot();
 
   const query = await searchParams;
   const demo = parseDemoState(
@@ -60,12 +61,13 @@ export default async function CheckInPage({ searchParams }: Props) {
         state: r.state,
         zone: overview.zones.find((z) => z.id === r.zoneId)?.name ?? null,
         note: r.note ?? null,
-        vip: r.vip,
-        // The amount is printed on the expected row so a host knows the
-        // table is really held. Under Lot 1 there is no Acomptes screen
-        // behind it, so the row carries no figure the partner cannot
-        // account for.
-        depositMad: activeLot() === 1 ? null : r.depositMad ?? null,
+        // Two reads off the guest base, which is Liste clients — Prio
+        // 08. "Habitué" is a visit count and an acompte is a Lyfe Pay
+        // figure, and a door that flags either on a dashboard with
+        // neither screen behind it is flagging something the partner
+        // cannot look up.
+        vip: lot === 1 ? false : r.vip,
+        depositMad: lot === 1 ? null : r.depositMad ?? null,
       }))}
     />
   );

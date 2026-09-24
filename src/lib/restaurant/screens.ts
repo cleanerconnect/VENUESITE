@@ -167,82 +167,6 @@ function heldCovers(reservations: Reservation[]): number {
     .reduce((n, r) => n + r.partySize, 0);
 }
 
-/**
- * Accueil's three numbers, under Lot 1.
- *
- * The same three Performance reports — taux de remplissage, revenu
- * estimé, taux de no-show — read for the service in hand rather than
- * for a period, so the two screens answer one question at two scales
- * instead of two questions that sound alike.
- *
- * The revenue tile obeys the rule every money tile obeys: it needs a
- * transaction source to derive an average ticket from, and without one
- * it is absent rather than estimated from nothing. A venue with no Lyfe
- * Pay sees two tiles.
- */
-function lot1Tiles(
-  data: RestaurantOverview,
-  service: Service,
-  desk: MoneyDesk,
-  configuration: VenueConfiguration,
-): KpiTile[] {
-  const covers = configFor(configuration).cover.many;
-  const booked = Math.max(1, service.bookedCovers);
-  const held = heldCovers(serviceBook(data.upcomingReservations, service.id));
-  // Every tile reads the same service, and says so: the list beside them
-  // is the whole day, and two scopes on one screen have to be named or
-  // the three figures read as the day's.
-  const on = `${service.label} · ${hm(service.opensAt)} – ${hm(service.closesAt)}`;
-  return [
-    {
-      id: "fill",
-      label: "Taux de remplissage",
-      tone: "sand",
-      icon: "gauge",
-      // Counted off the book, not off the counter on the service row, so
-      // this is the same percentage Réservations puts under its own
-      // réservés tile — one room, one figure.
-      metric: {
-        value: Math.round((held / Math.max(1, service.capacity)) * 100),
-        format: { kind: "percent" },
-        animate: true,
-      },
-      hint: `${held} / ${service.capacity} ${covers} · ${on}`,
-    },
-    ...(desk.hasTransactionSource
-      ? ([
-          {
-            id: "revenue",
-            label: "Revenu estimé",
-            tone: "surface",
-            icon: "coins",
-            metric: {
-              value: Math.round(held * data.averageTicket.amountMad),
-              format: MAD,
-              animate: true,
-            },
-            hint: `Couverts réservés × ticket moyen des 7 derniers jours · ${on}`,
-          },
-        ] satisfies KpiTile[])
-      : []),
-    {
-      id: "no-show",
-      label: "Taux de no-show",
-      tone: "surface",
-      icon: "user-x",
-      // Absent covers over the covers the service was due — the held
-      // ones plus the absent ones, which is exactly `bookedCovers`.
-      metric: {
-        value: Number(((data.noShows.count / booked) * 100).toFixed(1)),
-        format: { kind: "percent", decimals: 1 },
-        animate: true,
-      },
-      hint: `${data.noShows.count} / ${service.bookedCovers} ${covers} · ${on}`,
-    },
-  ];
-}
-
-
 export function buildDashboardScreen(
   data: RestaurantOverview,
   floor: ServiceFloor,
@@ -255,11 +179,6 @@ export function buildDashboardScreen(
   const service = data.currentService;
   const inService = service.state === "open" || service.state === "peak";
   const remainingCovers = Math.max(0, service.capacity - service.bookedCovers);
-  // The covers the current service's book actually holds — the figure
-  // the three Lot 1 tiles and Réservations both divide by the capacity.
-  // The greeting reads it too, so the sentence above the tiles cannot
-  // quote a different room from the tiles themselves.
-  const heldNow = heldCovers(serviceBook(data.upcomingReservations, service.id));
 
   const heroBlock: Block = {
     id: "service-hero",
@@ -349,14 +268,12 @@ export function buildDashboardScreen(
     // is lot-agnostic by design. Lot 1 drops its waitlist clause here:
     // Liste d'attente is a Lot 2 screen, and a count of people queueing
     // is no use on a dashboard with nowhere to work the queue.
+    // A capacity is a figure Pilotage reports; the basique dashboard
+    // states what it can show, which is the book directly underneath.
     subline: lot1
-      ? `${service.label} · ${covers(configuration, heldNow)} ${coverAgreement(
-          vocabulary,
-          "réservé",
-        )} sur ${service.capacity}, ${Math.max(
-          0,
-          service.capacity - heldNow,
-        )} encore disponibles.`
+      ? `${service.label} · ${data.upcomingReservations.length} ${
+          data.upcomingReservations.length === 1 ? "réservation" : "réservations"
+        } aujourd'hui.`
       : data.greeting.subline,
     // The shortcuts the specification names are Nouvelle réservation,
     // Liste d'attente and Briefing — all three Lot 2. Under Lot 1 the
@@ -532,22 +449,27 @@ export function buildDashboardScreen(
     // asks it for what is still to come, because it has a carnet, a
     // band and a load chart carrying the rest of the day already.
     heading: lot1 ? "Réservations du jour" : "Prochaines arrivées",
-    headingAction: {
-      kind: "link",
-      label: "Tout voir →",
-      href: restaurantHref("reservations"),
-    },
+    // "Tout voir" under Lot 1 would point at a list that is already all
+    // of it; the greeting's own button opens the carnet to work it.
+    headingAction: lot1
+      ? undefined
+      : {
+          kind: "link",
+          label: "Tout voir →",
+          href: restaurantHref("reservations"),
+        },
     // Still expected, which is what the heading says: a party already
     // seated is not an arrival to come, and the whole carnet — seated
     // parties included — is one tap away behind "Tout voir".
+    // Lot 1 shows the whole day rather than the first six of it: this is
+    // the only list the basique dashboard puts on Accueil, and the
+    // sentence above counts the same rows.
     rows: (lot1
       ? data.upcomingReservations
-      : data.upcomingReservations.filter(
-          (r) => r.state !== "arrived" && Date.parse(r.at) >= Date.now(),
-        )
-    )
-      .slice(0, 6)
-      .map((r) => reservationRow(r, data.zones, configuration, undefined, lot)),
+      : data.upcomingReservations
+          .filter((r) => r.state !== "arrived" && Date.parse(r.at) >= Date.now())
+          .slice(0, 6)
+    ).map((r) => reservationRow(r, data.zones, configuration, undefined, lot)),
     empty: lot1
       ? {
           title: "Aucune réservation aujourd'hui",
@@ -734,26 +656,21 @@ export function buildDashboardScreen(
     valueFormat: MAD,
   };
 
-  // Lot 1 buys three numbers, the queue that needs a decision and the
-  // day's book — and nothing that leads anywhere Lot 1 does not
-  // register. The suggestion card is the clearest case: its whole point
-  // is to send a manager to Liste d'attente, which Lot 1 does not have.
+  // Accueil, under « Gestion des reservation uniquement ».
+  //
+  // Planning V3's Prio 02 row buys the booking work and names nothing
+  // else, so this screen is the day's book and the sentence above it.
+  // The three numbers went with the rest of Pilotage; the attention
+  // queue went with them, because two of its four sources — a risk
+  // score and an unanswered review — are readings the basique dashboard
+  // does not produce, and the decision the other two ask for is taken
+  // on Réservations, on the row itself.
   if (lot1) {
-    const lotKpis: Block = {
-      ...kpiBlock,
-      id: "kpis",
-      columns: 3,
-      tiles: lot1Tiles(data, service, desk, configuration),
-    };
     return {
       slug: "",
       title: "Vue d'ensemble",
-      blocks: [greetingBlock, attentionBlock, lotKpis, arrivalsBlock],
-      mobileBlocks: [
-        attentionBlock,
-        { ...lotKpis, id: "kpis-mobile", columns: 1 },
-        arrivalsBlock,
-      ],
+      blocks: [greetingBlock, arrivalsBlock],
+      mobileBlocks: [greetingBlock, arrivalsBlock],
     };
   }
 
@@ -966,18 +883,21 @@ export function buildReservationsScreen(
               match: { facet: "state", values: ["cancelled", "rejected"] },
             },
           ] satisfies FilterTab[])),
-      {
-        id: "risk",
-        label: "À risque",
-        match: { facet: "risk", values: ["high"] },
-      },
+      // A no-show risk is a score, and the screen that explains a score
+      // is Performance — Prio 08. Lot 1 filters on the states it sets
+      // itself and on nothing it cannot account for.
+      ...(lot1
+        ? []
+        : ([{ id: "risk", label: "À risque", match: { facet: "risk", values: ["high"] } }] satisfies FilterTab[])),
     ],
     search: { placeholder: "Rechercher un client, un téléphone, une table…" },
     sorts: [
       { id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" },
       { id: "time_desc", label: "Heure · tard → tôt", key: "time", direction: "desc" },
       { id: "party", label: "Couverts", key: "party", direction: "desc" },
-      { id: "visits", label: "Fidélité", key: "visits", direction: "desc" },
+      ...(lot1
+        ? []
+        : ([{ id: "visits", label: "Fidélité", key: "visits", direction: "desc" }] as const)),
       { id: "name", label: "Nom", key: "name", direction: "asc" },
     ],
     rows: all.map((r) =>
@@ -1068,15 +988,34 @@ export function buildReservationsScreen(
     ],
   };
 
+  // The scope, spelled out: the day in French long form, the service
+  // resolved from the clock against the services table, and the hours
+  // that service actually runs. Everything below is inside it.
+  const subtitle = `${dayLabel(service.opensAt)} · ${service.label} · ${hm(
+    service.opensAt,
+  )} – ${hm(service.closesAt)}`;
+
+  // Réservations, under « Gestion des reservation uniquement ».
+  //
+  // The four tiles and the load histogram are readings, and a reading is
+  // Pilotage's job — Détail Sprint row 133, « Dashboards avancés », Prio
+  // 08. What Prio 02 buys is the book and the four decisions taken on
+  // it: accepter, refuser, check-in, no-show. So the screen is the day
+  // and the service it is scoped to, then the book.
+  if (lot1) {
+    return {
+      slug: "reservations",
+      title: "Réservations",
+      subtitle,
+      blocks: [dayPicker, bookBlock],
+      mobileBlocks: [bookBlock, dayPicker],
+    };
+  }
+
   return {
     slug: "reservations",
     title: "Réservations",
-    // The scope, spelled out: the day in French long form, the service
-    // resolved from the clock against the services table, and the hours
-    // that service actually runs. Everything below is counted inside it.
-    subtitle: `${dayLabel(service.opensAt)} · ${service.label} · ${hm(
-      service.opensAt,
-    )} – ${hm(service.closesAt)}`,
+    subtitle,
     blocks: [dayPicker, kpiBlock, serviceLoadBlock(data, configuration), bookBlock],
     // Phone lane: the book first.
     //
@@ -1423,8 +1362,14 @@ function reservationRow(
   const vocabulary = configFor(configuration);
   const lot1 = lot === 1;
   const badges = [reservationBadge(reservation.state)];
-  if (reservation.vip) badges.push({ label: "Habitué", tone: "violet", icon: "star" });
-  if ((reservation.noShowRisk ?? 0) >= 0.3) {
+  // Two flags a basique dashboard cannot stand behind. "Habitué" is read
+  // off a visit count, and the guest base it comes from is Liste clients
+  // — Prio 08. A no-show risk is a score, and Performance is the screen
+  // that would explain it.
+  if (reservation.vip && !lot1) {
+    badges.push({ label: "Habitué", tone: "violet", icon: "star" });
+  }
+  if ((reservation.noShowRisk ?? 0) >= 0.3 && !lot1) {
     badges.push({ label: "Risque d'absence", tone: "warning", icon: "alert" });
   }
   // The deposit's state, on the row, because it decides whether the
@@ -1464,13 +1409,11 @@ function reservationRow(
     meta: `${hm(reservation.at)} · ${coversIn(configuration, reservation.partySize)} · ${place}`,
     badges,
     signal: reservation.note ? { text: reservation.note, icon: "note" } : undefined,
-    trailing:
-      reservation.depositMad && !lot1
+    trailing: lot1
+      ? undefined
+      : reservation.depositMad
         ? { label: "Acompte", metric: { value: reservation.depositMad, format: MAD } }
-        : {
-            label: "Visites",
-            metric: { value: reservation.visits, format: COUNT },
-          },
+        : { label: "Visites", metric: { value: reservation.visits, format: COUNT } },
     // Facets are what the tabs filter on; sortKeys what the select orders
     // by; keywords what search reaches beyond the visible text.
     facets: {
@@ -1493,7 +1436,11 @@ function reservationRow(
       .filter(Boolean)
       .join(" "),
     detail: reservationDetail(reservation, zones, configuration, lot),
-    menu: reservationMenu(reservation),
+    // Réservations is where a booking is decided, and under Lot 1 that
+    // is the only place that offers a decision: Accueil's list reads the
+    // day, and a kebab there would be a second, quieter way to do the
+    // same work from a screen that does not show the outcome.
+    menu: lot1 && !inlineActions ? undefined : reservationMenu(reservation, lot),
     actions: lot1 && inlineActions ? reservationActions(reservation) : undefined,
   };
 }
@@ -1571,8 +1518,12 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
   return undefined;
 }
 
-function reservationMenu(reservation: Reservation): EntityRow["menu"] {
+function reservationMenu(reservation: Reservation, lot: Lot = 2): EntityRow["menu"] {
   const items: NonNullable<EntityRow["menu"]> = [];
+  // Prio 02 names four decisions on a booking: accepter, refuser,
+  // check-in, no-show. A reminder is a message campaign and a
+  // cancellation is the guest's own, both of which arrive later.
+  const lot1 = lot === 1;
 
   // The kebab offers what the reservation's current state actually
   // allows — a seated party has nothing left to confirm.
@@ -1597,15 +1548,17 @@ function reservationMenu(reservation: Reservation): EntityRow["menu"] {
         payload: { id: reservation.id },
       },
     });
-    items.push({
-      id: "remind",
-      label: "Envoyer un rappel SMS",
-      action: {
-        kind: "command",
-        command: "reservation.remind",
-        payload: { id: reservation.id },
-      },
-    });
+    if (!lot1) {
+      items.push({
+        id: "remind",
+        label: "Envoyer un rappel SMS",
+        action: {
+          kind: "command",
+          command: "reservation.remind",
+          payload: { id: reservation.id },
+        },
+      });
+    }
     // Refusing a request and a guest cancelling are different events with
     // different analytics, so they are different actions — and refusing
     // captures a coded reason.
@@ -1631,16 +1584,18 @@ function reservationMenu(reservation: Reservation): EntityRow["menu"] {
         payload: { id: reservation.id },
       },
     });
-    items.push({
-      id: "cancel",
-      label: "Annuler la réservation",
-      destructive: true,
-      action: {
-        kind: "command",
-        command: "reservation.cancel",
-        payload: { id: reservation.id },
-      },
-    });
+    if (!lot1) {
+      items.push({
+        id: "cancel",
+        label: "Annuler la réservation",
+        destructive: true,
+        action: {
+          kind: "command",
+          command: "reservation.cancel",
+          payload: { id: reservation.id },
+        },
+      });
+    }
   }
   return items;
 }
@@ -1660,7 +1615,7 @@ function reservationDetail(
     }`,
     badges: [
       reservationBadge(reservation.state),
-      ...(reservation.vip
+      ...(reservation.vip && lot !== 1
         ? [{ label: "Habitué", tone: "violet" as const, icon: "star" as const }]
         : []),
     ],
@@ -1689,10 +1644,16 @@ function reservationDetail(
         label: "Le client",
         items: [
           { label: "Téléphone", metric: { value: reservation.guestPhone } },
-          {
-            label: "Visites",
-            metric: { value: reservation.visits, format: COUNT },
-          },
+          // A visit count is the guest base's figure, and Liste clients
+          // is Prio 08.
+          ...(lot === 1
+            ? []
+            : [
+                {
+                  label: "Visites",
+                  metric: { value: reservation.visits, format: COUNT },
+                },
+              ]),
           // An amount the Lot 1 partner cannot see taken, refunded or
           // released, because Acomptes is a Lot 2 screen.
           ...(reservation.depositMad && lot !== 1
@@ -1703,10 +1664,14 @@ function reservationDetail(
                 },
               ]
             : []),
-          {
-            label: "Risque d'absence",
-            metric: { value: risk, format: { kind: "percent" as const } },
-          },
+          ...(lot === 1
+            ? []
+            : [
+                {
+                  label: "Risque d'absence",
+                  metric: { value: risk, format: { kind: "percent" as const } },
+                },
+              ]),
         ],
       },
     ],
@@ -1724,15 +1689,21 @@ function reservationDetail(
         },
         allow: ["owner", "admin"],
       },
-      {
-        action: {
-          kind: "command",
-          label: "Rappel SMS",
-          command: "reservation.remind",
-          payload: { id: reservation.id },
-        },
-        variant: "secondary",
-      },
+      // A reminder is a message campaign; Prio 02 sends one alert, and it
+      // goes to the venue rather than the guest.
+      ...(lot === 1
+        ? []
+        : ([
+            {
+              action: {
+                kind: "command" as const,
+                label: "Rappel SMS",
+                command: "reservation.remind",
+                payload: { id: reservation.id },
+              },
+              variant: "secondary" as const,
+            },
+          ])),
     ],
   };
 }

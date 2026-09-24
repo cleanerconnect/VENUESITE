@@ -61,19 +61,52 @@ const mad = (n) => Math.round(n * 100);
 /**
  * The lot this dataset is for.
  *
- * Lot 1 does not ship Liste d'attente, Acomptes or the loyalty service,
- * so a Lot 1 dataset must not contain a queue, a walk-in, a deposit or a
- * tier. Gating only the screens would leave those concepts showing up on
- * the screens Lot 1 *does* ship — a walk-in source on a Réservations row,
- * an acompte pill in the book — which is the leak this closes at the
- * source.
+ * Lot 1 is the *Dashboard basique* of Planning Lyfe V3, sprint Prio 02 —
+ * « Authentification + Création de Venue + Gestion des reservation
+ * uniquement », `docs/reference/Planning_Lyfe_V3_20260923.xlsx`. Gating
+ * only the screens would leave the concepts that sprint does not buy
+ * showing up on the seven screens it does: a walk-in source on a
+ * Réservations row, a tag on a booking, an acompte in the book. The
+ * dataset itself has to be narrower, which is what this closes.
  */
 const LOT = process.env.LYFE_LOT?.trim() === "2" ? 2 : 1;
+
+/**
+ * Tables a Lot 1 dataset holds no row of.
+ *
+ * One list rather than a condition at each call site: a table added to
+ * the schema later can only leak into Lot 1 if somebody decides it
+ * should, and a row that references a skipped table fails the foreign
+ * key loudly at seed time rather than quietly rendering.
+ *
+ * Each line names the screen that owns the concept, and every one of
+ * them is *Dashboards avancés* — `Détail Sprint `, row 133, Prio 08.
+ */
+const LOT2_ONLY = new Set([
+  "waitlist", "waitlist_settings",          // Liste d'attente
+  "deposits", "deposit_policies",           // Acomptes
+  "cancellation_policies", "cancellation_log", // Annulations
+  "transactions",                           // Lyfe Pay
+  "reviews", "review_tags", "review_replies", "survey_config", // Avis
+  "tags", "tag_rules", "customer_tags", "segments",            // Tags et segments
+  "offers", "offer_redemptions", "experiences", "experience_addons", // Offres, Expériences
+  "campaigns", "messages_log", "suppression_list",             // Campagnes
+  "audience_sources", "platform_benchmarks",                   // Audience, Visibilité
+  "guest_lists", "guest_list_bands", "guest_list_entries",     // Vie nocturne
+  "promoters", "table_types", "table_offers", "table_reservations",
+  "shift_notes",                            // Briefing
+  "tickets",                                // Expériences sells them
+]);
 
 const VENUE = "rst_dar_zellij";
 const OWNER = "usr_yassine";
 
+const skipped = new Map();
 const insert = (table, row) => {
+  if (LOT === 1 && LOT2_ONLY.has(table)) {
+    skipped.set(table, (skipped.get(table) ?? 0) + 1);
+    return;
+  }
   const keys = Object.keys(row);
   db.prepare(
     `INSERT OR REPLACE INTO ${table} (${keys.join(",")}) VALUES (${keys.map(() => "?").join(",")})`,
@@ -380,9 +413,9 @@ insert("services", {
 const BOOKINGS = [
   ["res_001", "cus_1", "Salma Bennani", "+212 661 20 44 18", 4, 0, "confirmed", "lyfe", "z_patio", "Anniversaire, dessert avec bougie", 400, 0.04],
   ["res_002", "cus_3", "Groupe Karam", "+212 662 88 10 03", 6, 1, "confirmed", "phone", "z_salle", "Sans gluten pour deux couverts", null, 0.11],
-  ["res_003", "cus_4", "Yasmine El Alaoui", "+212 663 41 77 92", 4, 1, "confirmed", "instagram", "z_terrasse", null, null, 0.38],
+  ["res_003", "cus_4", "Yasmine El Alaoui", "+212 663 41 77 92", 4, 1, "confirmed", LOT === 1 ? "site" : "instagram", "z_terrasse", null, null, 0.38],
   ["res_010", "cus_5", "Nabil Cherkaoui", "+212 665 09 33 71", 2, 2, "requested", "lyfe", null, "Demande une table près de la fontaine", null, 0.22],
-  ["res_011", "cus_2", "Hind Tazi", "+212 660 15 62 40", 5, 3, "confirmed", "partner", "z_salle", null, 500, 0.03],
+  ["res_011", "cus_2", "Hind Tazi", "+212 660 15 62 40", 5, 3, "confirmed", LOT === 1 ? "phone" : "partner", "z_salle", null, 500, 0.03],
 ];
 const DZ_SLOTS = bookableSlots(DZ_LIVE, now);
 BOOKINGS.forEach(([id, cus, name, phone, size, slot, state, channel, zone, note, deposit, risk]) => {
@@ -779,7 +812,7 @@ const NM_SLOTS = bookableSlots(NM_LIVE, now);
 [
   ["res_n1", "Leïla Fassi", "+212 661 55 20 11", 4, 0, "confirmed", "lyfe", "z_n_toit", "Table près du bord", 0.06],
   ["res_n2", "Anas Berrada", "+212 662 31 88 40", 2, 1, "requested", "lyfe", null, null, 0.19],
-  ["res_n3", "Groupe Anfa", "+212 663 12 74 05", 8, 2, "confirmed", "partner", "z_n_bar", "Anniversaire", 0.08],
+  ["res_n3", "Groupe Anfa", "+212 663 12 74 05", 8, 2, "confirmed", LOT === 1 ? "phone" : "partner", "z_n_bar", "Anniversaire", 0.08],
 ].forEach(([id, name, phone, size, slot, state, channel, zone, note, risk]) => {
   const at = NM_SLOTS[Math.min(slot, NM_SLOTS.length - 1)];
   insert("reservations", {
@@ -1814,7 +1847,19 @@ const INTERESTS = [
   ["Brunch", 7], ["Rooftop", 8], ["Concerts", 6], ["DJ sets", 5],
   ["Afterwork", 7], ["Festivals", 4], ["Expositions", 3],
 ];
-const SOURCES = ["feed", "recherche", "listes", "boost", "offre", "lien_externe"];
+/**
+ * Where a booking came from.
+ *
+ * Six of these name a surface the basique dashboard has no screen for —
+ * the feed and search are Visibilité's, a boost is a paid placement, a
+ * liste and an offre are Vie nocturne's and Offres'. A Réservations row
+ * reading « Source : Boost » on a dashboard with no Visibilité is the
+ * same leak as an acompte pill, so Lot 1 knows the three ways a booking
+ * reaches a venue that only manages bookings.
+ */
+const SOURCES = LOT === 1
+  ? ["lyfe", "phone", "site"]
+  : ["feed", "recherche", "listes", "boost", "offre", "lien_externe"];
 
 const FIRST_NAMES = ["Youssef","Salma","Mehdi","Ghita","Anas","Imane","Reda","Nawal","Zakaria","Sara","Othmane","Meryem","Ayoub","Hajar","Ismail","Soukaina","Adam","Rim","Walid","Dounia","Karim","Aya","Nabil","Lina"];
 const LAST_NAMES = ["Benjelloun","El Amrani","Bouhlal","Sqalli","Tahiri","Naciri","Lamrani","Belkadi","Ouazzani","Chraibi","Benslimane","Alaoui"];

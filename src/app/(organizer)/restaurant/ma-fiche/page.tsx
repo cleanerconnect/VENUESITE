@@ -10,6 +10,7 @@ import { ScreenError } from "@/components/restaurant/ScreenError";
 import { VenueSettings } from "@/components/settings/VenueSettings";
 import { RestaurantSpecScreen } from "@/components/restaurant/RestaurantSpecScreen";
 import { buildPresenceScreen } from "@/lib/restaurant/presence";
+import { activeLot } from "@/lib/lot";
 
 // Venue settings.
 //
@@ -28,6 +29,7 @@ interface Props {
 export default async function MaFichePage({ searchParams }: Props) {
   const session = await resolveSession();
   if (!session) redirect("/login");
+  const lot = activeLot();
 
   // `?etat=` forces the three states here too, so every one of the
   // thirty screens can be shown failing or empty on demand rather than
@@ -76,10 +78,24 @@ export default async function MaFichePage({ searchParams }: Props) {
 
   return (
     <div className="space-y-8">
+      {/* « Création de Venue », Planning V3 sprint Prio 02: the record
+          itself. Identity carries the name, the address and the contact;
+          Horaires carries the opening hours; Photos carries the photos.
+          Fiche — price range, tags, features, ambience — is the listing
+          that Prio 08's advanced dashboard curates, and a tag is one of
+          the concepts a basique deployment must not show at all. */}
       <VenueSettings
-      only={["identity", "listing", "media"]}
+      only={
+        lot === 1
+          ? ["identity", "hours", "media"]
+          : ["identity", "listing", "media"]
+      }
       title="Ma fiche"
-      subtitle="Tout ce que l'application montre de l'établissement, modifiable ici. Miroir de la fiche, rien de plus."
+      subtitle={
+        lot === 1
+          ? "L'établissement tel que l'application le montre : identité, adresse, contact, photos et horaires."
+          : "Tout ce que l'application montre de l'établissement, modifiable ici. Miroir de la fiche, rien de plus."
+      }
       role={session.role}
       identity={{
         name: profile.name,
@@ -114,7 +130,11 @@ export default async function MaFichePage({ searchParams }: Props) {
       staff={staff}
       />
 
-      <RestaurantSpecScreen spec={presence} />
+      {/* Zones, dress code, facilities and the client preview are all
+          readings of a listing Prio 02 does not curate. The hours a
+          venue can be booked for are in the form above, and the rest of
+          them on Disponibilités. */}
+      {lot === 2 ? <RestaurantSpecScreen spec={presence} /> : null}
     </div>
   );
   } catch (error) {

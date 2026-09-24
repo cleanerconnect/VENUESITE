@@ -547,6 +547,22 @@ export function buildNotificationsScreen(
     noMatches: { title: "Aucun message", body: "Aucun message dans ce filtre." },
   };
 
+  // Notifications, under sprint Prio 02.
+  //
+  // One alert: the booking that needs a decision. The guest-message
+  // cadence and the delivery journal both describe messages LYFE sends
+  // on the venue's behalf, and the screen that owns that conversation —
+  // Campagnes — is Prio 08. A journal listing sends the partner cannot
+  // configure reads as a screen with settings hidden from them.
+  if (lot1) {
+    return {
+      slug: "notifications",
+      title: "Notifications",
+      subtitle: "L'alerte que l'établissement reçoit, et par quel canal",
+      blocks: [team],
+    };
+  }
+
   return {
     slug: "notifications",
     title: "Notifications",

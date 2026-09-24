@@ -296,7 +296,7 @@ export const ROUTES: RouteEntry[] = [
   // 3. Clients
   {
     path: "/restaurant/clients",
-    lot: 1,
+    lot: 2,
     label: "Liste clients",
     purpose:
       "Base alimentée automatiquement par les réservations — aucune saisie manuelle.",
@@ -305,7 +305,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/clients/cus_1",
-    lot: 1,
+    lot: 2,
     label: "Fiche client",
     purpose:
       "Tout ce que le lieu sait d'un client : visites, risque d'absence sur douze mois, préférences, avis, messages, anonymisation.",
@@ -346,7 +346,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/menu",
-    lot: 1,
+    lot: 2,
     label: "Menu",
     purpose: "La carte telle que l'application l'affiche. Ajouter, masquer, réordonner.",
     workspace: "venue",
@@ -357,7 +357,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/avis",
-    lot: 1,
+    lot: 2,
     label: "Avis",
     purpose:
       "Les avis, le sondage après visite et la redirection des clients satisfaits vers Google ou Tripadvisor.",
@@ -371,7 +371,7 @@ export const ROUTES: RouteEntry[] = [
   // 5. Croissance
   {
     path: "/restaurant/visibilite",
-    lot: 1,
+    lot: 2,
     label: "Visibilité",
     purpose:
       "Impressions, ouvertures de fiche, conversion, et la liste honnête de ce qui pèse sur le classement.",
@@ -469,7 +469,7 @@ export const ROUTES: RouteEntry[] = [
   // 8. Pilotage
   {
     path: "/restaurant/performance",
-    lot: 1,
+    lot: 2,
     label: "Performance",
     purpose:
       "Les chiffres avec une période et une comparaison, plus le repérage des créneaux creux.",
@@ -479,7 +479,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/bilans",
-    lot: 1,
+    lot: 2,
     label: "Bilans",
     purpose:
       "Le mois en deux minutes : chiffres, meilleurs et pires services, trois recommandations tirées des données.",
@@ -515,7 +515,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/equipe",
-    lot: 1,
+    lot: 2,
     label: "Équipe et rôles",
     purpose:
       "Qui peut faire quoi. Le dernier propriétaire ne peut être ni rétrogradé ni retiré.",
@@ -539,7 +539,7 @@ export const ROUTES: RouteEntry[] = [
   // 10. Compte
   {
     path: "/restaurant/parametres",
-    lot: 1,
+    lot: 2,
     label: "Paramètres",
     purpose:
       "Entité juridique, banque, type de configuration — l'interrupteur qui fait apparaître Vie nocturne —, langue, données, intégrations.",
@@ -549,7 +549,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/abonnement",
-    lot: 1,
+    lot: 2,
     label: "Abonnement",
     purpose: "Le plan, son état, les factures et l'usage de la période.",
     workspace: "venue",
@@ -558,7 +558,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     path: "/restaurant/support",
-    lot: 1,
+    lot: 2,
     label: "Support",
     purpose:
       "Guides, formulaire de contact, tickets et leur état, lien WhatsApp avec ses horaires.",

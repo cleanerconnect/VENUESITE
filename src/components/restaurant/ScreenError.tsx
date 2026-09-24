@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/dashboard/primitives";
 import { COPY } from "@/lib/copy/fr";
+import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
+
+const SUPPORT_EMAIL = "partenaires@lyfemaroc.org";
 
 // A venue screen that could not load.
 //
@@ -13,6 +18,8 @@ import { COPY } from "@/lib/copy/fr";
 // (reload), and names the reference so a support message can carry
 // something more useful than "ça marche pas".
 export function ScreenError({ reference }: { reference?: string }) {
+  const { lot } = useWorkspaceAccess();
+
   return (
     <Card variant="surface" size="lg">
       <div className="py-8 text-center max-w-[44ch] mx-auto">
@@ -38,12 +45,24 @@ export function ScreenError({ reference }: { reference?: string }) {
           >
             Revenir à l'accueil
           </Link>
-          <Link
-            href="/restaurant/support"
-            className="inline-flex h-11 items-center rounded-[var(--radius-sm)] border border-line bg-surface px-4 text-[13px] font-semibold text-ink hover:border-ink transition-colors"
-          >
-            Contacter le support
-          </Link>
+          {/* Support is a Lot 2 screen. An error page whose second button
+              404s is worse than an error page with one button, so under
+              Lot 1 the partner is told where to write instead. */}
+          {lot === 2 ? (
+            <Link
+              href="/restaurant/support"
+              className="inline-flex h-11 items-center rounded-[var(--radius-sm)] border border-line bg-surface px-4 text-[13px] font-semibold text-ink hover:border-ink transition-colors"
+            >
+              Contacter le support
+            </Link>
+          ) : (
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className="inline-flex h-11 items-center rounded-[var(--radius-sm)] border border-line bg-surface px-4 text-[13px] font-semibold text-ink hover:border-ink transition-colors"
+            >
+              Écrire au support
+            </a>
+          )}
         </div>
       </div>
     </Card>

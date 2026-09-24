@@ -12,19 +12,19 @@
 //   node tools/verify/configuration.mjs
 
 import { chromium } from "playwright";
-import { LOT, LOT_LABEL } from "./lot.mjs";
+import { LOT, LOT_LABEL, venuePaths } from "./lot.mjs";
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 
 const GROUPS = ["Aujourd'hui", "En service", "Clients", "Ma présence",
   "Croissance", "Vie nocturne", "Paiements", "Pilotage", "Établissement", "Compte"];
 
-// Two groups are entirely Lot 2 — Vie nocturne and Paiements — so a Lot 1
-// sidebar shows eight of the ten, and shows them to a lounge too. The
-// count is derived rather than typed, so it cannot disagree with the
-// gate it is checking.
-const LOT1_GROUPS = ["Aujourd'hui", "En service", "Clients", "Ma présence",
-  "Croissance", "Pilotage", "Établissement", "Compte"];
+// Lot 1 is the Dashboard basique of Planning V3's Prio 02 row:
+// authentication, the venue's own record, and the booking work. Six of
+// the ten groups have no screen left in it, so the sidebar shows four —
+// to a lounge as much as to a restaurant, since Détail Sprint row 41
+// puts the same user story on Drinks/Cellar.
+const LOT1_GROUPS = ["Aujourd'hui", "En service", "Ma présence", "Établissement"];
 const EXPECTED = LOT === 2 ? GROUPS : LOT1_GROUPS;
 
 const browser = await chromium.launch({
@@ -62,9 +62,12 @@ async function inspect(venueId, label, expectNightlife, expectWord) {
   const nightlife = nav.includes("Vie nocturne");
   const word = body.includes(expectWord);
 
-  // Lyfe Pay is a Lot 2 screen. Under Lot 1 the money rule is checked
-  // where it still shows: the estimated-revenue tile on Accueil.
+  // Lyfe Pay is a Lot 2 screen. Under Lot 1 there is no money figure to
+  // check the rule against, which is itself the rule: the Dashboard
+  // basique of Planning V3's Prio 02 row manages bookings and reports
+  // on nothing, so a dirham on any of its screens is a defect.
   let payLine;
+  let payFail = false;
   if (LOT === 2) {
     await page.goto(`${BASE}/restaurant/lyfe-pay`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(600);
@@ -73,9 +76,17 @@ async function inspect(venueId, label, expectNightlife, expectWord) {
       ? "aucune source — tuiles masquées"
       : "source présente — tuiles affichées";
   } else {
-    payLine = body.includes("Revenu estimé")
-      ? "source présente — tuile Revenu estimé affichée"
-      : "aucune source — tuile Revenu estimé masquée";
+    const money = [];
+    for (const path of venuePaths()) {
+      await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(500);
+      const text = (await page.textContent("body")) ?? "";
+      if (/\bMAD\b|\bDH\b/.test(text)) money.push(path);
+    }
+    payFail = money.length > 0;
+    payLine = payFail
+      ? `✗ montant affiché sur ${money.join(", ")}`
+      : "aucun montant sur les sept écrans ✓";
   }
 
   // Under Lot 1 the nightlife group is absent whatever the
@@ -102,6 +113,7 @@ async function inspect(venueId, label, expectNightlife, expectWord) {
 
   if (nightlife !== wantNightlife) fails += 1;
   if (!word) fails += 1;
+  if (payFail) fails += 1;
   // Two filters stack: the lot drops Vie nocturne and Paiements, then
   // the configuration drops Vie nocturne again for a restaurant. The
   // expected count has to apply both, or Lot 2's restaurant reads as a
