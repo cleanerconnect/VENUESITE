@@ -13,6 +13,7 @@
 import type { DayBook, RestaurantOverview } from "@/lib/types/restaurant";
 import type { CheckInResult, NotificationPreferences } from "@/lib/types/business";
 import * as store from "@/lib/db/venue-store";
+import * as onboarding from "@/lib/db/onboarding-store";
 import {
   listStaff as listStaffRows,
   updateVenueIdentity,
@@ -36,6 +37,7 @@ import {
   dayBookFor as dayBookFromStore,
 } from "@/lib/db/overview-store";
 import {
+  EmailTaken,
   RepositoryError,
 } from "./repository";
 import type {
@@ -43,6 +45,8 @@ import type {
   AssetAction,
   CheckInInput,
   NoShowInput,
+  OnboardingDraftPatch,
+  OnboardingSignUpInput,
   RejectBookingInput,
   ReservationRefInput,
   RestaurantRepository,
@@ -202,6 +206,40 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
   async listAssets(venueId: string, kind: AssetKind) {
     return listAssetRows(venueId, kind);
+  }
+
+  // ── Onboarding ──
+  async startOnboarding(input: OnboardingSignUpInput) {
+    try {
+      const account = onboarding.createPartnerAccount(input);
+      return {
+        userId: account.userId,
+        draft: onboarding.createDraft(account.userId),
+      };
+    } catch (error) {
+      if (error instanceof onboarding.EmailTakenError) throw new EmailTaken();
+      throw error;
+    }
+  }
+
+  async getOnboardingDraft(draftId: string) {
+    return onboarding.draftById(draftId);
+  }
+
+  async saveOnboardingDraft(draftId: string, patch: OnboardingDraftPatch) {
+    const next = onboarding.patchDraft(draftId, patch);
+    if (!next) {
+      throw new RepositoryError("Inscription introuvable.", 404, "draft_not_found");
+    }
+    return next;
+  }
+
+  async submitOnboarding(draftId: string) {
+    const made = onboarding.createVenueFromDraft(draftId);
+    if (!made) {
+      throw new RepositoryError("Inscription introuvable.", 404, "draft_not_found");
+    }
+    return made;
   }
 
   // ── Ma fiche's writes ──

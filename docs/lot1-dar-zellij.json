@@ -4,7 +4,7 @@
   "account": "yassine@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-09-24T22:53:02.642Z",
+  "capturedAt": "2026-09-24T23:25:44.408Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -16,7 +16,7 @@
       "workspace": "venue",
       "title": "Bonsoir, Yassine. Le service est lancé.",
       "eyebrow": "Bonsoir",
-      "subtitle": "Cinq réservations aujourd'hui, une en attente de réponse, personne encore arrivé.",
+      "subtitle": "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées.",
       "venue": "YA",
       "blocks": [
         {
@@ -31,14 +31,14 @@
           "texts": [
             "Bonsoir",
             "Le service est lancé.",
-            "Cinq réservations aujourd'hui, une en attente de réponse, personne encore arrivé."
+            "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées."
           ],
           "rows": [
             {
               "lines": [
                 "Bonsoir",
                 "Le service est lancé.",
-                "Cinq réservations aujourd'hui, une en attente de réponse, personne encore arrivé."
+                "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées."
               ],
               "pills": [],
               "actions": []
@@ -74,9 +74,9 @@
             ],
             "facets": [],
             "texts": [
-              "20h00",
+              "22h30",
               "1 table",
-              "20h00",
+              "22h30",
               "2 couverts",
               "Nabil Cherkaoui",
               "À confirmer",
@@ -139,30 +139,26 @@
             ],
             "facets": [],
             "texts": [
-              "19h00",
-              "1 table",
-              "19h00",
+              "22h30",
+              "4 tables",
+              "22h30",
               "4 couverts",
               "Salma Bennani",
               "Confirmée",
               "Patio · LYFE",
               "Anniversaire, dessert avec bougie",
-              "19h30",
-              "2 tables",
-              "19h30",
+              "22h30",
               "6 couverts",
               "Groupe Karam",
               "Confirmée",
               "Grande salle · Téléphone",
               "Sans gluten pour deux couverts",
-              "19h30",
+              "22h30",
               "4 couverts",
               "Yasmine El Alaoui",
               "Confirmée",
               "Terrasse",
-              "20h30",
-              "1 table",
-              "20h30",
+              "22h30",
               "5 couverts",
               "Hind Tazi",
               "Confirmée",
@@ -227,14 +223,17 @@
         {
           "kind": "prose",
           "heading": "Arrivés",
-          "subheading": null,
-          "actions": [],
+          "subheading": "Afficher",
+          "actions": [
+            "21 tables installéesAfficher"
+          ],
           "facets": [],
           "texts": [
             "Arrivés",
-            "0 tables installées"
+            "21 tables installées",
+            "Afficher"
           ],
-          "body": "Arrivés0 tables installées",
+          "body": "Arrivés21 tables installéesAfficher",
           "pills": []
         }
       ]
@@ -308,7 +307,7 @@
           "facets": [
             {
               "label": "Tous",
-              "count": "5"
+              "count": "26"
             },
             {
               "label": "À confirmer",
@@ -320,7 +319,7 @@
             },
             {
               "label": "Arrivés",
-              "count": "0"
+              "count": "21"
             }
           ],
           "texts": [
@@ -331,46 +330,119 @@
             "Heure · tard → tôt",
             "Couverts",
             "Nom",
-            "5",
+            "26",
             "1",
             "4",
-            "0",
-            "19h00",
-            "1 table",
-            "19h00",
+            "21",
+            "22h30",
+            "5 tables",
+            "22h30",
             "4 couverts",
             "Salma Bennani",
             "Confirmée",
             "Patio · LYFE",
             "Anniversaire, dessert avec bougie",
-            "19h30",
-            "2 tables",
-            "19h30",
+            "22h30",
             "6 couverts",
             "Groupe Karam",
             "Confirmée",
             "Grande salle · Téléphone",
             "Sans gluten pour deux couverts",
-            "19h30",
+            "22h30",
             "4 couverts",
             "Yasmine El Alaoui",
             "Confirmée",
             "Terrasse",
-            "20h00",
-            "1 table",
-            "20h00",
+            "22h30",
             "2 couverts",
             "Nabil Cherkaoui",
             "À confirmer",
             "LYFE",
             "Demande une table près de la fontaine",
-            "20h30",
-            "1 table",
-            "20h30",
+            "22h30",
             "5 couverts",
             "Hind Tazi",
             "Confirmée",
-            "Grande salle · Téléphone"
+            "Grande salle · Téléphone",
+            "19h00",
+            "3 tables",
+            "19h00",
+            "2 couverts",
+            "Famille Alami",
+            "Arrivé",
+            "Grande salle · LYFE",
+            "19h00",
+            "4 couverts",
+            "Groupe Atlas",
+            "Arrivé",
+            "Grande salle · Téléphone",
+            "19h00",
+            "6 couverts",
+            "Table Koutoubia",
+            "Arrivé",
+            "Grande salle",
+            "19h30",
+            "3 tables",
+            "19h30",
+            "4 couverts",
+            "Rachid Benjelloun",
+            "Arrivé",
+            "Patio · Téléphone",
+            "19h30",
+            "8 couverts",
+            "Anniversaire Chraïbi",
+            "Arrivé",
+            "Patio",
+            "19h30",
+            "4 couverts",
+            "Adil Berrechid",
+            "Arrivé",
+            "Patio · LYFE",
+            "20h00",
+            "3 tables",
+            "20h00",
+            "2 couverts",
+            "Sanaa Mourad",
+            "Arrivé",
+            "Terrasse",
+            "20h00",
+            "2 couverts",
+            "Nawal Rifai",
+            "Arrivé",
+            "Terrasse · LYFE",
+            "20h00",
+            "4 couverts",
+            "Hakim Sbaï",
+            "Arrivé",
+            "Terrasse · LYFE",
+            "20h30",
+            "2 tables",
+            "20h30",
+            "6 couverts",
+            "Groupe Ziyad",
+            "Arrivé",
+            "Grande salle · LYFE",
+            "20h30",
+            "4 couverts",
+            "Karim Belmekki",
+            "Arrivé",
+            "Grande salle · LYFE",
+            "21h00",
+            "2 tables",
+            "21h00",
+            "4 couverts",
+            "Khalid Naciri",
+            "Arrivé",
+            "Patio · LYFE",
+            "21h00",
+            "6 couverts",
+            "Famille Tazi",
+            "Arrivé",
+            "Patio · Téléphone",
+            "21h30",
+            "2 tables",
+            "21h30",
+            "2 couverts"
           ],
           "items": [
             {
@@ -437,6 +509,174 @@
                 "Check-in",
                 "Absent"
               ]
+            },
+            {
+              "title": "Famille Alami",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Atlas",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Table Koutoubia",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Rachid Benjelloun",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Anniversaire Chraïbi",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Adil Berrechid",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Sanaa Mourad",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Nawal Rifai",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Hakim Sbaï",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Ziyad",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Karim Belmekki",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Khalid Naciri",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Famille Tazi",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Imane Sefrioui",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Sofia Guessous",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Table Ourika",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Réda Amrani",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Mehdi Bouzoubaa",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Majorelle",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Couple Lambert",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Laila Zniber",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
             }
           ]
         }
@@ -447,10 +687,10 @@
           "title": "Salma Bennani",
           "lines": [
             "Salma Bennani",
-            "19h00 · 4 couverts · LYFE",
+            "22h30 · 4 couverts · LYFE",
             "La réservation",
             "Heure",
-            "19h00",
+            "22h30",
             "Personnes",
             "4",
             "Espace",
@@ -546,26 +786,26 @@
           "texts": [
             "Prochaines arrivées",
             "Appuyez sur Check-in pour enregistrer une arrivée sans code.",
-            "19h00",
+            "22h30",
             "Salma Bennani",
             "4 couverts · Patio",
             "Anniversaire, dessert avec bougie",
             "Check-in",
-            "19h30",
+            "22h30",
             "Groupe Karam",
             "6 couverts · Grande salle",
             "Sans gluten pour deux couverts",
             "Check-in",
-            "19h30",
+            "22h30",
             "Yasmine El Alaoui",
             "4 couverts · Terrasse",
             "Check-in",
-            "20h00",
+            "22h30",
             "Nabil Cherkaoui",
             "2 couverts",
             "Demande une table près de la fontaine",
             "Check-in",
-            "20h30",
+            "22h30",
             "Hind Tazi",
             "5 couverts · Grande salle",
             "Check-in",
@@ -787,7 +1027,7 @@
             "Se souvenir de moi",
             "Mot de passe oublié ?",
             "Se connecter",
-            "contact@lyfemaroc.org"
+            "Inscrire mon établissement"
           ],
           "fields": [
             {
@@ -823,6 +1063,20 @@
       "dependsOn": null,
       "roles": null,
       "workspace": "entry",
+      "venue": null,
+      "blocks": []
+    },
+    "/inscription": {
+      "label": "Inscription",
+      "purpose": "« Création de Venue » : six étapes pour inscrire un établissement — vous, l'établissement, l'adresse, une photo, les horaires, un récapitulatif. Le brouillon est enregistré à chaque étape, donc fermer l'onglet ne perd rien.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "title": "Vous",
+      "eyebrow": null,
+      "subtitle": "Vos coordonnées, pour que nous sachions à qui écrire. Rien n'est public.",
       "venue": null,
       "blocks": []
     },

@@ -63,7 +63,7 @@ export const COPY = {
       "Si un compte existe pour cette adresse, un lien de réinitialisation vient d'être envoyé.",
     forgotNeedsEmail: "Saisissez votre adresse e-mail, puis redemandez le lien.",
     notPartner: "Votre établissement n'est pas encore sur LYFE ?",
-    notPartnerEmail: "contact@lyfemaroc.org",
+    notPartnerCta: "Inscrire mon établissement",
     submit: "Se connecter",
     submitting: "Connexion…",
     invalidCredentials: "E-mail ou mot de passe incorrect.",

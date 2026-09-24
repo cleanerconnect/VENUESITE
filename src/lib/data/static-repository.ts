@@ -23,6 +23,8 @@ import {
   type ReservationRefInput,
   type RestaurantRepository,
   type ReviewReplyInput,
+  type OnboardingDraftPatch,
+  type OnboardingSignUpInput,
   type VenueListingPatch,
   type VenueProfilePatch,
 } from "./repository";
@@ -52,6 +54,8 @@ import type {
   RestaurantProfile,
 } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
+import type { OnboardingDraft } from "@/lib/types/onboarding";
+import { defaultHours } from "@/lib/types/onboarding";
 import type {
   CheckInResult,
   Customer,
@@ -79,6 +83,9 @@ const customersOverlay = new Map<string, Customer[]>();
  * demonstrable on a machine with no database at all.
  */
 const profileOverlay = new Map<string, RestaurantProfile>();
+/** Onboarding drafts, and the addresses that have started one. */
+const draftOverlay = new Map<string, OnboardingDraft>();
+const signUps = new Map<string, string>();
 const assetOverlay = new Map<string, VenueAsset[]>();
 const readNotifications = new Set<string>();
 
@@ -201,6 +208,58 @@ export class StaticRestaurantRepository implements RestaurantRepository {
   }
 
   // ── Venue profile and settings ──
+
+  // ── Onboarding ──
+  //
+  // A signup can be walked through on the snapshot — the draft lives in
+  // this process, which is enough to demonstrate the six steps on a
+  // clone with no database. The last step is where it stops: making a
+  // venue means writing rows, and the snapshot is a committed capture.
+  async startOnboarding(input: OnboardingSignUpInput) {
+    const userId = `usr_${Math.random().toString(36).slice(2, 10)}`;
+    const draft: OnboardingDraft = {
+      id: `onb_${Math.random().toString(36).slice(2, 10)}`,
+      ownerId: userId,
+      step: 2,
+      venueName: "",
+      venueType: "restaurant",
+      city: "",
+      address: "",
+      latitude: null,
+      longitude: null,
+      coverObjectKey: "",
+      coverContentType: "",
+      coverSizeBytes: 0,
+      hours: defaultHours(),
+      submittedVenueId: null,
+      updatedAt: new Date().toISOString(),
+    };
+    draftOverlay.set(draft.id, draft);
+    signUps.set(input.email.trim().toLowerCase(), userId);
+    return { userId, draft: clone(draft) };
+  }
+
+  async getOnboardingDraft(draftId: string) {
+    return clone(draftOverlay.get(draftId) ?? null);
+  }
+
+  async saveOnboardingDraft(draftId: string, patch: OnboardingDraftPatch) {
+    const current = draftOverlay.get(draftId);
+    if (!current) {
+      throw new RepositoryError("Inscription introuvable.", 404, "draft_not_found");
+    }
+    const next = { ...current, ...patch, updatedAt: new Date().toISOString() };
+    draftOverlay.set(draftId, next);
+    return clone(next);
+  }
+
+  async submitOnboarding(_draftId: string): Promise<{ venueId: string }> {
+    throw new RepositoryError(
+      "Aucune base de données : les six étapes se parcourent sur le jeu statique, mais créer l'établissement a besoin d'un store. Lancez `npm run db:reset`.",
+      503,
+      "store_required",
+    );
+  }
 
   async getVenueProfile(venueId: string) {
     const held = profileOverlay.get(venueId);

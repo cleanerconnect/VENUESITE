@@ -480,7 +480,11 @@ async function capture(list, tag) {
     try {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}${r.path}`, { waitUntil: "domcontentloaded" });
-      await page.waitForTimeout(DEPTH === "full" ? 2600 : 1500);
+      // `/splash` holds its logo for two seconds, fades it out over
+      // six tenths, and only then redirects: the default settle
+      // photographs the blank frame in between.
+      const settle = r.path === "/splash" ? 900 : DEPTH === "full" ? 2600 : 1500;
+      await page.waitForTimeout(settle);
 
       const base = {
         label: r.label, purpose: r.purpose, status: r.status,

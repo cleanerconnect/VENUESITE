@@ -24,6 +24,7 @@
 // or not the address is known, for the same reason the failure message
 // is single.
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { AnimatePresence, motion } from "motion/react";
@@ -231,16 +232,17 @@ export function SignInPanel() {
             </form>
 
             {/* Someone who is not a partner yet has reached a form no
-                credentials will open. This is the only thing on the
-                screen that is of any use to them. */}
+                credentials will open. It used to offer them an e-mail
+                address; « Création de Venue » is in the sprint, so it
+                now offers them the door. */}
             <p className="text-meta text-ink-mute mt-4">
               {COPY.auth.notPartner}{" "}
-              <a
-                href={`mailto:${COPY.auth.notPartnerEmail}`}
-                className="text-ink underline underline-offset-2 hover:text-violet-deep transition-colors"
+              <Link
+                href="/inscription"
+                className="text-ink font-semibold underline underline-offset-2 hover:text-violet-deep transition-colors"
               >
-                {COPY.auth.notPartnerEmail}
-              </a>
+                {COPY.auth.notPartnerCta}
+              </Link>
             </p>
 
           </motion.div>

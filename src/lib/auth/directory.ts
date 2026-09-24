@@ -53,6 +53,16 @@ export interface Directory {
    * was wrong.
    */
   verify?(email: string, password: string): Promise<DirectoryAccount | null>;
+  /**
+   * True when `verify` is the only authority on credentials.
+   *
+   * A backend is: an address it does not know has no account, full
+   * stop. The database directory is not — it checks the accounts the
+   * onboarding flow created, and the fixture partners live beside them
+   * in `accounts.ts` — so a miss there has to fall through rather than
+   * refuse, or signing in as Yassine would stop working.
+   */
+  readonly exclusiveVerify?: boolean;
 }
 
 class StaticDirectory implements Directory {
@@ -79,6 +89,10 @@ class DatabaseDirectory implements Directory {
   private store() {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require("@/lib/db/venue-store") as typeof import("@/lib/db/venue-store");
+  }
+  private onboarding() {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require("@/lib/db/onboarding-store") as typeof import("@/lib/db/onboarding-store");
   }
   private rows() {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -119,6 +133,27 @@ class DatabaseDirectory implements Directory {
   async canAccessVenue(userId: string, venueId: string) {
     return this.store().userCanAccessVenue(userId, venueId);
   }
+
+  /**
+   * The partners the onboarding flow created.
+   *
+   * `staff` is a membership table — one row per venue — so it cannot
+   * answer for someone who signed up and has not finished. Their row is
+   * in `partner_accounts`, with a salted hash, and this is where the two
+   * halves meet: the password comes from there, the venues from `staff`.
+   */
+  async verify(email: string, password: string) {
+    const found = this.onboarding().verifyPartnerPassword(email, password);
+    if (!found) return null;
+    return (
+      (await this.findById(found.userId)) ?? {
+        userId: found.userId,
+        fullName: found.fullName,
+        email: found.email,
+        venues: [],
+      }
+    );
+  }
 }
 
 /**
@@ -137,6 +172,9 @@ class DatabaseDirectory implements Directory {
  * carries, so there is nothing else to keep in step.
  */
 class HttpDirectory implements Directory {
+  /** The service decides. An address it refuses has no account here. */
+  readonly exclusiveVerify = true;
+
   constructor(
     private readonly baseUrl: string,
     private readonly token: string,

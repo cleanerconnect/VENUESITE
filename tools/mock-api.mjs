@@ -206,6 +206,61 @@ const ROUTES = [
     return accountFor(user);
   }],
 
+  // Onboarding — « Création de Venue ». The draft lives here for the
+  // life of the process, and the submit makes a venue the rest of the
+  // routes then serve like any other.
+  ["POST", /^\/api\/business\/onboarding$/, (_m, _q, body) => {
+    const email = String(body?.email ?? "").trim().toLowerCase();
+    if (db.users.some((u) => u.email.toLowerCase() === email)) {
+      throw new Refused(409, "email_taken", "Cette adresse a déjà un compte.");
+    }
+    const userId = `usr_${randomUUID().slice(0, 10)}`;
+    db.users.push({
+      userId,
+      fullName: String(body?.fullName ?? ""),
+      email,
+      venues: [],
+    });
+    const draft = {
+      id: `onb_${randomUUID().slice(0, 10)}`,
+      ownerId: userId,
+      step: 2,
+      venueName: "",
+      venueType: "restaurant",
+      city: "",
+      address: "",
+      latitude: null,
+      longitude: null,
+      coverObjectKey: "",
+      coverContentType: "",
+      coverSizeBytes: 0,
+      hours: WEEK.map((weekday) => ({
+        weekday,
+        closed: false,
+        opensAt: "12:00",
+        closesAt: "23:00",
+      })),
+      submittedVenueId: null,
+      updatedAt: isoNow(),
+    };
+    drafts.set(draft.id, draft);
+    return { userId, draft };
+  }],
+  ["GET", /^\/api\/business\/onboarding\/([^/]+)$/, (m) => drafts.get(m[1]) ?? null],
+  ["PUT", /^\/api\/business\/onboarding\/([^/]+)$/, (m, _q, body) => {
+    const draft = drafts.get(m[1]);
+    if (!draft) throw new Refused(404, "draft_not_found", "Inscription introuvable.");
+    Object.assign(draft, body ?? {}, { updatedAt: isoNow() });
+    return draft;
+  }],
+  ["POST", /^\/api\/business\/onboarding\/([^/]+)\/submit$/, (m) => {
+    const draft = drafts.get(m[1]);
+    if (!draft) throw new Refused(404, "draft_not_found", "Inscription introuvable.");
+    // Idempotent: a spent draft hands back the venue it already made.
+    if (draft.submittedVenueId) return { venueId: draft.submittedVenueId };
+    return { venueId: makeVenueFromDraft(draft) };
+  }],
+
   ["GET", /^\/api\/business\/account$/, () =>
     db.businessAccounts[process.env.MOCK_API_USER ?? "usr_yassine"] ??
     Object.values(db.businessAccounts)[0]],
@@ -374,6 +429,183 @@ const ROUTES = [
   ["POST", /^\/api\/business\/support\/tickets$/, (_m, q) =>
     scoped(q).operations.supportTickets],
 ];
+
+const WEEK = [1, 2, 3, 4, 5, 6, 7];
+const drafts = new Map();
+
+/**
+ * Turns a finished draft into a venue the rest of the routes can serve.
+ *
+ * The same seven pieces the SQLite driver writes — the venue, its
+ * settings, the owner's membership, the account, the bookable windows,
+ * a service definition and today's service row — except that here they
+ * are one bundle in a Map. The service row matters as much as it does
+ * there: a venue with no service in hand has no dashboard to render.
+ */
+function makeVenueFromDraft(draft) {
+  const venueId = `${draft.venueType === "bar" ? "bar" : "rst"}_${randomUUID().slice(0, 8)}`;
+  const kind = draft.venueType === "bar" ? "drinks" : "restaurant";
+  const open = draft.hours.filter((h) => !h.closed);
+  const pattern = open[0] ?? { opensAt: "12:00", closesAt: "23:00" };
+  const today = new Date().toISOString().slice(0, 10);
+  const initials =
+    draft.venueName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0].toUpperCase())
+      .join("") || "LY";
+
+  const service = {
+    id: `svc_${randomUUID().slice(0, 8)}`,
+    kind: "diner",
+    label: "Service",
+    date: today,
+    opensAt: `${today}T${pattern.opensAt}:00.000Z`,
+    closesAt: `${today}T${pattern.closesAt}:00.000Z`,
+    state: "scheduled",
+    capacity: 40,
+    bookedCovers: 0,
+    arrivedCovers: 0,
+    noShowCovers: 0,
+    revenueMad: 0,
+    slotLoad: [],
+  };
+  const profile = {
+    id: venueId,
+    kind: "gastronomique",
+    name: draft.venueName,
+    shortName: draft.venueName.slice(0, 40),
+    initials,
+    city: draft.city,
+    subline: `${kind === "drinks" ? "Bar" : "Restaurant"} · ${draft.city}`,
+    cuisine: "",
+    capacity: 40,
+    contactEmail: "",
+    contactPhone: "",
+    website: "",
+    currency: "MAD",
+    onboardingCompleted: true,
+    description: "",
+    address: draft.address,
+    latitude: draft.latitude ?? undefined,
+    longitude: draft.longitude ?? undefined,
+    priceRange: 2,
+    tags: [],
+    features: [],
+    ambience: [],
+  };
+
+  // Built from an existing bundle so every field the types require is
+  // present, then emptied: a new venue has no bookings, no reviews and
+  // no history, and inventing any would be a lie the screens repeat.
+  const template = Object.values(db.venues)[0];
+  const bundle = JSON.parse(JSON.stringify(template));
+  bundle.profile = profile;
+  bundle.overview = {
+    ...bundle.overview,
+    restaurant: profile,
+    currentService: service,
+    services: [service],
+    zones: [],
+    upcomingReservations: [],
+    waitlist: [],
+    activity: [],
+    topItems: [],
+    reviews: [],
+    payouts: [],
+    coversToday: { count: 0, deltaPctVsYesterday: 0, series24h: [], peakHourLabel: "" },
+    averageTicket: { amountMad: 0, deltaPctVsLastWeek: 0 },
+    occupancy: { pct: 0, deltaPctVsLastWeek: 0 },
+    noShows: { count: 0, lostRevenueMad: 0 },
+    revenueWeek: { amountMad: 0, deltaPctVsLastWeek: 0, series: [] },
+    rating: { average: 0, reviewCount: 0, deltaVsLastMonth: null },
+    nextPayout: { amountMad: 0, scheduledFor: isoNow() },
+  };
+  bundle.dayBooks = {};
+  bundle.customers = [];
+  bundle.notifications = [];
+  bundle.photos = draft.coverObjectKey
+    ? [
+        {
+          id: `ast_${randomUUID().slice(0, 10)}`,
+          venueId,
+          kind: "photo",
+          objectKey: draft.coverObjectKey,
+          contentType: draft.coverContentType || "image/jpeg",
+          sizeBytes: draft.coverSizeBytes || 0,
+          position: 0,
+          createdAt: isoNow(),
+        },
+      ]
+    : [];
+  bundle.menuFiles = [];
+  bundle.menuItems = [];
+  bundle.staff = [];
+  bundle.availability = {
+    venueId,
+    slots: open.map((h, i) => ({
+      id: `slot_${i + 1}`,
+      weekday: h.weekday,
+      opensAt: h.opensAt,
+      closesAt: h.closesAt,
+      capacity: 40,
+      enabled: true,
+    })),
+    closures: [],
+    updatedAt: isoNow(),
+  };
+  bundle.operations.settings = {
+    ...bundle.operations.settings,
+    configuration: kind === "drinks" ? "lounge" : "restaurant",
+  };
+  bundle.operations.serviceConfiguration = {
+    services: [
+      {
+        id: `svd_${randomUUID().slice(0, 8)}`,
+        name: "Service",
+        kind: "diner",
+        weekdays: (open.length ? open : draft.hours).map((h) => h.weekday),
+        startsAt: pattern.opensAt,
+        endsAt: pattern.closesAt,
+        lastBookingAt: pattern.closesAt,
+        capacityCovers: 40,
+        coversPerQuarter: 6,
+        turnMinutesSmall: 90,
+        turnMinutesLarge: 120,
+        zoneIds: [],
+        enabled: true,
+        version: 1,
+        updatedAt: isoNow(),
+      },
+    ],
+    pacing: bundle.operations.serviceConfiguration.pacing,
+  };
+
+  db.venues[venueId] = bundle;
+  const owner = db.users.find((u) => u.userId === draft.ownerId);
+  if (owner) {
+    owner.venues.push({
+      id: venueId,
+      name: profile.name,
+      shortName: profile.shortName,
+      initials,
+      city: profile.city,
+      kind,
+      role: "owner",
+    });
+  }
+  db.businessAccounts[draft.ownerId] = {
+    businessId: `biz_${randomUUID().slice(0, 8)}`,
+    venueId,
+    ownerId: draft.ownerId,
+    subscriptionTier: "annual",
+    featuresEnabled: ["bookings", "availability"],
+  };
+  draft.submittedVenueId = venueId;
+  draft.step = 6;
+  return venueId;
+}
 
 function needVenue(id) {
   const bundle = venue(id);

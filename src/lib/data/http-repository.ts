@@ -32,11 +32,14 @@ import {
   type ReservationRefInput,
   type RestaurantRepository,
   type ReviewReplyInput,
+  type OnboardingDraftPatch,
+  type OnboardingSignUpInput,
   type VenueListingPatch,
   type VenueProfilePatch,
 } from "./repository";
 import type { MenuItem, Reservation, RestaurantProfile } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
+import type { OnboardingDraft } from "@/lib/types/onboarding";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
 import type {
   ConfigurationAction,
@@ -168,6 +171,37 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     return this.request<VenueAsset[]>(
       "GET",
       `/api/business/venues/${venueId}/assets?kind=${encodeURIComponent(kind)}`,
+    );
+  }
+
+  // ── Onboarding ──
+  startOnboarding(input: OnboardingSignUpInput) {
+    return this.request<{ userId: string; draft: OnboardingDraft }>(
+      "POST",
+      "/api/business/onboarding",
+      input,
+    );
+  }
+
+  getOnboardingDraft(draftId: string) {
+    return this.request<OnboardingDraft | null>(
+      "GET",
+      `/api/business/onboarding/${draftId}`,
+    );
+  }
+
+  saveOnboardingDraft(draftId: string, patch: OnboardingDraftPatch) {
+    return this.request<OnboardingDraft>(
+      "PUT",
+      `/api/business/onboarding/${draftId}`,
+      patch,
+    );
+  }
+
+  submitOnboarding(draftId: string) {
+    return this.request<{ venueId: string }>(
+      "POST",
+      `/api/business/onboarding/${draftId}/submit`,
     );
   }
 

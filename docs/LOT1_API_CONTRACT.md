@@ -72,10 +72,100 @@ et **nulle part ailleurs**.
 
 ---
 
-## 2. Les sept écrans, un par un
+## 2. Les écrans, un par un
 
 Les chemins sont donnés tels que le pilote les construit. `{id}` est un
 segment de chemin, `venue_id` un paramètre de requête.
+
+Sept écrans, plus le parcours d'inscription : « Création de Venue » est
+l'un des trois mots de la ligne Prio 02, et il n'avait pas d'écran. Il
+en a six, en un seul parcours, et ils viennent avant tout le reste —
+c'est la porte par laquelle un partenaire entre de lui-même.
+
+### 2.0 Inscription — `/inscription`
+
+Six étapes : **Vous**, **Votre établissement**, **Adresse**, **Photos**,
+**Horaires**, **C'est prêt**. Une seule route, un brouillon côté
+service, et quatre appels.
+
+| # | Méthode | Chemin | Requête | Réponse |
+|---|---|---|---|---|
+| 1 | `POST` | `/api/business/onboarding` | `{ fullName, email, phone, password }` | `{ userId, draft }` |
+| 2 | `GET` | `/api/business/onboarding/{draftId}` | — | `OnboardingDraft \| null` |
+| 3 | `PUT` | `/api/business/onboarding/{draftId}` | un fragment de `OnboardingDraft` | `OnboardingDraft` |
+| 4 | `POST` | `/api/business/onboarding/{draftId}/submit` | — | `{ venueId }` |
+
+**Le compte existe dès l'étape 1**, et c'est une décision, pas un
+raccourci : l'alternative est de garder un mot de passe quelque part
+pendant que les cinq autres étapes se remplissent, et un mot de passe
+dans un brouillon est un mot de passe dans une sauvegarde. L'appel 1
+crée donc la personne et rend le brouillon de son établissement.
+`409 { code: "email_taken" }` si l'adresse a déjà un compte : c'est la
+seule erreur de champ du parcours.
+
+```json
+{
+  "id": "onb_a1b2c3d4",
+  "ownerId": "usr_e5f6a7b8",
+  "step": 3,
+  "venueName": "Le Petit Riad",
+  "venueType": "bar",
+  "city": "Marrakech",
+  "address": "45 rue de la Kasbah, Médina",
+  "latitude": 31.6295, "longitude": -7.9811,
+  "coverObjectKey": "venues/onb_a1b2c3d4/photo/....jpg",
+  "coverContentType": "image/jpeg",
+  "coverSizeBytes": 184320,
+  "hours": [
+    { "weekday": 1, "closed": false, "opensAt": "12:00", "closesAt": "23:00" }
+  ],
+  "submittedVenueId": null,
+  "updatedAt": "2026-09-24T22:10:00.000Z"
+}
+```
+
+`venueType` est le mot du partenaire — `restaurant` ou `bar` — et il est
+traduit en vocabulaire de l'application (`restaurant` / `drinks`) au
+moment où l'établissement est créé, pas avant. `step` est l'étape la
+plus avancée atteinte : c'est ce qui fait qu'un onglet fermé ne perd
+rien, et le portail rouvre le parcours là où il s'est arrêté plutôt
+qu'au début.
+
+**L'appel 4 est « Création de Venue » elle-même**, et il doit être
+idempotent : un brouillon déjà soumis rend l'établissement qu'il a déjà
+créé, jamais un second. Ce que le portail attend qu'il crée, parce que
+c'est ce que le pilote SQLite crée et ce dont les sept écrans ont
+besoin pour s'afficher :
+
+1. l'établissement (`venues`), avec son nom, son type, sa ville et son
+   adresse ;
+2. ses réglages (`venue_settings`) — la configuration `restaurant` ou
+   `lounge`, que **tous** les écrans lisent pour leur vocabulaire ;
+3. l'appartenance du propriétaire (`staff`, rôle `owner`) ;
+4. son compte métier (`business_accounts`) ;
+5. les alertes par défaut (`notification_preferences`) ;
+6. une fenêtre réservable par jour ouvert (`availability_slots`), depuis
+   la grille de l'étape 5 ;
+7. **une définition de service et le service du jour** — sans elles
+   l'Accueil du nouvel établissement n'a pas de service en cours, et
+   l'écran ne s'affiche pas du tout. C'est le piège de cet endpoint.
+
+La photo de couverture, si l'étape 4 n'a pas été passée, a été
+téléversée sous l'espace du brouillon ; la ligne de média créée à
+l'étape 6 pointe sur la même clé, sans déplacer d'octets.
+
+**Ce qui est obligatoire**, et c'est tout : un nom, une adresse e-mail
+et un mot de passe de huit caractères pour le compte ; le nom, le type,
+la ville et l'adresse pour l'établissement. Le téléphone, le point sur
+la carte, la photo et les horaires ont tous une réponse par défaut —
+les horaires arrivent pré-remplis en semaine type, 12h00–23h00, ce qui
+est déjà valide. L'étape 4 dit à voix haute qu'elle peut être passée.
+
+*Tables écrites (pilote SQLite)* : `partner_accounts`,
+`onboarding_drafts`, puis à l'étape 6 `venues`, `venue_settings`,
+`staff`, `business_accounts`, `notification_preferences`,
+`availability_slots`, `service_definitions`, `services`, et
+`venue_assets` si une photo a été ajoutée.
 
 ### 2.1 Connexion — `/login`
 
@@ -426,6 +516,10 @@ c'est la liste qu'un parcours complet produit, pas une intention.
 
 | Méthode | Chemin | Écrans |
 |---|---|---|
+| `POST` | `/api/business/onboarding` | Inscription · étape 1 |
+| `GET` | `/api/business/onboarding/{id}` | Inscription · reprise |
+| `PUT` | `/api/business/onboarding/{id}` | Inscription · étapes 2 à 5 |
+| `POST` | `/api/business/onboarding/{id}/submit` | Inscription · étape 6 |
 | `POST` | `/api/business/auth/session` | Connexion |
 | `GET` | `/api/business/auth/session?user_id=` | toutes les requêtes — identité, périmètre, rôle |
 | `GET` | `/api/business/settings?venue_id=` | les six écrans internes |
@@ -625,6 +719,25 @@ du Lot 2 et non Ma fiche, écrivent toujours SQLite en direct : ce sont
 les deux dernières surfaces qui ne traversent pas la couture, et elles
 sont hors Lot 1.
 
+### 5.4 L'inscription passe par les quatre endpoints
+
+Le parcours de `/inscription` n'a pas de chemin court : chaque étape
+écrit par le pilote, comme le reste du Lot 1. En mode `http`, contre le
+service factice de `tools/mock-api.mjs`, un parcours complet se lit dans
+son journal — c'est la trace du test, pas une intention :
+
+| Étape | Appel | Vérifié |
+|---|---|---|
+| 1 · le compte | `POST /api/business/onboarding` | ✅ `→ 200`, rend `{ userId, draft }` |
+| reprise | `GET /api/business/onboarding/{id}` | ✅ `→ 200`, l'étape atteinte et les réponses |
+| 2 à 5 | `PUT /api/business/onboarding/{id}` | ✅ quatre `→ 200`, un par étape enregistrée |
+| 6 · la venue | `POST /api/business/onboarding/{id}/submit` | ✅ `→ 200`, rend `{ venueId }` ; l'Accueil de la nouvelle venue s'affiche derrière |
+
+`tools/verify/inscription.mjs` est ce qui produit cette trace : il
+marche les six étapes, ferme et rouvre le parcours, puis vérifie que
+l'atterrissage salue le nouveau partenaire sur son établissement. Il
+passe en lot 1 et en lot 2, en 1440 et en 390, en `db` et en `http`.
+
 ## 6. Correspondance avec ChiffrageV3.0 ligne 39
 
 Le classeur est versionné : `docs/reference/DigiNegoce_LYFE_App_ChiffrageV3_0.xlsx`.
@@ -750,17 +863,19 @@ liste que l'estimation DB de 2 jours doit couvrir.
 
 ## 7. Les tables du Lot 1
 
-Sur les 65 tables de `db/schema.sql`, voici celles que les sept écrans
+Sur les 67 tables de `db/schema.sql`, voici celles que les sept écrans
 touchent. Le pilote SQLite est la spécification exécutable de ce que
 votre backend doit pouvoir répondre.
 
 | Table | Lue par | Écrite par |
 |---|---|---|
-| `venues` | Accueil, Ma fiche, Connexion | Ma fiche (identité) |
+| `venues` | Accueil, Ma fiche, Connexion | Ma fiche (identité), Inscription (étape 6) |
 | `venue_tags` | Accueil, Ma fiche | Ma fiche (fiche, Lot 2) |
 | `venue_settings` | les six écrans | Notifications, Paramètres |
-| `business_accounts` | Connexion (compte métier) | — |
-| `staff` | Connexion (annuaire, périmètre) | Équipe (Lot 2) |
+| `business_accounts` | Connexion (compte métier) | Inscription (étape 6) |
+| `partner_accounts` | Connexion (mot de passe d'un partenaire inscrit) | Inscription (étape 1) |
+| `onboarding_drafts` | Inscription (reprise) | Inscription (chaque étape) |
+| `staff` | Connexion (annuaire, périmètre) | Équipe (Lot 2), Inscription (étape 6) |
 | `reservations` | Accueil, Réservations, Check-in | Check-in, cycle de vie |
 | `reservation_status_history` | — | Check-in, cycle de vie |
 | `customers` | Accueil, Réservations (jointure) | — |

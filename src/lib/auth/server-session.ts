@@ -57,7 +57,15 @@ class DemoSessionDriver implements SessionDriver {
     // and falling back to the default user for it would silently sign
     // someone in as a different person.
     const claimed = jar.get(USER_COOKIE)?.value;
-    if (claimed && isKnownAccount(claimed)) return claimed;
+    // The fixture list first, because it costs nothing. Then the
+    // directory: an account the onboarding flow created is not in the
+    // fixture, and falling back to the default user for it would sign
+    // the new partner in as somebody else — which is exactly what
+    // happened the first time this flow reached the dashboard.
+    if (claimed) {
+      if (isKnownAccount(claimed)) return claimed;
+      if (await directory().findById(claimed)) return claimed;
+    }
 
     return process.env.LYFE_DEMO_USER_ID ?? DEFAULT_USER_ID;
   }

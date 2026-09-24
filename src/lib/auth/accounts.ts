@@ -219,11 +219,16 @@ export async function verifyCredentials(
   const dir = directory();
   if (dir.verify) {
     const found = await dir.verify(email, password);
-    if (!found) return { ok: false, reason: "bad_password" };
-    const resolved = await resolveAccount(found.userId);
-    return resolved
-      ? { ok: true, account: resolved }
-      : { ok: false, reason: "unknown_account" };
+    if (found) {
+      const resolved = await resolveAccount(found.userId);
+      return resolved
+        ? { ok: true, account: resolved }
+        : { ok: false, reason: "unknown_account" };
+    }
+    // A backend is the only authority on its own accounts. A local
+    // directory is not: it checks what onboarding created, and the
+    // fixture partners below are just as local, so a miss falls through.
+    if (dir.exclusiveVerify) return { ok: false, reason: "bad_password" };
   }
 
   const account = byEmail.get(email.trim().toLowerCase());

@@ -92,14 +92,16 @@ a hairline and names neither, and this is the same sidebar.
 of the route index (`lib/nav/routes.ts`), which is what the styleguide
 table, the navigation and the capture tools all read.
 
-### The seven Lot 1 screens
+### The seven Lot 1 screens, and the door before them
 
 Three nouns in the sprint row, and the word that decides the rest:
-*uniquement*.
+*uniquement*. Seven screens, plus the onboarding flow — « Création de
+Venue » is one of the three nouns and had no screen at all until now.
 
 | # | Screen | Route | Which noun | What Lot 1 buys |
 |---:|---|---|---|---|
-| 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. |
+| 0 | Inscription | `/inscription` | Création de Venue | Six steps a partner walks on their own: themselves, the establishment, the address, a photo, the weekly hours, a summary. The draft is saved on the seam after every step, so a closed tab loses nothing, and step 6 creates the venue and signs them in on it. |
+| 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. Its line for non-partners now opens the flow above instead of offering an e-mail address. |
 | 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. |
 | 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Services, capacity, pacing and the booking window — the hours the venue can be booked for. |
 | 4 | Accueil | `/restaurant` | Gestion des réservations | Today's book, and the sentence above it. No tiles. |
@@ -363,9 +365,11 @@ is exactly what that component draws, so it earns a component of its own.
 ### 5.1 `09` plays
 
 Press Present on `09` and it starts on Connexion and behaves like the
-portal: Se connecter lands on Accueil, every sidebar entry goes to its
-screen, Ouvrir le carnet opens the book, the topbar pill goes to
-Check-in, the day arrows and the service tabs on Réservations move
+portal: Se connecter lands on Accueil, « Inscrire mon établissement »
+opens the six-step inscription and walks it with Continuer and
+Précédent — Passer cette étape included, on the photo — until step 6
+lands on Accueil, every sidebar entry goes to its screen, Ouvrir le
+carnet opens the book, the topbar pill goes to Check-in, the day arrows and the service tabs on Réservations move
 between that screen's day and service states, Accepter on Nabil
 Cherkaoui's row raises the confirmation, Scanner le code raises the
 camera, and Enregistrer on Ma fiche, Disponibilités and Notifications
@@ -374,11 +378,15 @@ position, because every frame but Connexion carries the same sidebar and
 a host moving between screens should not be thrown back to the top.
 Overlays dissolve in over 0.2s.
 
-Seven sections, one per screen, left to right in the order a partner
-meets them, 240px apart. This is the one page in the file whose sections
-are named for screens rather than for the nav groups of
-`src/lib/nav/workspaces.ts` — a prototype reads in the order it is
-played, not in the order the sidebar groups its entries.
+Eight sections, one per screen, left to right in the order a partner
+meets them, 240px apart. `0 · Inscription` is the leftmost, before
+Connexion, because it is the door a partner with no account comes
+through; it holds the six steps at both widths and nothing else, as the
+flow has no states beside them — every step *is* a state of one card.
+This is the one page in the file whose sections are named for screens
+rather than for the nav groups of `src/lib/nav/workspaces.ts` — a
+prototype reads in the order it is played, not in the order the sidebar
+groups its entries.
 
 Each section holds two sub-sections side by side, also 240px apart:
 `Ordinateur` at 1440 on the left, `Téléphone` at 390 on the right. Under
@@ -394,7 +402,8 @@ out — is stated on `00 Lisez-moi` under « D'où vient la page 09 », not
 on the page itself. `09` keeps only its title and the four form rules.
 
 The phone flow starts on `Téléphone`, the second starting point, and
-plays the same seven screens at 390: a fixed header, a scrolling column
+plays the same screens at 390 — the six inscription steps included,
+which carry no chrome because the flow runs outside the portal shell: a fixed header, a scrolling column
 and a fixed bottom bar of four tabs. Attente is Liste d'attente, which
 Lot 1 does not buy, so the bar a basique deployment draws has four tabs
 and not five — `Chrome / BottomTabs · Dashboard basique` on `02`, one

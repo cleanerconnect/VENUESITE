@@ -18,6 +18,7 @@ import type {
   DayBook,
 } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
+import type { OnboardingDraft } from "@/lib/types/onboarding";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
 import type {
   AnalyticsPeriod,
@@ -112,6 +113,46 @@ export type AssetAction =
   | { kind: "asset.remove"; id: string }
   | { kind: "asset.reorder"; assetKind: AssetKind; orderedIds: string[] };
 
+/**
+ * Step 1 of onboarding. Creates the person, not the venue.
+ *
+ * The account has to exist from the first step: the alternative is
+ * keeping a password somewhere while the remaining five are filled in,
+ * and a password in a draft row is a password in a backup.
+ */
+export interface OnboardingSignUpInput {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+}
+
+/** What one step of the flow saves. Everything is optional by design. */
+export type OnboardingDraftPatch = Partial<
+  Pick<
+    OnboardingDraft,
+    | "step"
+    | "venueName"
+    | "venueType"
+    | "city"
+    | "address"
+    | "latitude"
+    | "longitude"
+    | "coverObjectKey"
+    | "coverContentType"
+    | "coverSizeBytes"
+    | "hours"
+  >
+>;
+
+/** Thrown when the address already has an account. The one field error. */
+export class EmailTaken extends Error {
+  constructor() {
+    super("Cette adresse a déjà un compte.");
+    this.name = "EmailTaken";
+  }
+}
+
 export interface AnalyticsInput {
   restaurantId: string;
   period: AnalyticsPeriod;
@@ -165,6 +206,24 @@ export interface RestaurantRepository extends VenueOperationsRepository {
    * customer profile.
    */
   reportNoShow(input: NoShowInput): Promise<RestaurantOverview>;
+
+  // ── Onboarding ──
+  //
+  // « Création de Venue » of Planning V3's Prio 02 row. Four calls: the
+  // account, the draft it owns, a save per step, and the one that turns
+  // the draft into a venue. The draft lives on the service rather than
+  // in the browser, so closing the tab loses nothing and the partner can
+  // finish on another device.
+  startOnboarding(
+    input: OnboardingSignUpInput,
+  ): Promise<{ userId: string; draft: OnboardingDraft }>;
+  getOnboardingDraft(draftId: string): Promise<OnboardingDraft | null>;
+  saveOnboardingDraft(
+    draftId: string,
+    patch: OnboardingDraftPatch,
+  ): Promise<OnboardingDraft>;
+  /** Idempotent: a spent draft returns the venue it already made. */
+  submitOnboarding(draftId: string): Promise<{ venueId: string }>;
 
   // ── Venue profile and settings ──
   //

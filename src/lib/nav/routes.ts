@@ -69,6 +69,15 @@ export const ROUTES: RouteEntry[] = [
     status: "built",
   },
   {
+    path: "/inscription",
+    lot: 1,
+    label: "Inscription",
+    purpose:
+      "« Création de Venue » : six étapes pour inscrire un établissement — vous, l'établissement, l'adresse, une photo, les horaires, un récapitulatif. Le brouillon est enregistré à chaque étape, donc fermer l'onglet ne perd rien.",
+    workspace: "entry",
+    status: "built",
+  },
+  {
     path: "/contact",
     lot: 1,
     label: "Nous contacter",

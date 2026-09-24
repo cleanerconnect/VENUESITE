@@ -53,6 +53,67 @@ CREATE TABLE IF NOT EXISTS venue_tags (
   PRIMARY KEY (venue_id, kind, value)
 );
 
+-- ── Partner accounts ────────────────────────────────────────
+--
+-- An account exists before any venue does. The seeded partners are
+-- reachable through `staff`, which is a membership table — one row per
+-- venue — and says nothing about someone who has just signed up and has
+-- no venue yet. That is the whole first step of onboarding, so it needs
+-- a row of its own.
+--
+-- The password is stored salted and hashed (scrypt), which is the
+-- minimum for a column of this name even in a demo dataset. The seeded
+-- fixture accounts are not here: their credentials live in
+-- `src/lib/auth/accounts.ts` and have no production counterpart.
+CREATE TABLE IF NOT EXISTS partner_accounts (
+  user_id       TEXT PRIMARY KEY,
+  full_name     TEXT NOT NULL,
+  email         TEXT NOT NULL UNIQUE,
+  phone         TEXT NOT NULL DEFAULT '',
+  -- "salt:hash", both hex. Never the password.
+  password_hash TEXT NOT NULL,
+  created_at    TEXT NOT NULL
+);
+
+-- ── Onboarding ───────────────────────────────────────────────
+--
+-- « Création de Venue » in the words of Planning V3's Prio 02 row: a
+-- partner signs up before there is anything to sign into. The account
+-- exists from step 1 — otherwise the password would have to be kept
+-- somewhere while the rest is filled in, and a password in a draft row
+-- is a password in a backup — so this table holds only the venue's
+-- answers, keyed to its owner.
+--
+-- It is a draft, not a venue. `submitted_venue_id` is what makes it
+-- spent: set once the venue exists, and a second submit of the same
+-- draft returns that venue instead of making another.
+CREATE TABLE IF NOT EXISTS onboarding_drafts (
+  id                 TEXT PRIMARY KEY,
+  owner_id           TEXT NOT NULL,
+  -- 1-6, the furthest step reached. What the flow reopens on.
+  step               INTEGER NOT NULL DEFAULT 1,
+  venue_name         TEXT NOT NULL DEFAULT '',
+  -- 'restaurant' or 'bar' in the partner's words; stored as the venue's
+  -- own vocabulary ('restaurant'/'drinks') only when the venue is made.
+  venue_type         TEXT NOT NULL DEFAULT 'restaurant',
+  city               TEXT NOT NULL DEFAULT '',
+  address            TEXT NOT NULL DEFAULT '',
+  latitude           REAL,
+  longitude          REAL,
+  -- The cover photo, as uploaded. Empty until step 4, which is skippable.
+  -- The type and size travel with the key because the venue's asset row
+  -- needs all three, and it is written a step later than the upload.
+  cover_object_key   TEXT NOT NULL DEFAULT '',
+  cover_content_type TEXT NOT NULL DEFAULT '',
+  cover_size_bytes   INTEGER NOT NULL DEFAULT 0,
+  -- The weekly grid, as JSON: [{weekday,closed,opensAt,closesAt}].
+  hours              TEXT NOT NULL DEFAULT '[]',
+  submitted_venue_id TEXT,
+  created_at         TEXT NOT NULL,
+  updated_at         TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_onboarding_owner ON onboarding_drafts(owner_id);
+
 CREATE TABLE IF NOT EXISTS business_accounts (
   business_id       TEXT PRIMARY KEY,
   venue_id          TEXT NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
