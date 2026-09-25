@@ -84,7 +84,24 @@ try {
   } else {
     const pending = migrations.filter((id) => !applied.has(id));
     for (const id of pending) {
-      await client.query(readFileSync(resolve("db/migrations", id), "utf8"));
+      try {
+        await client.query(readFileSync(resolve("db/migrations", id), "utf8"));
+      } catch (error) {
+        // The whole thing is one transaction, so this rolls everything
+        // back — and the operator needs to know *which* file, and the
+        // most likely reason. The one that actually happens: somebody
+        // ran the `ALTER` by hand and the ledger never learned about it.
+        console.error(
+          `migration refusée · ${id}\n` +
+            `  ${String(error?.message ?? error)}\n` +
+            "  Rien n'a été modifié : les migrations tiennent dans une " +
+            "seule transaction.\n" +
+            "  Si ce changement est déjà en base (appliqué à la main), " +
+            "ajoutez sa ligne au registre :\n" +
+            `    INSERT INTO schema_migrations (id, applied_at) VALUES ('${id}', now());`,
+        );
+        throw error;
+      }
       await stamp(id);
       console.log(`migration appliquée · ${id}`);
     }
