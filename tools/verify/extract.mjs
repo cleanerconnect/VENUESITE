@@ -281,13 +281,49 @@ const FULL = () => {
             .map((x) => clean(x.textContent))
             .filter((t) => t && t.length < 34 && t !== title)
             .slice(0, 4);
+          // The host line, when the row is one.
+          //
+          // Under Lot 1 a booking is a line in a book rather than a
+          // card, and its parts are not the card's: the hour and the
+          // party size lead on one baseline, the state is a word in its
+          // tone beside a band on the left edge, and a note earns a
+          // second line. A Figma frame built from this file has to be
+          // able to draw that, so the parts are recorded as parts.
+          // From the h4, not from `row`: `rowOf` climbs to the highest
+          // ancestor holding one h4, which on a book line is *above*
+          // the line itself, and `closest` only looks upward.
+          const book = h4.closest("[data-book-row]");
+          const leads = book
+            ? [...book.querySelectorAll('[class*="text-host-lead"]')]
+                .map((x) => clean(x.textContent))
+                .filter((t) => t && t !== "·")
+            : [];
+          const stateWord = book
+            ? clean(
+                [...book.querySelectorAll("span")].find(
+                  (x) =>
+                    /text-(success|warning|danger|ink-soft)\b/.test(x.className || "") &&
+                    /font-semibold/.test(x.className || ""),
+                )?.textContent,
+              ) || null
+            : null;
+          const note = book
+            ? clean(book.querySelector('[class*="border-violet"] .text-meta')?.textContent) || null
+            : null;
+          const detail = book
+            ? clean(book.querySelector('[class*="text-host-detail"]')?.textContent) || null
+            : null;
           return {
             title,
-            meta: metas[0] || null,
+            meta: metas[0] || detail || null,
             initials: clean(avatar?.textContent).slice(0, 3) || null,
             trailing: trailingLabel && trailingValue ? [trailingLabel, trailingValue] : null,
             pills: pillsIn(row),
             actions,
+            // Null on every Lot 2 row, filled on a Lot 1 book line.
+            lead: leads.length ? { time: leads[0], party: leads[1] ?? null } : null,
+            state: stateWord,
+            note,
           };
         }) };
     }

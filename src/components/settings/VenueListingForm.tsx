@@ -25,7 +25,7 @@ export function VenueListingForm({ initial }: { initial: VenueListingInput }) {
   const form = useOptimisticForm({ initial, submit: saveVenueListing });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Card variant="surface" size="md">
         <h2 className="text-h3 text-ink mb-1">Gamme de prix</h2>
         <p className="text-meta text-ink-mute mb-5">

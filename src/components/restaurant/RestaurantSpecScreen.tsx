@@ -20,7 +20,7 @@ export function RestaurantSpecScreen({ spec }: { spec: ScreenSpec }) {
   return (
     <>
       {selfTitled ? null : (
-        <header className="mb-6 md:mb-7">
+        <header className="mb-6">
           <h1 className="text-h1 text-ink">{spec.title}</h1>
           {spec.subtitle ? (
             <p className="text-body text-ink-soft mt-2">{spec.subtitle}</p>

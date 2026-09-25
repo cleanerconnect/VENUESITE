@@ -15,7 +15,7 @@ import { COPY } from "@/lib/copy/fr";
 export function ScreenSkeleton() {
   return (
     <LoadingRegion label={COPY.loading.workspace}>
-      <div className="space-y-5 md:space-y-7">
+      <div className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton />
         <Skeleton shape="card" className="h-52 w-full" />
         <KpiGridSkeleton />

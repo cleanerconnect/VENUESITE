@@ -83,7 +83,7 @@ export function FormDialog() {
       title={spec.title}
       description={spec.description}
     >
-      <form onSubmit={submit} className="space-y-5">
+      <form onSubmit={submit} className="space-y-6">
         {spec.fields.map((field) => (
           <Field key={field.name} field={field} error={errors[field.name]} />
         ))}
@@ -185,11 +185,11 @@ function Field({ field, error }: { field: FormField; error?: string }) {
       )}
 
       {error ? (
-        <p role="alert" className="text-meta text-danger mt-1.5">
+        <p role="alert" className="text-meta text-danger mt-2">
           {error}
         </p>
       ) : field.hint ? (
-        <p className="text-meta text-ink-mute mt-1.5">{field.hint}</p>
+        <p className="text-meta text-ink-mute mt-2">{field.hint}</p>
       ) : null}
     </div>
   );

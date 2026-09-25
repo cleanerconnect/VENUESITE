@@ -34,9 +34,16 @@ export function DayBarBlock({ block }: { block: Spec }) {
     "h-11 w-11 shrink-0 rounded-[var(--radius-sm)] border border-line bg-surface " +
     "flex items-center justify-center text-ink hover:border-ink/40 transition-colors";
 
+  // No card around it.
+  //
+  // This is a toolbar acting on one value, and a card is for grouping
+  // things that belong together — it was a border and 32px of padding
+  // around a strip of controls, about 135px of a 900px screen spent
+  // before the first booking. The services sit on the same line as the
+  // day on a wide screen for the same reason.
   return (
-    <section className="bg-surface border border-line rounded-[var(--radius-lg)] p-3 md:p-4">
-      <div className="flex items-center gap-3 flex-wrap">
+    <section className="flex flex-wrap items-center gap-x-4 gap-y-3">
+      <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => go(shift(block.value, -1))}
@@ -47,7 +54,7 @@ export function DayBarBlock({ block }: { block: Spec }) {
           <ChevronLeft size={20} strokeWidth={2} />
         </button>
 
-        <div className="min-w-0 flex-1 text-center md:text-left">
+        <div className="min-w-0">
           <div className="text-h3 text-ink truncate">{block.label}</div>
           {block.hint ? (
             <div className="text-meta text-ink-mute">{block.hint}</div>
@@ -65,7 +72,7 @@ export function DayBarBlock({ block }: { block: Spec }) {
         </button>
 
         <label className={cn(step, "relative cursor-pointer")}>
-          <Calendar size={19} strokeWidth={1.9} aria-hidden />
+          <Calendar size={20} strokeWidth={2} aria-hidden />
           <span className="sr-only">Choisir une date</span>
           <input
             type="date"
@@ -81,7 +88,7 @@ export function DayBarBlock({ block }: { block: Spec }) {
       {/* The day's services. One service is a statement, not a choice,
           so it is not drawn as a pair of tabs with nothing to switch to. */}
       {block.services.length > 1 ? (
-        <div className="flex gap-2 mt-3 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
           {block.services.map((s) => {
             const active = s.id === block.activeServiceId;
             return (

@@ -363,12 +363,15 @@ export function buildDashboardScreen(
   const greetingBlock: Block = {
     id: "greeting",
     type: "greeting",
-    // Both home screens are the same card: the salutation as an eyebrow,
-    // the salutation again as the headline's lead, and the serif italic
-    // clause after it. It is the house gesture on the event Overview and
-    // it is the house gesture here — a partner who holds both should not
-    // meet two different products.
-    eyebrow: data.greeting.salutation,
+    // The card is the house gesture from the event Overview — the
+    // salutation, then the serif italic clause — and a partner who holds
+    // both spaces should not meet two different products.
+    //
+    // What it no longer carries is the eyebrow. It was the salutation a
+    // second time, in tracked capitals, directly above the headline that
+    // opens with the same word: « BONSOIR » over « Bonsoir, Yassine. »
+    // A tracked all-caps label above a heading is the house style of
+    // software that has nothing to say; saying it twice is worse.
     title: `${data.greeting.salutation}, ${data.greeting.firstName}.`,
     emphasis: data.greeting.clause,
     // The store composes one subline for both lots, because the payload
@@ -1098,7 +1101,16 @@ export function buildReservationsScreen(
   const bookBlock: Block = {
     id: "book",
     type: "entity-list",
-    heading: "Carnet du service",
+    // No heading of its own in Lot 1.
+    //
+    // The screen is called Réservations, the bar above it names the day
+    // and the service, and the block underneath *is* the book. « Carnet
+    // du service » on top of that was a heading that answered a
+    // question already answered twice, and it cost a 24px line plus a
+    // row for the sort — about 100px before the first booking on the
+    // one screen where the number of bookings a host can see is the
+    // whole point. The sort moves onto the filters' line.
+    heading: lot1 ? undefined : "Carnet du service",
     // Lot 1 works the book it is given: view, accept, refuse with a
     // reason, check in, mark absent. Creating a booking from the portal
     // is Lot 2, so the button that starts one is not drawn.
@@ -1385,7 +1397,16 @@ export function buildReservationsScreen(
     return {
       slug: "reservations",
       title: "Réservations",
-      subtitle,
+      // No subtitle.
+      //
+      // It read « vendredi 25 septembre · Dîner · 20h00 – 00h30 », and
+      // the bar immediately below says the day, says « Aujourd'hui. »
+      // and offers the services as tabs. The only fact it added was the
+      // service's opening hours, which decide nothing a host does with
+      // the book in front of them — the sittings are on the screen.
+      // Two statements of the same day, one above the other, is the
+      // kind of thing that makes a host stop reading the top of a
+      // screen altogether.
       // Taking a copy of the day away acts on the whole screen, not on
       // anything inside it, so it sits in the header rather than among
       // the controls that change what the screen shows.

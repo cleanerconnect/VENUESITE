@@ -350,10 +350,18 @@ const RESTAURANT_WORKSPACE: Workspace = {
   ],
   tabs: [
     { label: "Accueil", href: restaurantHref(""), icon: "layout" },
-    { label: "Carnet", href: restaurantHref("reservations"), icon: "calendar-clock" },
-    // Door duty gets the raised centre button, the way the event
-    // workspace raises the scanner. It opens a sheet rather than
-    // navigating, so it carries a command instead of an href.
+    // « Réservations », not « Carnet ».
+    //
+    // The sidebar called this screen Réservations, the phone bar called
+    // it Carnet, and the screen itself is titled Réservations: the same
+    // destination under two names, in the two places a partner learns
+    // the product. A name is kept from one navigation to the other for
+    // the same reason a button keeps its name through to its
+    // confirmation.
+    { label: "Réservations", href: restaurantHref("reservations"), icon: "calendar-clock" },
+    // Door duty gets the centre tab, the way the event workspace gives
+    // it to the scanner. It opens a sheet rather than navigating, so it
+    // carries a command instead of an href.
     { label: "Arrivées", command: "checkin.open", icon: "user-check", raised: true },
     { label: "Attente", href: restaurantHref("liste-attente"), icon: "timer" },
     { label: "Plus", href: "/plus", icon: "grid" },

@@ -55,7 +55,7 @@ export function SettingsSaveBar() {
     <div className="sticky bottom-0 z-10 -mx-1 px-1 pb-1 pt-6 bg-gradient-to-t from-canvas via-canvas to-transparent">
       <div className="flex flex-wrap items-center gap-3 rounded-[var(--radius-md)] border border-line bg-surface px-4 py-3">
         <div
-          className="min-w-[180px] flex-1 text-[14px]"
+          className="min-w-[180px] flex-1 text-body"
           role="status"
           aria-live="polite"
         >
@@ -69,7 +69,7 @@ export function SettingsSaveBar() {
                 transition={{ duration: 0.12 }}
                 className="inline-flex items-center gap-1.5 font-semibold text-success"
               >
-                <Check size={16} strokeWidth={2.4} /> {COPY.form.saved}
+                <Check size={16} strokeWidth={2} /> {COPY.form.saved}
               </motion.span>
             ) : dirty ? (
               <motion.span
@@ -109,7 +109,7 @@ export function SettingsSaveBar() {
           disabled={!dirty || saving}
           iconLeft={
             saving ? (
-              <Loader2 size={16} strokeWidth={2.2} className="animate-spin" />
+              <Loader2 size={16} strokeWidth={2} className="animate-spin" />
             ) : undefined
           }
         >

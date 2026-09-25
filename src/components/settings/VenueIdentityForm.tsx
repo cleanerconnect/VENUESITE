@@ -31,10 +31,10 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Card variant="surface" size="md">
         <h2 className="text-h3 text-ink mb-1">Identité</h2>
-        <p className="text-meta text-ink-mute mb-5">
+        <p className="text-meta text-ink-mute mb-4">
           Ce que les clients voient dans l&apos;application.
         </p>
 
@@ -67,7 +67,7 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
       </Card>
 
       <Card variant="surface" size="md">
-        <h2 className="text-h3 text-ink mb-5">Adresse et contact</h2>
+        <h2 className="text-h3 text-ink mb-4">Adresse et contact</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {text("address", "Adresse")}
           {text("city", "Ville")}
@@ -83,7 +83,12 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
             way a person can answer: find the address, then drag the
             point onto the door. */}
         <div className="mt-6">
-          <div className="text-eyebrow text-ink-mute mb-2">Sur la carte</div>
+          {/* A label, not an eyebrow: tracked capitals above a block are
+              the tell this audit removes everywhere else, and the map
+              needs naming, not announcing. */}
+          <div className="text-meta font-semibold text-ink-soft mb-2">
+            Sur la carte
+          </div>
           <PinMap
             latitude={form.value.latitude.trim() === "" ? null : Number(form.value.latitude)}
             longitude={form.value.longitude.trim() === "" ? null : Number(form.value.longitude)}

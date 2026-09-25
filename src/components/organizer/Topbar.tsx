@@ -100,13 +100,13 @@ export function Topbar() {
           type="button"
           onClick={() => openDrawer(true)}
           aria-label="Ouvrir le menu"
-          className="md:hidden h-10 w-10 -ml-2 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
+          className="md:hidden h-11 w-11 -ml-2 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
         >
-          <Menu size={20} strokeWidth={1.7} />
+          <Menu size={20} strokeWidth={2} />
         </button>
 
         <div className="md:hidden flex-1 flex justify-center">
-          <Brand height={26} />
+          <Brand size="sm" />
         </div>
 
         {/* The bell is Lot 2's.
@@ -119,9 +119,9 @@ export function Topbar() {
         {lot === 2 ? (
           <button
             aria-label="Notifications"
-            className="md:hidden relative h-10 w-10 -mr-2 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
+            className="md:hidden relative h-11 w-11 -mr-2 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
           >
-            <Bell size={18} strokeWidth={1.6} />
+            <Bell size={20} strokeWidth={2} />
             <span
               aria-hidden
               className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-danger ring-2 ring-canvas"
@@ -147,9 +147,16 @@ export function Topbar() {
               aria-label={scoped ?? searchPlaceholder}
               className="w-full h-11 pl-11 pr-14 bg-surface rounded-full border border-line text-[13px] text-ink outline-none focus:border-ink transition-colors disabled:cursor-default"
             />
-            <kbd className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-ink-mute bg-canvas-2 border border-line px-1.5 py-0.5 rounded pointer-events-none">
-              ⌘K
-            </kbd>
+            {/* The keyboard hint is for the analyst's desk, not the host
+                stand: Lot 1 is read on a tablet with no ⌘ key, and the
+                hint was 11px — under the 13px floor this density
+                declares — sitting inside the one control a host uses
+                most. Lot 2 keeps it. */}
+            {lot === 2 ? (
+              <kbd className="absolute right-4 top-1/2 -translate-y-1/2 text-meta font-semibold text-ink-mute bg-canvas-2 border border-line px-2 py-1 rounded pointer-events-none">
+                ⌘K
+              </kbd>
+            ) : null}
           </div>
         </div>
 
@@ -158,12 +165,12 @@ export function Topbar() {
             <button
               onClick={() => runQuickAction(quickAction.command)}
               title={quickAction.title ?? quickAction.label}
-              className="inline-flex items-center gap-2 h-11 px-4 bg-ink text-canvas rounded-full text-[13px] font-bold hover:bg-ink-soft transition-colors group"
+              className="inline-flex items-center gap-2 h-11 px-4 bg-ink text-canvas rounded-full text-control-sm font-bold hover:bg-ink-soft transition-colors group"
             >
               <Icon name={quickAction.icon} size={16} className="text-violet" />
               {quickAction.label}
-              {quickAction.shortcut ? (
-                <kbd className="hidden lg:inline text-[10px] font-semibold bg-canvas/10 px-1.5 py-0.5 rounded text-canvas/65 ml-0.5 group-hover:bg-canvas/15">
+              {quickAction.shortcut && lot === 2 ? (
+                <kbd className="hidden lg:inline text-meta font-semibold bg-canvas/10 px-2 py-1 rounded text-canvas/65 ml-1 group-hover:bg-canvas/15">
                   {quickAction.shortcut}
                 </kbd>
               ) : null}
@@ -174,9 +181,9 @@ export function Topbar() {
           {lot === 2 ? (
             <button
               aria-label="Notifications"
-              className="relative h-10 w-10 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
+              className="relative h-11 w-11 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
             >
-              <Bell size={18} strokeWidth={1.6} />
+              <Bell size={20} strokeWidth={2} />
               <span
                 aria-hidden
                 className="absolute top-2 right-2.5 h-1.5 w-1.5 rounded-full bg-violet"

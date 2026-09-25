@@ -31,7 +31,7 @@ export function SaveBar({
     // the field above fades out under it instead of being clipped by it.
     <div className="sticky bottom-0 z-10 -mx-1 px-1 pb-1 pt-6 bg-gradient-to-t from-canvas via-canvas to-transparent">
       <div className="flex items-center gap-3 flex-wrap border border-line bg-surface rounded-[var(--radius-md)] px-4 py-3">
-        <div className="flex-1 min-w-[180px] text-[14px]" role="status" aria-live="polite">
+        <div className="flex-1 min-w-[180px] text-body" role="status" aria-live="polite">
           <AnimatePresence mode="wait" initial={false}>
             {state === "saved" ? (
               <motion.span
@@ -40,9 +40,9 @@ export function SaveBar({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.12 }}
-                className="inline-flex items-center gap-1.5 text-success font-semibold"
+                className="inline-flex items-center gap-2 text-success font-semibold"
               >
-                <Check size={14} strokeWidth={2.2} /> {COPY.form.saved}
+                <Check size={16} strokeWidth={2} /> {COPY.form.saved}
               </motion.span>
             ) : state === "error" ? (
               <motion.span
@@ -51,9 +51,9 @@ export function SaveBar({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.12 }}
-                className="inline-flex items-start gap-1.5 text-danger font-semibold"
+                className="inline-flex items-start gap-2 text-danger font-semibold"
               >
-                <TriangleAlert size={14} strokeWidth={2.2} className="mt-[1px] shrink-0" />
+                <TriangleAlert size={16} strokeWidth={2} className="mt-[1px] shrink-0" />
                 {message ?? COPY.form.savingFailed}
               </motion.span>
             ) : dirty ? (
@@ -94,7 +94,7 @@ export function SaveBar({
           onClick={onSave}
           disabled={!dirty || saving}
           iconLeft={
-            saving ? <Loader2 size={16} strokeWidth={2.2} className="animate-spin" /> : undefined
+            saving ? <Loader2 size={16} strokeWidth={2} className="animate-spin" /> : undefined
           }
         >
           {saving ? COPY.action.saving : COPY.action.save}

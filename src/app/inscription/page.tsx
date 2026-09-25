@@ -40,7 +40,7 @@ export default async function InscriptionPage() {
           Vous avez déjà un compte ?{" "}
           <Link
             href="/login"
-            className="text-ink underline underline-offset-2 hover:text-violet-deep transition-colors"
+            className="inline-flex h-11 items-center text-ink underline underline-offset-2 hover:text-violet-deep transition-colors"
           >
             Se connecter
           </Link>

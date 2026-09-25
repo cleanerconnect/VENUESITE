@@ -51,9 +51,9 @@ export function RejectBookingDialog({
           : undefined
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-6">
         <fieldset>
-          <legend className="text-eyebrow text-ink-mute mb-2.5">
+          <legend className="text-eyebrow text-ink-mute mb-2">
             Motif du refus
           </legend>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -66,7 +66,7 @@ export function RejectBookingDialog({
                   onClick={() => setReason(key)}
                   aria-pressed={active}
                   className={cn(
-                    "text-left px-3.5 h-11 rounded-[var(--radius-sm)] border text-[13.5px] font-medium transition-colors",
+                    "text-left px-4 h-11 rounded-[var(--radius-sm)] border text-meta font-medium transition-colors",
                     active
                       ? "border-ink bg-violet-soft text-ink"
                       : "border-line bg-surface text-ink-soft hover:border-ink/40",

@@ -32,10 +32,14 @@ const VARIANT: Record<CardVariant, string> = {
   "canvas-2": "bg-canvas-2 border border-line-soft",
 };
 
+// `lg` was `p-7` — 28px, which is off the 4/8/12/16/24/32/48/64 rhythm
+// the spacing token declares, and three pixels from the 32 next to it on
+// the same screen. Nothing was gained by the three pixels; the step is
+// now the one the scale has.
 const SIZE: Record<CardSize, string> = {
   sm: "p-4 rounded-[var(--radius-lg)]",
   md: "p-6 rounded-[var(--radius-xl)]",
-  lg: "p-7 rounded-[var(--radius-xl)]",
+  lg: "p-8 rounded-[var(--radius-xl)]",
   hero: "p-8 rounded-[var(--radius-xl)]",
 };
 
@@ -56,6 +60,12 @@ export function Card({
 }: CardProps) {
   return (
     <div
+      // A card says so. The audit counts cards per screen and asks a
+      // card whose only content is one list or one form to justify
+      // itself; guessing from a radius and a border counted a rounded
+      // tint block as a card and missed a borderless one.
+      data-card={variant}
+      data-card-size={size}
       className={cn(
         "relative overflow-hidden",
         VARIANT[variant],

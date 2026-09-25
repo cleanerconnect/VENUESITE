@@ -61,7 +61,7 @@ export function BilanTab({ event }: { event: LyfeEvent }) {
     <div className="bilan-printable space-y-5">
       {/* === Print-only header — LYFE wordmark + event title === */}
       <header className="hidden print:block mb-6">
-        <Brand height={28} />
+        <Brand size="sm" />
         <div className="text-eyebrow text-ink-mute mt-4">
           Bilan d&apos;événement
         </div>

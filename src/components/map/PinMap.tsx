@@ -187,7 +187,7 @@ export function PinMap({
       <div className="flex flex-wrap items-center gap-3">
         <MapPin size={18} className="text-violet-deep shrink-0" />
         <div className="min-w-0 flex-1">
-          <div className="text-[15px] font-semibold text-ink">
+          <div className="text-body font-semibold text-ink">
             {placed ? "Point placé" : "Placer le point sur la carte"}
           </div>
           <p className="text-meta text-ink-mute mt-1">

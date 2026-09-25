@@ -75,13 +75,13 @@ export function Switch({
         disabled && "opacity-50 cursor-not-allowed",
       )}
     >
-      <span className="mt-0.5">{root}</span>
+      <span className="mt-1">{root}</span>
       <span className="leading-tight">
         {label ? (
-          <span className="block text-[14px] font-semibold text-ink">{label}</span>
+          <span className="block text-body font-semibold text-ink">{label}</span>
         ) : null}
         {description ? (
-          <span className="block text-[13px] text-ink-soft mt-0.5 leading-relaxed">
+          <span className="block text-meta text-ink-soft mt-1 leading-relaxed">
             {description}
           </span>
         ) : null}

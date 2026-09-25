@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import type { EntityListBlock as Spec, EntityRow } from "@/lib/dashboard/spec";
@@ -93,14 +92,14 @@ export function EntityListBlock({ block }: { block: Spec }) {
               a sighted user read "Heure" in a box and had to work out
               that it was a sort order and not a filter. */}
           {block.sorts?.length ? (
-            <label className="flex items-center gap-2.5 shrink-0">
+            <label className="flex items-center gap-2 shrink-0">
               <span className="text-meta text-ink-soft whitespace-nowrap">
                 Trier par
               </span>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="h-12 px-4 pr-10 bg-surface border border-line rounded-[var(--radius-sm)] text-[14px] focus:outline-none focus:border-ink transition-colors appearance-none"
+                className="h-12 px-4 pr-10 bg-surface border border-line rounded-[var(--radius-sm)] text-body focus:outline-none focus:border-ink transition-colors appearance-none"
                 style={SELECT_CHEVRON}
               >
                 {block.sorts.map((o) => (
@@ -136,31 +135,36 @@ export function EntityListBlock({ block }: { block: Spec }) {
         </div>
       ) : null}
 
-      {/* A list with no heading has nowhere to hang the sort, so it keeps
-          a row — the only case that still needs one. */}
-      {!block.heading && sortControl ? (
-        <div className="flex md:justify-end mb-4">{sortControl}</div>
-      ) : null}
-
-      {block.tabs?.length ? (
-        <FilterTabs
-          className="mb-4"
-          layoutId={`entity-list-underline-${block.id}`}
-          value={tab}
-          onChange={setTab}
-          tabs={block.tabs.map((t) => ({
-            id: t.id,
-            label: t.label,
-            count: counts[t.id] ?? 0,
-          }))}
-        />
+      {/* A list with no heading hangs its sort on the tabs' line.
+          It used to get a row of its own — 40px of control and 16px of
+          gap to hold one select — and the tabs took another. They act
+          on the same list, so they share a line: filters on the left,
+          the order on the right. */}
+      {block.tabs?.length || (!block.heading && sortControl) ? (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          {block.tabs?.length ? (
+            <FilterTabs
+              layoutId={`entity-list-underline-${block.id}`}
+              value={tab}
+              onChange={setTab}
+              tabs={block.tabs.map((t) => ({
+                id: t.id,
+                label: t.label,
+                count: counts[t.id] ?? 0,
+              }))}
+            />
+          ) : (
+            <span />
+          )}
+          {!block.heading && sortControl ? sortControl : null}
+        </div>
       ) : null}
 
       {block.collapsible && !expanded && block.rows.length > 0 ? (
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="w-full flex items-center justify-between gap-3 bg-canvas-2 border border-line rounded-[var(--radius-lg)] px-4 py-3.5 text-left hover:border-ink/30 transition-colors"
+          className="w-full flex items-center justify-between gap-3 bg-canvas-2 border border-line rounded-[var(--radius-lg)] px-4 py-3 text-left hover:border-ink/30 transition-colors"
         >
           <span className="text-body font-semibold text-ink">
             {block.collapsible.summary}
@@ -170,7 +174,7 @@ export function EntityListBlock({ block }: { block: Spec }) {
           </span>
         </button>
       ) : block.collapsible && block.rows.length === 0 ? (
-        <div className="bg-canvas-2 border border-line rounded-[var(--radius-lg)] px-4 py-3.5 text-body font-semibold text-ink-soft">
+        <div className="bg-canvas-2 border border-line rounded-[var(--radius-lg)] px-4 py-3 text-body font-semibold text-ink-soft">
           {block.collapsible.summary}
         </div>
       ) : block.rows.length === 0 ? (
@@ -251,6 +255,45 @@ function SlotGroups({ rows }: { rows: EntityRow[] }) {
     else groups.push({ slot, rows: [row] });
   }
 
+  // One book, not a stack of cards.
+  //
+  // Under host density the sittings live inside a single bordered
+  // block: the hour is a band across it, the bookings are lines under
+  // the band, and one rule separates each from the next. That is the
+  // page of a paper book, and it is also what makes a service fit on a
+  // screen — the gaps between twenty-six cards were 12px each and the
+  // borders 2px, which is 360px of a 900px screen spent on separation.
+  const host = Boolean(rows[0]?.lead);
+  if (host) {
+    return (
+      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface">
+        {/* No hour band.
+            It said « 21H00 » across the page and the line directly
+            under it opened with « 21h00 » in the largest type on the
+            screen: the same fact twice, 36px apart. It made sense while
+            a booking was a card with its time stacked inside it and the
+            page needed landmarks; it stopped making sense the moment
+            the times became a column of tabular figures a host reads
+            straight down. Six bands cost 216px of a 900px screen —
+            about four bookings — on the one screen whose whole job is
+            how many bookings you can see.
+
+            What is lost with it is the per-sitting count, « 2 tables ».
+            Nothing in Lot 1 buys a load reading (that is Pilotage,
+            Prio 08), the grouping itself survives — the rows are still
+            ordered and grouped by sitting — and the count of the whole
+            service is on the filter tabs above. */}
+        {groups.map((group, i) => (
+          <div key={`${group.slot ?? "_"}-${i}`}>
+            {group.rows.map((row) => (
+              <Row key={row.id} row={row} />
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {groups.map((group, i) => (
@@ -295,53 +338,24 @@ function Row({ row }: { row: EntityRow }) {
   // the actions, the detail sheet — is the same component.
   const host = Boolean(row.lead);
 
+  // The Lot 2 card row, unchanged: a card stacks its facts, and every
+  // other list on the platform — events, tables, menu items — reads
+  // that way.
   const inner = (
     <div className="flex items-center gap-4">
-      {host ? null : <Leading row={row} />}
+      <Leading row={row} />
 
-      {host && row.lead ? (
-        <div className="shrink-0 text-right w-[104px]">
-          <div className="text-host-lead text-ink">{row.lead.time}</div>
-          <div className="text-host-lead text-ink mt-0.5">{row.lead.party}</div>
-        </div>
-      ) : null}
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <h4
-            className={cn(
-              "text-ink truncate",
-              host ? "text-host-name" : "text-h3",
-            )}
-          >
-            {row.title}
-          </h4>
-          {host && row.status ? (
-            <span
-              className={cn(
-                "text-host-detail font-semibold",
-                STATUS_BAND[row.status.tone].text,
-              )}
-            >
-              {row.status.label}
-            </span>
-          ) : null}
-          {/* Under host density the state is the band, so the pill that
-              carried it is not drawn a second time. */}
-          {(host ? row.badges?.slice(1) : row.badges)?.map((badge, i) => (
+          <h4 className="text-h3 text-ink truncate">{row.title}</h4>
+          {row.badges?.map((badge, i) => (
             <SpecBadge key={`${badge.label}-${i}`} badge={badge} />
           ))}
         </div>
 
         {row.meta ? (
-          <div
-            className={cn(
-              "mt-1 num",
-              host ? "text-host-detail" : "text-meta text-ink-mute",
-            )}
-          >
-            {row.meta}
-          </div>
+          <div className="mt-1 num text-meta text-ink-mute">{row.meta}</div>
         ) : null}
 
         {row.progress ? (
@@ -363,14 +377,14 @@ function Row({ row }: { row: EntityRow }) {
         ) : null}
 
         {row.signal ? (
-          <div className="mt-3 inline-flex items-start gap-1.5 max-w-full bg-violet-soft text-violet-deep rounded-[var(--radius-sm)] px-2.5 py-1.5">
+          <div className="mt-3 inline-flex items-start gap-2 max-w-full bg-violet-soft text-violet-deep rounded-[var(--radius-sm)] px-2 py-1">
             <Icon
               name={row.signal.icon ?? "sparkles"}
-              size={12}
+              size={16}
               strokeWidth={1.9}
               className="shrink-0 mt-[1px]"
             />
-            <span className="text-[12px] leading-snug font-medium truncate">
+            <span className="text-meta leading-snug font-medium truncate">
               {row.signal.text}
             </span>
           </div>
@@ -392,12 +406,107 @@ function Row({ row }: { row: EntityRow }) {
     </div>
   );
 
+
+  // ── The host line ──
+  //
+  // Written out rather than bent out of the Lot 2 row, because the two
+  // want opposite things: a card stacks its facts, a line in a book
+  // puts them on one baseline and lets the least important one give up
+  // its width first.
+  //
+  // Order left to right is the order a host reads: when (22px, the
+  // largest type on the screen), who (18px), what state (16px, in its
+  // tone), then the context they only need if they are about to ring
+  // the guest (13px, and the first thing to truncate).
+  //
+  // A note is the exception that earns a second line. It is the one
+  // field that can say « allergy », so it is never truncated and never
+  // hidden — the lines that carry one are taller than the lines that
+  // do not, which is the right way round.
+  const hostLine = row.lead ? (
+    <>
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 md:flex-nowrap">
+        <div className="flex shrink-0 items-baseline gap-2 md:w-[188px]">
+          <span className="text-host-lead text-ink">{row.lead.time}</span>
+          <span className="text-host-lead text-ink/70" aria-hidden>·</span>
+          <span className="text-host-lead text-ink/70">{row.lead.party}</span>
+        </div>
+
+        <h4 className="text-host-name text-ink truncate shrink-0 max-w-[13rem]">
+          {row.title}
+        </h4>
+
+        {row.status ? (
+          <span
+            className={cn(
+              "text-body font-semibold shrink-0",
+              STATUS_BAND[row.status.tone].text,
+            )}
+          >
+            {row.status.label}
+          </span>
+        ) : null}
+
+        {row.meta ? (
+          <div className="text-host-detail num min-w-0 flex-1 truncate">
+            {row.meta}
+          </div>
+        ) : null}
+
+        {/* The state is the band and the word; a second pill saying the
+            same thing is not drawn. Anything else the spec attaches
+            still shows. */}
+        {row.badges?.slice(1).map((badge, i) => (
+          <SpecBadge key={`${badge.label}-${i}`} badge={badge} />
+        ))}
+      </div>
+
+      {/* The note, on the second line it earns.
+          A marker rather than a chip: the violet fill and the 8px of
+          padding made it a small card inside a line, and a line in a
+          book does not contain cards. The rule down its left says « this
+          belongs to the booking above »; the words are the point. */}
+      {row.signal ? (
+        <div className="mt-1 flex items-start gap-2 border-l-2 border-violet pl-2 text-violet-deep">
+          <Icon
+            name={row.signal.icon ?? "sparkles"}
+            size={16}
+            strokeWidth={2}
+            className="mt-[1px] shrink-0"
+          />
+          <span className="text-meta font-medium">{row.signal.text}</span>
+        </div>
+      ) : null}
+    </>
+  ) : null;
+
+  // ── A line in a book, or a card ──
+  //
+  // Under host density a booking is a *line*: no border of its own, no
+  // radius, no shadow, no lift on hover — separated from the next one
+  // by a single rule, the way a paper reservation book separates two
+  // sittings. Twenty-six bookings used to be twenty-six cards, each
+  // with a 20px radius and a shadow that grew on hover, and a card is
+  // for grouping things that belong together, not for decorating a
+  // list. The card chrome also cost 12px of gap and 32px of padding
+  // per booking, which is most of the reason a service did not fit on
+  // a screen.
+  //
+  // The hover affordance stays — a line that opens a sheet has to say
+  // so — as a background tint, which is a state and not an animation.
+  //
+  // Everywhere else the row keeps the card it always had.
   return (
-    <motion.div
-      whileHover={{ y: -1 }}
-      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <div className="relative bg-surface border border-line rounded-[var(--radius-lg)] hover:shadow-soft transition-shadow overflow-hidden">
+    <div className={host ? "" : "transition-shadow"}>
+      <div
+        className={cn(
+          "relative overflow-hidden",
+          host
+            ? "bg-surface border-b border-line last:border-b-0 hover:bg-canvas-2"
+            : "bg-surface border border-line rounded-[var(--radius-lg)] hover:shadow-soft",
+        )}
+        data-book-row={host ? "" : undefined}
+      >
         {row.status ? (
           <span
             aria-hidden
@@ -429,23 +538,24 @@ function Row({ row }: { row: EntityRow }) {
               data-row="open"
               onClick={() => row.detail && openDetail(row.detail)}
               className={cn(
-                "flex-1 min-w-0 text-left p-4",
+                "flex-1 min-w-0 text-left",
+                host ? "px-4 py-2" : "p-4",
                 row.status && "pl-6",
               )}
             >
-              {inner}
+              {host ? hostLine : inner}
             </button>
           ) : row.href ? (
             <Link
               href={row.href}
               data-row="open"
-              className={cn("flex-1 min-w-0 p-4", row.status && "pl-6")}
+              className={cn("flex-1 min-w-0", host ? "px-4 py-2" : "p-4", row.status && "pl-6")}
             >
-              {inner}
+              {host ? hostLine : inner}
             </Link>
           ) : (
-            <div className={cn("flex-1 min-w-0 p-4", row.status && "pl-6")}>
-              {inner}
+            <div className={cn("flex-1 min-w-0", host ? "px-4 py-2" : "p-4", row.status && "pl-6")}>
+              {host ? hostLine : inner}
             </div>
           )}
 
@@ -488,7 +598,7 @@ function Row({ row }: { row: EntityRow }) {
                   className="h-9 w-9 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink-mute transition-colors"
                   aria-label="Actions"
                 >
-                  <MoreVertical size={16} strokeWidth={1.8} />
+                  <MoreVertical size={16} strokeWidth={2} />
                 </button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
@@ -508,7 +618,7 @@ function Row({ row }: { row: EntityRow }) {
                         }
                       }}
                       className={cn(
-                        "px-3 h-9 flex items-center rounded-[var(--radius-sm)] text-[13.5px]",
+                        "px-3 h-9 flex items-center rounded-[var(--radius-sm)] text-meta",
                         "hover:bg-ink/[0.04] cursor-pointer outline-none",
                         item.destructive ? "text-danger" : "text-ink",
                       )}
@@ -522,7 +632,7 @@ function Row({ row }: { row: EntityRow }) {
           </div>
         ) : null}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -535,7 +645,7 @@ function Leading({ row }: { row: EntityRow }) {
         className="hidden sm:flex w-14 h-14 rounded-[14px] shrink-0 items-center justify-center bg-violet-soft text-violet-deep"
         aria-hidden
       >
-        <Icon name={row.icon} size={20} strokeWidth={1.7} />
+        <Icon name={row.icon} size={20} strokeWidth={2} />
       </div>
     );
   }
@@ -543,7 +653,7 @@ function Leading({ row }: { row: EntityRow }) {
   if (row.initials) {
     return (
       <div
-        className="hidden sm:flex w-14 h-14 rounded-[14px] shrink-0 items-center justify-center bg-violet-soft text-violet-deep font-bold text-[15px]"
+        className="hidden sm:flex w-14 h-14 rounded-[14px] shrink-0 items-center justify-center bg-violet-soft text-violet-deep font-bold text-body"
         aria-hidden
       >
         {row.initials.slice(0, 2).toUpperCase()}

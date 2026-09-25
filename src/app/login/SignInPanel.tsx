@@ -134,7 +134,7 @@ export function SignInPanel() {
             transition={{ duration: 0.22, ease: EASE }}
           >
             <h2 className="text-h2 text-ink">{COPY.auth.title}</h2>
-            <p className="text-body text-ink-soft mt-1.5">
+            <p data-prose className="text-body text-ink-soft mt-2">
               {COPY.auth.subtitle}
             </p>
 
@@ -193,7 +193,7 @@ export function SignInPanel() {
                       revealed ? COPY.auth.hidePassword : COPY.auth.showPassword
                     }
                     aria-pressed={revealed}
-                    className="h-8 w-8 rounded-[var(--radius-sm)] flex items-center justify-center text-ink-mute hover:text-ink hover:bg-canvas-2 transition-colors"
+                    className="h-11 w-11 rounded-[var(--radius-sm)] flex items-center justify-center text-ink-mute hover:text-ink hover:bg-canvas-2 transition-colors"
                   >
                     {revealed ? (
                       <EyeOff size={16} strokeWidth={1.8} />
@@ -205,7 +205,10 @@ export function SignInPanel() {
               />
 
               <div className="flex items-center justify-between gap-3 -mt-1">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
+                {/* The box stays 16px — a 44px checkbox is a checkbox nobody
+                    recognises — and the label carries the 44 the thumb
+                    needs, which is where a checkbox's hit area belongs. */}
+                <label className="flex h-11 items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={remember}
@@ -245,7 +248,7 @@ export function SignInPanel() {
               {COPY.auth.notPartner}{" "}
               <Link
                 href="/inscription"
-                className="text-ink font-semibold underline underline-offset-2 hover:text-violet-deep transition-colors"
+                className="inline-flex h-11 items-center text-ink font-semibold underline underline-offset-2 hover:text-violet-deep transition-colors"
               >
                 {COPY.auth.notPartnerCta}
               </Link>
@@ -261,7 +264,7 @@ export function SignInPanel() {
             transition={{ duration: 0.22, ease: EASE }}
           >
             <h2 className="text-h2 text-ink">{COPY.auth.chooseVenue}</h2>
-            <p className="text-body text-ink-soft mt-1.5">
+            <p data-prose className="text-body text-ink-soft mt-2">
               {COPY.auth.chooseVenueBody}
             </p>
             <div className="mt-6 flex flex-col gap-2">
@@ -323,7 +326,7 @@ export function SignInPanel() {
               <h2 className="text-h3 text-ink mt-4">
                 {COPY.auth.noWorkspaceTitle}
               </h2>
-              <p className="text-body text-ink-soft mt-2">
+              <p data-prose className="text-body text-ink-soft mt-2">
                 Bonjour {stage.fullName}. {COPY.auth.noWorkspaceBody}
               </p>
               <Button

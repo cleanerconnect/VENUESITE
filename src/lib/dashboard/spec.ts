@@ -544,6 +544,18 @@ export interface SettingsBlock extends BlockBase {
   type: "settings";
   heading?: string;
   subheading?: string;
+  /**
+   * Whether the subheading is a sentence somebody wrote, or the block's
+   * own data spelled out.
+   *
+   * The service cards on Disponibilités put « tous les jours · 12h00 –
+   * 15h00 · créneaux de 30 minutes » here: that is the seven fields
+   * below, read back as one line, and it changes when they change. It
+   * looks like copy and it is not, and the forty-word rule of the
+   * design audit counted it as twenty-four words the screen could cut —
+   * which it cannot, because nobody wrote them. Default is `prose`.
+   */
+  subheadingKind?: "prose" | "data";
   rows: SettingRow[];
   /** Shown above the rows when something is off, e.g. a paused list. */
   banner?: { tone: SemanticTone; title: string; body?: string; action?: Action };

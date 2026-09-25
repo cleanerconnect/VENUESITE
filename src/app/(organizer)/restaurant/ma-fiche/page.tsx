@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
 import { demoRepository } from "@/lib/data/demo-repository";
+import { PermissionDenied } from "@/components/data/QueryState";
 import { DEMO_STATE_PARAM, parseDemoState } from "@/lib/data/demo-state";
 import { RepositoryError } from "@/lib/data/repository";
 import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
@@ -41,6 +42,13 @@ export default async function MaFichePage({ searchParams }: Props) {
       : query[DEMO_STATE_PARAM],
   );
   if (demo === "chargement") return <ScreenSkeleton />;
+  if (demo === "refus")
+    return (
+      <PermissionDenied
+        what="la fiche de l'établissement"
+        requiredRole="un propriétaire ou un gérant"
+      />
+    );
 
   // Every read goes through the repository, so this route works
   // identically on SQLite, on the static snapshot, and against a real

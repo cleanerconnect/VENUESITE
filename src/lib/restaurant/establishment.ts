@@ -82,7 +82,7 @@ export function buildAvailabilityScreen(
       {
         id: "online",
         label: "Accepter les réservations en ligne",
-        hint: "Coupé, l'établissement reste visible mais n'est plus réservable.",
+        hint: "Coupé : visible, mais plus réservable.",
         control: { kind: "toggle", value: pacing.onlineBookingOpen },
         command: "pacing.set",
         payload: { field: "onlineBookingOpen" },
@@ -135,12 +135,12 @@ export function buildAvailabilityScreen(
     id: "rules",
     type: "settings",
     heading: "Règles de réservation",
-    subheading: "Ce que l'application accepte sans vous demander.",
+    subheading: "Ce qui passe sans vous demander.",
     rows: [
       {
         id: "max-party",
         label: "Groupe maximum en ligne",
-        hint: "Au-delà, la demande passe en validation manuelle.",
+        hint: "Au-delà, vous répondez vous-même.",
         control: {
           kind: "number",
           value: pacing.maxPartyOnline,
@@ -155,7 +155,7 @@ export function buildAvailabilityScreen(
       {
         id: "window",
         label: "Réservation possible à l'avance",
-        hint: "Au-delà de ce nombre de jours, la date n'est pas encore ouverte.",
+        hint: "Plus loin, la date n'est pas ouverte.",
         control: {
           kind: "number",
           value: pacing.bookingWindowDays,
@@ -170,7 +170,7 @@ export function buildAvailabilityScreen(
       {
         id: "cutoff",
         label: "Heure limite le jour même",
-        hint: "Passé cette heure, l'application ne propose plus ce soir.",
+        hint: "Passé cette heure, plus rien ce soir.",
         control: { kind: "time", value: pacing.sameDayCutoff },
         command: "pacing.set",
         payload: { field: "sameDayCutoff" },
@@ -185,7 +185,7 @@ export function buildAvailabilityScreen(
     id: "advanced",
     type: "settings",
     heading: "Réglages avancés",
-    subheading: "La cadence en salle et les seuils. Réglés une fois, rarement revus.",
+    subheading: "Réglés une fois, rarement revus.",
     collapsed: true,
     rows: [
       {
@@ -332,7 +332,7 @@ export function buildAvailabilityScreen(
   return {
     slug: "disponibilites",
     title: "Disponibilités",
-    subtitle: "Ce qui décide de ce que l'application propose",
+    subtitle: "Ce que l'application peut proposer",
     blocks: [master, services, rules, advanced, closures, ...calendarLink],
   };
 }
@@ -374,6 +374,7 @@ function serviceCard(
     // « créneaux de undefined minutes » on the screen. A backend that
     // omits it gets the schema's default instead.
     subheading: `${weekdayLabel(service.weekdays)} · ${clock(service.startsAt)} – ${clock(service.endsAt)} · créneaux de ${asSlotMinutes(service.slotMinutes) === 60 ? "1 heure" : `${asSlotMinutes(service.slotMinutes)} minutes`}`,
+    subheadingKind: "data",
     rows: [
       {
         id: id("weekdays"),
@@ -400,7 +401,6 @@ function serviceCard(
       {
         id: id("lastBookingAt"),
         label: "Dernière réservation acceptée",
-        hint: "L'heure après laquelle l'application ne propose plus ce service.",
         control: { kind: "time", value: service.lastBookingAt },
         ...write("lastBookingAt"),
       },
@@ -410,7 +410,7 @@ function serviceCard(
         // of 72 is 72 per half hour or 72 per hour depending on it.
         id: id("slotMinutes"),
         label: "Créneaux de",
-        hint: "Les heures que l'application propose, et la façon dont le carnet regroupe la journée.",
+        hint: "Les heures proposées, et les groupes du carnet.",
         control: {
           kind: "select",
           value: String(asSlotMinutes(service.slotMinutes)),
@@ -475,13 +475,13 @@ const ALERTS: { id: string; event: string; label: string; hint: string }[] = [
     id: "cancellation",
     event: "cancellation",
     label: "Annulation par le client",
-    hint: "Une table qui se libère est une table à remplir.",
+    hint: "Une table libérée est une table à remplir.",
   },
   {
     id: "guest-reminder",
     event: "guestReminder",
     label: "Rappel au client la veille",
-    hint: "Le message qui fait le plus baisser les absences. Il part au client, pas à vous.",
+    hint: "Part au client. C'est ce qui fait baisser les absences.",
   },
 ];
 
@@ -541,7 +541,7 @@ export function buildNotificationsScreen(
     id: "alerts",
     type: "settings",
     heading: "Alertes",
-    subheading: "Par quel canal chaque alerte part. Plusieurs canaux à la fois si vous voulez.",
+    subheading: "Par quel canal chaque alerte part.",
     rows: ALERTS.map((alert) => ({
       id: alert.id,
       label: alert.label,
@@ -570,7 +570,7 @@ export function buildNotificationsScreen(
     id: "recipients",
     type: "settings",
     heading: "Qui les reçoit",
-    subheading: "Le numéro et l'adresse de l'établissement, pas ceux de la fiche publique.",
+    subheading: "Ceux de l'établissement, pas de la fiche publique.",
     rows: [
       {
         id: "alert-phone",
@@ -681,7 +681,7 @@ export function buildNotificationsScreen(
     return {
       slug: "notifications",
       title: "Notifications",
-      subtitle: "Ce dont vous êtes prévenu, et par quel canal",
+      subtitle: "Ce dont vous êtes prévenu, et comment",
       blocks: [alerts, recipients],
     };
   }

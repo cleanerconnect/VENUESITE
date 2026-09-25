@@ -102,7 +102,7 @@ export function MobilePlusMenu({
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {!bareHeader ? (
         <div>
           <h1 className="text-h1 text-ink">Plus</h1>

@@ -11,7 +11,7 @@ import { Icon, MetricText } from "./primitives";
 // Props-only. Give it a spec, get markup.
 export function DetailBody({ spec }: { spec: DetailSpec }) {
   return (
-    <div className="space-y-7">
+    <div className="space-y-8">
       {spec.sections?.map((section) => (
         <section key={section.label}>
           <div className="text-eyebrow text-ink-mute mb-3">{section.label}</div>

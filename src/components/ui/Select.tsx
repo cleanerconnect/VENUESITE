@@ -26,7 +26,7 @@ export function Select({
 }) {
   const id = useId();
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
+    <div className={cn("flex flex-col gap-2", className)}>
       {label ? (
         <label htmlFor={id} className="text-eyebrow text-ink-soft">
           {label}
@@ -39,7 +39,7 @@ export function Select({
           defaultValue={defaultValue}
           onChange={(e) => onChange?.(e.target.value)}
           className={cn(
-            "w-full h-12 pl-3.5 pr-10 bg-surface border border-line rounded-[var(--radius-sm)] text-ink text-[14px]",
+            "w-full h-12 pl-4 pr-10 bg-surface border border-line rounded-[var(--radius-sm)] text-ink text-body",
             "appearance-none focus:outline-none focus:border-ink transition-colors duration-150",
           )}
         >
@@ -55,7 +55,7 @@ export function Select({
           className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-ink-mute"
         />
       </div>
-      {hint ? <span className="text-meta text-ink-mute">{hint}</span> : null}
+      {hint ? <p data-prose className="text-meta text-ink-mute max-w-[62ch]">{hint}</p> : null}
     </div>
   );
 }

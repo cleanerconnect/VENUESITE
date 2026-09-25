@@ -71,7 +71,7 @@ export function MetricTileSkeleton() {
         <Skeleton className="w-24" />
         <Skeleton shape="card" className="h-9 w-9" />
       </div>
-      <Skeleton className="h-10 w-28 mt-5 rounded-[var(--radius-sm)]" />
+      <Skeleton className="h-10 w-28 mt-6 rounded-[var(--radius-sm)]" />
       <Skeleton className="w-20 mt-3" />
     </div>
   );
@@ -116,7 +116,7 @@ export function ChartSkeleton({ height = 260 }: { height?: number }) {
 
 export function FormSkeleton({ fields = 4 }: { fields?: number }) {
   return (
-    <div className="rounded-[var(--radius-xl)] border border-line bg-surface p-6 space-y-5">
+    <div className="rounded-[var(--radius-xl)] border border-line bg-surface p-6 space-y-6">
       {Array.from({ length: fields }).map((_, i) => (
         <div key={i} className="space-y-2">
           <Skeleton className="w-24" />
