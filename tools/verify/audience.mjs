@@ -16,8 +16,10 @@
 // Needs a server already running on BASE and `npm install --no-save
 // playwright`.
 
-import { chromium } from "playwright";
+import { chromiumOrExplain } from "./browser.mjs";
 import { LOT, LOT_LABEL } from "./lot.mjs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const MINIMUM = 10;

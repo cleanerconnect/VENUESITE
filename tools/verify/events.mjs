@@ -15,9 +15,11 @@
 // playwright`. Kept out of package.json on purpose: it is a check to run
 // deliberately, not a dependency to carry.
 
-import { chromium } from "playwright";
+import { chromiumOrExplain } from "./browser.mjs";
 import { ROUTES } from "../../src/lib/nav/routes.ts";
 import { LOT_LABEL, inLot } from "./lot.mjs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const W = Number(process.env.W ?? 1440);

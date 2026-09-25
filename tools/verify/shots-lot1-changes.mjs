@@ -9,8 +9,10 @@
 // deciding. So they are driven here, by the same steps a partner and a
 // host take.
 
-import { chromium } from "playwright";
+import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync } from "node:fs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const SHOTS = process.env.SHOTS ?? "docs/lot1-reference";

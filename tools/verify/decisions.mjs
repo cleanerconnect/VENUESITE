@@ -17,10 +17,16 @@
 // Needs the portal on BASE with a seeded database behind it. It writes:
 // it signs a partner up and it decides a booking.
 
-import { chromium } from "playwright";
-import { LOT_LABEL } from "./lot.mjs";
+import { chromiumOrExplain } from "./browser.mjs";
+import { LOT_LABEL, requireWrites } from "./lot.mjs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
+
+// This tool writes. Against the static driver there is nothing to
+// write to, so it says so and stops rather than failing.
+await requireWrites(BASE, "Les quatre changements du lot 1");
 const width = Number(process.env.W ?? 1440);
 const height = Number(process.env.H ?? 1000);
 const EXTERNAL_MAP = /tile\.openstreetmap\.org|nominatim\.openstreetmap\.org|\/api\/geocode/;
@@ -93,8 +99,11 @@ const newPartner = `decisions.${stamp}@lyfe-verify.ma`;
 await go("/inscription");
 await page.getByLabel("Votre nom").fill("Salma Benjelloun");
 await page.getByLabel("E-mail").fill(newPartner);
-await page.getByLabel("Téléphone").fill("+212 6 62 11 22 33");
-await page.getByLabel("Mot de passe").fill("motdepasse1");
+await page.getByLabel("Téléphone", { exact: true }).fill("+212 6 62 11 22 33");
+// Two fields now carry « mot de passe » — `Détail Sprint ` row 39 asks
+// for the confirmation — so the label has to be matched exactly.
+await page.getByLabel("Mot de passe", { exact: true }).fill("motdepasse1");
+await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1400);
 
@@ -313,13 +322,22 @@ check(
 check("le service dit sa durée dans son en-tête", /créneaux de (15|30) minutes|créneaux de 1 heure/i.test(dispo));
 
 // The other venue chose the hour, so its own card says so.
-await context.addCookies([{ name: "lyfe.venue", value: "bar_nomad_casa", url: BASE }]);
+// The venue cookie is signed since the audit — an unsigned value is
+// ignored, which is the whole point of signing it. So the switch goes
+// through the route the switcher itself calls; `context.request` shares
+// this context's cookie jar, so the signed cookie lands where the page
+// will read it.
+await context.request.post(`${BASE}/api/session/venue`, {
+  data: { venueId: "bar_nomad_casa" },
+});
 await go("/restaurant/disponibilites");
 check(
   "l'autre établissement a choisi l'heure",
   /créneaux de 1 heure/i.test(await text()),
 );
-await context.addCookies([{ name: "lyfe.venue", value: "rst_dar_zellij", url: BASE }]);
+await context.request.post(`${BASE}/api/session/venue`, {
+  data: { venueId: "rst_dar_zellij" },
+});
 
 // ── 4 · le client ────────────────────────────────────────────
 

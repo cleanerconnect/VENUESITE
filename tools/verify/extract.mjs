@@ -25,10 +25,12 @@
 //
 // Needs a server on BASE and `npm install --no-save playwright`.
 
-import { chromium } from "playwright";
+import { chromiumOrExplain } from "./browser.mjs";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { ROUTES } from "../../src/lib/nav/routes.ts";
 import { LOT, LOT_LABEL, inLot } from "./lot.mjs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const DEPTH = process.env.DEPTH ?? "outline";
@@ -244,8 +246,16 @@ const FULL = () => {
             .map((m) => clean(m.textContent)).filter(Boolean);
           // The avatar is the square initials chip. Matching `.rounded-full`
           // instead finds the status pill, which is why this used to report
-          // "À C" where the screen says "NC".
-          const avatar = row.querySelector('[class*="bg-violet-soft"]');
+          // "À C" where the screen says "NC". Matching `bg-violet-soft`
+          // alone finds the special-request note, which is why it then
+          // reported "Dem" for a guest whose row says « Demande une
+          // table près de la fontaine » — and a Figma frame built from
+          // this file drew that as the avatar. The chip is a square of
+          // known size holding two or three letters; the note is a line
+          // of prose. Size is what separates them.
+          const avatar = [...row.querySelectorAll('[class*="bg-violet-soft"]')].find(
+            (node) => (node.textContent ?? "").trim().length <= 3,
+          );
           const trailingLabel = clean(row.querySelector(".text-eyebrow")?.textContent) || null;
           const trailingValue = [...row.querySelectorAll('.num, [class*="text-metric"]')]
             .map((x) => clean(x.textContent))
