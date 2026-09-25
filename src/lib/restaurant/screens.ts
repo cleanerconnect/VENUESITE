@@ -1785,8 +1785,12 @@ function reservationRow(
     // The sitting this booking files under, on the half hour the whole
     // dataset is already aligned to.
     slot: lot1 ? slotOf(reservation.at, slotMinutes) : undefined,
+    // The phone, on the row, because the one thing a host does with a
+    // booking that is not on this screen is ring the guest — and going
+    // to the drawer for a number is the tap that gets skipped when the
+    // stand is busy.
     meta: lot1
-      ? place || undefined
+      ? [reservation.guestPhone, place].filter(Boolean).join(" · ") || undefined
       : `${hm(reservation.at)} · ${coversIn(configuration, reservation.partySize)} · ${place}`,
     badges,
     signal: reservation.note ? { text: reservation.note, icon: "note" } : undefined,
@@ -2058,16 +2062,35 @@ function reservationDetail(
         label: "Le client",
         items: [
           { label: "Téléphone", metric: { value: reservation.guestPhone } },
-          // A visit count is the guest base's figure, and Liste clients
-          // is Prio 08.
-          ...(lot === 1
-            ? []
-            : [
+          // Only when there is one. A booking taken by phone has no
+          // address, and an empty E-mail row reads like a guest who
+          // refused to give one.
+          ...(reservation.guestEmail
+            ? [{ label: "E-mail", metric: { value: reservation.guestEmail } }]
+            : []),
+          // The app asks for a birth year in a profile nobody has to
+          // fill, so this is absent far more often than it is present —
+          // and an age is what a host actually reads, not a year.
+          ...(reservation.guestBirthYear
+            ? [
                 {
-                  label: "Visites",
-                  metric: { value: reservation.visits, format: COUNT },
+                  label: "Âge",
+                  metric: {
+                    value: `${
+                      new Date().getFullYear() - reservation.guestBirthYear
+                    } ans`,
+                  },
                 },
-              ]),
+              ]
+            : []),
+          // The visit count at *this* venue, which is what the
+          // `customers` row counts — it is scoped to the venue like
+          // every other read. Not a CRM: one number, no history, no
+          // spend, and nothing to click through to.
+          {
+            label: "Visites ici",
+            metric: { value: reservation.visits, format: COUNT },
+          },
           // An amount the Lot 1 partner cannot see taken, refunded or
           // released, because Acomptes is a Lot 2 screen.
           ...(reservation.depositMad && lot !== 1
@@ -2089,8 +2112,18 @@ function reservationDetail(
         ],
       },
     ],
+    // « Note de salle » was the venue's own word for it, from when this
+    // field was only ever typed by a host. The app now writes the
+    // guest's special request into the same column, and a Lot 1 partner
+    // reads far more of the second kind than the first.
     notes: reservation.note
-      ? [{ label: "Note de salle", text: reservation.note, icon: "note" }]
+      ? [
+          {
+            label: lot === 1 ? "Demande particulière" : "Note de salle",
+            text: reservation.note,
+            icon: "note",
+          },
+        ]
       : undefined,
     actions: [
       {

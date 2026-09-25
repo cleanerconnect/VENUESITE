@@ -295,6 +295,11 @@ function reservationRow(r: Record<string, string | number | null>): Reservation 
     state: String(r.state) as Reservation["state"],
     channel: String(r.channel) as Reservation["channel"],
     zoneId: (r.zone_id as string | null) ?? undefined,
+    guestEmail: (r.guest_email as string | null) ?? undefined,
+    guestBirthYear:
+      r.birth_year === null || r.birth_year === undefined
+        ? undefined
+        : Number(r.birth_year),
     note: (r.note as string | null) ?? undefined,
     visits: Number(r.visit_count ?? 0),
     vip: Number(r.visit_count ?? 0) >= 8,
@@ -303,9 +308,15 @@ function reservationRow(r: Record<string, string | number | null>): Reservation 
   };
 }
 
-/** Joins the customer so a row can show visit count without a second query. */
+/**
+ * Joins the customer so a row can show visit count without a second query.
+ *
+ * And the two facts the drawer shows that the booking itself does not
+ * hold: the address and the birth year live on the guest, not on the
+ * table they booked.
+ */
 const BOOKING_SELECT = `
-  SELECT r.*, c.visit_count
+  SELECT r.*, c.visit_count, c.email AS guest_email, c.birth_year
     FROM reservations r
     LEFT JOIN customers c ON c.id = r.customer_id
    WHERE r.venue_id = ?`;
@@ -356,7 +367,7 @@ export async function customerBookings(venueId: string, customerId: string): Pro
 
 async function waitlist(venueId: string): Promise<Reservation[]> {
   return (await all(
-    `SELECT w.*, c.visit_count
+    `SELECT w.*, c.visit_count, c.email AS guest_email, c.birth_year
        FROM waitlist w
        LEFT JOIN customers c ON c.id = w.customer_id
       WHERE w.venue_id = ? AND w.status IN ('waiting', 'notified')

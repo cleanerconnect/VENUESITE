@@ -224,6 +224,23 @@ export interface Reservation {
   channel: ReservationChannel;
   /** Seating area the guest asked for — terrace, salle, rooftop. */
   zoneId?: string;
+  /**
+   * The guest's address, when the app has one.
+   *
+   * From the `customers` row rather than the booking: a reservation is
+   * made with a name and a phone, and the address belongs to the guest.
+   * Absent for a booking taken by phone.
+   */
+  guestEmail?: string;
+  /**
+   * The year the guest was born, when the app collected it.
+   *
+   * Optional in the schema and optional here, because the consumer app
+   * asks for it in a profile nobody has to fill. The drawer turns it
+   * into an age and says nothing at all when it is missing — a "—" in
+   * an Âge field reads like a fact about the guest.
+   */
+  guestBirthYear?: number;
   /** Allergies, occasion, seating preference — shown on the row. */
   note?: string;
   /** Repeat guest, drives the VIP badge and the prep list. */
