@@ -91,6 +91,18 @@ const ACCOUNTS: DemoAccount[] = [
     eventRole: "scanner",
   },
   {
+    // LYFE's own reviewer. Holds no venue and no organisation on
+    // purpose: the account that validates listings must not be able to
+    // act inside one. Its only screen is /admin/validations, and what
+    // opens that is the `platform_admins` row, not this entry.
+    userId: "usr_lyfe_admin",
+    email: "validation@lyfe.ma",
+    password: "demo",
+    fallbackName: "Nawal Cherkaoui",
+    organizations: [],
+    eventRole: "scanner",
+  },
+  {
     // Signed up, nothing attached. The "no workspace" state ships
     // because it is what a partner sees the day before onboarding
     // completes, and it is unreachable without an account like this.

@@ -12,6 +12,41 @@ export type RestaurantKind =
   | "brasserie"
   | "street_food";
 
+/**
+ * Where a listing is in LYFE's review.
+ *
+ * `pending_review` is what /inscription creates: the partner's dashboard
+ * works in full, and the consumer app does not list the venue. Only
+ * `validated` is visible to a guest. `rejected` carries the reason LYFE
+ * gave, which is the one thing the partner is shown about it.
+ */
+export type VenueStatus = "pending_review" | "validated" | "rejected";
+
+export const VENUE_STATUSES: VenueStatus[] = [
+  "pending_review",
+  "validated",
+  "rejected",
+];
+
+export const isVenueStatus = (value: unknown): value is VenueStatus =>
+  typeof value === "string" && (VENUE_STATUSES as string[]).includes(value);
+
+/** One venue awaiting LYFE's decision, as /admin/validations lists it. */
+export interface PendingVenue {
+  id: string;
+  name: string;
+  kind: string;
+  city: string;
+  address: string;
+  contactEmail: string;
+  contactPhone: string;
+  ownerName: string;
+  createdAt: string;
+  /** Whether the partner got as far as a cover photo. */
+  hasPhoto: boolean;
+  openDays: number;
+}
+
 export interface RestaurantProfile {
   id: string;
   kind: RestaurantKind;
@@ -30,6 +65,11 @@ export interface RestaurantProfile {
   website: string;
   currency: string;
   onboardingCompleted: boolean;
+  /** LYFE's review. The app lists only a `validated` venue. */
+  status: VenueStatus;
+  /** Why LYFE refused. Empty unless `status` is `rejected`. */
+  statusReason: string;
+  statusChangedAt?: string;
   /** Free text shown on the listing. */
   description: string;
   address: string;

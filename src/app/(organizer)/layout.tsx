@@ -3,6 +3,7 @@ import { Topbar } from "@/components/organizer/Topbar";
 import { BottomTabs } from "@/components/organizer/BottomTabs";
 import { ScannerModal } from "@/components/organizer/ScannerModal";
 import { CheckInSheet } from "@/components/restaurant/CheckInSheet";
+import { ValidationBanner } from "@/components/restaurant/ValidationBanner";
 import { AssistantFAB } from "@/components/organizer/Assistant";
 import { SessionSync } from "@/components/auth/SessionSync";
 import { WorkspaceAccessProvider } from "@/lib/auth/workspace-access";
@@ -41,6 +42,15 @@ export default async function OrganizerLayout({
     session.venues.length > 0
       ? (await getRestaurantRepository().getVenueSettings(session.venueId)).configuration
       : "restaurant";
+
+  // LYFE's review of the active listing. Read here for the same reason
+  // as the configuration: it is a fact about the establishment, every
+  // venue screen owes the partner the same notice, and a screen builder
+  // is the wrong place to put a fact none of the screens is about.
+  const listing =
+    session.venues.length > 0
+      ? await getRestaurantRepository().getVenueProfile(session.venueId)
+      : null;
 
   const access = {
     event: (account?.organizations.length ?? 0) > 0,
@@ -95,6 +105,10 @@ export default async function OrganizerLayout({
             <Topbar />
           </div>
           <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 md:px-8 py-6 md:py-8">
+            <ValidationBanner
+              status={listing?.status}
+              reason={listing?.statusReason ?? ""}
+            />
             {children}
           </main>
         </div>

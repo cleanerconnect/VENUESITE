@@ -242,3 +242,16 @@ export interface PortalNotification {
   /** Where acting on it takes you. */
   href?: string;
 }
+
+/**
+ * LYFE's decision on a listing.
+ *
+ * `reason` is required for a refusal and ignored for a validation: the
+ * partner is shown the sentence, so a refusal without one would be a
+ * dead end on their dashboard.
+ */
+export interface VenueValidationInput {
+  venueId: string;
+  status: "validated" | "rejected";
+  reason: string;
+}

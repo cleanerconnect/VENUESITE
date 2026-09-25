@@ -271,11 +271,15 @@ export async function createVenueFromDraft(
 
   await transaction(async () => {
     await run(
+      // `status` is spelled out rather than left to the column default:
+      // a new listing waits for LYFE, and that is a product rule worth
+      // reading here instead of in `db/schema.sql`.
       `INSERT INTO venues
          (id, kind, name, short_name, initials, description, category, address, city,
           latitude, longitude, contact_email, contact_phone, website, currency,
-          capacity, price_range, onboarding_completed, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, '', '', ?, ?, ?, ?, ?, ?, '', 'MAD', ?, 2, 1, ?, ?)`,
+          capacity, price_range, onboarding_completed, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, '', '', ?, ?, ?, ?, ?, ?, '', 'MAD', ?, 2, 1,
+               'pending_review', ?, ?)`,
       venueId,
       kind,
       draft.venueName,

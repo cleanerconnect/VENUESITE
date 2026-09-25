@@ -1,3 +1,5 @@
+import type { PendingVenue } from "@/lib/types/restaurant";
+import type { VenueValidationInput } from "@/lib/types/business";
 import "server-only";
 import type { AudienceInsights } from "@/lib/types/venue-operations";
 
@@ -202,6 +204,20 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     return this.request<{ venueId: string }>(
       "POST",
       `/api/business/onboarding/${draftId}/submit`,
+    );
+  }
+
+  // ── LYFE's review ──
+
+  listPendingVenues() {
+    return this.request<PendingVenue[]>("GET", "/api/business/venues/pending");
+  }
+
+  decideVenueValidation(input: VenueValidationInput) {
+    return this.request<PendingVenue[]>(
+      "PUT",
+      `/api/business/venues/${input.venueId}/validation`,
+      { status: input.status, reason: input.reason },
     );
   }
 

@@ -16,6 +16,7 @@ import type {
   RestaurantOverview,
   RestaurantProfile,
   DayBook,
+  PendingVenue,
 } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
@@ -31,6 +32,7 @@ import type {
   VenueAnalytics,
   VenueAvailability,
   VisibilityMetrics,
+  VenueValidationInput,
 } from "@/lib/types/business";
 
 export interface ReservationRefInput {
@@ -224,6 +226,17 @@ export interface RestaurantRepository extends VenueOperationsRepository {
   ): Promise<OnboardingDraft>;
   /** Idempotent: a spent draft returns the venue it already made. */
   submitOnboarding(draftId: string): Promise<{ venueId: string }>;
+
+  // ── LYFE's review of a listing ──
+  //
+  // The only two calls in this interface that are not venue-scoped. A
+  // venue created by /inscription is `pending_review`: its dashboard
+  // works in full and the consumer app does not list it. Authorisation
+  // is the `platform_admins` row, never a venue membership — a partner
+  // must not be able to validate their own listing.
+  listPendingVenues(): Promise<PendingVenue[]>;
+  /** Returns the queue as it stands after the decision. */
+  decideVenueValidation(input: VenueValidationInput): Promise<PendingVenue[]>;
 
   // ── Venue profile and settings ──
   //

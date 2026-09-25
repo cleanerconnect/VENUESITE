@@ -1,3 +1,5 @@
+import type { PendingVenue } from "@/lib/types/restaurant";
+import type { VenueValidationInput } from "@/lib/types/business";
 import "server-only";
 
 // The no-infrastructure driver.
@@ -251,6 +253,23 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     const next = { ...current, ...patch, updatedAt: new Date().toISOString() };
     draftOverlay.set(draftId, next);
     return clone(next);
+  }
+
+  /**
+   * Nobody is a LYFE administrator on the frozen snapshot, so the queue
+   * is empty rather than absent: /admin/validations is unreachable
+   * there, and a caller that reaches this anyway gets an honest nothing.
+   */
+  async listPendingVenues(): Promise<PendingVenue[]> {
+    return [];
+  }
+
+  async decideVenueValidation(_input: VenueValidationInput): Promise<PendingVenue[]> {
+    throw new RepositoryError(
+      "Aucune base de données : la validation d'un établissement a besoin d'une base. En local : `npm run db:reset`.",
+      503,
+      "store_required",
+    );
   }
 
   async submitOnboarding(_draftId: string): Promise<{ venueId: string }> {

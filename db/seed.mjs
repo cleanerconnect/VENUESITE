@@ -1980,6 +1980,15 @@ function seedAudience(venueId, prefix, extra, cityWeights, startIndex) {
 seedAudience(VENUE, "cus_aud_", 48, [["Casablanca", 74], ["Rabat", 13], ["Marrakech", 8], ["Mohammedia", 5]], 100);
 seedAudience(VENUE2, "cus_naud_", 22, [["Casablanca", 82], ["Rabat", 10], ["Marrakech", 4], ["Mohammedia", 4]], 200);
 
+// LYFE's own reviewer. Not a partner and not scoped to a venue: the one
+// account that can open /admin/validations.
+insert("platform_admins", {
+  user_id: "usr_lyfe_admin",
+  full_name: "Nawal Cherkaoui",
+  email: "validation@lyfe.ma",
+  created_at: daysAgo(400),
+});
+
 // Anonymised platform benchmarks. A cohort, never a named competitor.
 [
   ["restaurant_haut_de_gamme", "Casablanca", "occupancy", 0.72, 0.88, 34],
@@ -2004,7 +2013,7 @@ seedAudience(VENUE2, "cus_naud_", 22, [["Casablanca", 82], ["Rabat", 10], ["Marr
 const count = (t) => db.prepare(`SELECT COUNT(*) c FROM ${t}`).get().c;
 console.log(`seeded ${dbPath}`);
 for (const t of ["venues","business_accounts","staff","zones","venue_tags","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_items","menu_item_dietary","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity",
-  "venue_settings","subscriptions","invoices","support_tickets","service_definitions","service_zones","pacing_rules","capacity_overrides","waitlist","waitlist_settings","shift_notes","tags","customer_tags","tag_rules","segments","offers","offer_redemptions","experiences","experience_addons","tickets","deposit_policies","deposits","cancellation_policies","cancellation_log","transactions","guest_lists","guest_list_bands","guest_list_entries","promoters","table_types","table_offers","table_reservations","campaigns","messages_log","suppression_list","survey_config","audience_sources","platform_benchmarks"]) {
+  "venue_settings","subscriptions","invoices","support_tickets","service_definitions","service_zones","pacing_rules","capacity_overrides","waitlist","waitlist_settings","shift_notes","tags","customer_tags","tag_rules","segments","offers","offer_redemptions","experiences","experience_addons","tickets","deposit_policies","deposits","cancellation_policies","cancellation_log","transactions","guest_lists","guest_list_bands","guest_list_entries","promoters","table_types","table_offers","table_reservations","campaigns","messages_log","suppression_list","survey_config","audience_sources","platform_benchmarks","platform_admins"]) {
   console.log(`  ${t.padEnd(28)} ${count(t)}`);
 }
 db.close();

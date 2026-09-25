@@ -19,6 +19,20 @@
 
 -- ── Tenancy ──────────────────────────────────────────────────
 
+-- LYFE's own staff, who review listings before the app shows them.
+--
+-- A platform role, not a venue role: `staff.role` says what somebody may
+-- do inside one establishment, and a row here says somebody works for
+-- LYFE. The two never mix, and nothing in this table is scoped to a
+-- venue. It is the authorisation rule behind
+-- `PUT /api/business/venues/{id}/validation`.
+CREATE TABLE IF NOT EXISTS platform_admins (
+  user_id    TEXT PRIMARY KEY,
+  full_name  TEXT NOT NULL,
+  email      TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL
+);
+
 -- Which files of `db/migrations/` this database has had applied.
 --
 -- A fresh database gets the whole of this file and is *stamped* with

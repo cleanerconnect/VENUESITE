@@ -15,6 +15,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { directory } from "./directory";
 import { accountName, isKnownAccount } from "./accounts";
+import { isLyfeAdmin } from "./platform";
 
 export type PortalRole = "owner" | "manager" | "staff";
 
@@ -29,6 +30,15 @@ export interface PortalSession {
   role: PortalRole;
   /** Every venue the user may act on — the switcher reads this. */
   venues: { id: string; name: string; shortName: string; initials: string; city: string; kind: string; role: string }[];
+  /**
+   * Whether this user works for LYFE.
+   *
+   * A platform role, orthogonal to `role`: that one says what they may
+   * do inside their establishment, this one says they may review other
+   * people's. An account can be both — LYFE staff who also run a venue —
+   * and neither field is derived from the other.
+   */
+  lyfeAdmin: boolean;
 }
 
 export interface SessionDriver {
@@ -128,7 +138,24 @@ export async function resolveSession(): Promise<PortalSession | null> {
     venueId,
     role: (membership?.role as PortalRole) ?? "staff",
     venues,
+    lyfeAdmin: await isLyfeAdmin(userId),
   };
+}
+
+/**
+ * Asserts the caller works for LYFE, or throws.
+ *
+ * The counterpart of `requireVenueAccess`, and the only gate in front of
+ * /admin/validations and the two decisions it offers. Deliberately not
+ * expressed as a venue role: a venue owner must never be able to
+ * validate their own listing, and a role that lives on their membership
+ * of a venue would be exactly that.
+ */
+export async function requireLyfeAdmin(): Promise<PortalSession> {
+  const session = await resolveSession();
+  if (!session) throw new Error("not_authenticated");
+  if (!session.lyfeAdmin) throw new Error("not_lyfe_admin");
+  return session;
 }
 
 /** Assert access or throw. Every venue-scoped mutation calls this. */

@@ -26,6 +26,7 @@ import type {
   ServiceKind,
   Zone,
 } from "@/lib/types/restaurant";
+import { isVenueStatus } from "@/lib/types/restaurant";
 import type { VenueConfiguration } from "@/lib/types/venue-operations";
 import { configFor, coverAgreement, covers } from "@/lib/venue/config";
 import { all, bool, one, run, toMad } from "./store";
@@ -62,6 +63,9 @@ export async function venueProfile(venueId: string): Promise<RestaurantProfile |
     website: String(r.website),
     currency: String(r.currency),
     onboardingCompleted: bool(r.onboarding_completed as number),
+    status: isVenueStatus(r.status) ? r.status : "pending_review",
+    statusReason: String(r.status_reason ?? ""),
+    statusChangedAt: r.status_changed_at ? String(r.status_changed_at) : undefined,
   };
 }
 

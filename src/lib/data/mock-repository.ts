@@ -10,10 +10,13 @@
 // fallback: an unseeded database raises rather than rendering a
 // plausible-looking empty dashboard.
 
+import type { PendingVenue } from "@/lib/types/restaurant";
+import type { VenueValidationInput } from "@/lib/types/business";
 import type { DayBook, RestaurantOverview } from "@/lib/types/restaurant";
 import type { CheckInResult, NotificationPreferences } from "@/lib/types/business";
 import * as store from "@/lib/db/venue-store";
 import * as onboarding from "@/lib/db/onboarding-store";
+import * as validation from "@/lib/db/validation-store";
 import {
   listStaff as listStaffRows,
   updateVenueIdentity,
@@ -240,6 +243,31 @@ export class MockRestaurantRepository implements RestaurantRepository {
       throw new RepositoryError("Inscription introuvable.", 404, "draft_not_found");
     }
     return made;
+  }
+
+  // ── LYFE's review ──
+
+  listPendingVenues() {
+    return validation.pendingVenues();
+  }
+
+  async decideVenueValidation(input: VenueValidationInput) {
+    if (input.status === "rejected" && input.reason.trim() === "") {
+      throw new RepositoryError(
+        "Dites au partenaire ce qui manque : c'est la seule chose qu'il verra.",
+        422,
+        "reason_required",
+      );
+    }
+    const changed = await validation.setVenueStatus(
+      input.venueId,
+      input.status,
+      input.reason,
+    );
+    if (!changed) {
+      throw new RepositoryError("Établissement introuvable.", 404, "venue_not_found");
+    }
+    return validation.pendingVenues();
   }
 
   // ── Ma fiche's writes ──
