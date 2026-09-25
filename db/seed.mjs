@@ -1076,11 +1076,16 @@ function seedOperations(opts) {
 
   // ── Service definitions, pacing and the booking window ──
   opts.serviceDefinitions.forEach((row, i) => {
-    const [id, name, kind, weekdays, startsAt, endsAt, lastBooking, cap, perQuarter] = row;
+    const [id, name, kind, weekdays, startsAt, endsAt, lastBooking, cap, perQuarter, slot] = row;
     insert("service_definitions", {
       id: p(id), venue_id: venue, name, kind, weekdays,
       starts_at: startsAt, ends_at: endsAt, last_booking_at: lastBooking,
       capacity_covers: cap, covers_per_quarter: perQuarter,
+      // The two venues deliberately disagree, so the dataset exercises
+      // the field rather than describing it: the restaurant seats on the
+      // half hour, the rooftop on the hour, and Réservations groups each
+      // one the way its own venue chose.
+      slot_minutes: slot ?? 30,
       turn_minutes_small: opts.turnSmall, turn_minutes_large: opts.turnLarge,
       enabled: 1, position: i, version: 1, updated_at: daysAgo(11),
     });
@@ -1575,8 +1580,8 @@ seedOperations({
   maxPartyOnline: 8,
   sameDayCutoff: "18:00",
   serviceDefinitions: [
-    ["sd_dej", "Déjeuner", "dejeuner", "1,2,3,4,5,6,7", "12:00", "15:00", "14:30", 72, 10],
-    ["sd_din", "Dîner", "diner", "1,2,3,4,5,6,7", "19:00", "23:30", "22:30", 120, 14],
+    ["sd_dej", "Déjeuner", "dejeuner", "1,2,3,4,5,6,7", "12:00", "15:00", "14:30", 72, 10, 30],
+    ["sd_din", "Dîner", "diner", "1,2,3,4,5,6,7", "19:00", "23:30", "22:30", 120, 14, 30],
   ],
   waitlistOnline: 1,
   defaultQuote: 25,
@@ -1695,8 +1700,8 @@ seedOperations({
   maxPartyOnline: 10,
   sameDayCutoff: "20:00",
   serviceDefinitions: [
-    ["sd_sunset", "Sunset", "creneau", "3,4,5,6,7", "18:00", "21:00", "20:30", 40, 8],
-    ["sd_night", "Nuit", "creneau", "3,4,5,6,7", "21:00", "02:00", "01:00", 70, 12],
+    ["sd_sunset", "Sunset", "creneau", "3,4,5,6,7", "18:00", "21:00", "20:30", 40, 8, 60],
+    ["sd_night", "Nuit", "creneau", "3,4,5,6,7", "21:00", "02:00", "01:00", 70, 12, 60],
   ],
   waitlistOnline: 0,
   defaultQuote: 20,

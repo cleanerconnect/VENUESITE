@@ -1,3 +1,4 @@
+import { asSlotMinutes } from "@/lib/types/venue-operations";
 import "server-only";
 
 // Venue-scoped reads for the rest of the perimeter.
@@ -339,6 +340,7 @@ export async function serviceDefinitions(venueId: string): Promise<ServiceDefini
     lastBookingAt: String(r.last_booking_at),
     capacityCovers: Number(r.capacity_covers),
     coversPerQuarter: Number(r.covers_per_quarter),
+    slotMinutes: asSlotMinutes(r.slot_minutes),
     turnMinutesSmall: Number(r.turn_minutes_small),
     turnMinutesLarge: Number(r.turn_minutes_large),
     zoneIds: zonesByService.get(String(r.id)) ?? [],

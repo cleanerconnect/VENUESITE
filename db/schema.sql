@@ -609,6 +609,13 @@ CREATE TABLE IF NOT EXISTS service_definitions (
   capacity_covers    INTEGER NOT NULL,
   -- Covers accepted per quarter hour — the pacing ceiling per slot.
   covers_per_quarter INTEGER NOT NULL DEFAULT 0,
+  -- How long one bookable slot is: 15, 30 or 60 minutes, chosen by the
+  -- venue. A tasting room that seats on the hour and a bar that seats
+  -- every quarter hour are the same product with a different number
+  -- here. The portal groups the book by it and the app offers times on
+  -- it, so the two never disagree about what is bookable.
+  slot_minutes       INTEGER NOT NULL DEFAULT 30
+                       CHECK (slot_minutes IN (15, 30, 60)),
   turn_minutes_small INTEGER NOT NULL DEFAULT 90,
   turn_minutes_large INTEGER NOT NULL DEFAULT 120,
   enabled            INTEGER NOT NULL DEFAULT 1,

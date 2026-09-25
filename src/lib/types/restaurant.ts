@@ -170,6 +170,15 @@ export interface Service {
   noShowCovers: number;
   revenueMad: number;
   /**
+   * The bookable grid this service runs on: 15, 30 or 60 minutes.
+   *
+   * Carried on the service rather than on the venue because it is the
+   * service's own choice — a venue can seat its lunch on the half hour
+   * and its late sitting on the hour. Réservations groups the book by
+   * it and the load curve is cut on it, so the two cannot disagree.
+   */
+  slotMinutes: 15 | 30 | 60;
+  /**
    * Booked covers per sitting slot across the service window. Comes from
    * the booking engine rather than being inferred from the reservation
    * list — the list a dashboard holds is a page of the book, not all of

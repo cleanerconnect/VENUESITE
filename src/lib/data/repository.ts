@@ -339,6 +339,7 @@ import type {
   VenueSettings,
   WaitlistRemovalReason,
   WaitlistSource,
+  SlotMinutes,
 } from "@/lib/types/venue-operations";
 
 /** Services and the rules that decide what the app offers. */
@@ -557,6 +558,8 @@ export type ConfigurationAction =
       lastBookingAt: string;
       capacityCovers: number;
       coversPerQuarter: number;
+      /** 15, 30 or 60. The venue's bookable grid for this service. */
+      slotMinutes: SlotMinutes;
       turnMinutesSmall: number;
       turnMinutesLarge: number;
       zoneIds: string[];

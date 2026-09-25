@@ -1271,15 +1271,16 @@ export async function applyConfigurationAction(
         await run(
           `INSERT INTO service_definitions
              (id, venue_id, name, kind, weekdays, starts_at, ends_at, last_booking_at,
-              capacity_covers, covers_per_quarter, turn_minutes_small,
+              capacity_covers, covers_per_quarter, slot_minutes, turn_minutes_small,
               turn_minutes_large, enabled, position, version, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
            ON CONFLICT(id) DO UPDATE SET
              name = excluded.name, kind = excluded.kind,
              weekdays = excluded.weekdays, starts_at = excluded.starts_at,
              ends_at = excluded.ends_at, last_booking_at = excluded.last_booking_at,
              capacity_covers = excluded.capacity_covers,
              covers_per_quarter = excluded.covers_per_quarter,
+             slot_minutes = excluded.slot_minutes,
              turn_minutes_small = excluded.turn_minutes_small,
              turn_minutes_large = excluded.turn_minutes_large,
              enabled = excluded.enabled,
@@ -1295,6 +1296,7 @@ export async function applyConfigurationAction(
           action.lastBookingAt,
           action.capacityCovers,
           action.coversPerQuarter,
+          action.slotMinutes,
           action.turnMinutesSmall,
           action.turnMinutesLarge,
           action.enabled ? 1 : 0,

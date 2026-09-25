@@ -225,6 +225,7 @@ function closedService(shape: Service, date: string): Service {
     closesAt: `${date}T00:00:00.000Z`,
     state: "closed",
     capacity: 0,
+    slotMinutes: shape.slotMinutes,
     bookedCovers: 0,
     arrivedCovers: 0,
     noShowCovers: 0,
@@ -586,7 +587,17 @@ export function buildDashboardScreen(
       : data.upcomingReservations
           .filter((r) => r.state !== "arrived" && Date.parse(r.at) >= Date.now())
           .slice(0, 6)
-    ).map((r) => reservationRow(r, data.zones, configuration, undefined, lot)),
+    ).map((r) =>
+      reservationRow(
+        r,
+        data.zones,
+        configuration,
+        undefined,
+        lot,
+        false,
+        data.currentService.slotMinutes,
+      ),
+    ),
     empty: lot1
       ? {
           title: "Aucune réservation aujourd'hui",
@@ -616,7 +627,15 @@ export function buildDashboardScreen(
   //                           space belongs to the two groups above.
   const dayRows = data.upcomingReservations;
   const hostRow = (r: Reservation) =>
-    reservationRow(r, data.zones, configuration, undefined, lot, true);
+    reservationRow(
+      r,
+      data.zones,
+      configuration,
+      undefined,
+      lot,
+      true,
+      data.currentService.slotMinutes,
+    );
   const byTime = (a: Reservation, b: Reservation) =>
     Date.parse(a.at) - Date.parse(b.at);
 
@@ -1142,7 +1161,15 @@ export function buildReservationsScreen(
       { id: "name", label: "Nom", key: "name", direction: "asc" },
     ],
     rows: all.map((r) =>
-      reservationRow(r, data.zones, configuration, depositByReservation.get(r.id), lot, true),
+      reservationRow(
+        r,
+        data.zones,
+        configuration,
+        depositByReservation.get(r.id),
+        lot,
+        true,
+        service.slotMinutes,
+      ),
     ),
     empty: {
       title: "Carnet vide",
@@ -1396,10 +1423,9 @@ function serviceLoadBlock(
     id: "service-load",
     type: "slot-grid",
     heading: "Charge du service",
-    subheading: `${coverLabel(
-      vocabulary,
-      "réservé",
-    )} par créneau de 30 min. La ligne marque ce que la salle peut tourner.`,
+    subheading: `${coverLabel(vocabulary, "réservé")} par créneau de ${
+      service.slotMinutes === 60 ? "1 h" : `${service.slotMinutes} min`
+    }. La ligne marque ce que la salle peut tourner.`,
     capacity: perSlotCapacity,
     capacityLabel: `${perSlotCapacity} ${vocabulary.cover.many} / créneau`,
     unitLabel: vocabulary.cover.many,
@@ -1408,7 +1434,7 @@ function serviceLoadBlock(
       return {
         label: hm(slot.at),
         value: slot.covers,
-        current: now >= start && now < start + 30 * 60_000,
+        current: now >= start && now < start + service.slotMinutes * 60_000,
       };
     }),
   };
@@ -1695,6 +1721,8 @@ function reservationRow(
   // bookings beside an attention queue that already carries them, and
   // two copies of Accepter on one screen is one too many.
   inlineActions = false,
+  /** The service's grid, which decides the sitting this row files under. */
+  slotMinutes = 30,
 ): EntityRow {
   const vocabulary = configFor(configuration);
   const lot1 = lot === 1;
@@ -1756,7 +1784,7 @@ function reservationRow(
     status: lot1 ? reservationBand(reservation.state) : undefined,
     // The sitting this booking files under, on the half hour the whole
     // dataset is already aligned to.
-    slot: lot1 ? slotOf(reservation.at) : undefined,
+    slot: lot1 ? slotOf(reservation.at, slotMinutes) : undefined,
     meta: lot1
       ? place || undefined
       : `${hm(reservation.at)} · ${coversIn(configuration, reservation.partySize)} · ${place}`,
@@ -1817,9 +1845,19 @@ function reservationRow(
  * rounds down rather than inventing a bucket — a 19h05 booking taken by
  * phone still files under the 19h00 sitting a host is working.
  */
-function slotOf(at: string): string {
+/**
+ * The sitting a booking files under, on the venue's own grid.
+ *
+ * Used to be hardcoded to the half hour, which was fine while every
+ * venue was assumed to seat on it. A bar that seats every quarter hour
+ * saw two sittings collapsed into one heading, and one seating on the
+ * hour saw a heading for 20h00 and another for 20h30 with one booking
+ * each. The grid is the service's, so the heading is too.
+ */
+function slotOf(at: string, slotMinutes: number): string {
   const d = new Date(at);
-  d.setMinutes(d.getMinutes() < 30 ? 0 : 30, 0, 0);
+  const step = slotMinutes > 0 ? slotMinutes : 30;
+  d.setMinutes(Math.floor(d.getMinutes() / step) * step, 0, 0);
   return hm(d.toISOString());
 }
 

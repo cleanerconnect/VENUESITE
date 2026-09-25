@@ -27,6 +27,7 @@ import type {
   Zone,
 } from "@/lib/types/restaurant";
 import { isVenueStatus } from "@/lib/types/restaurant";
+import { asSlotMinutes } from "@/lib/types/venue-operations";
 import type { VenueConfiguration } from "@/lib/types/venue-operations";
 import { configFor, coverAgreement, covers } from "@/lib/venue/config";
 import { all, bool, one, run, toMad } from "./store";
@@ -109,6 +110,22 @@ async function serviceRow(r: Record<string, string | number | null>): Promise<Se
     arrivedCovers: Number(r.arrived_covers),
     noShowCovers: Number(r.no_show_covers),
     revenueMad: toMad(Number(r.revenue_cents)),
+    // The grid lives on the *definition*, and `services` carries no
+    // foreign key to one — a day's service row predates the definitions
+    // table. Matched on the venue and the name the two share, which is
+    // what the seed and the onboarding both write; a service with no
+    // definition behind it falls back to the half hour both products
+    // assumed before the field existed.
+    slotMinutes: asSlotMinutes(
+      (
+        await one(
+          `SELECT slot_minutes FROM service_definitions
+            WHERE venue_id = ? AND name = ? LIMIT 1`,
+          String(r.venue_id),
+          String(r.label),
+        )
+      )?.slot_minutes,
+    ),
     slotLoad: (await all(
       "SELECT at, covers FROM service_slot_load WHERE service_id = ? ORDER BY at",
       String(r.id),
@@ -214,6 +231,7 @@ async function servicesOn(
         closesAt: closesAt.toISOString(),
         state: (closesAt.getTime() < Date.now() ? "closed" : "upcoming") as Service["state"],
         capacity: Number(r.capacity_covers),
+        slotMinutes: asSlotMinutes(r.slot_minutes),
         bookedCovers: covered(["confirmed", "arrived"]),
         arrivedCovers: covered(["arrived"]),
         noShowCovers: covered(["no_show"]),
