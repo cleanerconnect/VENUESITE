@@ -100,14 +100,22 @@ class DatabaseDirectory implements Directory {
   }
 
   async listAccounts(): Promise<DirectoryAccount[]> {
-    return this.rows()
-      .all("SELECT DISTINCT user_id, full_name, email FROM staff WHERE pending = 0")
-      .map((r) => ({
+    const rows = await this.rows().all(
+      "SELECT DISTINCT user_id, full_name, email FROM staff WHERE pending = 0",
+    );
+    // Serially rather than in parallel: on SQLite these are synchronous
+    // anyway, and on Postgres a directory listing is not the query worth
+    // spending four pooled connections on.
+    const accounts: DirectoryAccount[] = [];
+    for (const r of rows) {
+      accounts.push({
         userId: String(r.user_id),
         fullName: String(r.full_name),
         email: String(r.email),
-        venues: this.store().venuesForUser(String(r.user_id)),
-      }));
+        venues: await this.store().venuesForUser(String(r.user_id)),
+      });
+    }
+    return accounts;
   }
 
   async findByEmail(email: string) {
@@ -117,7 +125,7 @@ class DatabaseDirectory implements Directory {
   }
 
   async findById(userId: string) {
-    const row = this.rows().one(
+    const row = await this.rows().one(
       "SELECT user_id, full_name, email FROM staff WHERE user_id = ? LIMIT 1",
       userId,
     );
@@ -126,7 +134,7 @@ class DatabaseDirectory implements Directory {
       userId,
       fullName: String(row.full_name),
       email: String(row.email),
-      venues: this.store().venuesForUser(userId),
+      venues: await this.store().venuesForUser(userId),
     };
   }
 
@@ -143,7 +151,7 @@ class DatabaseDirectory implements Directory {
    * halves meet: the password comes from there, the venues from `staff`.
    */
   async verify(email: string, password: string) {
-    const found = this.onboarding().verifyPartnerPassword(email, password);
+    const found = await this.onboarding().verifyPartnerPassword(email, password);
     if (!found) return null;
     return (
       (await this.findById(found.userId)) ?? {

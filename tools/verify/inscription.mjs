@@ -37,8 +37,20 @@ const page = await browser.newPage({ viewport: { width, height } });
 const problems = [];
 const noise = [];
 page.on("pageerror", (e) => noise.push(`pageerror: ${String(e).slice(0, 140)}`));
+// The map draws OpenStreetMap tiles and geocodes through Nominatim.
+// Neither is reachable from a sandboxed runner, and a tile that fails to
+// load is not this portal's defect — the component renders and stays
+// usable without them. Anything else on the console still fails the run.
+const EXTERNAL_MAP = /tile\.openstreetmap\.org|nominatim\.openstreetmap\.org|\/api\/geocode/;
 page.on("console", (m) => {
-  if (m.type() === "error") noise.push(`console: ${m.text().slice(0, 140)}`);
+  if (m.type() !== "error") return;
+  const text = m.text();
+  // A failed resource logs its message here and its URL in `location()`;
+  // a tile server refused by the runner's proxy says only
+  // « ERR_TUNNEL_CONNECTION_FAILED » in the text, so both are checked.
+  const from = m.location()?.url ?? "";
+  if (EXTERNAL_MAP.test(text) || EXTERNAL_MAP.test(from)) return;
+  noise.push(`console: ${text.slice(0, 140)}`);
 });
 
 const check = (label, ok, detail = "") => {
@@ -102,8 +114,14 @@ await shot("3-adresse");
 
 // ── Step 3 · the address and its pin ──
 await page.getByLabel("Adresse").fill("45 rue de la Kasbah, Médina");
-await page.locator('button:has-text("Placer")').click();
-await page.waitForTimeout(400);
+// The map is real Leaflet now. « Trouver sur la carte » geocodes through
+// Nominatim, which a sandboxed runner cannot reach, so the pin is placed
+// the other way the screen allows — a click on the map — which is also
+// the assertion that the map is interactive rather than a picture.
+const carte = page.locator(".leaflet-container");
+check("la carte s'affiche", (await carte.count()) > 0);
+await carte.click({ position: { x: 140, y: 110 } });
+await page.waitForTimeout(500);
 check("point posé", (await page.locator('text="Point placé"').count()) > 0);
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1500);

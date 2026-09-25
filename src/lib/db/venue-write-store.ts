@@ -25,11 +25,11 @@ export interface VenueIdentityPatch {
   kind: "restaurant" | "drinks";
 }
 
-export function updateVenueIdentity(
+export async function updateVenueIdentity(
   venueId: string,
   patch: VenueIdentityPatch,
-): void {
-  run(
+): Promise<void> {
+  await run(
     `UPDATE venues SET
        name = ?, short_name = ?, description = ?, category = ?,
        address = ?, city = ?, latitude = ?, longitude = ?,
@@ -70,29 +70,32 @@ export interface VenueListingPatch {
   ambience: string[];
 }
 
-export function updateVenueListing(
+export async function updateVenueListing(
   venueId: string,
   patch: VenueListingPatch,
-): void {
+): Promise<void> {
   // Replace-in-transaction rather than diff: the set is small, and a
   // partial failure that left half the chips showing would be worse than
   // the write not landing at all.
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       "UPDATE venues SET price_range = ?, updated_at = ? WHERE id = ?",
       patch.priceRange,
       new Date().toISOString(),
       venueId,
     );
-    run("DELETE FROM venue_tags WHERE venue_id = ?", venueId);
+    await run("DELETE FROM venue_tags WHERE venue_id = ?", venueId);
     const groups: [VenueTagKind, string[]][] = [
       ["tag", patch.tags],
       ["feature", patch.features],
       ["ambience", patch.ambience],
     ];
     for (const [kind, values] of groups) {
-      values.forEach((value, position) => {
-        run(
+      // A `forEach` with an await inside is a fire-and-forget write; the
+      // loop is what makes the transaction wait for it.
+      let position = 0;
+      for (const value of values) {
+        await run(
           `INSERT INTO venue_tags (venue_id, kind, value, position)
            VALUES (?, ?, ?, ?)`,
           venueId,
@@ -100,7 +103,8 @@ export function updateVenueListing(
           value,
           position,
         );
-      });
+        position += 1;
+      }
     }
   });
 }
@@ -121,11 +125,11 @@ export interface MenuItemPatch {
   dietary: string[];
 }
 
-export function updateMenuItem(venueId: string, patch: MenuItemPatch): void {
-  transaction(() => {
+export async function updateMenuItem(venueId: string, patch: MenuItemPatch): Promise<void> {
+  await transaction(async () => {
     // The venue id in the WHERE clause is the scope check: a patch aimed
     // at another venue's item updates zero rows rather than succeeding.
-    const { changes } = run(
+    const { changes } = await run(
       `UPDATE menu_items SET
          name = ?, description = ?, category = ?, price_cents = ?,
          signature = ?, visible = ?
@@ -141,9 +145,9 @@ export function updateMenuItem(venueId: string, patch: MenuItemPatch): void {
     );
     if (Number(changes) === 0) throw new UnknownMenuItemError(patch.id);
 
-    run("DELETE FROM menu_item_dietary WHERE item_id = ?", patch.id);
+    await run("DELETE FROM menu_item_dietary WHERE item_id = ?", patch.id);
     for (const tag of patch.dietary) {
-      run(
+      await run(
         "INSERT INTO menu_item_dietary (item_id, tag) VALUES (?, ?)",
         patch.id,
         tag,
@@ -172,11 +176,11 @@ export interface StaffMemberRow {
   pending: boolean;
 }
 
-export function listStaff(venueId: string): StaffMemberRow[] {
-  return all(
+export async function listStaff(venueId: string): Promise<StaffMemberRow[]> {
+  return (await all(
     "SELECT * FROM staff WHERE venue_id = ? ORDER BY role, full_name",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     userId: String(r.user_id),
     fullName: String(r.full_name),
@@ -187,13 +191,13 @@ export function listStaff(venueId: string): StaffMemberRow[] {
   }));
 }
 
-export function inviteStaff(
+export async function inviteStaff(
   venueId: string,
   input: { fullName: string; email: string; role: PortalRole },
-): StaffMemberRow {
+): Promise<StaffMemberRow> {
   const id = `stf_${randomUUID().slice(0, 8)}`;
   const userId = `usr_${randomUUID().slice(0, 8)}`;
-  run(
+  await run(
     `INSERT INTO staff (id, venue_id, user_id, full_name, email, role, last_active, pending, created_at)
      VALUES (?, ?, ?, ?, ?, ?, NULL, 1, ?)`,
     id,
@@ -220,28 +224,28 @@ export class LastOwnerError extends Error {
  * Without this, a venue can lock itself out of its own billing and staff
  * management with one careless edit and no way back through the portal.
  */
-function assertNotLastOwner(venueId: string, staffId: string): void {
-  const target = one(
+async function assertNotLastOwner(venueId: string, staffId: string): Promise<void> {
+  const target = await one(
     "SELECT role FROM staff WHERE id = ? AND venue_id = ?",
     staffId,
     venueId,
   );
   if (!target || target.role !== "owner") return;
-  const owners = one(
+  const owners = await one(
     "SELECT COUNT(*) AS n FROM staff WHERE venue_id = ? AND role = 'owner'",
     venueId,
   );
   if (Number(owners?.n ?? 0) <= 1) throw new LastOwnerError();
 }
 
-export function updateStaffRole(
+export async function updateStaffRole(
   venueId: string,
   staffId: string,
   role: PortalRole,
-): void {
-  transaction(() => {
+): Promise<void> {
+  await transaction(async () => {
     if (role !== "owner") assertNotLastOwner(venueId, staffId);
-    run(
+    await run(
       "UPDATE staff SET role = ? WHERE id = ? AND venue_id = ?",
       role,
       staffId,
@@ -250,9 +254,9 @@ export function updateStaffRole(
   });
 }
 
-export function removeStaff(venueId: string, staffId: string): void {
-  transaction(() => {
+export async function removeStaff(venueId: string, staffId: string): Promise<void> {
+  await transaction(async () => {
     assertNotLastOwner(venueId, staffId);
-    run("DELETE FROM staff WHERE id = ? AND venue_id = ?", staffId, venueId);
+    await run("DELETE FROM staff WHERE id = ? AND venue_id = ?", staffId, venueId);
   });
 }

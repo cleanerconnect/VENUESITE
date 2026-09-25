@@ -18,7 +18,8 @@
 //      `await fetch('/api/screens/...')` and the UI is server-driven with
 //      no component change, because a ScreenSpec is already JSON.
 
-import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
+import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 import { fr } from "date-fns/locale";
 import type {
   Block,
@@ -516,7 +517,7 @@ export function buildDashboardScreen(
             tone: "neutral",
           },
           {
-            label: `Versé le ${format(new Date(data.nextPayout.scheduledFor), "dd MMM", { locale: fr })}`,
+            label: `Versé le ${formatInTimeZone(new Date(data.nextPayout.scheduledFor), VENUE_TIME_ZONE, "dd MMM", { locale: fr })}`,
             tone: "muted",
           },
         ],
@@ -1127,7 +1128,14 @@ export function buildReservationsScreen(
         : []),
       { id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" },
       { id: "time_desc", label: "Heure · tard → tôt", key: "time", direction: "desc" },
-      { id: "party", label: "Couverts", key: "party", direction: "desc" },
+      // A lounge books people, not covers: the sort label was the last
+      // place in the book that still said « Couverts » to a bar.
+      {
+        id: "party",
+        label: coverNoun(vocabulary),
+        key: "party",
+        direction: "desc",
+      },
       ...(lot1
         ? []
         : ([{ id: "visits", label: "Fidélité", key: "visits", direction: "desc" }] as const)),
@@ -2081,7 +2089,7 @@ function reviewRow(review: GuestReview): EntityRow {
     id: review.id,
     title: review.guestName,
     initials: initialsOf(review.guestName),
-    meta: `${format(new Date(review.at), "dd MMM · HH'h'mm", { locale: fr })} · ${review.channel.toUpperCase()}`,
+    meta: `${formatInTimeZone(new Date(review.at), VENUE_TIME_ZONE, "dd MMM · HH'h'mm", { locale: fr })} · ${review.channel.toUpperCase()}`,
     badges: [
       {
         label: `${review.rating} / 5`,

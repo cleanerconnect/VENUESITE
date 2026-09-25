@@ -1,5 +1,7 @@
-import { format, formatDistanceToNowStrict } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { fr } from "date-fns/locale";
+import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 
 // Single source of truth for MAD formatting, French convention,
 // non-breaking space as thousands separator. e.g. "12 850 MAD".
@@ -11,19 +13,23 @@ export function formatMAD(amount: number, withSuffix = true): string {
 
 export function formatDateFR(iso: string | Date, pattern = "dd/MM/yyyy") {
   const d = typeof iso === "string" ? new Date(iso) : iso;
-  return format(d, pattern, { locale: fr });
+  return formatInTimeZone(d, VENUE_TIME_ZONE, pattern, { locale: fr });
 }
 
 export function formatDateTimeFR(iso: string | Date) {
   const d = typeof iso === "string" ? new Date(iso) : iso;
-  return format(d, "dd MMM · HH'h'mm", { locale: fr });
+  return formatInTimeZone(d, VENUE_TIME_ZONE, "dd MMM · HH'h'mm", { locale: fr });
 }
 
 /** "20h30" — the French clock, used wherever a service time is shown. */
+/** "20h30" — the French clock, in the venue's zone, on both runtimes. */
 export function formatTimeFR(iso: string | Date) {
-  return format(typeof iso === "string" ? new Date(iso) : iso, "HH'h'mm", {
-    locale: fr,
-  });
+  return formatInTimeZone(
+    typeof iso === "string" ? new Date(iso) : iso,
+    VENUE_TIME_ZONE,
+    "HH'h'mm",
+    { locale: fr },
+  );
 }
 
 export function formatRelativeFR(iso: string | Date) {

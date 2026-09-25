@@ -10,7 +10,8 @@
 // estimated. `analytics.estimatedRevenueMad` is a projection from the
 // covers roll-up, so it is shown as a projection or not at all.
 
-import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
+import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 import { fr } from "date-fns/locale";
 import type { Block, KpiTile, ScreenSpec } from "@/lib/dashboard/spec";
 import type {
@@ -558,7 +559,7 @@ export function buildVisibilityScreen(
           ? "Votre établissement est mis en avant"
           : "Mettre votre établissement en avant",
         subtitle: metrics.boostEndsAt
-          ? `Jusqu'au ${format(new Date(metrics.boostEndsAt), "d MMMM", { locale: fr })}`
+          ? `Jusqu'au ${formatInTimeZone(new Date(metrics.boostEndsAt), VENUE_TIME_ZONE, "d MMMM", { locale: fr })}`
           : undefined,
         // The ring counts the ranking checklist, so it goes where the
         // checklist goes: Lot 1 buys the boost, not the factors behind

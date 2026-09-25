@@ -6,8 +6,9 @@
 // several, and three private copies of `initialsOf` is exactly how two
 // screens end up disagreeing about how to abbreviate a name.
 
-import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { fr } from "date-fns/locale";
+import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 import type { Block, KpiTile } from "@/lib/dashboard/spec";
 import { MAD } from "@/lib/dashboard/formats";
 import { formatValue } from "@/lib/dashboard/value";
@@ -31,7 +32,7 @@ export const clock = (value: string) =>
 /** "vendredi 14 mars", from an instant or a bare calendar day. */
 export const dayLabel = (value: string) => {
   const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value);
-  return Number.isNaN(date.getTime()) ? "—" : format(date, "EEEE d MMMM", { locale: fr });
+  return Number.isNaN(date.getTime()) ? "—" : formatInTimeZone(date, VENUE_TIME_ZONE, "EEEE d MMMM", { locale: fr });
 };
 
 /**
@@ -45,7 +46,7 @@ export const dayLabel = (value: string) => {
  */
 export const shortDay = (value: string) => {
   const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value);
-  return Number.isNaN(date.getTime()) ? "—" : format(date, "EEE d MMM", { locale: fr });
+  return Number.isNaN(date.getTime()) ? "—" : formatInTimeZone(date, VENUE_TIME_ZONE, "EEE d MMM", { locale: fr });
 };
 
 export const money = (n: number) => formatValue(n, MAD);

@@ -752,6 +752,58 @@ marche les six étapes, ferme et rouvre le parcours, puis vérifie que
 l'atterrissage salue le nouveau partenaire sur son établissement. Il
 passe en lot 1 et en lot 2, en 1440 et en 390, en `db` et en `http`.
 
+### 5.5 L'application grand public lit les mêmes tables
+
+Le contrat ci-dessus décrit ce que le **portail** demande à un backend.
+Il a depuis un second lecteur : l'application grand public
+(`cleanerconnect/LYFE`, client Expo sur une API FastAPI), dont
+`backend/postgres_dashboard.py` sert les routes depuis **la base du
+portail**, en `asyncpg`, quand `DATABASE_URL` est présent.
+
+Ce qui compte pour qui implémentera ce contrat : **les tables de la §7
+sont désormais partagées**, et deux conventions y sont devenues
+publiques.
+
+**Une réservation venue de l'application** est une ligne `reservations`
+à l'état `requested`, `channel = 'LYFE'`, une référence `qr_code` de la
+forme `LYFE-XXXXXX`, accompagnée d'une ligne `customers` clée sur
+l'identifiant d'utilisateur de l'application et d'une entrée dans
+`reservation_status_history` dont l'`actor` est `user`. C'est exactement
+ce que le carnet affiche comme « À confirmer », avec Accepter et
+Refuser ; aucun chemin particulier n'existe pour ces lignes.
+
+**Le vocabulaire des états est traduit, pas exposé.** Le portail sépare
+volontairement `rejected` (l'établissement a refusé, avec un motif) de
+`cancelled` (l'invité s'est désisté, sans motif) ; l'application n'a
+qu'un mot pour les deux, et c'est celui que ses écrans dessinent depuis
+toujours. La traduction se fait côté application :
+
+| portail | application |
+|---|---|
+| `requested`, `waitlisted` | `pending` |
+| `confirmed`, `modified` | `confirmed` |
+| `arrived`, `completed` | `completed` |
+| `cancelled`, `rejected` | `cancelled` |
+| `no_show` | `no_show` |
+
+**Une table hors contrat, `app_sessions`**, est créée à la demande par
+ce module : l'application ouvre des sessions invité, et le schéma du
+portail ne connaît que des comptes partenaires. Elle n'est lue ni écrite
+par aucun des sept écrans.
+
+**`GET /api/business/overview` n'est pas servi par cette API**, et ce
+n'est pas un oubli : c'est le seul endpoint du contrat dont la charge
+utile n'est pas une table mais un assemblage d'écran. Un backend qui
+implémente ce contrat l'implémente une fois, pour le portail ; en
+déploiement partagé le portail lit Postgres directement (`LYFE_DATA=db`)
+et l'application ne lui demande rien.
+
+`tools/verify/handshake.mjs` vérifie la chaîne entière en un script :
+inscription dans un vrai navigateur, l'établissement listé par
+l'application, une réservation posée par un invité, la demande comptée
+sur l'Accueil du partenaire, l'acceptation, et le même statut relu des
+deux côtés.
+
 ## 6. Correspondance avec ChiffrageV3.0 ligne 39
 
 Le classeur est versionné : `docs/reference/DigiNegoce_LYFE_App_ChiffrageV3_0.xlsx`.

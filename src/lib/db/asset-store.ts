@@ -19,37 +19,37 @@ function rowToAsset(r: Record<string, string | number | null>): VenueAsset {
   };
 }
 
-export function listAssets(venueId: string, kind?: AssetKind): VenueAsset[] {
+export async function listAssets(venueId: string, kind?: AssetKind): Promise<VenueAsset[]> {
   const rows = kind
-    ? all(
+    ? await all(
         "SELECT * FROM venue_assets WHERE venue_id = ? AND kind = ? ORDER BY position, created_at",
         venueId,
         kind,
       )
-    : all(
+    : await all(
         "SELECT * FROM venue_assets WHERE venue_id = ? ORDER BY kind, position, created_at",
         venueId,
       );
   return rows.map(rowToAsset);
 }
 
-export function recordAsset(input: {
+export async function recordAsset(input: {
   venueId: string;
   kind: AssetKind;
   objectKey: string;
   contentType: string;
   sizeBytes: number;
-}): VenueAsset {
+}): Promise<VenueAsset> {
   const id = `ast_${randomUUID().slice(0, 12)}`;
   // Appends to the end of its kind, so an upload never displaces the
   // ordering a venue has already arranged.
-  const next = one(
+  const next = await one(
     "SELECT COALESCE(MAX(position), -1) + 1 AS p FROM venue_assets WHERE venue_id = ? AND kind = ?",
     input.venueId,
     input.kind,
   );
 
-  run(
+  await run(
     `INSERT INTO venue_assets
        (id, venue_id, kind, object_key, content_type, size_bytes, position, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -75,8 +75,8 @@ export function recordAsset(input: {
   };
 }
 
-export function getAsset(venueId: string, id: string): VenueAsset | null {
-  const r = one(
+export async function getAsset(venueId: string, id: string): Promise<VenueAsset | null> {
+  const r = await one(
     "SELECT * FROM venue_assets WHERE id = ? AND venue_id = ?",
     id,
     venueId,
@@ -84,10 +84,10 @@ export function getAsset(venueId: string, id: string): VenueAsset | null {
   return r ? rowToAsset(r) : null;
 }
 
-export function deleteAsset(venueId: string, id: string): VenueAsset | null {
+export async function deleteAsset(venueId: string, id: string): Promise<VenueAsset | null> {
   const asset = getAsset(venueId, id);
   if (!asset) return null;
-  run("DELETE FROM venue_assets WHERE id = ? AND venue_id = ?", id, venueId);
+  await run("DELETE FROM venue_assets WHERE id = ? AND venue_id = ?", id, venueId);
   return asset;
 }
 
@@ -98,21 +98,23 @@ export function deleteAsset(venueId: string, id: string): VenueAsset | null {
  * would leave positions to be reconciled against what the client thought
  * it had, and drag-and-drop already knows the final order.
  */
-export function reorderAssets(
+export async function reorderAssets(
   venueId: string,
   kind: AssetKind,
   orderedIds: string[],
-): VenueAsset[] {
-  transaction(() => {
-    orderedIds.forEach((id, index) => {
-      run(
+): Promise<VenueAsset[]> {
+  await transaction(async () => {
+    let index = 0;
+    for (const id of orderedIds) {
+      await run(
         "UPDATE venue_assets SET position = ? WHERE id = ? AND venue_id = ? AND kind = ?",
         index,
         id,
         venueId,
         kind,
       );
-    });
+      index += 1;
+    }
   });
   return listAssets(venueId, kind);
 }

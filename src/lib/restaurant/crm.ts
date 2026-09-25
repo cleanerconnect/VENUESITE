@@ -4,7 +4,8 @@
 // base is a different data source (the Business Service's customer
 // records) from the service payload every other screen reads.
 
-import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
+import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 import { fr } from "date-fns/locale";
 import type {
   Badge,
@@ -31,7 +32,7 @@ const LOYALTY_TONE: Record<LoyaltyTier, Badge["tone"]> = {
   ambassadeur: "success",
 };
 
-const dateFR = (iso: string) => format(new Date(iso), "d MMM yyyy", { locale: fr });
+const dateFR = (iso: string) => formatInTimeZone(new Date(iso), VENUE_TIME_ZONE, "d MMM yyyy", { locale: fr });
 
 /** >= 0.3 is the same threshold the booking rows badge on. */
 function riskBadge(risk: number): Badge | null {

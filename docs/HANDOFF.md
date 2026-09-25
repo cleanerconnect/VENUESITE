@@ -224,7 +224,7 @@ minimum group size on Audience.
 
 ### Before you trust a change, walk it
 
-Six browser checks and one recorder are committed under
+Nine browser checks and one recorder are committed under
 `tools/verify/`, kept out of `package.json` deliberately — they need a
 running server and a browser binary, and a check that pretends to be a
 unit test is a check that gets skipped in CI and then deleted.
@@ -239,8 +239,21 @@ node tools/verify/states.mjs          # ?etat= forceable on every venue route in
 node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
 node tools/verify/audience.mjs        # the minimum group of ten, both configurations
 node tools/verify/inscription.mjs     # the six onboarding steps, the resume, the landing
+node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
+node tools/verify/edges.mjs           # the paths taken by accident — see below
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
 ```
+
+The last two are the ones that found real defects rather than confirming
+known ones. `journey.mjs` signs a fresh partner up with accented names, a
+Moroccan phone number, a real photo upload and a dragged map pin, walks
+the six screens of the empty venue it just created, saves every form and
+re-reads it, signs out, signs back in on the seeded venue and exercises
+the day arrows, the date picker, the chips, the search, accept, refuse,
+check-in and the scanner. `edges.mjs` walks what it does not: a wrong
+password, an address with no account, a session that died with a form
+open, two taps on one button, a network taking 350 ms a request, a 12 MB
+photo, an empty venue, a bar. Both pass at 1440 and at 390.
 
 **Set `LYFE_LOT` on the server and on the tool, or the run is
 meaningless.** The tools derive their screen list from the route index
@@ -304,6 +317,68 @@ every check silently measures the *old* build. Kill by PID
 rebuilding.
 
 ---
+
+### Déployer — Vercel avec Neon Postgres
+
+Le portail tourne en local sur SQLite et en production sur Postgres,
+**avec le même `db/schema.sql`**, écrit dans l'intersection des deux
+dialectes. Une seule variable décide : `DATABASE_URL`.
+
+| Variable | Effet |
+|---|---|
+| `DATABASE_URL` | présente → pilote `db`, moteur **Postgres**. C'est ce que Vercel définit quand un projet Neon est rattaché. |
+| *(absente)* | pilote `db` sur **SQLite** si `.data/lyfe.db` existe, sinon pilote `static` (le jeu de données figé) |
+| `LYFE_LOT` | `1` par défaut — le Dashboard basique. `2` n'est à mettre que pour montrer le périmètre complet. |
+| `DATABASE_POOL_MAX` | facultatif, 4 par défaut : le plafond de connexions par instance |
+
+**Dans Vercel**, une fois par projet :
+
+1. **Storage → Create Database → Neon Postgres**, puis *Connect* au
+   projet `venuesite`. Vercel écrit `DATABASE_URL` (et ses alias
+   `POSTGRES_*`) sur les trois environnements. Rien d'autre à régler :
+   il n'y a pas de clé d'API à fournir, la carte utilise
+   OpenStreetMap.
+2. **Redéployer** — les variables ne sont lues qu'au démarrage d'une
+   instance.
+3. **Semer une fois**, depuis une machine qui a le dépôt et l'URL
+   (copiez la chaîne *pooled* depuis Neon ou Vercel) :
+
+```bash
+export DATABASE_URL="postgres://…-pooler.…neon.tech/neondb?sslmode=require"
+npm run db:migrate     # applique schema.sql + les fonctions de compatibilité
+npm run db:reset       # génère le jeu de démonstration et le copie dans Postgres
+```
+
+`db:reset` écrit d'abord `.data/lyfe.db` — le générateur de données
+n'existe qu'en un seul exemplaire — puis applique le schéma et copie
+chaque table dans Postgres, dans l'ordre où `db/schema.sql` les déclare,
+qui est un ordre de dépendances. `npm run db:push` refait la copie seule.
+Les deux bases portent alors les mêmes lignes, ce qui est ce qui rend
+comparable un passage des outils sur l'une et sur l'autre.
+
+4. **Vérifier** : `GET /api/health` doit répondre
+
+```json
+{ "adapters": { "data": "db", "dataEngine": "postgres" } }
+```
+
+`"data": "static"` sur un déploiement veut dire qu'aucune base n'est
+rattachée : les écrans s'affichent depuis l'instantané, mais l'étape 6
+de l'inscription refuse de créer l'établissement — il n'y a rien où
+l'écrire. `"dataEngine": "sqlite"` en production veut dire que le
+portail écrit dans un fichier qu'un redéploiement jettera.
+
+**Ce que Postgres change dans le code : rien.** Les sept magasins
+parlent aux quatre mêmes fonctions — `all`, `one`, `run`,
+`transaction` — et `src/lib/db/store.ts` choisit le moteur derrière
+elles. Deux détails y sont réglés une fois pour toutes : les `?` sont
+traduits en `$1…$n`, et les types que `pg` renverrait autrement
+(`COUNT(*)` en chaîne, une date en objet `Date`, une colonne JSON déjà
+désérialisée) sont épinglés pour qu'une ligne ait la même forme sur les
+deux moteurs. Les quelques requêtes qui utilisent `strftime`,
+`julianday`, `date(x, modifier)` ou `datetime(x)` — des fonctions
+SQLite — trouvent en face des fonctions de même nom installées par
+`db:migrate` depuis `db/postgres-compat.sql`.
 
 ## 4. The styleguide
 
@@ -591,7 +666,7 @@ was not there.
 
 ## 8. The schema is the Business Service contract
 
-`db/schema.sql` — **65 tables**. It is not an implementation detail of
+`db/schema.sql` — **67 tables**. It is not an implementation detail of
 this repository; it is the specification of what the Business Service must
 store. It is written on the Postgres/SQLite intersection precisely so it
 ports without translation, and `db/seed.mjs` fills it with a dataset the
@@ -629,6 +704,54 @@ disagree with the list beneath it. `SCREEN_NEEDS` declares which bundles
 each screen wants. Writes are a **typed union per bundle**, so each
 surface is one endpoint rather than forty routes to write and forty to
 secure, and every action returns the refreshed bundle.
+
+### The consumer app reads the same tables
+
+The guest-facing product — `cleanerconnect/LYFE`, an Expo client over a
+FastAPI backend — was built on MongoDB. It now has a second, optional
+source: `backend/postgres_dashboard.py` on that repository's branch
+`claude/awesome-heisenberg-klorrv` serves the app's own routes out of
+**this** schema over `asyncpg`. The module is imported only when
+`DATABASE_URL` is set, and its routers are registered before the Mongo
+ones so they win the path match; without the variable that API behaves
+exactly as it did.
+
+| The app calls | It reads or writes |
+|---|---|
+| `GET /api/restaurants`, `/{id}` | `venues`, with `availability_slots` as opening hours, the first `venue_assets` photo as the image, the `reviews` average as the rating |
+| `POST /api/auth/guest`, `GET /api/auth/me` | `app_sessions` — the one table the integration adds, created on demand, outside the Lot 1 contract |
+| `POST /api/bookings/enhanced` | a `reservations` row in state `requested`, a `customers` row keyed on the app user, a `reservation_status_history` entry |
+| `GET /api/bookings/enhanced`, `PUT …/{id}/status` | the same rows, with this schema's lifecycle mapped to the five statuses the app's screens draw |
+
+So a venue created at `/inscription` is in the app's list on the next
+request, with the hours the partner set on Disponibilités; a booking made
+in the app lands on Réservations and is counted on Accueil; and Accepter
+is what the app reads back as confirmed. **Nothing in the app's UI
+changed** — `git diff` on its `frontend/` is empty.
+
+`GET /api/business/overview` is deliberately *not* re-implemented there:
+it is a composite this portal assembles from these same tables, and a
+second implementation of one screen's logic would be free to drift. The
+portal reads Postgres directly, which is how it is deployed.
+
+One variable to set on that backend beside `DATABASE_URL`:
+**`PORTAL_BASE_URL`**, the portal's deployment. Uploads belong to this
+repository (`/api/assets/<key>`), so an image URL has to point at it.
+
+`tools/verify/handshake.mjs` is the proof and the regression test. It
+needs the portal on `BASE` and that backend on `API`, both with the same
+`DATABASE_URL`:
+
+```bash
+BASE=http://localhost:3210 API=http://localhost:8000 \
+  LYFE_LOT=1 node tools/verify/handshake.mjs
+```
+
+Twenty checks: a partner signs up through the six steps in a real
+browser, the app lists the venue with its address, map point and hours, a
+guest books it, Accueil counts the request, the partner accepts, the app
+reads it back as confirmed, and a cancellation made in the app shows up
+on the dashboard.
 
 ---
 

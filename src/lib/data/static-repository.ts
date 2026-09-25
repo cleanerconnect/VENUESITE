@@ -255,7 +255,7 @@ export class StaticRestaurantRepository implements RestaurantRepository {
 
   async submitOnboarding(_draftId: string): Promise<{ venueId: string }> {
     throw new RepositoryError(
-      "Aucune base de données : les six étapes se parcourent sur le jeu statique, mais créer l'établissement a besoin d'un store. Lancez `npm run db:reset`.",
+      "Aucune base de données : les six étapes se parcourent sur le jeu statique, mais créer l'établissement a besoin d'une base. En local : `npm run db:reset`. Sur un déploiement : rattachez une base Postgres (DATABASE_URL).",
       503,
       "store_required",
     );

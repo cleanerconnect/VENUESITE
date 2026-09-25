@@ -99,8 +99,8 @@ const AGE_BAND_SQL = `CASE
   WHEN (CAST(strftime('%Y','now') AS INTEGER) - birth_year) < 55 THEN '45-54'
   ELSE '55+' END`;
 
-function sources(venueId: string): AudienceSourceRow[] {
-  const rows = all(
+async function sources(venueId: string): Promise<AudienceSourceRow[]> {
+  const rows = await all(
     `SELECT source,
             SUM(impressions) AS impressions,
             SUM(opens)       AS opens,
@@ -135,8 +135,8 @@ function sources(venueId: string): AudienceSourceRow[] {
  * curve over six people is both noise and, with a city beside it, a way
  * to re-identify them.
  */
-function cohorts(venueId: string): AudienceCohort[] {
-  const rows = all(
+async function cohorts(venueId: string): Promise<AudienceCohort[]> {
+  const rows = await all(
     `SELECT substr(c.first_seen_at, 1, 7) AS month,
             COUNT(*)                      AS size,
             SUM(CASE WHEN c.last_visit_at IS NOT NULL
@@ -178,8 +178,8 @@ function cohorts(venueId: string): AudienceCohort[] {
     });
 }
 
-function benchmarks(venueId: string, cohort: string, city: string): AudienceBenchmark[] {
-  const rows = all(
+async function benchmarks(venueId: string, cohort: string, city: string): Promise<AudienceBenchmark[]> {
+  const rows = await all(
     `SELECT metric, median, top_decile, sample_size
        FROM platform_benchmarks
       WHERE cohort = ? AND city = ?`,
@@ -187,7 +187,7 @@ function benchmarks(venueId: string, cohort: string, city: string): AudienceBenc
     city,
   );
 
-  const agg = one(
+  const agg = await one(
     `SELECT
        SUM(covers_served) AS covers,
        SUM(capacity)      AS capacity,
@@ -198,11 +198,11 @@ function benchmarks(venueId: string, cohort: string, city: string): AudienceBenc
     venueId,
     `-${PERIOD_DAYS} days`,
   );
-  const rating = one(
+  const rating = await one(
     "SELECT AVG(rating) AS avg FROM reviews WHERE venue_id = ?",
     venueId,
   );
-  const base = one(
+  const base = await one(
     `SELECT COUNT(*) AS total,
             SUM(CASE WHEN visit_count > 1 THEN 1 ELSE 0 END) AS returning_count
        FROM customers WHERE venue_id = ?`,
@@ -235,8 +235,8 @@ function benchmarks(venueId: string, cohort: string, city: string): AudienceBenc
 }
 
 /** Which anonymised cohort this venue is compared against. */
-function cohortFor(venueId: string): { cohort: string; city: string } {
-  const v = one("SELECT kind, city FROM venues WHERE id = ?", venueId);
+async function cohortFor(venueId: string): Promise<{ cohort: string; city: string }> {
+  const v = await one("SELECT kind, city FROM venues WHERE id = ?", venueId);
   const city = String(v?.city ?? "Casablanca");
   return {
     cohort: String(v?.kind ?? "restaurant") === "drinks" ? "bar_cocktails" : "restaurant_haut_de_gamme",
@@ -244,11 +244,11 @@ function cohortFor(venueId: string): { cohort: string; city: string } {
   };
 }
 
-export function audienceInsights(venueId: string): AudienceInsights | null {
-  const venue = one("SELECT id FROM venues WHERE id = ?", venueId);
+export async function audienceInsights(venueId: string): Promise<AudienceInsights | null> {
+  const venue = await one("SELECT id FROM venues WHERE id = ?", venueId);
   if (!venue) return null;
 
-  const base = one(
+  const base = await one(
     `SELECT COUNT(*) AS total,
             SUM(CASE WHEN first_seen_at >= date('now', ?) THEN 1 ELSE 0 END) AS fresh,
             SUM(CASE WHEN visit_count > 1
@@ -263,7 +263,7 @@ export function audienceInsights(venueId: string): AudienceInsights | null {
   const share = (n: number) =>
     baseTotal === 0 ? 0 : Number(((n / baseTotal) * 100).toFixed(1));
 
-  const { cohort, city } = cohortFor(venueId);
+  const { cohort, city } = await cohortFor(venueId);
 
   return {
     venueId,
@@ -272,17 +272,17 @@ export function audienceInsights(venueId: string): AudienceInsights | null {
     returnRate90Pct: share(Number(base?.returned90 ?? 0)),
     periodDays: PERIOD_DAYS,
     byCity: breakdown(
-      counted(all("SELECT city AS label, COUNT(*) AS count FROM customers WHERE venue_id = ? GROUP BY city", venueId)),
+      counted(await all("SELECT city AS label, COUNT(*) AS count FROM customers WHERE venue_id = ? GROUP BY city", venueId)),
     ),
     byQuartier: breakdown(
-      counted(all("SELECT quartier AS label, COUNT(*) AS count FROM customers WHERE venue_id = ? GROUP BY quartier", venueId)),
+      counted(await all("SELECT quartier AS label, COUNT(*) AS count FROM customers WHERE venue_id = ? GROUP BY quartier", venueId)),
     ),
     byAge: breakdown(
-      counted(all(`SELECT ${AGE_BAND_SQL} AS label, COUNT(*) AS count FROM customers WHERE venue_id = ? GROUP BY label`, venueId)),
+      counted(await all(`SELECT ${AGE_BAND_SQL} AS label, COUNT(*) AS count FROM customers WHERE venue_id = ? GROUP BY label`, venueId)),
     ),
     byInterest: breakdown(
       counted(
-        all(
+        await all(
           `SELECT p.label AS label, COUNT(*) AS count
              FROM customer_preferences p
              JOIN customers c ON c.id = p.customer_id
@@ -292,10 +292,10 @@ export function audienceInsights(venueId: string): AudienceInsights | null {
         ),
       ),
     ),
-    sources: sources(venueId),
+    sources: await sources(venueId),
     byWeekday: breakdown(
       counted(
-        all(
+        await all(
           `SELECT CAST(strftime('%w', at) AS INTEGER) AS label, COUNT(*) AS count
              FROM reservations
             WHERE venue_id = ? AND state = 'completed'
@@ -309,7 +309,7 @@ export function audienceInsights(venueId: string): AudienceInsights | null {
     ),
     byService: breakdown(
       counted(
-        all(
+        await all(
           `SELECT COALESCE(
                     s.label,
                     CASE
@@ -342,7 +342,7 @@ export function audienceInsights(venueId: string): AudienceInsights | null {
     ),
     byBookingHour: breakdown(
       counted(
-        all(
+        await all(
           `SELECT strftime('%H', at) || 'h' AS label, COUNT(*) AS count
              FROM reservations
             WHERE venue_id = ? AND state = 'completed'
@@ -351,8 +351,8 @@ export function audienceInsights(venueId: string): AudienceInsights | null {
         ),
       ),
     ),
-    cohorts: cohorts(venueId),
-    benchmarks: benchmarks(venueId, cohort, city),
+    cohorts: await cohorts(venueId),
+    benchmarks: await benchmarks(venueId, cohort, city),
     minGroupSize: AUDIENCE_MIN_GROUP,
     benchmarkCohort: cohort,
   };
