@@ -250,6 +250,21 @@ export interface RestaurantRepository extends VenueOperationsRepository {
   /** Idempotent: a spent draft returns the venue it already made. */
   submitOnboarding(draftId: string): Promise<{ venueId: string }>;
 
+  // ── Forgotten password ──
+  //
+  // « Mot de passe oublié ? » sits on the login form and used to answer
+  // « un lien de réinitialisation vient d'être envoyé » without any
+  // service having been asked to send one. That sentence is either true
+  // or it is a lie to a partner locked out of tonight's service, so the
+  // affordance goes through the seam like every other write.
+  //
+  // `sent: false` is not a failure: it is a driver with no mail service
+  // behind it saying so, and the screen then tells the partner where to
+  // go instead of claiming a mail is on its way. The answer never says
+  // whether the address is known — the form must not be usable to find
+  // out who has an account.
+  requestPasswordReset(email: string): Promise<{ sent: boolean }>;
+
   // ── LYFE's review of a listing ──
   //
   // The only two calls in this interface that are not venue-scoped. A

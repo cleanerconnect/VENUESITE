@@ -8,11 +8,12 @@
 // advances, so the furthest step reached is a server fact rather than a
 // browser one.
 //
-// What is mandatory: a name, an e-mail and a password to have an
-// account; the establishment's name, its type, its city and its
-// address, because the app cannot list a place it cannot find. Nothing
-// else — the phone, the map pin, the cover photo and the hours all have
-// an answer already, and step 4 says out loud that it can be skipped.
+// What is mandatory: a name, an e-mail, a phone number and a password
+// typed twice to have an account — the five details `Détail Sprint `
+// row 39 names — then the establishment's name, its type, its city and
+// its address, because the app cannot list a place it cannot find.
+// Nothing else: the map pin, the cover photo and the hours all have an
+// answer already, and step 4 says out loud that it can be skipped.
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -77,6 +78,7 @@ export function InscriptionFlow({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
 
   // Steps 2 to 5 — seeded from the draft when there is one.
   const [venueName, setVenueName] = useState(initialDraft?.venueName ?? "");
@@ -128,7 +130,13 @@ export function InscriptionFlow({
     setError(null);
     setFieldError(null);
     start(async () => {
-      const result = await signUpPartner({ fullName, email, phone, password });
+      const result = await signUpPartner({
+        fullName,
+        email,
+        phone,
+        password,
+        passwordConfirm,
+      });
       if (!result.ok) {
         if (result.field) setFieldError({ field: result.field, message: result.message });
         else setError(result.message);
@@ -231,11 +239,21 @@ export function InscriptionFlow({
                     error={fieldMessage("email")}
                     autoComplete="email"
                   />
+                  {/* Asked for, not optional. `Détail Sprint `, row 39,
+                      SP-Prio 02 names « Nom complet, email, téléphone,
+                      Mot de passe et confirmation de mot de passe »
+                      among the personal details the account is created
+                      from, and the same row sends the verification code
+                      « à mon mail ou à mon whatsapp » — which needs a
+                      number. Prio 02 also buys « Réservation via
+                      whatsapp ». */}
                   <Input
-                    label="Téléphone (facultatif)"
+                    label="Téléphone"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    error={fieldMessage("phone")}
+                    hint="Sur WhatsApp de préférence : c'est là que partent les alertes."
                     autoComplete="tel"
                   />
                   <Input
@@ -245,6 +263,14 @@ export function InscriptionFlow({
                     onChange={(e) => setPassword(e.target.value)}
                     error={fieldMessage("password")}
                     hint="Huit caractères au minimum."
+                    autoComplete="new-password"
+                  />
+                  <Input
+                    label="Confirmation du mot de passe"
+                    type="password"
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    error={fieldMessage("passwordConfirm")}
                     autoComplete="new-password"
                   />
                 </>

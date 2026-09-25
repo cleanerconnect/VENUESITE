@@ -40,7 +40,12 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { chooseVenue, signIn, type VenueChoice } from "@/app/actions/auth";
+import {
+  chooseVenue,
+  requestPasswordReset,
+  signIn,
+  type VenueChoice,
+} from "@/app/actions/auth";
 import { COPY } from "@/lib/copy/fr";
 import { cn } from "@/lib/utils/cn";
 
@@ -93,16 +98,17 @@ export function SignInPanel() {
     });
   };
 
-  // No mail is sent — there is no backend to send it. What ships is the
-  // answer a partner must get either way: the same sentence whether or
-  // not the address is on file, so the form cannot be used to find out
-  // who has an account.
-  const forgot = () => {
-    setError(null);
-    setNotice(
-      email.includes("@") ? COPY.auth.forgotSent : COPY.auth.forgotNeedsEmail,
-    );
-  };
+  // Through the seam, like every other write. The answer is the same
+  // sentence whether or not the address is on file — the form must not
+  // be usable to find out who has an account — but which sentence
+  // depends on whether a service was actually asked: this used to
+  // promise a link on an instance that had nothing to send one with.
+  const forgot = () =>
+    startTransition(async () => {
+      setError(null);
+      const result = await requestPasswordReset(email);
+      setNotice(result.message);
+    });
 
   const pick = (venueId: string) =>
     startTransition(async () => {

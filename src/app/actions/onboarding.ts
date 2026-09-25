@@ -11,6 +11,7 @@
 // whoever holds it can edit that signup — unlike the session's presence
 // cookie, which carries nothing.
 
+import { identityCookie, presenceCookie, sign } from "@/lib/auth/cookie";
 import { cookies } from "next/headers";
 import { getRestaurantRepository } from "@/lib/data";
 import {
@@ -51,6 +52,7 @@ export async function signUpPartner(input: {
   email: string;
   phone: string;
   password: string;
+  passwordConfirm?: string;
 }): Promise<OnboardingResult> {
   const fullName = input.fullName.trim();
   const email = input.email.trim().toLowerCase();
@@ -61,6 +63,21 @@ export async function signUpPartner(input: {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return { ok: false, field: "email", message: "Cette adresse e-mail n'est pas valide." };
   }
+  // The number is asked for rather than optional: `Détail Sprint `
+  // row 39 lists « téléphone » among the details the account is made
+  // from, and the verification code that row describes goes « à mon
+  // mail ou à mon whatsapp ». Nine digits is the loosest rule that
+  // still refuses a typo — a Moroccan mobile is ten with the leading
+  // zero, nine without, and a partner may write it either way or with
+  // +212.
+  const phone = input.phone.trim();
+  if (phone.replace(/\D/g, "").length < 9) {
+    return {
+      ok: false,
+      field: "phone",
+      message: "Indiquez un numéro de téléphone joignable.",
+    };
+  }
   // Eight characters, and that is the whole rule. A password policy with
   // four clauses is a password on a sticky note under the stand.
   if (input.password.length < 8) {
@@ -70,12 +87,25 @@ export async function signUpPartner(input: {
       message: "Huit caractères au minimum.",
     };
   }
+  // Typed twice, because row 39 asks for « Mot de passe et confirmation
+  // de mot de passe » — and because the only way out of a mistyped
+  // password on this screen is a reset link.
+  if (
+    input.passwordConfirm !== undefined &&
+    input.passwordConfirm !== input.password
+  ) {
+    return {
+      ok: false,
+      field: "passwordConfirm",
+      message: "Les deux mots de passe ne sont pas identiques.",
+    };
+  }
 
   try {
     const { draft } = await getRestaurantRepository().startOnboarding({
       fullName,
       email,
-      phone: input.phone.trim(),
+      phone,
       password: input.password,
     });
     const jar = await cookies();
@@ -202,9 +232,12 @@ export async function finishOnboarding(): Promise<
     await repo.saveOnboardingDraft(id, { step: ONBOARDING_LAST_STEP });
 
     const options = { path: "/", maxAge: THIRTY_DAYS, sameSite: "lax" as const };
-    jar.set(PRESENCE_COOKIE, "1", { ...options, httpOnly: false });
-    jar.set(USER_COOKIE, draft.ownerId, { ...options, httpOnly: false });
-    jar.set(VENUE_COOKIE, venueId, { ...options, httpOnly: false });
+    // Same rules as the sign-in action: signed, httpOnly, secure in
+    // production. A partner who has just finished the six steps is
+    // signed in exactly the way one who typed a password is.
+    jar.set(PRESENCE_COOKIE, "1", presenceCookie(true));
+    jar.set(USER_COOKIE, sign(draft.ownerId), identityCookie(true));
+    jar.set(VENUE_COOKIE, sign(venueId), identityCookie(true));
     jar.delete(DRAFT_COOKIE);
 
     return { ok: true, href: "/restaurant" };

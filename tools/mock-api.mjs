@@ -27,7 +27,7 @@
 // implementation of it, kept honest by being run.
 
 import { createServer } from "node:http";
-import { readFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -204,6 +204,19 @@ const ROUTES = [
       throw new Refused(401, "bad_credentials");
     }
     return accountFor(user);
+  }],
+
+  // « Mot de passe oublié ? ». Answers 204 for every syntactically
+  // valid address, known or not — the form must not be usable to find
+  // out who has an account — and 422 for one that is not an address at
+  // all. No mail leaves this process; what is being verified is that
+  // the front end asks and reads the answer.
+  ["POST", /^\/api\/business\/auth\/password-reset$/, (_m, _q, body) => {
+    const email = String(body?.email ?? "").trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      throw new Refused(422, "invalid_email", "Adresse e-mail invalide.");
+    }
+    return null;
   }],
 
   // Onboarding — « Création de Venue ». The draft lives here for the
@@ -877,9 +890,49 @@ function checkIn(bundle, reservationId, code) {
 
 // ── The server ──────────────────────────────────────────────
 
+// ── Observed traffic ─────────────────────────────────────────
+//
+// A contract is only worth what the caller actually sends. Set
+// LYFE_MOCK_TRACE to a file path and every request lands there as one
+// JSON line — method, path, query, the body as sent, the status, and
+// the shape of the answer as returned — so the specification can be
+// derived from the traffic rather than from the prose about it.
+
+const TRACE = process.env.LYFE_MOCK_TRACE ?? "";
+
+function shapeOf(value, depth = 0) {
+  if (value === null) return "null";
+  if (Array.isArray(value)) return value.length === 0 ? ["?"] : [shapeOf(value[0], depth + 1)];
+  if (typeof value === "object") {
+    if (depth > 5) return "object";
+    const out = {};
+    for (const [key, inner] of Object.entries(value)) out[key] = shapeOf(inner, depth + 1);
+    return out;
+  }
+  if (typeof value === "string") {
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) return "string(date-time)";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return "string(date)";
+    if (/^\d{2}:\d{2}$/.test(value)) return "string(hh:mm)";
+    return "string";
+  }
+  return typeof value;
+}
+
+function trace(entry) {
+  if (!TRACE) return;
+  try {
+    appendFileSync(TRACE, `${JSON.stringify(entry)}\n`);
+  } catch {
+    // A trace that cannot be written must not take the service down.
+  }
+}
+
 const server = createServer((req, res) => {
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
   const query = Object.fromEntries(url.searchParams.entries());
+
+  let sentBody = null;
+  let matchedPattern = null;
 
   const send = (status, payload) => {
     const body = payload === null || payload === undefined ? "" : JSON.stringify(payload);
@@ -890,6 +943,18 @@ const server = createServer((req, res) => {
     res.end(body);
     const tail = status >= 400 ? ` ${body.slice(0, 120)}` : "";
     console.log(`${req.method} ${url.pathname}${url.search} → ${status}${tail}`);
+    trace({
+      method: req.method,
+      path: url.pathname,
+      pattern: matchedPattern,
+      query,
+      authorization: req.headers.authorization ? "Bearer <token>" : null,
+      contentType: req.headers["content-type"] ?? null,
+      request: sentBody === null ? null : shapeOf(sentBody),
+      requestSample: sentBody,
+      status,
+      response: payload === null || payload === undefined ? null : shapeOf(payload),
+    });
   };
 
   // Health, unauthenticated, so a launch script can wait on it.
@@ -917,6 +982,7 @@ const server = createServer((req, res) => {
     if (raw) {
       try {
         body = JSON.parse(raw);
+        sentBody = body;
       } catch {
         return send(400, { code: "bad_json", message: "Corps illisible." });
       }
@@ -926,6 +992,7 @@ const server = createServer((req, res) => {
       if (req.method !== method) continue;
       const match = pattern.exec(url.pathname);
       if (!match) continue;
+      matchedPattern = String(pattern);
       try {
         const payload = handler(match, query, body);
         return payload === null || payload === undefined
