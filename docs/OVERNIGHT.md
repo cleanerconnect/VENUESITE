@@ -241,3 +241,103 @@ parlait encore la langue du restaurant à un lounge. Il passe par
 
 - La vérification de l'étape : `journey` et `edges` propres sur les deux
   largeurs, et la matrice complète relancée derrière.
+
+---
+
+## Étape 3 — Brancher l'application grand public
+
+### Fait
+
+Le dépôt `cleanerconnect/LYFE` a été ajouté à la session et lu.
+L'application est en deux morceaux : `frontend/`, un client Expo /
+React Native, et `backend/`, une API FastAPI dont la source de vérité
+est **MongoDB**. Le tableau de bord, lui, écrit dans **Postgres** depuis
+l'étape 0. Deux produits, deux langages, deux bases : le même
+établissement existait deux fois et personne ne pouvait le dire.
+
+**Ce qui a été écrit — `backend/postgres_dashboard.py`, côté LYFE.** Un
+module de 673 lignes qui sert les routes de l'application *depuis la
+base du tableau de bord*, via `asyncpg`. Il n'est importé que si
+`DATABASE_URL` est présent, et `backend/server.py` enregistre ses
+routeurs **avant** le routeur Mongo pour qu'ils gagnent la résolution de
+chemin. Sans la variable, l'API se comporte exactement comme avant.
+
+| L'application demande | Servi depuis |
+|---|---|
+| `GET /api/restaurants` et `/{id}` | `venues`, avec `availability_slots` en `opening_hours`, la première photo de `venue_assets` en `image`, la moyenne de `reviews` en `rating` |
+| `POST /api/auth/guest`, `GET /api/auth/me` | une ligne dans `app_sessions` |
+| `POST /api/bookings/enhanced` | une ligne `reservations` à l'état `requested` — ce que le carnet affiche comme « À confirmer », avec Accepter et Refuser — plus une ligne `customers` clée sur `app_user_id` et une entrée dans `reservation_status_history` |
+| `GET /api/bookings/enhanced` | les mêmes lignes, cycle de vie du tableau de bord traduit vers les cinq statuts de l'application |
+| `PUT /api/bookings/enhanced/{id}/status` | un changement d'état que le tableau de bord lit immédiatement |
+
+Le `/api/business/*` du contrat est servi pour la partie dont la charge
+utile **est** une table : un établissement (`GET`/`PUT`), ses
+disponibilités, le carnet d'une journée, et les cinq décisions sur une
+ligne — confirmer, refuser, annuler, no-show, check-in.
+
+**L'interface de l'application n'a pas été touchée.** C'est vérifiable
+et non déclaratif : `git diff` sur `frontend/` entre la base et la tête
+de branche est **vide**. La référence de ce que les écrans affichent a
+été prise dans leur propre code — les formes `Restaurant` et
+`BookingEnhanced` que le client analyse — plutôt que redessinée ; le
+fichier Figma `yEBXM5UoNTQI7MKc9sMB9y` est le dessin de ces mêmes
+écrans, et rien n'en a bougé.
+
+**La preuve — `tools/verify/handshake.mjs`, côté portail.** Un seul
+script, de bout en bout, sans fixture :
+
+1. un partenaire s'inscrit sur le tableau de bord, six étapes, dans un
+   vrai navigateur ;
+2. l'API de l'application liste le nouvel établissement, avec l'adresse,
+   le point de la carte et les horaires posés à l'étape 5 ;
+3. un invité le réserve par `POST /api/bookings/enhanced` ;
+4. la demande apparaît sur Réservations et est comptée sur Accueil, et
+   le partenaire l'accepte ;
+5. l'application relit la réservation comme `confirmed`, et le carnet
+   dit « Confirmée » ;
+6. une annulation faite dans l'application se voit sur le tableau de
+   bord.
+
+Vingt vérifications, toutes vertes.
+
+### Trouvé — et corrigé
+
+**1. L'insertion dans `reservation_status_history` échouait.** Le module
+écrivait une colonne `venue_id` qui n'existe pas : la table est
+`from_state` / `to_state` / `actor`, avec une contrainte sur
+`venue|user|system`. Les trois insertions ont été réécrites, l'acteur
+par défaut étant `venue`.
+
+**2. La référence de réservation était tronquée.** Un `.upper()[-10:]`
+coupait le `LYFE-` du début et rendait « YFE-C04AAB » — une référence
+que le partenaire ne peut pas rapprocher de celle que l'invité lit dans
+l'application. Le `qr_code` est désormais renvoyé entier.
+
+### Choix pris sans pouvoir demander
+
+**`GET /api/business/overview` n'est pas servi depuis Python**, et c'est
+une décision plutôt qu'un oubli. C'est un composite que le tableau de
+bord assemble à partir des mêmes tables (la salutation, les agrégats,
+les services, les zones, le fil d'activité, les avis, les versements) ;
+une copie Python de cet assemblage serait une seconde implémentation de
+la logique d'un écran, libre de diverger de la première. Le tableau de
+bord lit donc Postgres directement — `LYFE_DATA=db`, ce qui est sa
+configuration de déploiement — et cette API est la moitié « application »
+de la même base. L'option la plus simple qui garde le périmètre.
+
+**Une table ajoutée, `app_sessions`**, créée à la demande par le module
+lui-même : l'application a besoin d'une session invité, et le schéma du
+tableau de bord n'en a pas — ses comptes sont des comptes partenaires.
+Elle est hors du contrat Lot 1, et volontairement minimale.
+
+### Reste
+
+- **`PORTAL_BASE_URL`** doit pointer sur le déploiement du portail : les
+  photos appartiennent au tableau de bord (`/api/assets/<clé>`), donc
+  une URL d'image doit le désigner. Sans la variable, les images de
+  l'application seront relatives et cassées.
+- L'API de l'application garde `MONGO_URL` : les routes qui ne sont pas
+  dans le tableau ci-dessus restent servies par Mongo. Basculer le reste
+  n'était pas demandé.
+- Rien n'est déployé côté LYFE. La branche `claude/awesome-heisenberg-klorrv`
+  est poussée ; aucune demande de fusion n'a été ouverte.
