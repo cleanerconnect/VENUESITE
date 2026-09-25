@@ -16,6 +16,7 @@ import { cookies } from "next/headers";
 import { directory } from "./directory";
 import { accountName, isKnownAccount } from "./accounts";
 import { isLyfeAdmin } from "./platform";
+import { unsign } from "./cookie";
 
 export type PortalRole = "owner" | "manager" | "staff";
 
@@ -66,7 +67,9 @@ class DemoSessionDriver implements SessionDriver {
     // directory: an account that holds no venue is still a real account,
     // and falling back to the default user for it would silently sign
     // someone in as a different person.
-    const claimed = jar.get(USER_COOKIE)?.value;
+    // Signed, so a hand-edited cookie is no cookie at all. See
+    // `cookie.ts` for why this stand-in has a signature on it.
+    const claimed = unsign(jar.get(USER_COOKIE)?.value);
     // The fixture list first, because it costs nothing. Then the
     // directory: an account the onboarding flow created is not in the
     // fixture, and falling back to the default user for it would sign
@@ -77,7 +80,28 @@ class DemoSessionDriver implements SessionDriver {
       if (await directory().findById(claimed)) return claimed;
     }
 
-    return process.env.LYFE_DEMO_USER_ID ?? DEFAULT_USER_ID;
+    // No fallback, and this is the whole of the fix.
+    //
+    // This line used to read `?? DEFAULT_USER_ID`, and
+    // `DEFAULT_USER_ID` is `usr_yassine` — Dar Zellij's owner. So a
+    // visitor who set `lyfe.session.present=1` in their own browser —
+    // a cookie that is deliberately not HttpOnly, carries no identity
+    // and is signed by nothing, because its only job is to let the
+    // middleware skip rendering a page nobody will see — was served
+    // Dar Zellij's book: every guest's name, phone, e-mail and
+    // allergy. Signing `lyfe.user` closed the door to becoming a
+    // *different* partner and left this one open: becoming the default
+    // one.
+    //
+    // A missing or unverifiable identity is now no session at all. The
+    // middleware sends the request to /login, and the layout's
+    // `resolveSession()` redirects anything that gets past it.
+    //
+    // `LYFE_DEMO_USER_ID` stays as an explicit opt-in — a developer
+    // pointing a script at a running portal without going through the
+    // form — but it has to be set on purpose and it is never a default.
+    const forced = process.env.LYFE_DEMO_USER_ID;
+    return forced && forced.length > 0 ? forced : null;
   }
 }
 
@@ -115,7 +139,7 @@ export async function resolveSession(): Promise<PortalSession | null> {
   const venues = account?.venues ?? [];
 
   const jar = await cookies();
-  const requested = jar.get(COOKIE_VENUE)?.value;
+  const requested = unsign(jar.get(COOKIE_VENUE)?.value) ?? undefined;
   // Re-checked against the account the directory just returned rather
   // than asked again: one session read per request, and the answer
   // cannot disagree with itself halfway through.

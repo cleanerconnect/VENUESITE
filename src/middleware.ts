@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Demo-grade gate. Reads the `lyfe.session.present` cookie that
-// `lib/auth/session.ts` mirrors alongside the localStorage session. If
-// it's missing on a protected path, we 307 to /login server-side before
-// SSR — so curl-ing /dashboard returns the login redirect, not the bare
-// dashboard HTML. Real auth (Auth.js/Clerk) replaces this whole file in
-// the DigiNegoce handoff; the cookie is presence-only, no secrets.
+// The first gate, and only the first.
+//
+// It reads `lyfe.session.present`, a cookie that carries no identity
+// and is not trusted for anything: a request without it is redirected
+// to /login before SSR, so curl-ing a venue screen returns the login
+// redirect rather than the bare HTML. That is all this file decides.
+//
+// *Who* you are is decided elsewhere, and after this: `lyfe.user` and
+// `lyfe.venue` are HMAC-signed and HttpOnly (`lib/auth/cookie.ts`),
+// `resolveSession()` verifies the signature on every request, and every
+// venue-scoped write re-checks the membership through the directory.
+// Editing `document.cookie` therefore gets a visitor as far as a
+// redirect loop, not into someone else's book — which was not true
+// before: the identity cookies used to be readable, writable and
+// unsigned.
+//
+// The presence cookie stays deliberately dumb, because the alternative
+// is verifying a signature in middleware on every asset request for a
+// gate whose only job is to avoid rendering a page nobody will see.
 
 const COOKIE = "lyfe.session.present";
 
