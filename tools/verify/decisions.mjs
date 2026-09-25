@@ -264,7 +264,12 @@ if (hasRow) {
 // The search: a name, four digits, a date — grouped by day.
 const searchFor = async (term) => {
   await go("/restaurant/reservations");
-  const box = page.locator("#chrome-search, #chrome-search-mobile").first();
+  // `:visible` on both, because the desktop box exists in the DOM at
+  // every width and is simply hidden by a `md:` class — `.first()`
+  // without it picks the invisible one and waits 30 seconds to fill it.
+  const box = page
+    .locator("#chrome-search:visible, #chrome-search-mobile:visible")
+    .first();
   await box.fill(term);
   await settle(1800);
   return text();
