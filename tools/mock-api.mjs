@@ -232,6 +232,12 @@ const ROUTES = [
       userId,
       fullName: String(body?.fullName ?? ""),
       email,
+      // Row 39 asks for the partner's phone at step 1, and the real
+      // driver copies it onto the venue as `contact_phone`
+      // (`src/lib/db/onboarding-store.ts:292`). The double dropped it,
+      // so Ma fiche read back an empty « Téléphone » on the HTTP
+      // driver and on it alone.
+      phone: String(body?.phone ?? "").trim(),
       venues: [],
     });
     const draft = {
@@ -418,12 +424,18 @@ const ROUTES = [
     row.at = at;
     return bundle.overview;
   }],
+  // `q` is a plain object — `Object.fromEntries(url.searchParams)` — not
+  // a `URLSearchParams`. These two handlers called `q.get(…)` on it and
+  // threw, so the double answered **500** to the Décaler sheet's slot
+  // list and to the reservation search: two of the four changes Lot 1
+  // bought, unusable against the reference service. Found by tracing
+  // every call rather than by counting 404s.
   ["GET", /^\/api\/business\/venues\/([^/]+)\/slots$/, (_m, q) =>
-    slotsFor(scoped(q), String(q.get("date") ?? "")),
+    slotsFor(scoped(q), String(q.date ?? "")),
   ],
   ["GET", /^\/api\/business\/venues\/([^/]+)\/bookings\/search$/, (_m, q) => {
     const bundle = scoped(q);
-    const term = String(q.get("q") ?? "").trim().toLowerCase();
+    const term = String(q.q ?? "").trim().toLowerCase();
     if (term.length < 2) return [];
     const digits = term.replace(/\D/g, "");
     return [...bundle.overview.upcomingReservations, ...bundle.overview.waitlist].filter(
@@ -514,6 +526,7 @@ const drafts = new Map();
  * there: a venue with no service in hand has no dashboard to render.
  */
 function makeVenueFromDraft(draft) {
+  const submitter = db.users.find((u) => u.userId === draft.ownerId);
   const venueId = `${draft.venueType === "bar" ? "bar" : "rst"}_${randomUUID().slice(0, 8)}`;
   const kind = draft.venueType === "bar" ? "drinks" : "restaurant";
   const open = draft.hours.filter((h) => !h.closed);
@@ -552,8 +565,9 @@ function makeVenueFromDraft(draft) {
     subline: `${kind === "drinks" ? "Bar" : "Restaurant"} · ${draft.city}`,
     cuisine: "",
     capacity: 40,
-    contactEmail: "",
-    contactPhone: "",
+    // From the account, exactly as the database driver does.
+    contactEmail: submitter?.email ?? "",
+    contactPhone: submitter?.phone ?? "",
     website: "",
     currency: "MAD",
     onboardingCompleted: true,
