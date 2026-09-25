@@ -9,7 +9,7 @@
 //   node db/seed.mjs --sqlite-only # generate the file, touch no Postgres
 
 import { DatabaseSync } from "node:sqlite";
-import { readFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 
@@ -26,6 +26,16 @@ mkdirSync(dirname(dbPath), { recursive: true });
 const db = new DatabaseSync(dbPath);
 db.exec("PRAGMA foreign_keys = ON");
 db.exec(readFileSync(resolve("db/schema.sql"), "utf8"));
+
+// The schema already describes the result of every migration, so a
+// freshly created file is stamped rather than migrated — the same rule
+// `db/migrate.mjs` applies to a fresh Postgres database.
+for (const id of readdirSync(resolve("db/migrations")).filter((f) => f.endsWith(".sql")).sort()) {
+  db.prepare("INSERT OR IGNORE INTO schema_migrations (id, applied_at) VALUES (?, ?)").run(
+    id,
+    new Date().toISOString(),
+  );
+}
 
 const now = new Date();
 const iso = (d) => d.toISOString();
@@ -122,6 +132,7 @@ const insert = (table, row) => {
 insert("venues", {
   id: VENUE,
   kind: "restaurant",
+  status: "validated",
   name: "Dar Zellij",
   short_name: "Dar Zellij",
   initials: "DZ",
@@ -727,6 +738,7 @@ const VENUE2 = "bar_nomad_casa";
 insert("venues", {
   id: VENUE2,
   kind: "drinks",
+  status: "validated",
   name: "Nomad Rooftop",
   short_name: "Nomad",
   initials: "NR",

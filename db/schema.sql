@@ -19,6 +19,17 @@
 
 -- ── Tenancy ──────────────────────────────────────────────────
 
+-- Which files of `db/migrations/` this database has had applied.
+--
+-- A fresh database gets the whole of this file and is *stamped* with
+-- every migration id, because this file already describes their result.
+-- An existing database gets only the ids it is missing. See
+-- `db/migrate.mjs`.
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  id         TEXT PRIMARY KEY,
+  applied_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS venues (
   id                   TEXT PRIMARY KEY,
   kind                 TEXT NOT NULL CHECK (kind IN ('restaurant','drinks')),
@@ -39,6 +50,14 @@ CREATE TABLE IF NOT EXISTS venues (
   -- 1-4, rendered in the app as € to €€€€.
   price_range          INTEGER NOT NULL DEFAULT 2,
   onboarding_completed INTEGER NOT NULL DEFAULT 0,
+  -- LYFE reviews a listing before the app shows it to a guest. A venue
+  -- created through /inscription starts 'pending_review': its dashboard
+  -- works, and the app does not list it. 'rejected' carries the reason
+  -- LYFE gave, which is what the portal shows the partner.
+  status               TEXT NOT NULL DEFAULT 'pending_review'
+                         CHECK (status IN ('pending_review','validated','rejected')),
+  status_reason        TEXT NOT NULL DEFAULT '',
+  status_changed_at    TEXT,
   created_at           TEXT NOT NULL,
   updated_at           TEXT NOT NULL
 );
