@@ -184,7 +184,13 @@ if (await accept.count()) {
   const after = await text();
   check("un double clic sur Accepter reste propre", !BROKEN.test(after) && /Confirmée/.test(after));
 } else {
-  check("une demande attend une décision", false, "aucun bouton Accepter");
+  // Not a defect: the seed carries one pending request, and a tool
+  // that ran before this one on the same database may already have
+  // decided it. `decisions.mjs` is the tool that owns that path.
+  console.log(
+    "  —    le carnet ne porte aucune demande en attente · " +
+      "la décision est éprouvée par decisions.mjs",
+  );
 }
 
 // ── 6. A network that takes its time ────────────────────────

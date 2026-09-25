@@ -18,7 +18,7 @@
 // it signs a partner up and it decides a booking.
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT_LABEL, requireWrites } from "./lot.mjs";
+import { LOT_LABEL, dataModeOf, requireWrites } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -26,7 +26,17 @@ const BASE = process.env.BASE ?? "http://localhost:3210";
 
 // This tool writes. Against the static driver there is nothing to
 // write to, so it says so and stops rather than failing.
-await requireWrites(BASE, "Les quatre changements du lot 1");
+const driver = await requireWrites(BASE, "Les quatre changements du lot 1");
+
+// Who works for LYFE is answered by `platform_admins`, and
+// `src/lib/auth/platform.ts` asks that question of the database only:
+// « inventing a LYFE administrator for a frozen snapshot would put a
+// review queue in front of somebody looking at a demo ». So on the
+// HTTP double nobody is an administrator, `/admin/validations` is
+// `404` for every account, and the review stage below cannot run. It
+// is skipped with a line rather than failed — the other three changes
+// of Lot 1 are exercised in full. See the finding `C-07`.
+const reviewable = driver === "db";
 const width = Number(process.env.W ?? 1440);
 const height = Number(process.env.H ?? 1000);
 const EXTERNAL_MAP = /tile\.openstreetmap\.org|nominatim\.openstreetmap\.org|\/api\/geocode/;
@@ -174,6 +184,12 @@ check(
   page.url().replace(BASE, ""),
 );
 
+if (!reviewable) {
+  console.log(
+    `  —    la revue LYFE demande une base : personne n'est administrateur ` +
+      `sur le pilote « ${driver} » (src/lib/auth/platform.ts)`,
+  );
+} else {
 await signOut();
 await signIn("validation@lyfe.ma");
 await go("/admin/validations");
@@ -209,6 +225,7 @@ check(
   "et le bandeau disparaît du tableau de bord du partenaire",
   !/LYFE vérifie votre établissement/i.test(await text()),
 );
+}
 
 // ── 2 · les décisions et la recherche ────────────────────────
 

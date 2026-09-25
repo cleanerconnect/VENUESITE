@@ -257,6 +257,14 @@ whole convention — a tool without one is part of the walk above, a tool
 with one is part of an audit and is run on purpose. They are committed
 because a finding nobody can reproduce is an opinion.
 
+**Run the suite on a database you have just reset.** Five of these tools
+write, and the seed carries exactly one reservation waiting for a
+decision: whichever tool reaches it first decides it, and the ones
+after it find a book with nothing to decide. They no longer call that a
+failure — they say so and move on — but a suite run twice over one
+database is a suite measuring its own leftovers. `npm run db:reset`, or
+`DATABASE_URL=… npm run db:reset`, before the loop.
+
 The last two are the ones that found real defects rather than confirming
 known ones. `journey.mjs` signs a fresh partner up with accented names, a
 Moroccan phone number, a real photo upload and a dragged map pin, walks

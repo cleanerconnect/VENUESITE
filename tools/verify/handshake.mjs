@@ -20,11 +20,27 @@
 // backend on API with the same DATABASE_URL.
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT_LABEL, requireSharedDatabase } from "./lot.mjs";
+import { LOT, LOT_LABEL, requireSharedDatabase } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
+
+// Lot 1 only, and said the way `audience.mjs` says Lot 2 only.
+//
+// Every sentence this tool reads off the dashboard is a Lot 1 sentence:
+// Accueil's « une en attente de réponse », the row's Accepter, the
+// guest's phone on the line. Lot 2 draws a waiting list there instead,
+// so in Lot 2 this tool reported five defects that were five pieces of
+// another screen.
+if (LOT !== 1) {
+  console.log(
+    "La poignée de main éprouve la surface du lot 1 : l'Accueil qui compte " +
+      "la demande, la décision sur la ligne, le téléphone du client.",
+  );
+  console.log("Relancer avec LYFE_LOT=1, serveur compris.");
+  process.exit(0);
+}
 
 // This tool needs both products on one database: it creates a venue in
 // the portal and asks the app's API for it.

@@ -18,7 +18,7 @@
 
 import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { LOT_LABEL, requireWrites, signIn } from "./lot.mjs";
+import { LOT, LOT_LABEL, requireWrites, signIn } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -56,7 +56,12 @@ page.on("console", (m) => {
   const text = m.text();
   const from = m.location()?.url ?? "";
   if (EXTERNAL_MAP.test(text) || EXTERNAL_MAP.test(from)) return;
+  // The `from` as well as the text: Chromium probes `/favicon.ico` even
+  // where a `<link rel="icon">` points at the SVG this portal ships, and
+  // the message it logs is a bare « Failed to load resource » whose only
+  // trace of the favicon is the URL.
   if (/favicon|preload|Download the React/i.test(text)) return;
+  if (/favicon/i.test(from)) return;
   noise.add(`console @${page.url().replace(BASE, "")}: ${text.slice(0, 140)} ${from.replace(BASE, "")}`);
 });
 
@@ -114,6 +119,38 @@ const go = async (path) => {
 };
 
 console.log(`\nParcours complet · passe ${pass} · ${LOT_LABEL} · ${width}×${height}\n`);
+
+/**
+ * An affordance this tool drives that only Lot 1 draws.
+ *
+ * Réservations grew day arrows and a date picker for `Prio 02`, and
+ * Lot 1's Ma fiche is a three-tab form where Lot 2's is the customer
+ * preview (`src/lib/restaurant/presence.ts`). Asserting the Lot 1 shape
+ * in Lot 2 made this tool report two defects that are two different
+ * screens — so in Lot 2 its absence is written down and not counted.
+ */
+/**
+ * Wait for a sentence rather than for a stopwatch.
+ *
+ * A fixed `settle()` after a write is long enough on SQLite and short
+ * on the HTTP double, where the same read is a round trip to another
+ * process — which is how « le sélecteur de date ramène à aujourd'hui »
+ * failed on one driver and passed on the others. Same lesson as
+ * `signIn` in `lot.mjs`.
+ */
+const waitForText = async (pattern, timeout = 8000) => {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    if (pattern.test(await body())) return true;
+    await page.waitForTimeout(250);
+  }
+  return pattern.test(await body());
+};
+
+const lot1Only = (label) => {
+  if (LOT === 1) return check(label, false);
+  console.log(`  —    ${label} · forme du lot 1, absente du lot 2`);
+};
 
 // ── 1. A partner who has no account ─────────────────────────
 const stamp = Date.now().toString(36);
@@ -318,7 +355,7 @@ for (const tab of ["Horaires", "Photos"]) {
       check("la photo de couverture est là", /couverture|Photo|photo/i.test(await body()));
     }
   } else {
-    check(`Ma fiche a un onglet ${tab}`, false);
+    lot1Only(`Ma fiche a un onglet ${tab}`);
   }
 }
 
@@ -396,14 +433,20 @@ if ((await prev.count()) > 0 && (await next.count()) > 0) {
   check("le jour suivant change l'écran", forward !== back);
   await rendersFine("Réservations · autre jour");
 } else {
-  check("Réservations a des flèches de jour", false);
+  lot1Only("Réservations a des flèches de jour");
 }
 
 const picker = page.locator('input[type="date"]:visible').first();
 if (await picker.count()) {
-  await picker.fill(new Date().toISOString().slice(0, 10));
-  await settle(1500);
-  check("le sélecteur de date ramène à aujourd'hui", /Aujourd'hui/i.test(await body()));
+  // The day as the venue counts it, not as UTC does: between 23h and
+  // midnight UTC the two are different days in Casablanca, and the
+  // screen would be asked for yesterday.
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Casablanca" });
+  await picker.fill(today);
+  check(
+    "le sélecteur de date ramène à aujourd'hui",
+    await waitForText(/Aujourd'hui/i),
+  );
 } else {
   check("Réservations a un sélecteur de date", false);
 }
