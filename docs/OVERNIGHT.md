@@ -97,3 +97,88 @@ une commande qu'on ne peut pas lancer sur Vercel.
   Lot 2 SQLite en cours au moment d'écrire).
 - Les captures de référence n'ont pas été refaites : la carte change
   l'écran Ma fiche et l'étape 3, et il faudra les recapturer à l'étape 4.
+
+---
+
+## Étape 1 — Stabiliser : le parcours d'un vrai partenaire, six fois
+
+### Fait
+
+**Un nouvel outil, `tools/verify/journey.mjs`.** Les six autres lisent
+des écrans ; celui-ci s'en sert. Il crée un compte que personne n'a
+utilisé, remplit les six étapes — un nom avec un trait d'union et des
+accents, un numéro marocain, une vraie photo téléversée par le même
+ticket que la production, un point déposé puis **traîné** sur la carte,
+une semaine type avec dimanche fermé — puis travaille l'établissement
+qu'il vient de créer : les six écrans, chaque formulaire enregistré
+**et relu depuis la base**, la déconnexion par le menu du compte, puis
+le même travail sur l'établissement du jeu de données, qui a un carnet
+plein : flèches de jour, sélecteur de date, onglets de service, puces de
+filtre, recherche, accepter, refuser avec motif, check-in, et le
+rechargement qui vérifie que la décision a tenu.
+
+**Trois passes propres d'affilée sur ordinateur et trois sur téléphone**,
+chacune avec un compte neuf et une base resemée, contre Postgres. Puis
+la matrice complète : six outils × deux lots × deux moteurs, plus
+`walk` à 390 en lot 1. Tout est vert.
+
+### Trouvé — et corrigé
+
+**1. Le fuseau horaire cassait l'hydratation et affichait les mauvaises
+heures.** C'est la trouvaille de la nuit. Le portail formatait ses dates
+dans le fuseau du runtime : le serveur Vercel tourne en UTC, Casablanca
+est en UTC+1, et le constructeur d'écrans tourne **deux fois** — une
+fois sur le serveur pour la première peinture, une fois sur le client
+pour la copie optimiste. React voyait « 12h00 – 15h00 » servi sous un
+client qui rendait « 13h00 – 16h00 », jetait l'hydratation de trois
+écrans (`/restaurant`, `/reservations`, `/check-in`) et repartait en
+rendu client ; et un partenaire marocain lisait **toutes ses heures de
+service une heure trop tôt**.
+
+Deux moitiés à la correction : `src/lib/time/zone.ts` fixe
+`VENUE_TIME_ZONE` (`Africa/Casablanca`, surchargeable par
+`NEXT_PUBLIC_VENUE_TZ`) et tous les formateurs passent par
+`formatInTimeZone`, donc les deux runtimes produisent la même chaîne ;
+et `next.config.js` pose `TZ` pour le serveur, parce que la *logique* de
+date — quel jour le carnet affiche, si un service est en cours — n'a de
+sens que dans le fuseau de l'établissement. Une heure d'écart faisait
+basculer le tableau de bord au lendemain une heure en retard.
+
+**2. Un `setState` pendant le rendu.** `useHydrateRestaurant` écrivait
+dans le magasin zustand au milieu du rendu de `RestaurantScreen`, ce qui
+met à jour tous les autres abonnés en pleine passe — React nomme la
+paire dans son avertissement : « Cannot update a component
+(CheckInSheet) while rendering a different component
+(RestaurantScreen) ». Le semis part dans un effet ; la première peinture
+n'en a pas besoin, elle a la charge utile du serveur.
+
+**3. Pas de recherche sur un téléphone.** La boîte de recherche vit dans
+la chrome et chaque écran la « réclame » ; la chrome ne la rendait qu'à
+partir de `md:`. Donc Réservations offrait une recherche sur un
+ordinateur et **aucune dans la main**, sur un portail dont la règle est
+le téléphone d'abord. Elle a maintenant sa ligne sur téléphone, affichée
+seulement quand un écran l'a réclamée.
+
+### Trouvé — dans l'outil, pas dans le produit
+
+Noté parce que la prochaine personne qui écrira un test tombera dessus :
+
+- `page.textContent("body")` **inclut le contenu des `<script>`**, donc
+  la charge utile RSC, qui porte le « This page could not be found » de
+  Next sur *chaque* page : tous les écrans semblaient cassés. C'est
+  `innerText` qu'il faut.
+- La valeur d'un champ n'est pas du texte de page : elle se lit avec
+  `inputValue()`.
+- La chrome existe en deux exemplaires, ordinateur et téléphone, donc un
+  sélecteur sans `:visible` clique un bouton invisible.
+- `/logout` n'existe pas : la déconnexion est un `menuitem` Radix dans le
+  kebab du compte.
+
+### Reste
+
+- Les captures de référence ne sont pas refaites (la carte a changé Ma
+  fiche et l'étape 3) — à l'étape 4.
+- Les graphiques du Lot 2 côté événements (`RevenueChart`,
+  `PromoCodeDetailDrawer`) formatent encore dans le fuseau du runtime.
+  Ils n'affichent qu'un jour, jamais une heure, et sont hors Lot 1 ; le
+  `TZ` du serveur les couvre côté SSR.

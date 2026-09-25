@@ -274,20 +274,20 @@ export function useHydrateRestaurant(
 ) {
   const hydrate = useRestaurantStore((s) => s.hydrate);
   const seeded = useRef<RestaurantOverview | null>(null);
+  const stored = useRestaurantStore((s) => s.data);
 
-  if (seeded.current !== data && useRestaurantStore.getState().data === null) {
-    // First paint, including SSR — hydrate synchronously so the very
-    // first render already has data and nothing flashes.
-    seeded.current = data;
-    useRestaurantStore.setState({ data, past: [], configuration });
-  }
-
+  // Seeded in an effect, never during render. Writing to the store while
+  // this component renders updates every other subscriber mid-render —
+  // React names the pair in the warning, « Cannot update a component
+  // (CheckInSheet) while rendering a different component
+  // (RestaurantScreen) » — and the first paint needs no store anyway:
+  // the fallback below is the server's own payload.
   useEffect(() => {
     if (seeded.current !== data) {
       seeded.current = data;
       hydrate(data, configuration);
     }
-  }, [data, hydrate]);
+  }, [data, configuration, hydrate]);
 
-  return useRestaurantStore((s) => s.data) ?? data;
+  return stored ?? data;
 }

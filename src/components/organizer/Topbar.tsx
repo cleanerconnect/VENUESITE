@@ -93,8 +93,8 @@ export function Topbar() {
   // warns rather than opening something arbitrary.
 
   return (
-    <header className="sticky top-0 z-20 h-14 md:h-[72px] bg-canvas/80 backdrop-blur-md border-b border-line-soft">
-      <div className="h-full max-w-[1440px] mx-auto px-4 md:px-8 flex items-center gap-3 md:gap-4">
+    <header className="sticky top-0 z-20 bg-canvas/80 backdrop-blur-md border-b border-line-soft">
+      <div className="h-14 md:h-[72px] max-w-[1440px] mx-auto px-4 md:px-8 flex items-center gap-3 md:gap-4">
         {/* === MOBILE: hamburger + centered wordmark + bell === */}
         <button
           type="button"
@@ -181,6 +181,32 @@ export function Topbar() {
           ) : null}
         </div>
       </div>
+
+      {/* The search box lives in the chrome and a screen claims it. On a
+          phone the chrome had no room for it, so Réservations offered a
+          search on a desktop and none in the hand — on a portal whose
+          own rule is phone-first. It gets its own row here, and only
+          when a screen has asked for one. */}
+      {scoped ? (
+        <div className="md:hidden px-4 pb-3 -mt-1">
+          <div className="relative">
+            <Search
+              size={16}
+              strokeWidth={1.8}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-mute pointer-events-none"
+            />
+            <input
+              id="chrome-search-mobile"
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={scoped}
+              aria-label={scoped}
+              className="w-full h-11 pl-11 pr-4 bg-surface rounded-full border border-line text-[14px] text-ink outline-none focus:border-ink transition-colors"
+            />
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }
