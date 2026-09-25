@@ -71,7 +71,7 @@ const RESTAURANT_PATH = "/restaurant/[[...section]]";
  */
 function requireWritableStore(): string | null {
   return dataMode() === "static"
-    ? "Aucune base de données : les écrans s'affichent depuis le jeu de données statique, mais l'enregistrement a besoin d'un store. Lancez `npm run db:reset`, puis rechargez."
+    ? "Aucune base de données : les écrans s'affichent depuis le jeu de données statique, mais l'enregistrement a besoin d'une base. En local : `npm run db:reset`. Sur un déploiement : rattachez une base Postgres (DATABASE_URL), puis rechargez."
     : null;
 }
 // Ma fiche, Menu and Équipe are three routes over one form, so a write
@@ -531,7 +531,7 @@ export async function saveStaffInvite(input: {
   });
   revalidatePath(RESTAURANT_PATH, "page");
   revalidateForms();
-  return ok(listStaff(venueId));
+  return ok(await listStaff(venueId));
 }
 
 export async function saveStaffRole(
@@ -560,7 +560,7 @@ export async function saveStaffRole(
   }
   revalidatePath(RESTAURANT_PATH, "page");
   revalidateForms();
-  return ok(listStaff(venueId));
+  return ok(await listStaff(venueId));
 }
 
 export async function deleteStaff(
@@ -588,7 +588,7 @@ export async function deleteStaff(
   }
   revalidatePath(RESTAURANT_PATH, "page");
   revalidateForms();
-  return ok(listStaff(venueId));
+  return ok(await listStaff(venueId));
 }
 
 /** The session's venue. Never read from a payload. */

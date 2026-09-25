@@ -32,7 +32,10 @@ const PATHS = ROUTES.filter(
 
 // Noise a healthy page still emits in this sandbox: the React devtools
 // nag, favicon 404s, and preload warnings for fonts the CDN cannot reach.
-const IGNORE = /favicon|Download the React|was preloaded using link preload|preload/i;
+// The last two are the map's: OpenStreetMap tiles and the Nominatim
+// geocoder are unreachable from a sandboxed runner, and a tile that
+// fails to load is not this portal's defect.
+const IGNORE = /favicon|Download the React|was preloaded using link preload|preload|ERR_TUNNEL_CONNECTION_FAILED|openstreetmap\.org/i;
 
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
@@ -58,7 +61,8 @@ let failed = 0;
 for (const [path, label] of PATHS) {
   const errors = [];
   const onConsole = (m) => {
-    if (m.type() === "error") errors.push(m.text());
+    if (m.type() !== "error") return;
+    errors.push(`${m.text()} ${m.location()?.url ?? ""}`.trim());
   };
   const onPageError = (e) => errors.push(`PAGEERROR ${e.message}`);
   page.on("console", onConsole);

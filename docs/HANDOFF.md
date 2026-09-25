@@ -305,6 +305,68 @@ rebuilding.
 
 ---
 
+### Déployer — Vercel avec Neon Postgres
+
+Le portail tourne en local sur SQLite et en production sur Postgres,
+**avec le même `db/schema.sql`**, écrit dans l'intersection des deux
+dialectes. Une seule variable décide : `DATABASE_URL`.
+
+| Variable | Effet |
+|---|---|
+| `DATABASE_URL` | présente → pilote `db`, moteur **Postgres**. C'est ce que Vercel définit quand un projet Neon est rattaché. |
+| *(absente)* | pilote `db` sur **SQLite** si `.data/lyfe.db` existe, sinon pilote `static` (le jeu de données figé) |
+| `LYFE_LOT` | `1` par défaut — le Dashboard basique. `2` n'est à mettre que pour montrer le périmètre complet. |
+| `DATABASE_POOL_MAX` | facultatif, 4 par défaut : le plafond de connexions par instance |
+
+**Dans Vercel**, une fois par projet :
+
+1. **Storage → Create Database → Neon Postgres**, puis *Connect* au
+   projet `venuesite`. Vercel écrit `DATABASE_URL` (et ses alias
+   `POSTGRES_*`) sur les trois environnements. Rien d'autre à régler :
+   il n'y a pas de clé d'API à fournir, la carte utilise
+   OpenStreetMap.
+2. **Redéployer** — les variables ne sont lues qu'au démarrage d'une
+   instance.
+3. **Semer une fois**, depuis une machine qui a le dépôt et l'URL
+   (copiez la chaîne *pooled* depuis Neon ou Vercel) :
+
+```bash
+export DATABASE_URL="postgres://…-pooler.…neon.tech/neondb?sslmode=require"
+npm run db:migrate     # applique schema.sql + les fonctions de compatibilité
+npm run db:reset       # génère le jeu de démonstration et le copie dans Postgres
+```
+
+`db:reset` écrit d'abord `.data/lyfe.db` — le générateur de données
+n'existe qu'en un seul exemplaire — puis applique le schéma et copie
+chaque table dans Postgres, dans l'ordre où `db/schema.sql` les déclare,
+qui est un ordre de dépendances. `npm run db:push` refait la copie seule.
+Les deux bases portent alors les mêmes lignes, ce qui est ce qui rend
+comparable un passage des outils sur l'une et sur l'autre.
+
+4. **Vérifier** : `GET /api/health` doit répondre
+
+```json
+{ "adapters": { "data": "db", "dataEngine": "postgres" } }
+```
+
+`"data": "static"` sur un déploiement veut dire qu'aucune base n'est
+rattachée : les écrans s'affichent depuis l'instantané, mais l'étape 6
+de l'inscription refuse de créer l'établissement — il n'y a rien où
+l'écrire. `"dataEngine": "sqlite"` en production veut dire que le
+portail écrit dans un fichier qu'un redéploiement jettera.
+
+**Ce que Postgres change dans le code : rien.** Les sept magasins
+parlent aux quatre mêmes fonctions — `all`, `one`, `run`,
+`transaction` — et `src/lib/db/store.ts` choisit le moteur derrière
+elles. Deux détails y sont réglés une fois pour toutes : les `?` sont
+traduits en `$1…$n`, et les types que `pg` renverrait autrement
+(`COUNT(*)` en chaîne, une date en objet `Date`, une colonne JSON déjà
+désérialisée) sont épinglés pour qu'une ligne ait la même forme sur les
+deux moteurs. Les quelques requêtes qui utilisent `strftime`,
+`julianday`, `date(x, modifier)` ou `datetime(x)` — des fonctions
+SQLite — trouvent en face des fonctions de même nom installées par
+`db:migrate` depuis `db/postgres-compat.sql`.
+
 ## 4. The styleguide
 
 Open **`/styleguide`**. It needs no session and no seeded database —

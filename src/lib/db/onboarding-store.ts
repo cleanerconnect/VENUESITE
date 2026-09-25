@@ -44,18 +44,18 @@ export class EmailTakenError extends Error {
 }
 
 /** Step 1. The account exists from here, with no venue attached. */
-export function createPartnerAccount(input: {
+export async function createPartnerAccount(input: {
   fullName: string;
   email: string;
   phone: string;
   password: string;
-}): PartnerAccountRow {
+}): Promise<PartnerAccountRow> {
   const email = input.email.trim().toLowerCase();
-  const held = one("SELECT user_id FROM partner_accounts WHERE email = ?", email);
+  const held = await one("SELECT user_id FROM partner_accounts WHERE email = ?", email);
   if (held) throw new EmailTakenError();
 
   const userId = `usr_${randomUUID().slice(0, 12)}`;
-  run(
+  await run(
     `INSERT INTO partner_accounts (user_id, full_name, email, phone, password_hash, created_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
     userId,
@@ -68,8 +68,8 @@ export function createPartnerAccount(input: {
   return { userId, fullName: input.fullName.trim(), email, phone: input.phone.trim() };
 }
 
-export function partnerAccounts(): PartnerAccountRow[] {
-  return all("SELECT user_id, full_name, email, phone FROM partner_accounts").map(
+export async function partnerAccounts(): Promise<PartnerAccountRow[]> {
+  return (await all("SELECT user_id, full_name, email, phone FROM partner_accounts")).map(
     (r) => ({
       userId: String(r.user_id),
       fullName: String(r.full_name),
@@ -79,8 +79,8 @@ export function partnerAccounts(): PartnerAccountRow[] {
   );
 }
 
-export function partnerAccount(userId: string): PartnerAccountRow | null {
-  const r = one(
+export async function partnerAccount(userId: string): Promise<PartnerAccountRow | null> {
+  const r = await one(
     "SELECT user_id, full_name, email, phone FROM partner_accounts WHERE user_id = ?",
     userId,
   );
@@ -100,11 +100,11 @@ export function partnerAccount(userId: string): PartnerAccountRow | null {
  * Constant-time compare, and the same null for an unknown address as
  * for a wrong password — the caller turns both into one sentence.
  */
-export function verifyPartnerPassword(
+export async function verifyPartnerPassword(
   email: string,
   password: string,
-): PartnerAccountRow | null {
-  const r = one(
+): Promise<PartnerAccountRow | null> {
+  const r = await one(
     "SELECT user_id, full_name, email, phone, password_hash FROM partner_accounts WHERE email = ?",
     email.trim().toLowerCase(),
   );
@@ -152,10 +152,10 @@ function rowToDraft(r: Record<string, unknown>): OnboardingDraft {
   };
 }
 
-export function createDraft(ownerId: string): OnboardingDraft {
+export async function createDraft(ownerId: string): Promise<OnboardingDraft> {
   const at = new Date().toISOString();
   const id = `onb_${randomUUID().slice(0, 12)}`;
-  run(
+  await run(
     `INSERT INTO onboarding_drafts
        (id, owner_id, step, hours, created_at, updated_at)
      VALUES (?, ?, 2, ?, ?, ?)`,
@@ -165,16 +165,16 @@ export function createDraft(ownerId: string): OnboardingDraft {
     at,
     at,
   );
-  return draftById(id)!;
+  return (await draftById(id))!;
 }
 
-export function draftById(id: string): OnboardingDraft | null {
-  const r = one("SELECT * FROM onboarding_drafts WHERE id = ?", id);
+export async function draftById(id: string): Promise<OnboardingDraft | null> {
+  const r = await one("SELECT * FROM onboarding_drafts WHERE id = ?", id);
   return r ? rowToDraft(r) : null;
 }
 
-export function draftForOwner(ownerId: string): OnboardingDraft | null {
-  const r = one(
+export async function draftForOwner(ownerId: string): Promise<OnboardingDraft | null> {
+  const r = await one(
     `SELECT * FROM onboarding_drafts
       WHERE owner_id = ? AND submitted_venue_id IS NULL
       ORDER BY updated_at DESC LIMIT 1`,
@@ -197,11 +197,11 @@ const FIELD: Record<string, string> = {
 };
 
 /** Saves whatever the step sent, and nothing else. */
-export function patchDraft(
+export async function patchDraft(
   id: string,
   patch: Partial<Omit<OnboardingDraft, "id" | "ownerId" | "updatedAt" | "submittedVenueId">>,
-): OnboardingDraft | null {
-  const current = draftById(id);
+): Promise<OnboardingDraft | null> {
+  const current = await draftById(id);
   if (!current) return null;
 
   const sets: string[] = [];
@@ -222,8 +222,8 @@ export function patchDraft(
 
   sets.push("updated_at = ?");
   args.push(new Date().toISOString(), id);
-  run(`UPDATE onboarding_drafts SET ${sets.join(", ")} WHERE id = ?`, ...args);
-  return draftById(id);
+  await run(`UPDATE onboarding_drafts SET ${sets.join(", ")} WHERE id = ?`, ...args);
+  return await draftById(id);
 }
 
 // ── Création de Venue ────────────────────────────────────────
@@ -253,12 +253,14 @@ const initialsOf = (name: string) =>
  * in hand. Without the last two the new venue's Accueil has no
  * `currentService` and the screen cannot render at all.
  */
-export function createVenueFromDraft(id: string): { venueId: string } | null {
-  const draft = draftById(id);
+export async function createVenueFromDraft(
+  id: string,
+): Promise<{ venueId: string } | null> {
+  const draft = await draftById(id);
   if (!draft) return null;
   if (draft.submittedVenueId) return { venueId: draft.submittedVenueId };
 
-  const account = partnerAccount(draft.ownerId);
+  const account = await partnerAccount(draft.ownerId);
   const at = new Date().toISOString();
   const today = at.slice(0, 10);
   const venueId = `${draft.venueType === "bar" ? "bar" : "rst"}_${randomUUID().slice(0, 10)}`;
@@ -267,8 +269,8 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
   const open = draft.hours.filter((h) => !h.closed);
   const capacity = 40;
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `INSERT INTO venues
          (id, kind, name, short_name, initials, description, category, address, city,
           latitude, longitude, contact_email, contact_phone, website, currency,
@@ -289,7 +291,7 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
       at,
       at,
     );
-    run(
+    await run(
       `INSERT INTO venue_settings (venue_id, configuration, alert_email, alert_phone, updated_at)
        VALUES (?, ?, ?, ?, ?)`,
       venueId,
@@ -298,7 +300,7 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
       account?.phone ?? "",
       at,
     );
-    run(
+    await run(
       `INSERT INTO staff (id, venue_id, user_id, full_name, email, role, pending, created_at)
        VALUES (?, ?, ?, ?, ?, 'owner', 0, ?)`,
       `stf_${randomUUID().slice(0, 10)}`,
@@ -308,7 +310,7 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
       account?.email ?? "",
       at,
     );
-    run(
+    await run(
       `INSERT INTO business_accounts
          (business_id, venue_id, owner_id, subscription_tier, features_enabled, created_at)
        VALUES (?, ?, ?, 'annual', ?, ?)`,
@@ -329,7 +331,7 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
       ["daily_summary", []],
     ];
     for (const [eventType, channels] of alerts) {
-      run(
+      await run(
         `INSERT INTO notification_preferences (venue_id, event_type, channels)
          VALUES (?, ?, ?)`,
         venueId,
@@ -343,7 +345,7 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
     // the venue's first photo, and moving bytes to rename a prefix
     // would be work with no reader.
     if (draft.coverObjectKey) {
-      run(
+      await run(
         `INSERT INTO venue_assets
            (id, venue_id, kind, object_key, content_type, size_bytes, position, created_at)
          VALUES (?, ?, 'photo', ?, ?, ?, 0, ?)`,
@@ -357,7 +359,7 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
     }
 
     for (const day of open) {
-      run(
+      await run(
         `INSERT INTO availability_slots
            (id, venue_id, weekday, opens_at, closes_at, capacity, enabled, version, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, 1, 1, ?)`,
@@ -375,7 +377,7 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
     const lastBooking = `${String(
       Math.max(0, Number(pattern.closesAt.slice(0, 2)) - 1),
     ).padStart(2, "0")}:${pattern.closesAt.slice(3, 5)}`;
-    run(
+    await run(
       `INSERT INTO service_definitions
          (id, venue_id, name, kind, weekdays, starts_at, ends_at, last_booking_at,
           capacity_covers, covers_per_quarter, turn_minutes_small, turn_minutes_large,
@@ -393,7 +395,7 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
 
     const todayHours =
       draft.hours.find((h) => h.weekday === isoWeekday(today) && !h.closed) ?? pattern;
-    run(
+    await run(
       `INSERT INTO services
          (id, venue_id, kind, label, date, opens_at, closes_at, state, capacity)
        VALUES (?, ?, 'diner', 'Service', ?, ?, ?, 'scheduled', ?)`,
@@ -405,7 +407,7 @@ export function createVenueFromDraft(id: string): { venueId: string } | null {
       capacity,
     );
 
-    run(
+    await run(
       "UPDATE onboarding_drafts SET submitted_venue_id = ?, step = 6, updated_at = ? WHERE id = ?",
       venueId,
       at,

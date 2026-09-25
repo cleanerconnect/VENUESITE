@@ -42,8 +42,8 @@ const newId = (prefix: string) =>
   `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 /** A venue row exists and the caller may act on it, or nothing happens. */
-function assertVenue(venueId: string) {
-  if (!one("SELECT id FROM venues WHERE id = ?", venueId)) {
+async function assertVenue(venueId: string) {
+  if (!await one("SELECT id FROM venues WHERE id = ?", venueId)) {
     throw new StaleWriteError("Lieu");
   }
 }
@@ -60,7 +60,7 @@ export async function applyServiceFloorAction(
 
   switch (action.kind) {
     case "waitlist.add": {
-      run(
+      await run(
         `INSERT INTO waitlist
            (id, venue_id, customer_id, guest_name, guest_phone, party_size,
             quoted_minutes, added_at, source, status, note)
@@ -78,8 +78,8 @@ export async function applyServiceFloorAction(
     }
 
     case "waitlist.notify": {
-      const party = requireWaitlist(venueId, action.id);
-      run(
+      const party = await requireWaitlist(venueId, action.id);
+      await run(
         "UPDATE waitlist SET status = 'notified', notified_at = ? WHERE id = ? AND venue_id = ?",
         at,
         action.id,
@@ -104,14 +104,14 @@ export async function applyServiceFloorAction(
     }
 
     case "waitlist.seat": {
-      const party = requireWaitlist(venueId, action.id);
+      const party = await requireWaitlist(venueId, action.id);
       // Seating creates the booking as well as closing the line, because
       // a walk-in that leaves no reservation row leaves the CRM blind to
       // the visit — which the spec calls out by name.
-      const customerId = upsertCustomer(venueId, party.guestName, party.guestPhone, at);
+      const customerId = await upsertCustomer(venueId, party.guestName, party.guestPhone, at);
       const reservationId = newId("res");
-      transaction(() => {
-        run(
+      await transaction(async () => {
+        await run(
           `INSERT INTO reservations
              (id, venue_id, service_id, customer_id, guest_name, guest_phone,
               party_size, at, state, channel, qr_code, checked_in_at,
@@ -119,7 +119,7 @@ export async function applyServiceFloorAction(
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'arrived', 'walk_in', ?, ?, ?, ?)`,
           reservationId,
           venueId,
-          currentServiceId(venueId),
+          await currentServiceId(venueId),
           customerId,
           party.guestName,
           party.guestPhone,
@@ -130,7 +130,7 @@ export async function applyServiceFloorAction(
           at,
           at,
         );
-        run(
+        await run(
           `INSERT INTO reservation_status_history
              (id, reservation_id, from_state, to_state, actor, actor_id, at)
            VALUES (?, ?, 'waitlisted', 'arrived', 'venue', NULL, ?)`,
@@ -138,7 +138,7 @@ export async function applyServiceFloorAction(
           reservationId,
           at,
         );
-        run(
+        await run(
           `UPDATE waitlist SET status = 'seated', seated_at = ?,
               customer_id = ?, reservation_id = ?
             WHERE id = ? AND venue_id = ?`,
@@ -148,7 +148,7 @@ export async function applyServiceFloorAction(
           action.id,
           venueId,
         );
-        run(
+        await run(
           `UPDATE customers
               SET visit_count = visit_count + 1, last_visit_at = ?
             WHERE id = ? AND venue_id = ?`,
@@ -176,7 +176,7 @@ export async function applyServiceFloorAction(
     }
 
     case "waitlist.remove": {
-      run(
+      await run(
         `UPDATE waitlist SET status = 'left', removed_at = ?, removal_reason = ?
           WHERE id = ? AND venue_id = ?`,
         at,
@@ -188,7 +188,7 @@ export async function applyServiceFloorAction(
     }
 
     case "waitlist.requote": {
-      run(
+      await run(
         "UPDATE waitlist SET quoted_minutes = ? WHERE id = ? AND venue_id = ?",
         action.quotedMinutes,
         action.id,
@@ -198,11 +198,11 @@ export async function applyServiceFloorAction(
     }
 
     case "waitlist.convert": {
-      const party = requireWaitlist(venueId, action.id);
-      const customerId = upsertCustomer(venueId, party.guestName, party.guestPhone, at);
+      const party = await requireWaitlist(venueId, action.id);
+      const customerId = await upsertCustomer(venueId, party.guestName, party.guestPhone, at);
       const reservationId = newId("res");
-      transaction(() => {
-        run(
+      await transaction(async () => {
+        await run(
           `INSERT INTO reservations
              (id, venue_id, service_id, customer_id, guest_name, guest_phone,
               party_size, at, state, channel, qr_code, created_at, updated_at)
@@ -218,7 +218,7 @@ export async function applyServiceFloorAction(
           at,
           at,
         );
-        run(
+        await run(
           `UPDATE waitlist SET status = 'left', removed_at = ?, removal_reason = 'doublon',
               customer_id = ?, reservation_id = ?
             WHERE id = ? AND venue_id = ?`,
@@ -248,7 +248,7 @@ export async function applyServiceFloorAction(
     }
 
     case "waitlist.settings": {
-      run(
+      await run(
         `INSERT INTO waitlist_settings
            (venue_id, online_open, max_party_online, default_quote_min, paused_reason, updated_at)
          VALUES (?, ?, ?, ?, ?, ?)
@@ -269,12 +269,12 @@ export async function applyServiceFloorAction(
     }
 
     case "shiftNote.add": {
-      const service = one(
+      const service = await one(
         `SELECT id, date FROM services WHERE venue_id = ?
           ORDER BY ABS(julianday(opens_at) - julianday('now')) LIMIT 1`,
         venueId,
       );
-      run(
+      await run(
         `INSERT INTO shift_notes
            (id, venue_id, service_id, date, author_id, author, body, pinned, created_at)
          VALUES (?, ?, ?, ?, 'venue', 'Manager', ?, ?, ?)`,
@@ -290,7 +290,7 @@ export async function applyServiceFloorAction(
     }
 
     case "calendar.close": {
-      run(
+      await run(
         `INSERT INTO closures (id, venue_id, date, reason) VALUES (?, ?, ?, ?)
          ON CONFLICT(venue_id, date) DO UPDATE SET reason = excluded.reason`,
         newId("cl"),
@@ -302,12 +302,12 @@ export async function applyServiceFloorAction(
     }
 
     case "calendar.open": {
-      run("DELETE FROM closures WHERE venue_id = ? AND date = ?", venueId, action.date);
+      await run("DELETE FROM closures WHERE venue_id = ? AND date = ?", venueId, action.date);
       return;
     }
 
     case "calendar.capacity": {
-      run(
+      await run(
         `INSERT INTO capacity_overrides (venue_id, date, capacity, note)
          VALUES (?, ?, ?, ?)
          ON CONFLICT(venue_id, date) DO UPDATE SET
@@ -324,20 +324,20 @@ export async function applyServiceFloorAction(
 
 // ── Guest vocabulary ─────────────────────────────────────────
 
-export function applyGuestGraphAction(
+export async function applyGuestGraphAction(
   venueId: string,
   action: GuestGraphAction,
-): void {
+): Promise<void> {
   assertVenue(venueId);
   const at = nowIso();
 
   switch (action.kind) {
     case "tag.create": {
       const position = Number(
-        one("SELECT COALESCE(MAX(position), -1) + 1 AS p FROM tags WHERE venue_id = ?", venueId)
+        (await one("SELECT COALESCE(MAX(position), -1) + 1 AS p FROM tags WHERE venue_id = ?", venueId))
           ?.p ?? 0,
       );
-      run(
+      await run(
         `INSERT INTO tags (id, venue_id, label, colour, origin, staff_visible, archived, position, created_at)
          VALUES (?, ?, ?, ?, 'manual', ?, 0, ?, ?)`,
         newId("tg"),
@@ -351,7 +351,7 @@ export function applyGuestGraphAction(
       return;
     }
     case "tag.update":
-      run(
+      await run(
         `UPDATE tags SET label = ?, colour = ?, staff_visible = ?
           WHERE id = ? AND venue_id = ?`,
         action.label.trim(),
@@ -364,12 +364,12 @@ export function applyGuestGraphAction(
     case "tag.archive":
       // Archived, never deleted: a tag applied to two hundred guests
       // would take their history with it.
-      run("UPDATE tags SET archived = 1 WHERE id = ? AND venue_id = ?", action.id, venueId);
+      await run("UPDATE tags SET archived = 1 WHERE id = ? AND venue_id = ?", action.id, venueId);
       return;
     case "tag.apply":
-      transaction(() => {
+      await transaction(async () => {
         for (const customerId of action.customerIds) {
-          run(
+          await run(
             `INSERT INTO customer_tags (customer_id, tag_id, venue_id, applied_at)
              VALUES (?, ?, ?, ?)
              ON CONFLICT(customer_id, tag_id) DO NOTHING`,
@@ -382,7 +382,7 @@ export function applyGuestGraphAction(
       });
       return;
     case "tag.remove":
-      run(
+      await run(
         "DELETE FROM customer_tags WHERE customer_id = ? AND tag_id = ? AND venue_id = ?",
         action.customerId,
         action.tagId,
@@ -390,11 +390,13 @@ export function applyGuestGraphAction(
       );
       return;
     case "rule.update":
-      run(
+      await run(
         `UPDATE tag_rules SET threshold = ?, window_days = ?, enabled = ?, updated_at = ?
           WHERE id = ? AND venue_id = ?`,
         // A spend floor arrives in MAD; a visit count is a plain number.
-        isSpendRule(venueId, action.id) ? toCents(action.threshold) : action.threshold,
+        (await isSpendRule(venueId, action.id))
+          ? toCents(action.threshold)
+          : action.threshold,
         action.windowDays,
         action.enabled ? 1 : 0,
         at,
@@ -403,7 +405,7 @@ export function applyGuestGraphAction(
       );
       return;
     case "segment.create":
-      run(
+      await run(
         `INSERT INTO segments (id, venue_id, name, description, criteria, member_count, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         newId("sg"),
@@ -417,13 +419,13 @@ export function applyGuestGraphAction(
       );
       return;
     case "segment.delete":
-      run("DELETE FROM segments WHERE id = ? AND venue_id = ?", action.id, venueId);
+      await run("DELETE FROM segments WHERE id = ? AND venue_id = ?", action.id, venueId);
       return;
   }
 }
 
-function isSpendRule(venueId: string, ruleId: string): boolean {
-  const row = one(
+async function isSpendRule(venueId: string, ruleId: string): Promise<boolean> {
+  const row = await one(
     "SELECT rule FROM tag_rules WHERE id = ? AND venue_id = ?",
     ruleId,
     venueId,
@@ -447,7 +449,7 @@ export async function applyGrowthAction(
       const id = o.id ?? newId("of");
       // `percent` is percentage points; every other kind is money.
       const value = o.kind === "percent" ? o.value : toCents(o.value);
-      run(
+      await run(
         `INSERT INTO offers
            (id, venue_id, name, kind, value, free_item_label, weekdays, service_ids,
             starts_on, ends_on, cover_cap, min_party, prepayment_required,
@@ -482,7 +484,7 @@ export async function applyGrowthAction(
     }
 
     case "offer.status":
-      run(
+      await run(
         "UPDATE offers SET status = ?, updated_at = ? WHERE id = ? AND venue_id = ?",
         action.status,
         at,
@@ -492,9 +494,9 @@ export async function applyGrowthAction(
       return;
 
     case "offer.duplicate": {
-      const row = one("SELECT * FROM offers WHERE id = ? AND venue_id = ?", action.id, venueId);
+      const row = await one("SELECT * FROM offers WHERE id = ? AND venue_id = ?", action.id, venueId);
       if (!row) throw new StaleWriteError("Offre");
-      run(
+      await run(
         `INSERT INTO offers
            (id, venue_id, name, kind, value, free_item_label, weekdays, service_ids,
             starts_on, ends_on, cover_cap, min_party, prepayment_required,
@@ -515,8 +517,8 @@ export async function applyGrowthAction(
     case "experience.save": {
       const x = action.experience;
       const id = x.id ?? newId("xp");
-      transaction(() => {
-        run(
+      await transaction(async () => {
+        await run(
           `INSERT INTO experiences
              (id, venue_id, title, description, status, starts_at, ends_at,
               recurrence, capacity, price_cents, prepay_percent,
@@ -546,9 +548,10 @@ export async function applyGrowthAction(
         );
         // Add-ons are replaced wholesale: they are a list the manager
         // edits as one, and diffing them would only invent conflicts.
-        run("DELETE FROM experience_addons WHERE experience_id = ?", id);
-        x.addons.forEach((addon, i) =>
-          run(
+        await run("DELETE FROM experience_addons WHERE experience_id = ?", id);
+        let addonPosition = 0;
+        for (const addon of x.addons) {
+          await run(
             `INSERT INTO experience_addons (id, experience_id, venue_id, label, price_cents, position)
              VALUES (?, ?, ?, ?, ?, ?)`,
             newId("ad"),
@@ -556,15 +559,16 @@ export async function applyGrowthAction(
             venueId,
             addon.label.trim(),
             toCents(addon.priceMad),
-            i,
-          ),
-        );
+            addonPosition,
+          );
+          addonPosition += 1;
+        }
       });
       return;
     }
 
     case "experience.status": {
-      run(
+      await run(
         "UPDATE experiences SET status = ?, updated_at = ? WHERE id = ? AND venue_id = ?",
         action.status,
         at,
@@ -575,7 +579,7 @@ export async function applyGrowthAction(
       // the app, so the ticket holders of a re-published date hear about
       // it the same way they would hear about a booking change.
       if (action.status === "publie") {
-        for (const t of all(
+        for (const t of await all(
           `SELECT id, customer_id, guest_phone FROM tickets
             WHERE experience_id = ? AND venue_id = ? AND status IN ('reserve','paye')`,
           action.id,
@@ -614,7 +618,7 @@ export async function applyNightlifeAction(
 
   switch (action.kind) {
     case "guestList.status":
-      run(
+      await run(
         "UPDATE guest_lists SET status = ? WHERE id = ? AND venue_id = ?",
         action.status,
         action.id,
@@ -624,7 +628,7 @@ export async function applyNightlifeAction(
 
     case "guestList.addEntry": {
       const id = newId("gle");
-      run(
+      await run(
         `INSERT INTO guest_list_entries
            (id, venue_id, guest_list_id, guest_name, party_size, guest_phone,
             source, promoter_id, qr_code, checked_in_count, added_at)
@@ -644,7 +648,7 @@ export async function applyNightlifeAction(
     }
 
     case "guestList.checkIn": {
-      const entry = one(
+      const entry = await one(
         "SELECT * FROM guest_list_entries WHERE id = ? AND venue_id = ?",
         action.entryId,
         venueId,
@@ -656,14 +660,14 @@ export async function applyNightlifeAction(
 
       // The spec is explicit: a guest-list check-in creates a customer
       // record, the same way seating a waitlist party does.
-      const customerId = upsertCustomer(
+      const customerId = await upsertCustomer(
         venueId,
         String(entry.guest_name),
         String(entry.guest_phone ?? ""),
         at,
       );
-      transaction(() => {
-        run(
+      await transaction(async () => {
+        await run(
           `UPDATE guest_list_entries
               SET checked_in_at = ?, checked_in_count = ?, customer_id = ?
             WHERE id = ? AND venue_id = ?`,
@@ -673,7 +677,7 @@ export async function applyNightlifeAction(
           action.entryId,
           venueId,
         );
-        run(
+        await run(
           `UPDATE customers SET visit_count = visit_count + 1, last_visit_at = ?
             WHERE id = ? AND venue_id = ?`,
           at,
@@ -700,7 +704,7 @@ export async function applyNightlifeAction(
     }
 
     case "guestList.undoCheckIn":
-      run(
+      await run(
         `UPDATE guest_list_entries SET checked_in_at = NULL, checked_in_count = 0
           WHERE id = ? AND venue_id = ?`,
         action.entryId,
@@ -711,12 +715,12 @@ export async function applyNightlifeAction(
     case "tableType.save": {
       const id = action.id ?? newId("tt");
       const position = Number(
-        one(
+        (await one(
           "SELECT COALESCE(MAX(position), -1) + 1 AS p FROM table_types WHERE venue_id = ?",
           venueId,
-        )?.p ?? 0,
+        ))?.p ?? 0,
       );
-      run(
+      await run(
         `INSERT INTO table_types
            (id, venue_id, name, count, min_guests, max_guests, deposit_percent,
             package, cancellation_hours, position)
@@ -742,14 +746,14 @@ export async function applyNightlifeAction(
     }
 
     case "tableOffer.save": {
-      const existing = one(
+      const existing = await one(
         `SELECT id FROM table_offers
           WHERE venue_id = ? AND table_type_id = ? AND night_kind = ? AND night IS NULL`,
         venueId,
         action.tableTypeId,
         action.nightKind,
       );
-      run(
+      await run(
         existing
           ? "UPDATE table_offers SET minimum_cents = ?, updated_at = ? WHERE id = ?"
           : `INSERT INTO table_offers (minimum_cents, updated_at, id, venue_id, table_type_id, night_kind, night)
@@ -769,8 +773,8 @@ export async function applyNightlifeAction(
     }
 
     case "table.confirm": {
-      const table = requireTable(venueId, action.id);
-      run(
+      const table = await requireTable(venueId, action.id);
+      await run(
         "UPDATE table_reservations SET status = 'confirmee', updated_at = ? WHERE id = ? AND venue_id = ?",
         at,
         action.id,
@@ -794,8 +798,8 @@ export async function applyNightlifeAction(
     }
 
     case "table.requestDeposit": {
-      const table = requireTable(venueId, action.id);
-      const type = one(
+      const table = await requireTable(venueId, action.id);
+      const type = await one(
         "SELECT deposit_percent FROM table_types WHERE id = ? AND venue_id = ?",
         table.tableTypeId,
         venueId,
@@ -803,13 +807,13 @@ export async function applyNightlifeAction(
       const percent = Number(type?.deposit_percent ?? 0);
       const amount = Math.round((table.minimumMad * percent) / 100);
       const depositId = newId("dep");
-      const policy = one(
+      const policy = await one(
         "SELECT id FROM deposit_policies WHERE venue_id = ? AND applies_to = 'table' LIMIT 1",
         venueId,
       );
 
-      transaction(() => {
-        run(
+      await transaction(async () => {
+        await run(
           `INSERT INTO deposits
              (id, venue_id, policy_id, guest_name, amount_cents, status,
               idempotency_key, requested_at, failure_reason)
@@ -822,7 +826,7 @@ export async function applyNightlifeAction(
           `${venueId}:${depositId}:request`,
           at,
         );
-        run(
+        await run(
           "UPDATE table_reservations SET deposit_id = ?, updated_at = ? WHERE id = ? AND venue_id = ?",
           depositId,
           at,
@@ -849,7 +853,7 @@ export async function applyNightlifeAction(
     }
 
     case "table.markReached":
-      run(
+      await run(
         `UPDATE table_reservations SET reached_cents = ?, status = 'arrivee', updated_at = ?
           WHERE id = ? AND venue_id = ?`,
         toCents(action.amountMad),
@@ -860,7 +864,7 @@ export async function applyNightlifeAction(
       return;
 
     case "table.release":
-      run(
+      await run(
         "UPDATE table_reservations SET status = 'liberee', updated_at = ? WHERE id = ? AND venue_id = ?",
         at,
         action.id,
@@ -872,9 +876,12 @@ export async function applyNightlifeAction(
       const id = action.id ?? newId("pr");
       const code =
         action.id
-          ? String(one("SELECT code FROM promoters WHERE id = ?", id)?.code ?? slug(action.fullName))
+          ? String(
+              (await one("SELECT code FROM promoters WHERE id = ?", id))?.code ??
+                slug(action.fullName),
+            )
           : slug(action.fullName);
-      run(
+      await run(
         `INSERT INTO promoters
            (id, venue_id, full_name, phone, code, commission_percent, active, created_at)
          VALUES (?, ?, ?, ?, ?, ?, 1, ?)
@@ -893,7 +900,7 @@ export async function applyNightlifeAction(
     }
 
     case "promoter.setActive":
-      run(
+      await run(
         "UPDATE promoters SET active = ? WHERE id = ? AND venue_id = ?",
         action.active ? 1 : 0,
         action.id,
@@ -917,7 +924,7 @@ export async function applyMoneyAction(
     case "depositPolicy.save": {
       const id = action.id ?? newId("dp");
       if (action.id) {
-        const current = one(
+        const current = await one(
           "SELECT version FROM deposit_policies WHERE id = ? AND venue_id = ?",
           id,
           venueId,
@@ -933,12 +940,12 @@ export async function applyMoneyAction(
         }
       }
       const position = Number(
-        one(
+        (await one(
           "SELECT COALESCE(MAX(position), -1) + 1 AS p FROM deposit_policies WHERE venue_id = ?",
           venueId,
-        )?.p ?? 0,
+        ))?.p ?? 0,
       );
-      run(
+      await run(
         `INSERT INTO deposit_policies
            (id, venue_id, name, applies_to, applies_value, mode, amount_cents,
             no_show_fee_cents, late_cancel_fee_cents, grace_minutes, enabled,
@@ -971,7 +978,7 @@ export async function applyMoneyAction(
     }
 
     case "deposit.chase": {
-      const deposit = requireDeposit(venueId, action.id);
+      const deposit = await requireDeposit(venueId, action.id);
       await emitAndLog(
         gateway,
         venueId,
@@ -992,10 +999,10 @@ export async function applyMoneyAction(
     case "deposit.capture":
     case "deposit.release":
     case "deposit.refund": {
-      const deposit = requireDeposit(venueId, action.id);
+      const deposit = await requireDeposit(venueId, action.id);
       // The processor is idempotent on this key, so the row is too: a
       // retried request finds the key already used and stops.
-      const used = one(
+      const used = await one(
         "SELECT id FROM deposits WHERE idempotency_key = ? AND id <> ?",
         action.idempotencyKey,
         action.id,
@@ -1009,7 +1016,7 @@ export async function applyMoneyAction(
             ? "libere"
             : "rembourse";
 
-      run(
+      await run(
         `UPDATE deposits SET status = ?, settled_at = ?, idempotency_key = ?
           WHERE id = ? AND venue_id = ?`,
         status,
@@ -1042,14 +1049,14 @@ export async function applyMoneyAction(
     }
 
     case "cancellationPolicy.save": {
-      const current = one(
+      const current = await one(
         "SELECT version FROM cancellation_policies WHERE venue_id = ?",
         venueId,
       );
       if (current && Number(current.version) !== action.expectedVersion) {
         throw new StaleWriteError("Politique d'annulation");
       }
-      run(
+      await run(
         `INSERT INTO cancellation_policies
            (venue_id, free_until_hours, late_fee_cents, no_show_fee_cents,
             guest_message, version, updated_at)
@@ -1072,7 +1079,7 @@ export async function applyMoneyAction(
     }
 
     case "cancellation.waive":
-      run(
+      await run(
         "UPDATE cancellation_log SET waived = 1 WHERE id = ? AND venue_id = ?",
         action.id,
         venueId,
@@ -1080,7 +1087,7 @@ export async function applyMoneyAction(
       return;
 
     case "cancellation.dispute":
-      run(
+      await run(
         "UPDATE cancellation_log SET disputed = ? WHERE id = ? AND venue_id = ?",
         action.disputed ? 1 : 0,
         action.id,
@@ -1089,7 +1096,7 @@ export async function applyMoneyAction(
       return;
 
     case "transaction.link":
-      run(
+      await run(
         "UPDATE transactions SET reservation_id = ? WHERE id = ? AND venue_id = ?",
         action.reservationId,
         action.id,
@@ -1114,7 +1121,7 @@ export async function applyMarketingAction(
       const c = action.campaign;
       const id = c.id ?? newId("cp");
       const unitCost = c.channel === "email" ? 2 : c.channel === "sms" ? 35 : 18;
-      run(
+      await run(
         `INSERT INTO campaigns
            (id, venue_id, name, channel, template, segment_id, subject, body,
             status, automation, scheduled_for, unit_cost_cents, created_at, updated_at)
@@ -1146,7 +1153,7 @@ export async function applyMarketingAction(
     }
 
     case "campaign.status": {
-      run(
+      await run(
         `UPDATE campaigns SET status = ?, sent_at = CASE WHEN ? = 'envoyee' THEN ? ELSE sent_at END,
             updated_at = ?
           WHERE id = ? AND venue_id = ?`,
@@ -1158,7 +1165,7 @@ export async function applyMarketingAction(
         venueId,
       );
       if (action.status === "envoyee") {
-        const c = one("SELECT * FROM campaigns WHERE id = ? AND venue_id = ?", action.id, venueId);
+        const c = await one("SELECT * FROM campaigns WHERE id = ? AND venue_id = ?", action.id, venueId);
         await emitGuestEvent(
           gateway,
           {
@@ -1178,7 +1185,7 @@ export async function applyMarketingAction(
     }
 
     case "campaign.duplicate":
-      run(
+      await run(
         `INSERT INTO campaigns
            (id, venue_id, name, channel, template, segment_id, subject, body,
             status, automation, unit_cost_cents, created_at, updated_at)
@@ -1194,10 +1201,10 @@ export async function applyMarketingAction(
       return;
 
     case "campaign.test": {
-      const c = one("SELECT * FROM campaigns WHERE id = ? AND venue_id = ?", action.id, venueId);
+      const c = await one("SELECT * FROM campaigns WHERE id = ? AND venue_id = ?", action.id, venueId);
       // A test send is a real message to one address, logged like any
       // other — otherwise the log lies about what left the building.
-      run(
+      await run(
         `INSERT INTO messages_log
            (id, venue_id, campaign_id, channel, kind, recipient, preview, status, failure_reason, at)
          VALUES (?, ?, ?, ?, 'test', ?, ?, 'envoye', '', ?)`,
@@ -1213,7 +1220,7 @@ export async function applyMarketingAction(
     }
 
     case "suppression.add":
-      run(
+      await run(
         `INSERT INTO suppression_list (venue_id, contact, reason, at)
          VALUES (?, ?, ?, ?)
          ON CONFLICT(venue_id, contact) DO UPDATE SET reason = excluded.reason`,
@@ -1228,10 +1235,10 @@ export async function applyMarketingAction(
 
 // ── Availability configuration ───────────────────────────────
 
-export function applyConfigurationAction(
+export async function applyConfigurationAction(
   venueId: string,
   action: ConfigurationAction,
-): void {
+): Promise<void> {
   assertVenue(venueId);
   const at = nowIso();
 
@@ -1239,7 +1246,7 @@ export function applyConfigurationAction(
     case "service.save": {
       const id = action.id ?? newId("sd");
       if (action.id) {
-        const current = one(
+        const current = await one(
           "SELECT version FROM service_definitions WHERE id = ? AND venue_id = ?",
           id,
           venueId,
@@ -1255,13 +1262,13 @@ export function applyConfigurationAction(
         }
       }
       const position = Number(
-        one(
+        (await one(
           "SELECT COALESCE(MAX(position), -1) + 1 AS p FROM service_definitions WHERE venue_id = ?",
           venueId,
-        )?.p ?? 0,
+        ))?.p ?? 0,
       );
-      transaction(() => {
-        run(
+      await transaction(async () => {
+        await run(
           `INSERT INTO service_definitions
              (id, venue_id, name, kind, weekdays, starts_at, ends_at, last_booking_at,
               capacity_covers, covers_per_quarter, turn_minutes_small,
@@ -1294,9 +1301,9 @@ export function applyConfigurationAction(
           position,
           at,
         );
-        run("DELETE FROM service_zones WHERE service_definition_id = ?", id);
+        await run("DELETE FROM service_zones WHERE service_definition_id = ?", id);
         for (const zoneId of action.zoneIds) {
-          run(
+          await run(
             "INSERT INTO service_zones (service_definition_id, zone_id) VALUES (?, ?)",
             id,
             zoneId,
@@ -1307,7 +1314,7 @@ export function applyConfigurationAction(
     }
 
     case "service.remove":
-      run(
+      await run(
         "DELETE FROM service_definitions WHERE id = ? AND venue_id = ?",
         action.id,
         venueId,
@@ -1315,11 +1322,11 @@ export function applyConfigurationAction(
       return;
 
     case "pacing.save": {
-      const current = one("SELECT version FROM pacing_rules WHERE venue_id = ?", venueId);
+      const current = await one("SELECT version FROM pacing_rules WHERE venue_id = ?", venueId);
       if (current && Number(current.version) !== action.expectedVersion) {
         throw new StaleWriteError("Règles de cadence");
       }
-      run(
+      await run(
         `INSERT INTO pacing_rules
            (venue_id, max_arrivals_quarter, max_covers_service, max_party_online,
             min_party_online, request_only_above, booking_window_days,
@@ -1359,9 +1366,9 @@ export function applyConfigurationAction(
 
 // ── Configuration, survey and support ────────────────────────
 
-export function saveSurveyConfigRow(venueId: string, config: SurveyConfig): void {
+export async function saveSurveyConfigRow(venueId: string, config: SurveyConfig): Promise<void> {
   assertVenue(venueId);
-  run(
+  await run(
     `INSERT INTO survey_config
        (venue_id, enabled, send_after_hours, questions, redirect_from_rating,
         google_url, tripadvisor_url, updated_at)
@@ -1384,9 +1391,9 @@ export function saveSurveyConfigRow(venueId: string, config: SurveyConfig): void
   );
 }
 
-export function saveVenueSettingsRow(venueId: string, s: VenueSettings): void {
+export async function saveVenueSettingsRow(venueId: string, s: VenueSettings): Promise<void> {
   assertVenue(venueId);
-  run(
+  await run(
     `INSERT INTO venue_settings
        (venue_id, configuration, legal_name, ice, rc, billing_address, iban,
         language, timezone, consent_text, retention_months, google_place_url,
@@ -1431,16 +1438,16 @@ export function saveVenueSettingsRow(venueId: string, s: VenueSettings): void {
   );
 }
 
-export function openSupportTicketRow(
+export async function openSupportTicketRow(
   venueId: string,
   input: { category: string; subject: string; body: string },
-): void {
+): Promise<void> {
   assertVenue(venueId);
   const at = nowIso();
   const n = Number(
-    one("SELECT COUNT(*) AS n FROM support_tickets WHERE venue_id = ?", venueId)?.n ?? 0,
+    (await one("SELECT COUNT(*) AS n FROM support_tickets WHERE venue_id = ?", venueId))?.n ?? 0,
   );
-  run(
+  await run(
     `INSERT INTO support_tickets
        (id, venue_id, reference, category, subject, body, status, author_id, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, 'ouvert', 'venue', ?, ?)`,
@@ -1468,7 +1475,7 @@ async function emitAndLog(
   event: Omit<GuestEvent, "venueId">,
   properties: Record<string, string | number | boolean> = {},
 ) {
-  run(
+  await run(
     `INSERT INTO messages_log
        (id, venue_id, customer_id, channel, kind, recipient, preview, status, failure_reason, at)
      VALUES (?, ?, ?, ?, ?, ?, ?, 'envoye', '', ?)`,
@@ -1491,14 +1498,14 @@ async function emitAndLog(
  * spec requires both to produce a customer record — and a walk-in who
  * comes back every Friday should be one guest, not five.
  */
-function upsertCustomer(
+async function upsertCustomer(
   venueId: string,
   fullName: string,
   phone: string,
   at: string,
-): string {
+): Promise<string> {
   if (phone.trim()) {
-    const existing = one(
+    const existing = await one(
       "SELECT id FROM customers WHERE venue_id = ? AND phone = ?",
       venueId,
       phone.trim(),
@@ -1506,7 +1513,7 @@ function upsertCustomer(
     if (existing) return String(existing.id);
   }
   const id = newId("cus");
-  run(
+  await run(
     `INSERT INTO customers
        (id, venue_id, full_name, phone, first_seen_at, visit_count,
         total_spend_cents, opted_out_of_marketing)
@@ -1522,8 +1529,8 @@ function upsertCustomer(
   return id;
 }
 
-function currentServiceId(venueId: string): string | null {
-  const row = one(
+async function currentServiceId(venueId: string): Promise<string | null> {
+  const row = await one(
     `SELECT id FROM services WHERE venue_id = ?
       ORDER BY ABS(julianday(opens_at) - julianday('now')) LIMIT 1`,
     venueId,
@@ -1531,8 +1538,8 @@ function currentServiceId(venueId: string): string | null {
   return row ? String(row.id) : null;
 }
 
-function requireWaitlist(venueId: string, id: string) {
-  const row = one("SELECT * FROM waitlist WHERE id = ? AND venue_id = ?", id, venueId);
+async function requireWaitlist(venueId: string, id: string) {
+  const row = await one("SELECT * FROM waitlist WHERE id = ? AND venue_id = ?", id, venueId);
   if (!row) throw new StaleWriteError("Partie en attente");
   return {
     customerId: row.customer_id == null ? null : String(row.customer_id),
@@ -1544,8 +1551,8 @@ function requireWaitlist(venueId: string, id: string) {
   };
 }
 
-function requireTable(venueId: string, id: string) {
-  const row = one(
+async function requireTable(venueId: string, id: string) {
+  const row = await one(
     "SELECT * FROM table_reservations WHERE id = ? AND venue_id = ?",
     id,
     venueId,
@@ -1562,8 +1569,8 @@ function requireTable(venueId: string, id: string) {
   };
 }
 
-function requireDeposit(venueId: string, id: string) {
-  const row = one("SELECT * FROM deposits WHERE id = ? AND venue_id = ?", id, venueId);
+async function requireDeposit(venueId: string, id: string) {
+  const row = await one("SELECT * FROM deposits WHERE id = ? AND venue_id = ?", id, venueId);
   if (!row) throw new StaleWriteError("Acompte");
   return {
     customerId: row.customer_id == null ? null : String(row.customer_id),
@@ -1596,13 +1603,13 @@ function slug(name: string): string {
  * terrace when it rains has to take it out of the app immediately, which
  * is why this lives on the write path rather than in a settings blob.
  */
-export function setZoneAvailable(
+export async function setZoneAvailable(
   venueId: string,
   zoneId: string,
   available: boolean,
-): void {
+): Promise<void> {
   assertVenue(venueId);
-  run(
+  await run(
     "UPDATE zones SET available = ? WHERE id = ? AND venue_id = ?",
     available ? 1 : 0,
     zoneId,

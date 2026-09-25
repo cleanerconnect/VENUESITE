@@ -48,4 +48,4 @@ export function isLiveBackend(): boolean {
 }
 
 export * from "./repository";
-export { dataMode, dataModeReason } from "./mode";
+export { dataEngine, dataMode, dataModeReason } from "./mode";

@@ -36,8 +36,8 @@ const pctChange = (now: number, before: number) =>
 
 // ── Venue ────────────────────────────────────────────────────
 
-export function venueProfile(venueId: string): RestaurantProfile | null {
-  const r = one("SELECT * FROM venues WHERE id = ?", venueId);
+export async function venueProfile(venueId: string): Promise<RestaurantProfile | null> {
+  const r = await one("SELECT * FROM venues WHERE id = ?", venueId);
   if (!r) return null;
   return {
     id: String(r.id),
@@ -48,9 +48,9 @@ export function venueProfile(venueId: string): RestaurantProfile | null {
     latitude: r.latitude === null ? undefined : Number(r.latitude),
     longitude: r.longitude === null ? undefined : Number(r.longitude),
     priceRange: Number(r.price_range),
-    tags: facets(String(r.id), "tag"),
-    features: facets(String(r.id), "feature") as RestaurantProfile["features"],
-    ambience: facets(String(r.id), "ambience"),
+    tags: await facets(String(r.id), "tag"),
+    features: (await facets(String(r.id), "feature")) as RestaurantProfile["features"],
+    ambience: await facets(String(r.id), "ambience"),
     shortName: String(r.short_name),
     initials: String(r.initials),
     city: String(r.city),
@@ -68,19 +68,19 @@ export function venueProfile(venueId: string): RestaurantProfile | null {
 // ── Room ─────────────────────────────────────────────────────
 
 /** Listing chips the app renders — tags, facilities, ambience. */
-function facets(venueId: string, kind: string): string[] {
-  return all(
+async function facets(venueId: string, kind: string): Promise<string[]> {
+  return (await all(
     "SELECT value FROM venue_tags WHERE venue_id = ? AND kind = ? ORDER BY position",
     venueId,
     kind,
-  ).map((r) => String(r.value));
+  )).map((r) => String(r.value));
 }
 
-function zones(venueId: string): Zone[] {
-  return all(
+async function zones(venueId: string): Promise<Zone[]> {
+  return (await all(
     "SELECT id, name, capacity, available FROM zones WHERE venue_id = ? ORDER BY position",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     name: String(r.name),
     capacity: Number(r.capacity),
@@ -91,7 +91,7 @@ function zones(venueId: string): Zone[] {
 
 // ── Services ─────────────────────────────────────────────────
 
-function serviceRow(r: Record<string, string | number | null>): Service {
+async function serviceRow(r: Record<string, string | number | null>): Promise<Service> {
   return {
     id: String(r.id),
     kind: String(r.kind) as ServiceKind,
@@ -105,18 +105,19 @@ function serviceRow(r: Record<string, string | number | null>): Service {
     arrivedCovers: Number(r.arrived_covers),
     noShowCovers: Number(r.no_show_covers),
     revenueMad: toMad(Number(r.revenue_cents)),
-    slotLoad: all(
+    slotLoad: (await all(
       "SELECT at, covers FROM service_slot_load WHERE service_id = ? ORDER BY at",
       String(r.id),
-    ).map((s) => ({ at: String(s.at), covers: Number(s.covers) })),
+    )).map((s) => ({ at: String(s.at), covers: Number(s.covers) })),
   };
 }
 
-function services(venueId: string): Service[] {
-  return all(
-    "SELECT * FROM services WHERE venue_id = ? ORDER BY opens_at",
-    venueId,
-  ).map(serviceRow);
+async function services(venueId: string): Promise<Service[]> {
+  return Promise.all(
+    (
+      await all("SELECT * FROM services WHERE venue_id = ? ORDER BY opens_at", venueId)
+    ).map(serviceRow),
+  );
 }
 
 /**
@@ -149,22 +150,26 @@ function currentService(venueId: string, list: Service[]): Service | null {
  * same hours a partner can see and edit, rather than against a row
  * nobody wrote.
  */
-function servicesOn(venueId: string, date: string, book: Reservation[]): Service[] {
+async function servicesOn(
+  venueId: string,
+  date: string,
+  book: Reservation[],
+): Promise<Service[]> {
   // The live row is one service — the one running now — and a venue that
   // serves lunch and dinner runs two. Réservations offers the day's
   // services as tabs, so the day has to answer with all of them: the
   // live row where it exists, because only it carries the booking
   // engine's counters, and the definitions for the rest.
-  const live = services(venueId).filter((s) => s.date === date);
+  const live = (await services(venueId)).filter((s) => s.date === date);
   const liveByKind = new Map(live.map((s) => [s.kind + s.opensAt.slice(11, 16), s]));
 
   // ISO weekday, 1 = Monday, to match `service_definitions.weekdays`.
   const weekday = ((new Date(`${date}T12:00:00`).getDay() + 6) % 7) + 1;
 
-  const derived = all(
+  const derived = (await all(
     "SELECT * FROM service_definitions WHERE venue_id = ? AND enabled = 1 ORDER BY position",
     venueId,
-  )
+  ))
     .filter((r) =>
       String(r.weekdays)
         .split(",")
@@ -246,9 +251,13 @@ function slotLoadFrom(book: Reservation[]): { at: string; covers: number }[] {
  * activity rail — and none of that means anything for a date three days
  * out. What a day has is a book and the services that run it.
  */
-export function dayBookFor(venueId: string, date: string): DayBook {
-  const reservations = upcomingReservations(venueId, date);
-  return { date, services: servicesOn(venueId, date, reservations), reservations };
+export async function dayBookFor(venueId: string, date: string): Promise<DayBook> {
+  const reservations = await upcomingReservations(venueId, date);
+  return {
+    date,
+    services: await servicesOn(venueId, date, reservations),
+    reservations,
+  };
 }
 
 // ── Bookings ─────────────────────────────────────────────────
@@ -287,14 +296,14 @@ const BOOKING_SELECT = `
  * service in hand, and an unscoped query put every future booking the
  * venue holds into both.
  */
-function upcomingReservations(venueId: string, date: string): Reservation[] {
-  return all(
+async function upcomingReservations(venueId: string, date: string): Promise<Reservation[]> {
+  return (await all(
     `${BOOKING_SELECT} AND r.state IN ('requested','confirmed','modified','arrived')
        AND date(r.at) = ?
        ORDER BY r.at`,
     venueId,
     date,
-  ).map(reservationRow);
+  )).map(reservationRow);
 }
 
 /**
@@ -315,23 +324,23 @@ function upcomingReservations(venueId: string, date: string): Reservation[] {
  * guest with six visits read "Aucune visite" directly under the tile
  * counting them.
  */
-export function customerBookings(venueId: string, customerId: string): Reservation[] {
-  return all(
+export async function customerBookings(venueId: string, customerId: string): Promise<Reservation[]> {
+  return (await all(
     `${BOOKING_SELECT} AND r.customer_id = ? ORDER BY r.at DESC`,
     venueId,
     customerId,
-  ).map(reservationRow);
+  )).map(reservationRow);
 }
 
-function waitlist(venueId: string): Reservation[] {
-  return all(
+async function waitlist(venueId: string): Promise<Reservation[]> {
+  return (await all(
     `SELECT w.*, c.visit_count
        FROM waitlist w
        LEFT JOIN customers c ON c.id = w.customer_id
       WHERE w.venue_id = ? AND w.status IN ('waiting', 'notified')
       ORDER BY w.added_at`,
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     serviceId: "",
     guestName: String(r.guest_name),
@@ -349,11 +358,13 @@ function waitlist(venueId: string): Reservation[] {
 
 /** Also the settings editor's source — the app listing and the form
  *  read the same rows, so what a partner edits is what a diner sees. */
-export function menuItems(venueId: string): MenuItem[] {
-  return all(
+export async function menuItems(venueId: string): Promise<MenuItem[]> {
+  // One query per row for the dietary tags, so the row builder is async
+  // and the list is gathered rather than mapped.
+  const rows = (await all(
     "SELECT * FROM menu_items WHERE venue_id = ? ORDER BY position",
     venueId,
-  ).map((r) => {
+  )).map(async (r) => {
     const id = String(r.id);
     return {
       id,
@@ -363,19 +374,20 @@ export function menuItems(venueId: string): MenuItem[] {
       priceMad: toMad(Number(r.price_cents)),
       signature: bool(r.signature as number),
       visible: bool(r.visible as number),
-      dietary: all(
+      dietary: (await all(
         "SELECT tag FROM menu_item_dietary WHERE item_id = ?",
         id,
-      ).map((t) => String(t.tag)) as MenuItem["dietary"],
+      )).map((t) => String(t.tag)) as MenuItem["dietary"],
     };
   });
+  return Promise.all(rows);
 }
 
-function reviews(venueId: string): GuestReview[] {
-  return all(
+async function reviews(venueId: string): Promise<GuestReview[]> {
+  const rows = (await all(
     "SELECT * FROM reviews WHERE venue_id = ? ORDER BY at DESC LIMIT 20",
     venueId,
-  ).map((r) => {
+  )).map(async (r) => {
     const id = String(r.id);
     return {
       id,
@@ -384,22 +396,23 @@ function reviews(venueId: string): GuestReview[] {
       comment: String(r.comment),
       at: String(r.at),
       channel: String(r.channel) as GuestReview["channel"],
-      tags: all("SELECT tag FROM review_tags WHERE review_id = ?", id).map((t) =>
+      tags: (await all("SELECT tag FROM review_tags WHERE review_id = ?", id)).map((t) =>
         String(t.tag),
       ),
       // A reply exists but is unpublished until moderation rules land, so
       // "replied" means the venue has answered, not that it is public.
       replied:
-        one("SELECT 1 AS ok FROM review_replies WHERE review_id = ?", id) !== null,
+        (await one("SELECT 1 AS ok FROM review_replies WHERE review_id = ?", id)) !== null,
     };
   });
+  return Promise.all(rows);
 }
 
-function activity(venueId: string): RestaurantActivityItem[] {
-  return all(
+async function activity(venueId: string): Promise<RestaurantActivityItem[]> {
+  return (await all(
     "SELECT * FROM activity WHERE venue_id = ? ORDER BY at DESC LIMIT 12",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     type: String(r.type) as RestaurantActivityItem["type"],
     actor: String(r.actor),
@@ -410,11 +423,11 @@ function activity(venueId: string): RestaurantActivityItem[] {
   }));
 }
 
-function payouts(venueId: string): RestaurantPayout[] {
-  return all(
+async function payouts(venueId: string): Promise<RestaurantPayout[]> {
+  return (await all(
     "SELECT * FROM payouts WHERE venue_id = ? ORDER BY scheduled_for DESC",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     reference: String(r.reference),
     amountMad: toMad(Number(r.amount_cents)),
@@ -429,29 +442,29 @@ function payouts(venueId: string): RestaurantPayout[] {
 
 // ── Aggregates ───────────────────────────────────────────────
 
-function daily(venueId: string, date: string) {
-  return one(
+async function daily(venueId: string, date: string) {
+  return await one(
     "SELECT * FROM analytics_daily WHERE venue_id = ? AND date = ?",
     venueId,
     date,
   );
 }
 
-function aggregates(venueId: string, service: Service | null) {
+async function aggregates(venueId: string, service: Service | null) {
   const today = startOfDay(new Date());
-  const todayRow = daily(venueId, day(today));
-  const yesterdayRow = daily(venueId, day(subDays(today, 1)));
+  const todayRow = await daily(venueId, day(today));
+  const yesterdayRow = await daily(venueId, day(subDays(today, 1)));
 
   const coversToday = Number(todayRow?.covers_served ?? service?.arrivedCovers ?? 0);
   const coversYesterday = Number(yesterdayRow?.covers_served ?? 0);
 
-  const week = all(
+  const week = await all(
     `SELECT date, covers_served, revenue_cents, no_shows, capacity
        FROM analytics_daily WHERE venue_id = ? AND date >= ? ORDER BY date`,
     venueId,
     day(subDays(today, 6)),
   );
-  const priorWeek = all(
+  const priorWeek = await all(
     `SELECT covers_served, revenue_cents, capacity
        FROM analytics_daily WHERE venue_id = ? AND date >= ? AND date < ?`,
     venueId,
@@ -476,13 +489,13 @@ function aggregates(venueId: string, service: Service | null) {
   const ticket = coversWeek === 0 ? 0 : revenueWeek / coversWeek;
   const ticketPrior = coversPrior === 0 ? 0 : revenuePrior / coversPrior;
 
-  const ratingRow = one(
+  const ratingRow = await one(
     "SELECT AVG(rating) avg, COUNT(*) n FROM reviews WHERE venue_id = ?",
     venueId,
   );
   // AVG over an empty set is NULL, and coercing that to zero turned "no
   // month to compare with" into a jump of the whole average.
-  const ratingPrior = one(
+  const ratingPrior = await one(
     "SELECT AVG(rating) avg, COUNT(*) n FROM reviews WHERE venue_id = ? AND at < ?",
     venueId,
     subDays(today, 30).toISOString(),
@@ -559,8 +572,8 @@ function aggregates(venueId: string, service: Service | null) {
  * query keeps its one dependency direction (SQL in, payload out). A venue
  * with no settings row is a restaurant, matching `venueSettings()`.
  */
-function configuration(venueId: string): VenueConfiguration {
-  const r = one(
+async function configuration(venueId: string): Promise<VenueConfiguration> {
+  const r = await one(
     "SELECT configuration FROM venue_settings WHERE venue_id = ?",
     venueId,
   );
@@ -575,18 +588,18 @@ function salutation(date: Date): string {
   return "Bonsoir";
 }
 
-export function overview(venueId: string, viewerFirstName: string): RestaurantOverview | null {
-  const restaurant = venueProfile(venueId);
+export async function overview(venueId: string, viewerFirstName: string): Promise<RestaurantOverview | null> {
+  const restaurant = await venueProfile(venueId);
   if (!restaurant) return null;
 
-  const list = services(venueId);
-  const service = currentService(venueId, list);
-  const queue = waitlist(venueId);
-  const agg = aggregates(venueId, service);
+  const list = await services(venueId);
+  const service = await currentService(venueId, list);
+  const queue = await waitlist(venueId);
+  const agg = await aggregates(venueId, service);
 
   // The greeting speaks the venue's vocabulary: a lounge books people,
   // not covers, and the participle has to agree with whichever it is.
-  const vocabulary = configFor(configuration(venueId));
+  const vocabulary = configFor(await configuration(venueId));
 
   const waiting = queue.reduce((n, r) => n + r.partySize, 0);
   // Remaining capacity, which is what LYFE knows — not free tables.
@@ -594,7 +607,7 @@ export function overview(venueId: string, viewerFirstName: string): RestaurantOv
     ? Math.max(0, service.capacity - service.bookedCovers)
     : 0;
 
-  const nextPayout = one(
+  const nextPayout = await one(
     `SELECT amount_cents, scheduled_for FROM payouts
       WHERE venue_id = ? AND state != 'paid' ORDER BY scheduled_for LIMIT 1`,
     venueId,
@@ -626,32 +639,32 @@ export function overview(venueId: string, viewerFirstName: string): RestaurantOv
         : "Aucun service en cours.",
     },
     currentService: service ?? list[0],
-    zones: zones(venueId),
+    zones: await zones(venueId),
     ...agg,
     nextPayout: {
       amountMad: toMad(Number(nextPayout?.amount_cents ?? 0)),
       scheduledFor: String(nextPayout?.scheduled_for ?? new Date().toISOString()),
     },
-    upcomingReservations: upcomingReservations(venueId, day(new Date())),
+    upcomingReservations: await upcomingReservations(venueId, day(new Date())),
     waitlist: queue,
-    activity: activity(venueId),
-    topItems: menuItems(venueId),
-    reviews: reviews(venueId),
+    activity: await activity(venueId),
+    topItems: await menuItems(venueId),
+    reviews: await reviews(venueId),
     services: list,
-    payouts: payouts(venueId),
+    payouts: await payouts(venueId),
   };
 }
 
 /** Reflects a booking's state change and appends to its history. */
-export function transitionBooking(
+export async function transitionBooking(
   venueId: string,
   reservationId: string,
   to: Reservation["state"],
   actor: "venue" | "user" | "system",
   reasonCode?: string,
   note?: string,
-): void {
-  const current = one(
+): Promise<void> {
+  const current = await one(
     "SELECT state FROM reservations WHERE id = ? AND venue_id = ?",
     reservationId,
     venueId,
@@ -660,14 +673,14 @@ export function transitionBooking(
 
   const at = new Date().toISOString();
 
-  run(
+  await run(
     "UPDATE reservations SET state = ?, updated_at = ? WHERE id = ? AND venue_id = ?",
     to,
     at,
     reservationId,
     venueId,
   );
-  run(
+  await run(
     `INSERT INTO reservation_status_history
        (id, reservation_id, from_state, to_state, actor, actor_id, reason_code, note, at)
      VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?)`,
@@ -696,15 +709,15 @@ const PERIOD_DAYS: Record<string, number> = {
  * Each period is compared against the equivalent window before it, so a
  * number on screen means something relative rather than in isolation.
  */
-export function analytics(
+export async function analytics(
   venueId: string,
   period: string,
-): import("@/lib/types/business").VenueAnalytics {
+): Promise<import("@/lib/types/business").VenueAnalytics> {
   const days = PERIOD_DAYS[period] ?? 30;
   const today = startOfDay(new Date());
 
-  const window = (from: number, to: number) =>
-    all(
+  const window = async (from: number, to: number) =>
+    await all(
       `SELECT date, covers_served, revenue_cents, no_shows, capacity
          FROM analytics_daily
         WHERE venue_id = ? AND date >= ? AND date < ?
@@ -714,8 +727,8 @@ export function analytics(
       day(subDays(today, to)),
     );
 
-  const current = window(days, -1);
-  const prior = window(days * 2, days);
+  const current = await window(days, -1);
+  const prior = await window(days * 2, days);
   const sum = (rows: typeof current, key: string) =>
     rows.reduce((n, r) => n + Number(r[key] ?? 0), 0);
 
@@ -767,15 +780,15 @@ export function analytics(
   };
 }
 
-export function visibility(
+export async function visibility(
   venueId: string,
   period: string,
-): import("@/lib/types/business").VisibilityMetrics {
+): Promise<import("@/lib/types/business").VisibilityMetrics> {
   const days = PERIOD_DAYS[period] ?? 30;
   const today = startOfDay(new Date());
 
-  const window = (from: number, to: number) =>
-    all(
+  const window = async (from: number, to: number) =>
+    await all(
       `SELECT impressions, listing_views, bookings_made
          FROM analytics_daily
         WHERE venue_id = ? AND date >= ? AND date < ?`,
@@ -784,8 +797,8 @@ export function visibility(
       day(subDays(today, to)),
     );
 
-  const current = window(days, -1);
-  const prior = window(days * 2, days);
+  const current = await window(days, -1);
+  const prior = await window(days * 2, days);
   const sum = (rows: typeof current, key: string) =>
     rows.reduce((n, r) => n + Number(r[key] ?? 0), 0);
 
@@ -793,7 +806,7 @@ export function visibility(
   const views = sum(current, "listing_views");
   const bookings = sum(current, "bookings_made");
 
-  const boost = one(
+  const boost = await one(
     `SELECT ends_at FROM boost_campaigns
       WHERE venue_id = ? AND status = 'active' AND ends_at > ?
       ORDER BY ends_at DESC LIMIT 1`,

@@ -10,6 +10,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { readFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { execFileSync } from "node:child_process";
 
 const args = process.argv.slice(2);
 const reset = args.includes("--reset");
@@ -1991,3 +1992,12 @@ for (const t of ["venues","business_accounts","staff","zones","venue_tags","avai
   console.log(`  ${t.padEnd(28)} ${count(t)}`);
 }
 db.close();
+
+// One generator, two destinations. With `DATABASE_URL` set, the rows
+// just written are migrated and copied into Postgres, so seeding Neon
+// is the same command a contributor runs locally.
+if (process.env.DATABASE_URL) {
+  console.log("\nDATABASE_URL présent — application du schéma puis copie vers Postgres");
+  execFileSync(process.execPath, ["db/migrate.mjs"], { stdio: "inherit" });
+  execFileSync(process.execPath, ["db/push.mjs", dbPath], { stdio: "inherit" });
+}

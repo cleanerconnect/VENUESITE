@@ -49,8 +49,20 @@ const context = await browser.newContext({
 const page = await context.newPage();
 
 const problems = [];
+// The map draws OpenStreetMap tiles and geocodes through Nominatim.
+// Neither is reachable from a sandboxed runner, and a tile that fails to
+// load is not this portal's defect — the component renders and stays
+// usable without them. Anything else on the console still fails the run.
+const EXTERNAL_MAP = /tile\.openstreetmap\.org|nominatim\.openstreetmap\.org|\/api\/geocode/;
 page.on("console", (m) => {
-  if (m.type() === "error") problems.push(`console: ${m.text().slice(0, 160)}`);
+  if (m.type() !== "error") return;
+  const text = m.text();
+  // A failed resource logs its message here and its URL in `location()`;
+  // a tile server refused by the runner's proxy says only
+  // « ERR_TUNNEL_CONNECTION_FAILED » in the text, so both are checked.
+  const from = m.location()?.url ?? "";
+  if (EXTERNAL_MAP.test(text) || EXTERNAL_MAP.test(from)) return;
+  problems.push(`console: ${text.slice(0, 160)}`);
 });
 page.on("pageerror", (e) => problems.push(`pageerror: ${String(e).slice(0, 160)}`));
 

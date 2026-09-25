@@ -21,8 +21,8 @@ import { all, bool, jsonArray, one, run, toMad, transaction } from "./store";
 
 // ── Account ──────────────────────────────────────────────────
 
-export function businessAccountForUser(userId: string): BusinessAccount | null {
-  const row = one(
+export async function businessAccountForUser(userId: string): Promise<BusinessAccount | null> {
+  const row = await one(
     `SELECT b.* FROM business_accounts b
       JOIN staff s ON s.venue_id = b.venue_id AND s.user_id = ?
      LIMIT 1`,
@@ -39,7 +39,7 @@ export function businessAccountForUser(userId: string): BusinessAccount | null {
 }
 
 /** Every venue this user may act on — the venue switcher reads this. */
-export function venuesForUser(userId: string): {
+export async function venuesForUser(userId: string): Promise<{
   id: string;
   name: string;
   shortName: string;
@@ -47,15 +47,15 @@ export function venuesForUser(userId: string): {
   city: string;
   kind: string;
   role: string;
-}[] {
-  return all(
+}[]> {
+  return (await all(
     `SELECT v.id, v.name, v.short_name, v.initials, v.city, v.kind, s.role
        FROM venues v
        JOIN staff s ON s.venue_id = v.id
       WHERE s.user_id = ?
       ORDER BY v.name`,
     userId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     name: String(r.name),
     shortName: String(r.short_name),
@@ -67,9 +67,9 @@ export function venuesForUser(userId: string): {
 }
 
 /** Authorisation check. Called before any venue-scoped read or write. */
-export function userCanAccessVenue(userId: string, venueId: string): boolean {
+export async function userCanAccessVenue(userId: string, venueId: string): Promise<boolean> {
   return (
-    one(
+    await one(
       "SELECT 1 AS ok FROM staff WHERE user_id = ? AND venue_id = ?",
       userId,
       venueId,
@@ -79,13 +79,13 @@ export function userCanAccessVenue(userId: string, venueId: string): boolean {
 
 // ── Availability ─────────────────────────────────────────────
 
-export function availability(venueId: string): VenueAvailability {
-  const slots: AvailabilitySlot[] = all(
+export async function availability(venueId: string): Promise<VenueAvailability> {
+  const slots: AvailabilitySlot[] = (await all(
     `SELECT id, weekday, opens_at, closes_at, capacity, enabled
        FROM availability_slots WHERE venue_id = ?
       ORDER BY weekday, opens_at`,
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     weekday: Number(r.weekday),
     opensAt: String(r.opens_at),
@@ -94,16 +94,16 @@ export function availability(venueId: string): VenueAvailability {
     enabled: bool(r.enabled as number),
   }));
 
-  const closures: ClosureDay[] = all(
+  const closures: ClosureDay[] = (await all(
     "SELECT id, date, reason FROM closures WHERE venue_id = ? ORDER BY date",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     date: String(r.date),
     reason: String(r.reason),
   }));
 
-  const updated = one(
+  const updated = await one(
     "SELECT MAX(updated_at) AS at FROM availability_slots WHERE venue_id = ?",
     venueId,
   );
@@ -130,14 +130,14 @@ export class AvailabilityConflict extends Error {
  * can book, so a lost update here means double-booking a room that was
  * just closed. The version column makes that impossible to do silently.
  */
-export function updateSlot(
+export async function updateSlot(
   venueId: string,
   slotId: string,
   patch: Partial<Pick<AvailabilitySlot, "opensAt" | "closesAt" | "capacity" | "enabled">>,
   expectedVersion?: number,
-): AvailabilitySlot {
-  return transaction(() => {
-    const current = one(
+): Promise<AvailabilitySlot> {
+  return await transaction(async () => {
+    const current = await one(
       "SELECT * FROM availability_slots WHERE id = ? AND venue_id = ?",
       slotId,
       venueId,
@@ -154,7 +154,7 @@ export function updateSlot(
       enabled: patch.enabled ?? bool(current.enabled as number),
     };
 
-    run(
+    await run(
       `UPDATE availability_slots
           SET opens_at = ?, closes_at = ?, capacity = ?, enabled = ?,
               version = version + 1, updated_at = ?
@@ -172,9 +172,9 @@ export function updateSlot(
   });
 }
 
-export function addClosure(venueId: string, date: string, reason: string): ClosureDay {
+export async function addClosure(venueId: string, date: string, reason: string): Promise<ClosureDay> {
   const id = `cl_${Date.now().toString(36)}`;
-  run(
+  await run(
     "INSERT INTO closures (id, venue_id, date, reason) VALUES (?, ?, ?, ?)",
     id,
     venueId,
@@ -184,41 +184,43 @@ export function addClosure(venueId: string, date: string, reason: string): Closu
   return { id, date, reason };
 }
 
-export function removeClosure(venueId: string, id: string): void {
-  run("DELETE FROM closures WHERE id = ? AND venue_id = ?", id, venueId);
+export async function removeClosure(venueId: string, id: string): Promise<void> {
+  await run("DELETE FROM closures WHERE id = ? AND venue_id = ?", id, venueId);
 }
 
 // ── Customers ────────────────────────────────────────────────
 
-export function customers(venueId: string): Customer[] {
-  const rows = all(
+export async function customers(venueId: string): Promise<Customer[]> {
+  const rows = await all(
     `SELECT * FROM customers WHERE venue_id = ? ORDER BY last_visit_at DESC NULLS LAST`,
     venueId,
   );
 
-  return rows.map((r) => {
+  // Each customer needs three more queries — preferences, no-shows,
+  // reviews — so the row builder is async and the list is gathered.
+  return Promise.all(rows.map(async (r) => {
     const id = String(r.id);
-    const preferences = all(
+    const preferences = (await all(
       "SELECT label FROM customer_preferences WHERE customer_id = ?",
       id,
-    ).map((p) => String(p.label));
+    )).map((p) => String(p.label));
 
-    const noShowHistory: NoShowRecord[] = all(
+    const noShowHistory: NoShowRecord[] = (await all(
       `SELECT reservation_id, at, party_size FROM no_show_records
         WHERE customer_id = ? AND venue_id = ? ORDER BY at DESC`,
       id,
       venueId,
-    ).map((n) => ({
+    )).map((n) => ({
       bookingId: String(n.reservation_id),
       at: String(n.at),
       partySize: Number(n.party_size),
     }));
 
-    const reviewIds = all(
+    const reviewIds = (await all(
       "SELECT id FROM reviews WHERE customer_id = ? AND venue_id = ?",
       id,
       venueId,
-    ).map((v) => String(v.id));
+    )).map((v) => String(v.id));
 
     const visits = Number(r.visit_count);
     const opportunities = visits + noShowHistory.length;
@@ -244,11 +246,11 @@ export function customers(venueId: string): Customer[] {
       segments: segmentsFor(visits, r.last_visit_at as string | null, risk),
       optedOutOfMarketing: bool(r.opted_out_of_marketing as number),
     };
-  });
+  }));
 }
 
-export function customer(venueId: string, id: string): Customer | null {
-  return customers(venueId).find((c) => c.id === id) ?? null;
+export async function customer(venueId: string, id: string): Promise<Customer | null> {
+  return (await customers(venueId)).find((c) => c.id === id) ?? null;
 }
 
 /** Derived on read, never stored — a stored segment goes stale on return. */
@@ -264,19 +266,19 @@ function segmentsFor(visits: number, lastVisitAt: string | null, risk: number): 
   return out;
 }
 
-export function recordNoShow(
+export async function recordNoShow(
   venueId: string,
   reservationId: string,
-): void {
-  transaction(() => {
-    const booking = one(
+): Promise<void> {
+  await transaction(async () => {
+    const booking = await one(
       "SELECT customer_id, party_size FROM reservations WHERE id = ? AND venue_id = ?",
       reservationId,
       venueId,
     );
     if (!booking?.customer_id) return;
 
-    run(
+    await run(
       `INSERT INTO no_show_records (id, venue_id, customer_id, reservation_id, party_size, at)
        VALUES (?, ?, ?, ?, ?, ?)`,
       `ns_${reservationId}_${Date.now().toString(36)}`,
@@ -287,14 +289,14 @@ export function recordNoShow(
       new Date().toISOString(),
     );
 
-    run(
+    await run(
       "UPDATE reservations SET state = 'no_show', updated_at = ? WHERE id = ? AND venue_id = ?",
       new Date().toISOString(),
       reservationId,
       venueId,
     );
 
-    run(
+    await run(
       `INSERT INTO reservation_status_history
          (id, reservation_id, from_state, to_state, actor, actor_id, reason_code, note, at)
        VALUES (?, ?, NULL, 'no_show', 'venue', NULL, NULL, NULL, ?)`,
@@ -307,11 +309,11 @@ export function recordNoShow(
 
 // ── Notifications ────────────────────────────────────────────
 
-export function notifications(venueId: string): PortalNotification[] {
-  return all(
+export async function notifications(venueId: string): Promise<PortalNotification[]> {
+  return (await all(
     "SELECT * FROM notifications WHERE venue_id = ? ORDER BY at DESC LIMIT 50",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     type: String(r.type) as PortalNotification["type"],
     title: String(r.title),
@@ -322,12 +324,12 @@ export function notifications(venueId: string): PortalNotification[] {
   }));
 }
 
-export function markNotificationRead(venueId: string, id: string): void {
-  run("UPDATE notifications SET read = 1 WHERE id = ? AND venue_id = ?", id, venueId);
+export async function markNotificationRead(venueId: string, id: string): Promise<void> {
+  await run("UPDATE notifications SET read = 1 WHERE id = ? AND venue_id = ?", id, venueId);
 }
 
-export function notificationPreferences(venueId: string): NotificationPreferences {
-  const rows = all(
+export async function notificationPreferences(venueId: string): Promise<NotificationPreferences> {
+  const rows = await all(
     "SELECT event_type, channels FROM notification_preferences WHERE venue_id = ?",
     venueId,
   );
@@ -347,10 +349,10 @@ export function notificationPreferences(venueId: string): NotificationPreference
   };
 }
 
-export function setNotificationPreferences(
+export async function setNotificationPreferences(
   prefs: NotificationPreferences,
-): NotificationPreferences {
-  transaction(() => {
+): Promise<NotificationPreferences> {
+  await transaction(async () => {
     const rows: [string, string[]][] = [
       ["new_booking", prefs.newBooking],
       ["cancellation", prefs.cancellation],
@@ -359,7 +361,7 @@ export function setNotificationPreferences(
       ["daily_summary", prefs.dailySummary],
     ];
     for (const [type, list] of rows) {
-      run(
+      await run(
         `INSERT INTO notification_preferences (venue_id, event_type, channels)
          VALUES (?, ?, ?)
          ON CONFLICT(venue_id, event_type) DO UPDATE SET channels = excluded.channels`,

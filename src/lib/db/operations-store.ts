@@ -74,8 +74,8 @@ const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 
 // ── 1. Service floor ─────────────────────────────────────────
 
-export function waitlistSettings(venueId: string): WaitlistSettings {
-  const row = one("SELECT * FROM waitlist_settings WHERE venue_id = ?", venueId);
+export async function waitlistSettings(venueId: string): Promise<WaitlistSettings> {
+  const row = await one("SELECT * FROM waitlist_settings WHERE venue_id = ?", venueId);
   // A venue with no row has never touched the door settings; the defaults
   // are the ones the schema declares, not an error.
   return {
@@ -87,11 +87,11 @@ export function waitlistSettings(venueId: string): WaitlistSettings {
   };
 }
 
-export function waitlist(venueId: string): WaitlistParty[] {
-  return all(
+export async function waitlist(venueId: string): Promise<WaitlistParty[]> {
+  return (await all(
     `SELECT * FROM waitlist WHERE venue_id = ? ORDER BY added_at`,
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     customerId: orNull(r.customer_id),
     guestName: String(r.guest_name),
@@ -110,13 +110,13 @@ export function waitlist(venueId: string): WaitlistParty[] {
   }));
 }
 
-export function shiftNotes(venueId: string, date: string) {
-  return all(
+export async function shiftNotes(venueId: string, date: string) {
+  return (await all(
     `SELECT * FROM shift_notes WHERE venue_id = ? AND date = ?
       ORDER BY pinned DESC, created_at DESC`,
     venueId,
     date,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     serviceId: orNull(r.service_id),
     date: String(r.date),
@@ -133,11 +133,11 @@ export function shiftNotes(venueId: string, date: string) {
  * current) service. Joined here rather than in the screen so the tags,
  * preferences, history and deposit state of one guest arrive together.
  */
-export function briefing(venueId: string): Briefing {
+export async function briefing(venueId: string): Promise<Briefing> {
   // The same service Accueil leads with: the one running, else the next
   // due, else the last one held. Ordering by nearest midpoint instead
   // briefed the team on a service that had already closed.
-  const service = one(
+  const service = await one(
     `SELECT id, label, date FROM services
       WHERE venue_id = ?
       ORDER BY
@@ -153,7 +153,7 @@ export function briefing(venueId: string): Briefing {
   );
   const date = text(service?.date) || isoDay(new Date());
 
-  const rows = all(
+  const rows = await all(
     `SELECT r.id, r.customer_id, r.guest_name, r.party_size, r.at, r.note,
             z.name AS zone_name,
             c.visit_count AS visit_count,
@@ -172,8 +172,8 @@ export function briefing(venueId: string): Briefing {
     date,
   );
 
-  const tagsByCustomer = customerTagLabels(venueId);
-  const prefsByCustomer = customerPreferences(venueId);
+  const tagsByCustomer = await customerTagLabels(venueId);
+  const prefsByCustomer = await customerPreferences(venueId);
 
   const guests: BriefingGuest[] = rows.map((r) => {
     const customerId = orNull(r.customer_id);
@@ -199,7 +199,7 @@ export function briefing(venueId: string): Briefing {
     date,
     covers: guests.reduce((sum, g) => sum + g.partySize, 0),
     bookings: guests.length,
-    notes: shiftNotes(venueId, date),
+    notes: await shiftNotes(venueId, date),
     guests,
   };
 }
@@ -208,12 +208,12 @@ export function briefing(venueId: string): Briefing {
  * Ninety days of load, from four weeks back — enough for the week view to
  * page backwards and the month view to show a full grid either side.
  */
-export function calendar(venueId: string): CalendarDay[] {
-  const venue = one("SELECT capacity FROM venues WHERE id = ?", venueId);
+export async function calendar(venueId: string): Promise<CalendarDay[]> {
+  const venue = await one("SELECT capacity FROM venues WHERE id = ?", venueId);
   const baseCapacity = Number(venue?.capacity ?? 0);
 
   const load = new Map<string, { covers: number; bookings: number }>();
-  for (const r of all(
+  for (const r of await all(
     `SELECT date(at) AS d, SUM(party_size) AS covers, COUNT(*) AS bookings
        FROM reservations
       WHERE venue_id = ?
@@ -228,12 +228,12 @@ export function calendar(venueId: string): CalendarDay[] {
   }
 
   const closures = new Map<string, string>();
-  for (const r of all("SELECT date, reason FROM closures WHERE venue_id = ?", venueId)) {
+  for (const r of await all("SELECT date, reason FROM closures WHERE venue_id = ?", venueId)) {
     closures.set(String(r.date), text(r.reason));
   }
 
   const overrides = new Map<string, { capacity: number; note: string }>();
-  for (const r of all(
+  for (const r of await all(
     "SELECT date, capacity, note FROM capacity_overrides WHERE venue_id = ?",
     venueId,
   )) {
@@ -246,10 +246,10 @@ export function calendar(venueId: string): CalendarDay[] {
   // Markers. An offer or an experience on a day is why a manager opens it.
   // An offer marks a day only when it actually runs that day: the range
   // says which fortnight, the weekdays say which evenings inside it.
-  const offerDays = all(
+  const offerDays = (await all(
     "SELECT id, starts_on, ends_on, weekdays FROM offers WHERE venue_id = ? AND status IN ('active','scheduled')",
     venueId,
-  ).map((o) => ({
+  )).map((o) => ({
     id: String(o.id),
     startsOn: String(o.starts_on),
     endsOn: String(o.ends_on),
@@ -261,7 +261,7 @@ export function calendar(venueId: string): CalendarDay[] {
     ),
   }));
   const experienceDays = new Map<string, string[]>();
-  for (const r of all(
+  for (const r of await all(
     "SELECT id, date(starts_at) AS d FROM experiences WHERE venue_id = ? AND status <> 'brouillon'",
     venueId,
   )) {
@@ -302,20 +302,20 @@ export function calendar(venueId: string): CalendarDay[] {
   return days;
 }
 
-export function serviceFloor(venueId: string): ServiceFloor {
+export async function serviceFloor(venueId: string): Promise<ServiceFloor> {
   return {
-    waitlist: waitlist(venueId),
-    waitlistSettings: waitlistSettings(venueId),
-    briefing: briefing(venueId),
-    calendar: calendar(venueId),
+    waitlist: await waitlist(venueId),
+    waitlistSettings: await waitlistSettings(venueId),
+    briefing: await briefing(venueId),
+    calendar: await calendar(venueId),
   };
 }
 
 // ── 2. Availability configuration ────────────────────────────
 
-export function serviceDefinitions(venueId: string): ServiceDefinition[] {
+export async function serviceDefinitions(venueId: string): Promise<ServiceDefinition[]> {
   const zonesByService = new Map<string, string[]>();
-  for (const r of all(
+  for (const r of await all(
     `SELECT sz.service_definition_id AS sid, sz.zone_id AS zid
        FROM service_zones sz
        JOIN service_definitions sd ON sd.id = sz.service_definition_id
@@ -326,10 +326,10 @@ export function serviceDefinitions(venueId: string): ServiceDefinition[] {
     zonesByService.set(key, [...(zonesByService.get(key) ?? []), String(r.zid)]);
   }
 
-  return all(
+  return (await all(
     "SELECT * FROM service_definitions WHERE venue_id = ? ORDER BY position",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     name: String(r.name),
     kind: String(r.kind),
@@ -348,8 +348,8 @@ export function serviceDefinitions(venueId: string): ServiceDefinition[] {
   }));
 }
 
-export function pacingRules(venueId: string): PacingRules {
-  const r = one("SELECT * FROM pacing_rules WHERE venue_id = ?", venueId);
+export async function pacingRules(venueId: string): Promise<PacingRules> {
+  const r = await one("SELECT * FROM pacing_rules WHERE venue_id = ?", venueId);
   return {
     maxArrivalsPerQuarter: Number(r?.max_arrivals_quarter ?? 12),
     maxCoversPerService: Number(r?.max_covers_service ?? 0),
@@ -369,9 +369,9 @@ export function pacingRules(venueId: string): PacingRules {
 // ── 3. Guest vocabulary ──────────────────────────────────────
 
 /** Tag ids per customer. One read, so a list does not cost N queries. */
-function customerTagIds(venueId: string): Record<string, string[]> {
+async function customerTagIds(venueId: string): Promise<Record<string, string[]>> {
   const out: Record<string, string[]> = {};
-  for (const r of all(
+  for (const r of await all(
     "SELECT customer_id, tag_id FROM customer_tags WHERE venue_id = ?",
     venueId,
   )) {
@@ -382,9 +382,9 @@ function customerTagIds(venueId: string): Record<string, string[]> {
 }
 
 /** The same, resolved to labels — what a briefing row actually prints. */
-function customerTagLabels(venueId: string): Record<string, string[]> {
+async function customerTagLabels(venueId: string): Promise<Record<string, string[]>> {
   const out: Record<string, string[]> = {};
-  for (const r of all(
+  for (const r of await all(
     `SELECT ct.customer_id AS cid, t.label AS label
        FROM customer_tags ct JOIN tags t ON t.id = ct.tag_id
       WHERE ct.venue_id = ? AND t.archived = 0
@@ -397,9 +397,9 @@ function customerTagLabels(venueId: string): Record<string, string[]> {
   return out;
 }
 
-function customerPreferences(venueId: string): Record<string, string[]> {
+async function customerPreferences(venueId: string): Promise<Record<string, string[]>> {
   const out: Record<string, string[]> = {};
-  for (const r of all(
+  for (const r of await all(
     `SELECT cp.customer_id AS cid, cp.label AS label
        FROM customer_preferences cp
        JOIN customers c ON c.id = cp.customer_id
@@ -412,19 +412,19 @@ function customerPreferences(venueId: string): Record<string, string[]> {
   return out;
 }
 
-export function guestGraph(venueId: string): GuestGraph {
+export async function guestGraph(venueId: string): Promise<GuestGraph> {
   const usage = new Map<string, number>();
-  for (const r of all(
+  for (const r of await all(
     "SELECT tag_id, COUNT(*) AS n FROM customer_tags WHERE venue_id = ? GROUP BY tag_id",
     venueId,
   )) {
     usage.set(String(r.tag_id), Number(r.n));
   }
 
-  const tags: GuestTag[] = all(
+  const tags: GuestTag[] = (await all(
     "SELECT * FROM tags WHERE venue_id = ? ORDER BY position",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     label: String(r.label),
     colour: String(r.colour),
@@ -436,10 +436,10 @@ export function guestGraph(venueId: string): GuestGraph {
 
   const labels = new Map(tags.map((t) => [t.id, t.label]));
 
-  const rules = all(
+  const rules = (await all(
     "SELECT * FROM tag_rules WHERE venue_id = ?",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     tagId: String(r.tag_id),
     tagLabel: labels.get(String(r.tag_id)) ?? "",
@@ -453,10 +453,10 @@ export function guestGraph(venueId: string): GuestGraph {
     enabled: bool(r.enabled as number),
   }));
 
-  const segments: GuestSegment[] = all(
+  const segments: GuestSegment[] = (await all(
     "SELECT * FROM segments WHERE venue_id = ? ORDER BY name",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     name: String(r.name),
     description: text(r.description),
@@ -465,14 +465,14 @@ export function guestGraph(venueId: string): GuestGraph {
     updatedAt: String(r.updated_at),
   }));
 
-  return { tags, rules, segments, tagsByCustomer: customerTagIds(venueId) };
+  return { tags, rules, segments, tagsByCustomer: await customerTagIds(venueId) };
 }
 
 // ── 4. Growth ────────────────────────────────────────────────
 
-export function growth(venueId: string): Growth {
+export async function growth(venueId: string): Promise<Growth> {
   const attribution = new Map<string, { reservations: number; covers: number }>();
-  for (const r of all(
+  for (const r of await all(
     `SELECT offer_id, COUNT(*) AS n, SUM(covers) AS covers
        FROM offer_redemptions WHERE venue_id = ? GROUP BY offer_id`,
     venueId,
@@ -483,10 +483,10 @@ export function growth(venueId: string): Growth {
     });
   }
 
-  const offers: Offer[] = all(
+  const offers: Offer[] = (await all(
     "SELECT * FROM offers WHERE venue_id = ? ORDER BY starts_on DESC",
     venueId,
-  ).map((r) => {
+  )).map((r) => {
     const kind = String(r.kind) as Offer["kind"];
     const attributed = attribution.get(String(r.id));
     return {
@@ -511,7 +511,7 @@ export function growth(venueId: string): Growth {
   });
 
   const addonsByExperience = new Map<string, Experience["addons"]>();
-  for (const r of all(
+  for (const r of await all(
     `SELECT * FROM experience_addons WHERE venue_id = ? ORDER BY position`,
     venueId,
   )) {
@@ -527,7 +527,7 @@ export function growth(venueId: string): Growth {
   }
 
   const ticketsByExperience = new Map<string, Experience["tickets"]>();
-  for (const r of all(
+  for (const r of await all(
     "SELECT * FROM tickets WHERE venue_id = ? ORDER BY purchased_at",
     venueId,
   )) {
@@ -550,10 +550,10 @@ export function growth(venueId: string): Growth {
     ]);
   }
 
-  const experiences: Experience[] = all(
+  const experiences: Experience[] = (await all(
     "SELECT * FROM experiences WHERE venue_id = ? ORDER BY starts_at DESC",
     venueId,
-  ).map((r) => {
+  )).map((r) => {
     const id = String(r.id);
     const tickets = ticketsByExperience.get(id) ?? [];
     const live = tickets.filter((t) => t.status !== "annule" && t.status !== "rembourse");
@@ -581,11 +581,11 @@ export function growth(venueId: string): Growth {
 
 // ── 5. Money ─────────────────────────────────────────────────
 
-export function moneyDesk(venueId: string): MoneyDesk {
-  const depositPolicies: DepositPolicy[] = all(
+export async function moneyDesk(venueId: string): Promise<MoneyDesk> {
+  const depositPolicies: DepositPolicy[] = (await all(
     "SELECT * FROM deposit_policies WHERE venue_id = ? ORDER BY position",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     name: String(r.name),
     appliesTo: String(r.applies_to) as DepositPolicy["appliesTo"],
@@ -599,10 +599,10 @@ export function moneyDesk(venueId: string): MoneyDesk {
     version: Number(r.version),
   }));
 
-  const deposits: Deposit[] = all(
+  const deposits: Deposit[] = (await all(
     "SELECT * FROM deposits WHERE venue_id = ? ORDER BY requested_at DESC",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     policyId: orNull(r.policy_id),
     reservationId: orNull(r.reservation_id),
@@ -618,7 +618,7 @@ export function moneyDesk(venueId: string): MoneyDesk {
     failureReason: text(r.failure_reason),
   }));
 
-  const c = one("SELECT * FROM cancellation_policies WHERE venue_id = ?", venueId);
+  const c = await one("SELECT * FROM cancellation_policies WHERE venue_id = ?", venueId);
   const cancellationPolicy: CancellationPolicy = {
     freeUntilHours: Number(c?.free_until_hours ?? 24),
     lateFeeMad: toMad(Number(c?.late_fee_cents ?? 0)),
@@ -628,10 +628,10 @@ export function moneyDesk(venueId: string): MoneyDesk {
     updatedAt: text(c?.updated_at) || new Date().toISOString(),
   };
 
-  const cancellations: CancellationEntry[] = all(
+  const cancellations: CancellationEntry[] = (await all(
     "SELECT * FROM cancellation_log WHERE venue_id = ? ORDER BY at DESC",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     reservationId: orNull(r.reservation_id),
     guestName: String(r.guest_name),
@@ -644,10 +644,10 @@ export function moneyDesk(venueId: string): MoneyDesk {
     at: String(r.at),
   }));
 
-  const transactions: Transaction[] = all(
+  const transactions: Transaction[] = (await all(
     "SELECT * FROM transactions WHERE venue_id = ? ORDER BY at DESC",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     customerId: orNull(r.customer_id),
     reservationId: orNull(r.reservation_id),
@@ -679,9 +679,9 @@ export function moneyDesk(venueId: string): MoneyDesk {
  * explicit that spend appears only where a transaction source exists.
  * A venue with no Lyfe Pay gets an empty map and every tile hides.
  */
-export function spendByCustomer(venueId: string): Record<string, number> {
+export async function spendByCustomer(venueId: string): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
-  for (const r of all(
+  for (const r of await all(
     `SELECT customer_id, SUM(amount_cents) AS total
        FROM transactions
       WHERE venue_id = ? AND customer_id IS NOT NULL AND status = 'reussie'
@@ -695,14 +695,14 @@ export function spendByCustomer(venueId: string): Record<string, number> {
 
 // ── 6. Vie nocturne ──────────────────────────────────────────
 
-export function nightlife(venueId: string): Nightlife {
+export async function nightlife(venueId: string): Promise<Nightlife> {
   const promoterNames = new Map<string, string>();
-  for (const r of all("SELECT id, full_name FROM promoters WHERE venue_id = ?", venueId)) {
+  for (const r of await all("SELECT id, full_name FROM promoters WHERE venue_id = ?", venueId)) {
     promoterNames.set(String(r.id), String(r.full_name));
   }
 
   const bandsByList = new Map<string, GuestList["bands"]>();
-  for (const r of all(
+  for (const r of await all(
     "SELECT * FROM guest_list_bands WHERE venue_id = ? ORDER BY position",
     venueId,
   )) {
@@ -720,7 +720,7 @@ export function nightlife(venueId: string): Nightlife {
   }
 
   const entriesByList = new Map<string, GuestList["entries"]>();
-  for (const r of all(
+  for (const r of await all(
     "SELECT * FROM guest_list_entries WHERE venue_id = ? ORDER BY guest_name",
     venueId,
   )) {
@@ -745,10 +745,10 @@ export function nightlife(venueId: string): Nightlife {
     ]);
   }
 
-  const guestLists: GuestList[] = all(
+  const guestLists: GuestList[] = (await all(
     "SELECT * FROM guest_lists WHERE venue_id = ? ORDER BY night DESC",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     name: String(r.name),
     night: String(r.night),
@@ -760,7 +760,7 @@ export function nightlife(venueId: string): Nightlife {
   }));
 
   const minimumsByType = new Map<string, TableType["minimums"]>();
-  for (const r of all(
+  for (const r of await all(
     `SELECT * FROM table_offers WHERE venue_id = ? ORDER BY night_kind`,
     venueId,
   )) {
@@ -771,10 +771,10 @@ export function nightlife(venueId: string): Nightlife {
     ]);
   }
 
-  const tableTypes: TableType[] = all(
+  const tableTypes: TableType[] = (await all(
     "SELECT * FROM table_types WHERE venue_id = ? ORDER BY position",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     name: String(r.name),
     count: Number(r.count),
@@ -788,13 +788,13 @@ export function nightlife(venueId: string): Nightlife {
 
   const typeNames = new Map(tableTypes.map((t) => [t.id, t.name]));
 
-  const tableReservations: TableReservation[] = all(
+  const tableReservations: TableReservation[] = (await all(
     `SELECT tr.*, d.status AS deposit_status
        FROM table_reservations tr
        LEFT JOIN deposits d ON d.id = tr.deposit_id
       WHERE tr.venue_id = ? ORDER BY tr.night DESC, tr.at`,
     venueId,
-  ).map((r) => {
+  )).map((r) => {
     const promoterId = orNull(r.promoter_id);
     return {
       id: String(r.id),
@@ -820,13 +820,13 @@ export function nightlife(venueId: string): Nightlife {
 
   const hasSpend =
     Number(
-      one("SELECT COUNT(*) AS n FROM transactions WHERE venue_id = ?", venueId)?.n ?? 0,
+      (await one("SELECT COUNT(*) AS n FROM transactions WHERE venue_id = ?", venueId))?.n ?? 0,
     ) > 0;
 
-  const promoters: Promoter[] = all(
+  const promoters: Promoter[] = (await all(
     "SELECT * FROM promoters WHERE venue_id = ? ORDER BY active DESC, full_name",
     venueId,
-  ).map((r) => {
+  )).map((r) => {
     const id = String(r.id);
     const entries = guestLists.flatMap((l) =>
       l.entries.filter((e) => e.promoterId === id),
@@ -856,16 +856,16 @@ export function nightlife(venueId: string): Nightlife {
 
 // ── 7. Marketing ─────────────────────────────────────────────
 
-export function marketing(venueId: string): Marketing {
+export async function marketing(venueId: string): Promise<Marketing> {
   const segmentNames = new Map<string, string>();
-  for (const r of all("SELECT id, name FROM segments WHERE venue_id = ?", venueId)) {
+  for (const r of await all("SELECT id, name FROM segments WHERE venue_id = ?", venueId)) {
     segmentNames.set(String(r.id), String(r.name));
   }
 
-  const campaigns: Campaign[] = all(
+  const campaigns: Campaign[] = (await all(
     "SELECT * FROM campaigns WHERE venue_id = ? ORDER BY created_at DESC",
     venueId,
-  ).map((r) => {
+  )).map((r) => {
     const segmentId = orNull(r.segment_id);
     return {
       id: String(r.id),
@@ -890,10 +890,10 @@ export function marketing(venueId: string): Marketing {
     };
   });
 
-  const messages: LoggedMessage[] = all(
+  const messages: LoggedMessage[] = (await all(
     "SELECT * FROM messages_log WHERE venue_id = ? ORDER BY at DESC",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     customerId: orNull(r.customer_id),
     campaignId: orNull(r.campaign_id),
@@ -907,16 +907,16 @@ export function marketing(venueId: string): Marketing {
     at: String(r.at),
   }));
 
-  const suppressions = all(
+  const suppressions = (await all(
     "SELECT * FROM suppression_list WHERE venue_id = ? ORDER BY at DESC",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     contact: String(r.contact),
     reason: text(r.reason),
     at: String(r.at),
   }));
 
-  const consentRow = one(
+  const consentRow = await one(
     `SELECT SUM(CASE WHEN opted_out_of_marketing = 0 THEN 1 ELSE 0 END) AS opted_in,
             SUM(CASE WHEN opted_out_of_marketing = 1 THEN 1 ELSE 0 END) AS opted_out
        FROM customers WHERE venue_id = ?`,
@@ -937,8 +937,8 @@ export function marketing(venueId: string): Marketing {
 
 // ── 8. Reviews configuration ─────────────────────────────────
 
-export function surveyConfig(venueId: string): SurveyConfig {
-  const r = one("SELECT * FROM survey_config WHERE venue_id = ?", venueId);
+export async function surveyConfig(venueId: string): Promise<SurveyConfig> {
+  const r = await one("SELECT * FROM survey_config WHERE venue_id = ?", venueId);
   return {
     enabled: r ? bool(r.enabled as number) : false,
     sendAfterHours: Number(r?.send_after_hours ?? 3),
@@ -951,8 +951,8 @@ export function surveyConfig(venueId: string): SurveyConfig {
 
 // ── 9. Establishment and account ─────────────────────────────
 
-export function venueSettings(venueId: string): VenueSettings {
-  const r = one("SELECT * FROM venue_settings WHERE venue_id = ?", venueId);
+export async function venueSettings(venueId: string): Promise<VenueSettings> {
+  const r = await one("SELECT * FROM venue_settings WHERE venue_id = ?", venueId);
   return {
     // A venue with no row has not been configured; `restaurant` is the
     // conservative default because it enables nothing extra.
@@ -977,13 +977,13 @@ export function venueSettings(venueId: string): VenueSettings {
   };
 }
 
-export function subscription(venueId: string): Subscription {
-  const r = one("SELECT * FROM subscriptions WHERE venue_id = ?", venueId);
+export async function subscription(venueId: string): Promise<Subscription> {
+  const r = await one("SELECT * FROM subscriptions WHERE venue_id = ?", venueId);
 
-  const invoices = all(
+  const invoices = (await all(
     "SELECT * FROM invoices WHERE venue_id = ? ORDER BY issued_on DESC",
     venueId,
-  ).map((row) => ({
+  )).map((row) => ({
     id: String(row.id),
     reference: String(row.reference),
     amountMad: toMad(Number(row.amount_cents)),
@@ -992,7 +992,7 @@ export function subscription(venueId: string): Subscription {
   }));
 
   // Usage for the current subscription period, counted rather than stored.
-  const usage = one(
+  const usage = await one(
     `SELECT
        (SELECT COUNT(*) FROM reservations WHERE venue_id = ?) AS reservations,
        (SELECT COUNT(*) FROM customers    WHERE venue_id = ?) AS guests,
@@ -1021,11 +1021,11 @@ export function subscription(venueId: string): Subscription {
   };
 }
 
-export function supportTickets(venueId: string): SupportTicket[] {
-  return all(
+export async function supportTickets(venueId: string): Promise<SupportTicket[]> {
+  return (await all(
     "SELECT * FROM support_tickets WHERE venue_id = ? ORDER BY created_at DESC",
     venueId,
-  ).map((r) => ({
+  )).map((r) => ({
     id: String(r.id),
     reference: String(r.reference),
     category: String(r.category),

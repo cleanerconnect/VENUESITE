@@ -74,7 +74,7 @@ import type { SurveyConfig, VenueSettings } from "@/lib/types/venue-operations";
 
 export class MockRestaurantRepository implements RestaurantRepository {
   async getOverview(venueId: string): Promise<RestaurantOverview> {
-    const data = overviewFromStore(venueId, "");
+    const data = await overviewFromStore(venueId, "");
     if (!data) {
       // An unseeded database is an operator error, not a UI state. Saying
       // so beats rendering a plausible-looking empty dashboard.
@@ -115,7 +115,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
 
   // ── Business account ── persisted
   async getBusinessAccount() {
-    const account = store.businessAccountForUser(
+    const account = await store.businessAccountForUser(
       process.env.LYFE_DEMO_USER_ID ?? "usr_yassine",
     );
     if (!account) {
@@ -211,10 +211,10 @@ export class MockRestaurantRepository implements RestaurantRepository {
   // ── Onboarding ──
   async startOnboarding(input: OnboardingSignUpInput) {
     try {
-      const account = onboarding.createPartnerAccount(input);
+      const account = await onboarding.createPartnerAccount(input);
       return {
         userId: account.userId,
-        draft: onboarding.createDraft(account.userId),
+        draft: await onboarding.createDraft(account.userId),
       };
     } catch (error) {
       if (error instanceof onboarding.EmailTakenError) throw new EmailTaken();
@@ -227,7 +227,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
 
   async saveOnboardingDraft(draftId: string, patch: OnboardingDraftPatch) {
-    const next = onboarding.patchDraft(draftId, patch);
+    const next = await onboarding.patchDraft(draftId, patch);
     if (!next) {
       throw new RepositoryError("Inscription introuvable.", 404, "draft_not_found");
     }
@@ -235,7 +235,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
 
   async submitOnboarding(draftId: string) {
-    const made = onboarding.createVenueFromDraft(draftId);
+    const made = await onboarding.createVenueFromDraft(draftId);
     if (!made) {
       throw new RepositoryError("Inscription introuvable.", 404, "draft_not_found");
     }
@@ -247,8 +247,8 @@ export class MockRestaurantRepository implements RestaurantRepository {
   // The server action used to call these stores itself. Going through
   // the repository is what lets the same form write to a backend.
   async saveVenueProfile(venueId: string, patch: VenueProfilePatch) {
-    updateVenueIdentity(venueId, patch);
-    const profile = venueProfile(venueId);
+    await updateVenueIdentity(venueId, patch);
+    const profile = await venueProfile(venueId);
     if (!profile) {
       throw new RepositoryError("Lieu introuvable.", 404, "venue_not_found");
     }
@@ -256,8 +256,8 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
 
   async saveVenueListing(venueId: string, patch: VenueListingPatch) {
-    updateVenueListing(venueId, patch);
-    const profile = venueProfile(venueId);
+    await updateVenueListing(venueId, patch);
+    const profile = await venueProfile(venueId);
     if (!profile) {
       throw new RepositoryError("Lieu introuvable.", 404, "venue_not_found");
     }
@@ -276,7 +276,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
         });
         return listAssetRows(venueId, action.assetKind);
       case "asset.remove": {
-        const removed = deleteAsset(venueId, action.id);
+        const removed = await deleteAsset(venueId, action.id);
         if (!removed) {
           throw new RepositoryError("Média introuvable.", 404, "asset_not_found");
         }
@@ -303,7 +303,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
     venueId: string,
     next: Omit<import("@/lib/types/business").VenueAvailability, "updatedAt">,
   ) {
-    const current = store.availability(venueId);
+    const current = await store.availability(venueId);
 
     for (const slot of next.slots) {
       store.updateSlot(venueId, slot.id, {
@@ -378,7 +378,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
     return ops.guestGraph(venueId);
   }
   async getAudience(venueId: string) {
-    return audienceInsights(venueId) ?? emptyAudience(venueId);
+    return (await audienceInsights(venueId)) ?? emptyAudience(venueId);
   }
   async getGrowth(venueId: string) {
     return ops.growth(venueId);
@@ -394,8 +394,8 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
   async getServiceConfiguration(venueId: string): Promise<ServiceConfiguration> {
     return {
-      services: ops.serviceDefinitions(venueId),
-      pacing: ops.pacingRules(venueId),
+      services: await ops.serviceDefinitions(venueId),
+      pacing: await ops.pacingRules(venueId),
     };
   }
   async getSurveyConfig(venueId: string) {
@@ -443,10 +443,10 @@ export class MockRestaurantRepository implements RestaurantRepository {
     return ops.marketing(venueId);
   }
   async runConfigurationAction(venueId: string, action: ConfigurationAction) {
-    opsWrite.applyConfigurationAction(venueId, action);
+    await opsWrite.applyConfigurationAction(venueId, action);
     return {
-      services: ops.serviceDefinitions(venueId),
-      pacing: ops.pacingRules(venueId),
+      services: await ops.serviceDefinitions(venueId),
+      pacing: await ops.pacingRules(venueId),
     };
   }
   async saveSurveyConfig(venueId: string, config: SurveyConfig) {

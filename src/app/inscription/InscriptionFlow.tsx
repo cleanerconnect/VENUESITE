@@ -17,8 +17,9 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, ImagePlus, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ImagePlus } from "lucide-react";
 import { Brand } from "@/components/organizer/Brand";
+import { PinMap } from "@/components/map/PinMap";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -306,37 +307,25 @@ export function InscriptionFlow({
                     onChange={(e) => setAddress(e.target.value)}
                     autoComplete="street-address"
                   />
-                  {/* The pin, not a map: a real tile layer is a key and a
-                      vendor, and what the flow needs is the point. The
-                      partner can move it on Ma fiche afterwards. */}
-                  <div className="rounded-[var(--radius-md)] border border-line bg-canvas-2 p-5">
-                    <div className="flex items-start gap-3">
-                      <MapPin size={18} className="text-violet-deep mt-0.5 shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[15px] font-semibold text-ink">
-                          {pin ? "Point placé" : "Placer le point sur la carte"}
-                        </div>
-                        <p className="text-meta text-ink-mute mt-1">
-                          {pin
-                            ? `${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}`
-                            : "Facultatif. Sans point, nous plaçons votre établissement sur l'adresse."}
-                        </p>
-                      </div>
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        onClick={() =>
-                          setPin(
-                            pin
-                              ? null
-                              : { lat: 31.6295 + Math.random() / 100, lng: -7.9811 + Math.random() / 100 },
-                          )
-                        }
-                      >
-                        {pin ? "Retirer" : "Placer"}
-                      </Button>
-                    </div>
-                  </div>
+                  {/* The map is OpenStreetMap through Leaflet: no key, no
+                      account, and the geocoder is Nominatim behind our
+                      own route. The pin is draggable because a geocoder
+                      is right about the street and wrong about which
+                      side of the courtyard the door is on. */}
+                  <PinMap
+                    latitude={pin?.lat ?? null}
+                    longitude={pin?.lng ?? null}
+                    address={address}
+                    city={city}
+                    height={240}
+                    onChange={(latitude, longitude) =>
+                      setPin(
+                        latitude == null || longitude == null
+                          ? null
+                          : { lat: latitude, lng: longitude },
+                      )
+                    }
+                  />
                 </>
               ) : null}
 
