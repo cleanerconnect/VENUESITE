@@ -1,0 +1,293 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { create } from "zustand";
+import { configFor } from "@/lib/venue/config";
+import type { VenueConfiguration } from "@/lib/types/venue-operations";
+import type {
+  RestaurantActivityItem,
+  RestaurantOverview,
+} from "@/lib/types/restaurant";
+
+// Optimistic service state.
+//
+// The dashboard's actions have to *land*. Checking a party in and seeing
+// the row stay unchanged reads as a mock, and a host mid-rush will not
+// wait for a round trip before greeting the next guest.
+//
+// So the client owns a copy of the overview payload, mutations apply to
+// it immediately, and the screen specs — pure functions of that payload —
+// re-derive. Every mutation pushes the prior payload onto an undo stack,
+// which is what lets the toast offer a real "Annuler" rather than a
+// decorative one. In production the same mutation fires the API call and
+// reconciles or rolls back on the response; the shape here is already
+// correct for that.
+
+interface RestaurantState {
+  data: RestaurantOverview | null;
+  /** Snapshots, newest last. Bounded — this is undo, not history. */
+  past: RestaurantOverview[];
+  /**
+   * The establishment's configuration, so the activity feed speaks its
+   * vocabulary. Not derivable from the payload: `profile.kind` is the
+   * cuisine style, and guessing from it is how a bar ends up counting
+   * "couverts" on its own home screen.
+   */
+  configuration: VenueConfiguration;
+
+  hydrate: (data: RestaurantOverview, configuration?: VenueConfiguration) => void;
+  undo: () => void;
+
+  /** Guest presented at the door. The LYFE check-in, not a table seating. */
+  markArrived: (id: string) => void;
+  confirmReservation: (id: string) => void;
+  cancelReservation: (id: string) => void;
+  /** Venue refused the request. Distinct from a guest cancelling. */
+  rejectReservation: (id: string, reasonLabel: string) => void;
+  /** Guest never arrived. Also writes per-customer history server-side. */
+  reportNoShow: (id: string) => void;
+  /** Promotes the head of the waitlist to a confirmed booking. */
+  admitNextWaiting: () => { admitted: string; partySize: number } | null;
+}
+
+const UNDO_DEPTH = 10;
+
+export const useRestaurantStore = create<RestaurantState>((set, get) => ({
+  data: null,
+  past: [],
+  configuration: "restaurant",
+
+  // Seeded from the server payload on mount. Re-seeding on a later
+  // navigation must not clobber local mutations, so the caller guards it.
+  hydrate: (data, configuration = "restaurant") =>
+    set({ data, past: [], configuration }),
+
+  undo: () =>
+    set((s) => {
+      const previous = s.past[s.past.length - 1];
+      if (!previous) return s;
+      return { data: previous, past: s.past.slice(0, -1) };
+    }),
+
+  markArrived: (id) =>
+    mutate(set, get, (draft) => {
+      const reservation = findReservation(draft, id);
+      if (!reservation || reservation.state === "arrived") return null;
+      if (reservation.state === "cancelled" || reservation.state === "no_show") {
+        return null;
+      }
+
+      reservation.state = "arrived";
+      draft.waitlist = draft.waitlist.filter((r) => r.id !== id);
+      draft.currentService.arrivedCovers += reservation.partySize;
+
+      pushActivity(draft, {
+        type: "guest_arrived",
+        actor: reservation.guestName,
+        message: `est arrivé · ${coversFor(reservation.partySize)}`,
+        reservationId: reservation.id,
+      });
+      return `${reservation.guestName} enregistré à l'arrivée`;
+    }),
+
+  confirmReservation: (id) =>
+    mutate(set, get, (draft) => {
+      const reservation = findReservation(draft, id);
+      if (!reservation || reservation.state !== "requested") return null;
+      reservation.state = "confirmed";
+      pushActivity(draft, {
+        type: "reservation_created",
+        actor: reservation.guestName,
+        message: `voit sa table de ${reservation.partySize} confirmée`,
+        reservationId: reservation.id,
+      });
+      return `Réservation de ${reservation.guestName} confirmée`;
+    }),
+
+  cancelReservation: (id) =>
+    mutate(set, get, (draft) => {
+      const reservation = findReservation(draft, id);
+      if (!reservation || reservation.state === "cancelled") return null;
+
+      const wasBooked =
+        reservation.state === "confirmed" || reservation.state === "requested";
+      reservation.state = "cancelled";
+
+      draft.upcomingReservations = draft.upcomingReservations.filter(
+        (r) => r.id !== id,
+      );
+      draft.waitlist = draft.waitlist.filter((r) => r.id !== id);
+      if (wasBooked) {
+        draft.currentService.bookedCovers = Math.max(
+          0,
+          draft.currentService.bookedCovers - reservation.partySize,
+        );
+      }
+
+      pushActivity(draft, {
+        type: "reservation_cancelled",
+        actor: reservation.guestName,
+        message: `a annulé sa table de ${reservation.partySize}`,
+        needsAttention: true,
+      });
+      return `Réservation de ${reservation.guestName} annulée`;
+    }),
+
+  rejectReservation: (id, reasonLabel) =>
+    mutate(set, get, (draft) => {
+      const reservation = findReservation(draft, id);
+      if (!reservation) return null;
+
+      // Refused, not cancelled. The optimistic copy carries the same
+      // distinction the schema and the server do, or a rollback would
+      // restore a row into the wrong state.
+      reservation.state = "rejected";
+      draft.upcomingReservations = draft.upcomingReservations.filter(
+        (r) => r.id !== id,
+      );
+      draft.currentService.bookedCovers = Math.max(
+        0,
+        draft.currentService.bookedCovers - reservation.partySize,
+      );
+
+      pushActivity(draft, {
+        type: "reservation_cancelled",
+        actor: reservation.guestName,
+        message: `demande refusée · ${reasonLabel.toLowerCase()}`,
+        needsAttention: true,
+      });
+      return `Demande de ${reservation.guestName} refusée`;
+    }),
+
+  reportNoShow: (id) =>
+    mutate(set, get, (draft) => {
+      const reservation = findReservation(draft, id);
+      if (!reservation || reservation.state === "no_show") return null;
+
+      reservation.state = "no_show";
+      draft.upcomingReservations = draft.upcomingReservations.filter(
+        (r) => r.id !== id,
+      );
+      draft.currentService.noShowCovers += reservation.partySize;
+      draft.noShows.count += 1;
+      draft.noShows.lostRevenueMad +=
+        reservation.partySize * draft.averageTicket.amountMad;
+
+      pushActivity(draft, {
+        type: "no_show",
+        actor: reservation.guestName,
+        message: `noté absent · ${coversFor(reservation.partySize)}`,
+        needsAttention: true,
+      });
+      return `${reservation.guestName} noté absent`;
+    }),
+
+  admitNextWaiting: () => {
+    const data = get().data;
+    if (!data) return null;
+    const next = data.waitlist[0];
+    if (!next) return null;
+
+    const service = data.currentService;
+    if (service.bookedCovers + next.partySize > service.capacity) return null;
+
+    mutate(set, get, (draft) => {
+      const reservation = findReservation(draft, next.id);
+      if (!reservation) return null;
+      reservation.state = "confirmed";
+      draft.waitlist = draft.waitlist.filter((r) => r.id !== next.id);
+      draft.upcomingReservations = [...draft.upcomingReservations, reservation]
+        .sort((a, b) => a.at.localeCompare(b.at));
+      draft.currentService.bookedCovers += reservation.partySize;
+      pushActivity(draft, {
+        type: "reservation_created",
+        actor: reservation.guestName,
+        message: `sort de la liste d'attente · ${coversFor(reservation.partySize)}`,
+        reservationId: reservation.id,
+      });
+      return `${reservation.guestName} confirmé depuis la liste d'attente`;
+    });
+    return { admitted: next.guestName, partySize: next.partySize };
+  },
+}));
+
+/**
+ * Applies a mutation to a structural clone, snapshots the previous state
+ * for undo, and drops the write entirely when the mutation reports it
+ * had nothing to do (returns null) — so a no-op never burns an undo slot.
+ */
+function mutate(
+  set: (fn: (s: RestaurantState) => Partial<RestaurantState>) => void,
+  get: () => RestaurantState,
+  fn: (draft: RestaurantOverview) => string | null,
+) {
+  const current = get().data;
+  if (!current) return;
+
+  const draft = structuredClone(current) as RestaurantOverview;
+  const applied = fn(draft);
+  if (applied === null) return;
+
+  set((s) => ({
+    data: draft,
+    past: [...s.past, current].slice(-UNDO_DEPTH),
+  }));
+}
+
+/**
+ * The venue's word for a booked head.
+ *
+ * The activity feed used to say "couverts" whatever the venue was, which
+ * is exactly the sort of detail that tells a bar manager the screen was
+ * written for someone else.
+ */
+function coversFor(n: number): string {
+  const config = configFor(useRestaurantStore.getState().configuration);
+  return `${n} ${n > 1 ? config.cover.many : config.cover.one}`;
+}
+
+function findReservation(data: RestaurantOverview, id: string) {
+  return (
+    data.upcomingReservations.find((r) => r.id === id) ??
+    data.waitlist.find((r) => r.id === id)
+  );
+}
+
+function pushActivity(
+  data: RestaurantOverview,
+  entry: Omit<RestaurantActivityItem, "id" | "at">,
+) {
+  data.activity = [
+    { ...entry, id: `act_local_${Date.now()}`, at: new Date().toISOString() },
+    ...data.activity,
+  ].slice(0, 12);
+}
+
+/**
+ * Seeds the store from the server payload once per payload identity.
+ * Re-running on every render would discard local mutations on each
+ * re-render; keying on the payload lets a genuine server refresh through.
+ */
+export function useHydrateRestaurant(
+  data: RestaurantOverview,
+  configuration: VenueConfiguration = "restaurant",
+) {
+  const hydrate = useRestaurantStore((s) => s.hydrate);
+  const seeded = useRef<RestaurantOverview | null>(null);
+
+  if (seeded.current !== data && useRestaurantStore.getState().data === null) {
+    // First paint, including SSR — hydrate synchronously so the very
+    // first render already has data and nothing flashes.
+    seeded.current = data;
+    useRestaurantStore.setState({ data, past: [], configuration });
+  }
+
+  useEffect(() => {
+    if (seeded.current !== data) {
+      seeded.current = data;
+      hydrate(data, configuration);
+    }
+  }, [data, hydrate]);
+
+  return useRestaurantStore((s) => s.data) ?? data;
+}

@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { readSession, type Role } from "./session";
+import { getUser } from "@/lib/auth/static/users";
+import type { AppUser } from "@/lib/auth/static/users";
 import {
   DEFAULT_PROFILE_ID,
   PROFILES,
   getProfile,
-} from "@/lib/mock/profiles";
+} from "@/lib/auth/static/profiles";
 import type { OrganizerProfile } from "@/lib/types/domain";
 
 // Subscribe to a custom "lyfe-session-changed" event so the demo role
@@ -59,6 +61,29 @@ export function useProfile(): OrganizerProfile | null {
   }, []);
 
   return profile;
+}
+
+// The signed-in person, resolved from session.userId. Null until the
+// client mount resolves, same contract as useProfile — the chrome renders
+// a skeleton rather than someone else's name.
+export function useUser(): AppUser | null {
+  const [user, setUser] = useState<AppUser | null>(null);
+
+  useEffect(() => {
+    const sync = () => {
+      const session = readSession();
+      setUser(session ? getUser(session.userId) : null);
+    };
+    sync();
+    window.addEventListener(EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  return user;
 }
 
 // Wrap any element that should only render for a subset of roles. Default

@@ -14,9 +14,10 @@ import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
 import { useProfile } from "@/lib/auth/role";
 import { resetOnboarding } from "@/lib/auth/onboarding";
-import { getAudienceSegments } from "@/lib/mock/visibility";
 import type { OrganizerProfile } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 interface SectionDef {
   id: string;
@@ -54,16 +55,17 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-7">
-      <div>
-        <h1 className="text-h1 text-ink">Réglages</h1>
-        <p className="text-body text-ink-soft mt-1.5">
-          Profil, coordonnées de versement, préférences.
-        </p>
-      </div>
+      <PageHeader
+        title="Réglages"
+        subtitle="Profil, coordonnées de versement, préférences."
+      />
 
       <div className="grid lg:grid-cols-[200px_1fr] gap-8 items-start">
-        {/* Vertical tab nav, sticky on desktop */}
-        <aside className="lg:sticky lg:top-[88px]">
+        {/* Vertical tab nav on desktop, a scrolling row below it.
+            `min-w-0` is load-bearing: without it the grid child sizes to
+            its content and the row pushed the whole page sideways at
+            tablet width instead of scrolling inside itself. */}
+        <aside className="min-w-0 lg:sticky lg:top-[88px]">
           <nav className="flex lg:flex-col gap-1 overflow-x-auto scroll-thin no-scrollbar">
             {sections.map((s) => {
               const isActive = active === s.id;
@@ -447,7 +449,11 @@ function NotificationsSection() {
 }
 
 function BoostPrefsSection() {
-  const segments = getAudienceSegments();
+  const segmentsQuery = useEventQuery(
+    (repo) => repo.listAudienceSegments(),
+    [],
+  );
+  const segments = segmentsQuery.data ?? [];
   const { toast } = useToast();
   const [budgetCap, setBudgetCap] = useState("8000");
   const [defaultSegment, setDefaultSegment] = useState(segments[0]?.id ?? "");
@@ -509,14 +515,14 @@ function BoostPrefsSection() {
         </div>
       </Card>
 
-      {/* Auto-pilote LYFE — locked v2 panel, gold-soft styling. The toggle
+      {/* Auto-pilote LYFE — locked v2 panel, violet-soft styling. The toggle
           renders so the surface feels real, but flipping it does nothing
           beyond local state. */}
-      <Card variant="gold-soft" size="lg">
+      <Card variant="violet-soft" size="lg">
         <div className="flex items-start gap-4">
           <span
             aria-hidden
-            className="h-12 w-12 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+            className="h-12 w-12 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
           >
             <Sparkles size={20} strokeWidth={1.7} className="text-violet-deep" />
           </span>
@@ -600,11 +606,11 @@ function LanguageSection() {
 
 function ApiSection() {
   return (
-    <Card variant="gold-soft" size="lg">
+    <Card variant="violet-soft" size="lg">
       <div className="flex items-start gap-4">
         <span
           aria-hidden
-          className="h-12 w-12 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+          className="h-12 w-12 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
         >
           <Lock size={20} strokeWidth={1.8} className="text-violet-deep" />
         </span>
@@ -649,10 +655,9 @@ function DangerSection() {
           <div>
             <h2 className="text-h2 text-ink">Réinitialiser l&apos;onboarding</h2>
             <p className="text-body text-ink-soft mt-1.5 max-w-xl leading-relaxed">
-              Outil démo — efface l&apos;état d&apos;avancement du wizard de
+              Efface l&apos;état d&apos;avancement du wizard de
               configuration et ré-affiche la bannière en haut du tableau de
-              bord. Pratique pour rejouer le parcours nouveau-venu sur le
-              profil actif.
+              bord, pour reprendre la mise en route depuis le début.
             </p>
           </div>
         </div>

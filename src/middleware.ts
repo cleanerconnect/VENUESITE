@@ -13,7 +13,14 @@ const PUBLIC_PATHS = new Set([
   "/",
   "/splash",
   "/login",
+  // Signing up happens before there is a session to gate on. The flow's
+  // own draft cookie is what carries it from step to step.
+  "/inscription",
   "/contact",
+  // The styleguide holds no venue data — it renders from literal props —
+  // so it stays reachable without a session. That is the point: a
+  // developer integrating the portal can open it before auth exists.
+  "/styleguide",
 ]);
 
 export function middleware(req: NextRequest) {

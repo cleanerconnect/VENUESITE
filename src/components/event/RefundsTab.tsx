@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
-import { getRefundRequests } from "@/lib/mock/events";
 import {
   formatDateTimeFR,
   formatMAD,
   formatRelativeFR,
 } from "@/lib/utils/format";
 import type { LyfeEvent, RefundRequest } from "@/lib/types/domain";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 // SLA copy: gold under 12h, danger under 2h, otherwise neutral.
 function slaTone(slaIso: string): "warning" | "danger" | "neutral" {
@@ -34,7 +34,17 @@ function slaLabel(slaIso: string) {
 }
 
 export function RefundsTab({ event }: { event: LyfeEvent }) {
-  const [items, setItems] = useState<RefundRequest[]>(getRefundRequests());
+  const query = useEventQuery(
+    (repo) => repo.listRefundRequests(event.id),
+    [event.id],
+  );
+  // Decisions layer over the fetched list so the optimistic behaviour
+  // survives the move to a backend.
+  const [decided, setDecided] = useState<RefundRequest[] | null>(null);
+  const items = decided ?? query.data ?? [];
+  const setItems = (
+    next: RefundRequest[] | ((prev: RefundRequest[]) => RefundRequest[]),
+  ) => setDecided(typeof next === "function" ? next(items) : next);
   const [denyingId, setDenyingId] = useState<string | null>(null);
   const [denyReason, setDenyReason] = useState("");
   const { toast } = useToast();
@@ -168,10 +178,10 @@ export function RefundsTab({ event }: { event: LyfeEvent }) {
                         style={{
                           background:
                             tone === "danger"
-                              ? "rgba(161,44,44,0.12)"
+                              ? "color-mix(in oklab, var(--color-danger) 12%, transparent)"
                               : tone === "warning"
-                                ? "rgba(134,91,166,0.16)"
-                                : "rgba(10,31,61,0.06)",
+                                ? "color-mix(in oklab, var(--color-violet) 16%, transparent)"
+                                : "color-mix(in oklab, var(--color-ink) 6%, transparent)",
                           color:
                             tone === "danger"
                               ? "var(--color-danger)"

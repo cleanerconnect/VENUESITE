@@ -31,7 +31,11 @@ export function LockedAudiences({
             letterSpacing: "-0.03em",
           }}
         >
-          Audiences en construction.
+          {/* Not "en construction" — the feature is built; this
+              account has not reached the threshold that makes the
+              analysis meaningful yet. The old wording read as
+              "we haven't shipped this". */}
+          Vos audiences se constituent.
         </h1>
         <p className="text-body text-ink-soft mt-4 max-w-lg mx-auto leading-relaxed">
           Vos audiences se débloquent à partir de{" "}

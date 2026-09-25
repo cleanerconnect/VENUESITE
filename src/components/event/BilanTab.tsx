@@ -8,14 +8,16 @@ import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { Brand } from "@/components/organizer/Brand";
 import { ChannelBreakdown } from "./ChannelBreakdown";
-import { getBilanByEventId } from "@/lib/mock/bilan";
-import { getAllEvents } from "@/lib/mock/events";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 import type { OperationalStat } from "@/lib/types/analytics";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
 export function BilanTab({ event }: { event: LyfeEvent }) {
-  const data = getBilanByEventId(event.id, getAllEvents());
+  const query = useEventQuery((repo) => repo.getBilan(event.id), [event.id]);
+  const data = query.data;
   const search = useSearchParams();
   const autoPrint = search.get("print") === "1";
 
@@ -27,6 +29,19 @@ export function BilanTab({ event }: { event: LyfeEvent }) {
     const t = window.setTimeout(() => window.print(), 250);
     return () => window.clearTimeout(t);
   }, [autoPrint, data]);
+
+  // Loading and failure are distinct from "nothing to show" — before the
+  // read became async, `!data` covered all three and a slow load looked
+  // like an empty tab.
+  if (query.status !== "ready") {
+    return (
+      <QueryState
+        query={query}
+        label="Chargement"
+        skeleton={<div className="space-y-5"><KpiGridSkeleton count={4} /><ChartSkeleton height={220} /></div>}
+      />
+    );
+  }
 
   if (!data) {
     return (
@@ -96,7 +111,7 @@ export function BilanTab({ event }: { event: LyfeEvent }) {
           className="absolute -top-32 -right-24 w-[480px] h-[480px] rounded-full pointer-events-none print:hidden"
           style={{
             background:
-              "radial-gradient(circle, rgba(134,91,166,0.32), transparent 70%)",
+              "radial-gradient(circle, color-mix(in oklab, var(--color-violet) 32%, transparent), transparent 70%)",
           }}
         />
 

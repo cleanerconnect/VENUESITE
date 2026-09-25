@@ -1,0 +1,43 @@
+// The forced-state switch.
+//
+// Deliberately neither "use client" nor "server-only": both workspaces
+// read it, from opposite sides of the boundary. Marking it client-only
+// turned `parseDemoState` into a client reference, which a server
+// component cannot call — the failure looked like a broken screen
+// rather than a misplaced directive, which is why it is worth a line.
+//
+// An external team reproducing this portal has to be able to *see* what
+// a failed load looks like, and what an empty reservation day looks
+// like. Those states are unreachable on a healthy day, so without a way
+// to force them they get built once, never looked at, and rot.
+//
+// `?etat=` on any route forces one for the whole page:
+//
+//   ?etat=chargement   every query stays pending
+//   ?etat=vide         every list comes back empty
+//   ?etat=erreur       every query fails
+//
+// French in the URL because the audience is the same French-speaking
+// partner the rest of the portal addresses, and a debug affordance in a
+// second language is a second vocabulary to learn.
+//
+// This is a QA affordance, not a feature flag and not a way in: it is
+// read from the URL only, never persisted, it grants nothing, and it
+// cannot change what a real backend returns. It is the one thing in
+// the portal still named `demo`, and it is named that in identifiers
+// only — nothing renders the word.
+
+export const DEMO_STATES = ["chargement", "vide", "erreur"] as const;
+export type DemoState = (typeof DEMO_STATES)[number];
+
+export const DEMO_STATE_PARAM = "etat";
+
+export const DEMO_STATE_LABEL: Record<DemoState, string> = {
+  chargement: "Chargement",
+  vide: "Vide",
+  erreur: "Erreur",
+};
+
+export function parseDemoState(value: string | null | undefined): DemoState | null {
+  return DEMO_STATES.includes(value as DemoState) ? (value as DemoState) : null;
+}

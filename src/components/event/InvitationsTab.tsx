@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { IssueCompsDialog } from "./IssueCompsDialog";
-import { getInvitationsByEventId } from "@/lib/mock/comps";
 import {
   COMP_CATEGORY_LABEL,
   type CompAllocation,
@@ -25,6 +24,9 @@ import {
 import { formatDateTimeFR, formatRelativeFR } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
 const STATUS_LABEL: Record<CompStatus, string> = {
   issued: "Émise",
@@ -50,7 +52,8 @@ const ACTION_LABEL = {
 } as const;
 
 export function InvitationsTab({ event }: { event: LyfeEvent }) {
-  const data = getInvitationsByEventId(event.id);
+  const query = useEventQuery((repo) => repo.getInvitations(event.id), [event.id]);
+  const data = query.data;
   const [issueOpen, setIssueOpen] = useState(false);
   const [defaultCategory, setDefaultCategory] = useState<CompCategory>("press");
 
@@ -58,6 +61,19 @@ export function InvitationsTab({ event }: { event: LyfeEvent }) {
     setDefaultCategory(category);
     setIssueOpen(true);
   };
+
+  // Loading and failure are distinct from "nothing to show" — before the
+  // read became async, `!data` covered all three and a slow load looked
+  // like an empty tab.
+  if (query.status !== "ready") {
+    return (
+      <QueryState
+        query={query}
+        label="Chargement"
+        skeleton={<div className="space-y-5"><KpiGridSkeleton count={3} /><EntityListSkeleton rows={4} /></div>}
+      />
+    );
+  }
 
   if (!data || data.totalIssued === 0) {
     return (

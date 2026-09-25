@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "LYFE, Espace Organisateur",
     description:
       "Pilotez vos événements, vos billets et vos versements en temps réel.",
-    images: ["/lyfe-logo.svg"],
+    images: ["/lyfe-logo.png"],
   },
 };
 

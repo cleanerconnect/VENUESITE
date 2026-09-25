@@ -4,6 +4,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatMAD } from "@/lib/utils/format";
 import type { ChannelSlice } from "@/lib/types/analytics";
+import { CHART, seriesColor } from "@/lib/charts/theme";
 
 // Channel attribution: violet (organic) + violet-deep (boost) + sand
 // (partner) + sky (direct). Donut on the left, breakdown table on the
@@ -16,10 +17,10 @@ import type { ChannelSlice } from "@/lib/types/analytics";
 // CHANNEL_PRESENTATION. Hardcoded so SSR snapshots paint the right
 // colors before the runtime CSS evaluates.
 const CHANNEL_COLOR_HEX: Record<string, string> = {
-  organic: "#865BA6",
-  boost: "#6B3F8A",
-  partner: "#C4A777",
-  direct: "#6395BD",
+  organic: seriesColor(0),
+  boost: "var(--color-violet-deep)",
+  partner: seriesColor(2),
+  direct: seriesColor(1),
 };
 
 export function ChannelBreakdown({ channels }: { channels: ChannelSlice[] }) {
@@ -51,14 +52,14 @@ export function ChannelBreakdown({ channels }: { channels: ChannelSlice[] }) {
               outerRadius={92}
               startAngle={90}
               endAngle={-270}
-              stroke="#FFFFFF"
+              stroke={CHART.surface}
               strokeWidth={2}
               isAnimationActive={false}
             >
               {channels.map((c) => (
                 <Cell
                   key={c.key}
-                  fill={CHANNEL_COLOR_HEX[c.key] ?? "#865BA6"}
+                  fill={CHANNEL_COLOR_HEX[c.key] ?? seriesColor(0)}
                 />
               ))}
             </Pie>
@@ -98,7 +99,7 @@ export function ChannelBreakdown({ channels }: { channels: ChannelSlice[] }) {
             <span
               aria-hidden
               className="inline-block h-3 w-3 rounded-full shrink-0"
-              style={{ backgroundColor: CHANNEL_COLOR_HEX[c.key] ?? "#865BA6" }}
+              style={{ backgroundColor: CHANNEL_COLOR_HEX[c.key] ?? seriesColor(0) }}
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline justify-between gap-2">
@@ -119,7 +120,7 @@ export function ChannelBreakdown({ channels }: { channels: ChannelSlice[] }) {
                   className="h-full rounded-full"
                   style={{
                     width: `${c.pct}%`,
-                    backgroundColor: CHANNEL_COLOR_HEX[c.key] ?? "#865BA6",
+                    backgroundColor: CHANNEL_COLOR_HEX[c.key] ?? seriesColor(0),
                   }}
                 />
               </div>

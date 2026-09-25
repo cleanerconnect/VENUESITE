@@ -1,5 +1,6 @@
 "use client";
 
+import type { RegieData } from "@/lib/types/regie";
 import { useState } from "react";
 import {
   AlertTriangle,
@@ -29,7 +30,6 @@ import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { useToast } from "@/components/ui/Toast";
-import { getRegieByEventId } from "@/lib/mock/regie";
 import { formatRelativeFR } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import type { LyfeEvent } from "@/lib/types/domain";
@@ -41,6 +41,9 @@ import type {
   RegieMode,
   WillCallAttendee,
 } from "@/lib/types/regie";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
 const STATUS_TONE = {
   complete: "success",
@@ -83,8 +86,22 @@ const OPS_COLOR = {
 } as const;
 
 export function RegieTab({ event }: { event: LyfeEvent }) {
-  const data = getRegieByEventId(event.id);
+  const query = useEventQuery((repo) => repo.getRegie(event.id), [event.id]);
+  const data = query.data;
   const [mode, setMode] = useState<RegieMode>(data?.defaultMode ?? "pre_event");
+
+  // Loading and failure are distinct from "nothing to show" — before the
+  // read became async, `!data` covered all three and a slow load looked
+  // like an empty tab.
+  if (query.status !== "ready") {
+    return (
+      <QueryState
+        query={query}
+        label="Chargement"
+        skeleton={<div className="space-y-5"><KpiGridSkeleton count={3} /><EntityListSkeleton rows={4} /></div>}
+      />
+    );
+  }
 
   if (!data) {
     return (
@@ -170,7 +187,7 @@ function ToggleButton({
 function PreEventView({
   data,
 }: {
-  data: ReturnType<typeof getRegieByEventId> & object;
+  data: RegieData;
 }) {
   return (
     <div className="space-y-5">
@@ -414,7 +431,7 @@ function LiveView({
   data,
   isReplay,
 }: {
-  data: ReturnType<typeof getRegieByEventId> & object;
+  data: RegieData;
   isReplay: boolean;
 }) {
   const { toast } = useToast();
@@ -529,7 +546,7 @@ function LiveView({
           <div className="flex items-start gap-3">
             <span
               aria-hidden
-              className="h-10 w-10 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+              className="h-10 w-10 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
             >
               <Banknote size={18} strokeWidth={1.7} className="text-violet-deep" />
             </span>
@@ -565,7 +582,7 @@ function LiveView({
           <div className="flex items-start gap-3">
             <span
               aria-hidden
-              className="h-10 w-10 rounded-[12px] bg-tint-sage flex items-center justify-center shrink-0"
+              className="h-10 w-10 rounded-chip bg-tint-sage flex items-center justify-center shrink-0"
             >
               <Gift size={18} strokeWidth={1.7} className="text-success" />
             </span>

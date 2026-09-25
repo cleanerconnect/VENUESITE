@@ -117,6 +117,8 @@ export interface AnalyticsSignal {
 
 export interface LyfeEvent {
   id: string;
+  /** The organizer profile that owns this event. */
+  organizerId: string;
   name: string;
   description: string;
   category: Category;
@@ -171,7 +173,7 @@ export interface ActivityItem {
   segmentId?: string;
   /**
    * Anomaly variant flavor — drives the icon and the row's tinted
-   * background. "spike" = positive surprise (gold-soft), "cluster" =
+   * background. "spike" = positive surprise (violet-soft), "cluster" =
    * worth investigating (warning-tinted), "geo" = geographic
    * concentration, "funnel" = checkout drop-off pattern.
    */

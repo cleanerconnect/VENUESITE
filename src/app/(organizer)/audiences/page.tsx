@@ -2,22 +2,47 @@
 
 import { useMemo } from "react";
 import { useProfile } from "@/lib/auth/role";
-import { getAudiencesByProfileId } from "@/lib/mock/audiences";
 import { LockedAudiences } from "@/components/audiences/LockedAudiences";
 import { AudiencesReadyView } from "@/components/audiences/AudiencesReadyView";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ChartSkeleton, KpiGridSkeleton, PageHeaderSkeleton } from "@/components/ui/Skeleton";
 
 export default function AudiencesPage() {
   const profile = useProfile();
 
-  const data = useMemo(() => {
-    if (!profile) return null;
-    return getAudiencesByProfileId(profile.id);
-  }, [profile]);
+  const query = useEventQuery(
+    (repo) => repo.getAudiences(profile?.id ?? ""),
+    [profile?.id],
+  );
+  const data = profile ? query.data : null;
 
-  if (!profile || !data) {
-    // SSR / first-paint: render an empty shell that matches the page
-    // dimensions to avoid layout shift when the profile resolves.
-    return <div className="min-h-[60vh]" />;
+  if (!profile || query.status !== "ready") {
+    // A blank div used to stand in here, which meant a slow or failed
+    // read looked identical to an empty page.
+    return (
+      <QueryState
+        query={query}
+        label="Chargement de vos audiences"
+        skeleton={
+          <div className="space-y-6">
+            <PageHeaderSkeleton />
+            <KpiGridSkeleton count={4} />
+            <ChartSkeleton height={240} />
+          </div>
+        }
+      />
+    );
+  }
+
+  if (!data) {
+    return (
+      <EmptyState
+        title="Aucune audience"
+        description="Vos audiences se constituent au fil des réservations confirmées."
+      />
+    );
   }
 
   if (data.state === "locked") {

@@ -10,12 +10,30 @@ import { PhasePerformanceCard } from "./PhasePerformanceCard";
 import { FunnelCard } from "./FunnelCard";
 import { ReviewsSummaryCard } from "./ReviewsSummaryCard";
 import { AnalysesSideRail } from "./AnalysesSideRail";
-import { getAnalysesByEventId } from "@/lib/mock/analyses";
 import { formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
+import { CHART, seriesColor } from "@/lib/charts/theme";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { ChartSkeleton, EntityListSkeleton, KpiGridSkeleton } from "@/components/ui/Skeleton";
 
 export function AnalysesTab({ event }: { event: LyfeEvent }) {
-  const data = getAnalysesByEventId(event.id);
+  const query = useEventQuery((repo) => repo.getAnalyses(event.id), [event.id]);
+  const data = query.data;
+
+  // Loading and failure are distinct from "nothing to show" — before the
+  // read became async, `!data` covered all three and a slow load looked
+  // like an empty tab.
+  if (query.status !== "ready") {
+    return (
+      <QueryState
+        query={query}
+        label="Chargement"
+        skeleton={<div className="space-y-5"><KpiGridSkeleton count={4} /><ChartSkeleton height={260} /></div>}
+      />
+    );
+  }
+
   if (!data) {
     return (
       <EmptyState
@@ -44,7 +62,7 @@ export function AnalysesTab({ event }: { event: LyfeEvent }) {
           <div className="flex items-start gap-3 min-w-0">
             <span
               aria-hidden
-              className="h-10 w-10 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+              className="h-10 w-10 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
             >
               <Sparkles
                 size={18}
@@ -94,8 +112,8 @@ export function AnalysesTab({ event }: { event: LyfeEvent }) {
                 </p>
               </div>
               <div className="hidden sm:flex items-center gap-4 text-meta">
-                <LegendDot color="#865BA6" label="Réel" solid />
-                <LegendDot color="#C7B2DB" label="Projection" solid={false} />
+                <LegendDot color={seriesColor(0)} label="Réel" solid />
+                <LegendDot color={CHART.projection} label="Projection" solid={false} />
               </div>
             </div>
             {hasActuals ? (
@@ -130,8 +148,8 @@ export function AnalysesTab({ event }: { event: LyfeEvent }) {
               </div>
             )}
             <div className="flex sm:hidden items-center gap-4 text-meta mt-3">
-              <LegendDot color="#865BA6" label="Réel" solid />
-              <LegendDot color="#C7B2DB" label="Projection" solid={false} />
+              <LegendDot color={seriesColor(0)} label="Réel" solid />
+              <LegendDot color={CHART.projection} label="Projection" solid={false} />
             </div>
           </Card>
 

@@ -8,10 +8,14 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
-import { getEventById } from "@/lib/mock/events";
 import { useRole } from "@/lib/auth/role";
 import { formatDateFR } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { PermissionDenied } from "@/components/data/QueryState";
+import { QueryState } from "@/components/data/QueryState";
+import { FormSkeleton } from "@/components/ui/Skeleton";
 
 // Edit / Corriger et resoumettre flow. When opened with ?reason=rejected,
 // surfaces the rejection reason in a tint-rose callout and highlights every
@@ -36,15 +40,15 @@ function EditEventInner() {
   const role = useRole();
   const { toast } = useToast();
 
-  const event = useMemo(
-    () => (params.id ? getEventById(params.id) : undefined),
+  const eventQuery = useEventQuery(
+    (repo) => (params.id ? repo.getEvent(params.id) : Promise.resolve(null)),
     [params.id],
   );
+  const event = eventQuery.data ?? undefined;
 
-  // Route guard — Scanner can't edit.
-  useEffect(() => {
-    if (role === "scanner") router.replace("/events");
-  }, [role, router]);
+  // Scanner cannot edit. This used to be a redirect, which flashed the
+  // form and then dropped the user on the list with no reason given.
+  const denied = role === "scanner";
 
   const isFromRejection = search.get("reason") === "rejected";
   const rejectedFields =
@@ -57,6 +61,27 @@ function EditEventInner() {
   const [name, setName] = useState(event?.name ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
   const [coverFile, setCoverFile] = useState<string | null>(null);
+
+  if (denied) {
+    return (
+      <PermissionDenied
+        what="l'édition de cet événement"
+        requiredRole="un propriétaire ou un administrateur"
+      />
+    );
+  }
+
+  // Loading and failure branch before "not found", or a slow read shows
+  // "Événement introuvable" for an event that exists.
+  if (eventQuery.status !== "ready") {
+    return (
+      <QueryState
+        query={eventQuery}
+        label="Chargement de l'événement"
+        skeleton={<FormSkeleton fields={5} />}
+      />
+    );
+  }
 
   if (!event) {
     return (
@@ -80,17 +105,14 @@ function EditEventInner() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div>
-        <div className="text-eyebrow text-ink-mute">Édition</div>
-        <h1 className="text-h1 text-ink mt-2">{event.name}</h1>
-      </div>
+      <PageHeader eyebrow="Édition" title={event.name} />
 
       {isFromRejection && rejectedFields ? (
         <Card variant="rose" size="md">
           <div className="flex items-start gap-3">
             <span
               aria-hidden
-              className="h-9 w-9 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
+              className="h-9 w-9 rounded-chip bg-canvas/60 flex items-center justify-center shrink-0"
             >
               <AlertTriangle
                 size={18}

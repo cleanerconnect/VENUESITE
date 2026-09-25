@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { motion } from "motion/react";
 import { ChevronRight, Plus, Printer, Search } from "lucide-react";
-import { getAllEvents } from "@/lib/mock/events";
-import { getBilanByEventId, hasBilan } from "@/lib/mock/bilan";
 import type { EventStatus, LyfeEvent } from "@/lib/types/domain";
 import { UpcomingEventRow } from "@/components/cards/UpcomingEventRow";
 import { MobileEventCard } from "@/components/cards/MobileEventCard";
@@ -18,7 +15,11 @@ import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useRole } from "@/lib/auth/role";
-import { cn } from "@/lib/utils/cn";
+import { FilterTabs } from "@/components/ui/FilterTabs";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton } from "@/components/ui/Skeleton";
 
 type Filter = "all" | EventStatus | "bilans";
 type Sort = "date_desc" | "date_asc" | "revenue" | "tickets";
@@ -44,16 +45,37 @@ export default function EventsPage() {
   const { toast } = useToast();
   const canCreate = role === "owner" || role === "admin";
 
-  // Pull-to-refresh — fakes a network round-trip and surfaces a toast
-  // confirming the freshness. The mock data is static so there's
-  // nothing to fetch; the affordance is what investors care about.
+  // Pull-to-refresh re-runs the query rather than faking a round trip,
+  // so it will do the right thing the moment a backend is behind it.
   const refresh = async () => {
-    await new Promise((r) => setTimeout(r, 700));
+    events.retry();
     toast({ tone: "success", title: "Liste rafraîchie" });
   };
   const pull = usePullToRefresh(refresh);
 
-  const all = useMemo(getAllEvents, []);
+  const events = useEventQuery((repo) => repo.listEvents(), []);
+  const all = useMemo(() => events.data ?? [], [events.data]);
+
+  // Which events carry a post-event report. A predicate over fixtures
+  // before; a repository read now, because whether a report exists is
+  // something the backend knows and the screen does not.
+  const bilanIdsQuery = useEventQuery((repo) => repo.listBilanEventIds(), []);
+  const hasBilan = useMemo(() => {
+    const ids = new Set(bilanIdsQuery.data ?? []);
+    return (e: LyfeEvent) => ids.has(e.id);
+  }, [bilanIdsQuery.data]);
+
+  const recentBilansQuery = useEventQuery(
+    (repo) => repo.getRecentBilans(3),
+    [],
+  );
+
+  // Read once for the whole list rather than once per row.
+  const boostsQuery = useEventQuery(
+    (repo) => repo.countActiveBoostsByEvent(),
+    [],
+  );
+  const activeBoosts = boostsQuery.data ?? {};
 
   const counts = useMemo(() => {
     return FILTERS.reduce<Record<string, number>>((acc, f) => {
@@ -65,22 +87,8 @@ export default function EventsPage() {
     }, {});
   }, [all]);
 
-  // Most-recent settled events with a Bilan, capped at 3 — feeds the
-  // "Récents bilans" strip pinned above the filter tabs. Sorted by
-  // event end date so the freshest bilan reads first.
-  const recentBilans = useMemo(() => {
-    return all
-      .filter((e) => hasBilan(e))
-      .sort((a, b) => (a.endsAt < b.endsAt ? 1 : -1))
-      .slice(0, 3)
-      .map((e) => ({
-        event: e,
-        bilan: getBilanByEventId(e.id, all),
-      }))
-      .filter((r): r is { event: LyfeEvent; bilan: NonNullable<typeof r.bilan> } =>
-        Boolean(r.bilan),
-      );
-  }, [all]);
+  // The "Récents bilans" strip above the filter tabs.
+  const recentBilans = recentBilansQuery.data ?? [];
 
   const list = useMemo(() => {
     return all
@@ -116,24 +124,23 @@ export default function EventsPage() {
         refreshing={pull.refreshing}
       />
 
-      {/* === Header === */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-h1 text-ink">Mes événements</h1>
-          <p className="text-body text-ink-soft mt-1.5">
-            {canCreate
-              ? "Ce que vous organisez, passés, en cours, à venir."
-              : "Les événements que vous pouvez scanner."}
-          </p>
-        </div>
-        {canCreate ? (
-          <Link href="/events/new" className="hidden md:block">
-            <Button iconLeft={<Plus size={16} strokeWidth={2} />}>
-              Créer un événement
-            </Button>
-          </Link>
-        ) : null}
-      </div>
+      <PageHeader
+        title="Mes événements"
+        subtitle={
+          canCreate
+            ? "Ce que vous organisez, passés, en cours, à venir."
+            : "Les événements que vous pouvez scanner."
+        }
+        action={
+          canCreate ? (
+            <Link href="/events/new" className="hidden md:block">
+              <Button iconLeft={<Plus size={16} strokeWidth={2} />}>
+                Créer un événement
+              </Button>
+            </Link>
+          ) : null
+        }
+      />
 
       {/* === Search + sort === */}
       <div className="flex flex-col md:flex-row gap-3">
@@ -176,44 +183,24 @@ export default function EventsPage() {
         <RecentBilansStrip rows={recentBilans} />
       ) : null}
 
-      {/* === Filter tabs (segmented control with sliding violet underline) === */}
-      <div className="border-b border-line-soft overflow-x-auto scroll-thin">
-        <div className="flex gap-1 min-w-max">
-          {FILTERS.map((f) => {
-            const active = filter === f.id;
-            return (
-              <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                className={cn(
-                  "relative px-4 py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors",
-                  active ? "text-ink" : "text-ink-mute hover:text-ink",
-                )}
-              >
-                {f.label}
-                <span
-                  className={cn(
-                    "ml-2 inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[11px] rounded-full num",
-                    active ? "bg-ink text-canvas" : "bg-ink/[0.06] text-ink-soft",
-                  )}
-                >
-                  {counts[f.id] ?? 0}
-                </span>
-                {active ? (
-                  <motion.span
-                    layoutId="events-filter-underline"
-                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-violet rounded-full"
-                    transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <FilterTabs
+        layoutId="events-filter-underline"
+        value={filter}
+        onChange={setFilter}
+        tabs={FILTERS.map((f) => ({ ...f, count: counts[f.id] ?? 0 }))}
+      />
 
       {/* === List === */}
-      {list.length === 0 ? (
+      {events.status !== "ready" ? (
+        // Loading and failed-load. The empty branch below stays separate
+        // because "you have no events" and "no event matches this
+        // filter" are different sentences and want different CTAs.
+        <QueryState
+          query={events}
+          label="Chargement de vos événements"
+          skeleton={<EntityListSkeleton rows={4} />}
+        />
+      ) : list.length === 0 ? (
         <EmptyState
           title={canCreate ? "Pas encore d'événement." : "Aucun événement à scanner"}
           description={
@@ -234,7 +221,12 @@ export default function EventsPage() {
           {/* Mobile: full event cards with cover, key metric, two CTAs. */}
           <div className="md:hidden flex flex-col gap-4">
             {list.map((event) => (
-              <MobileEventCard key={event.id} event={event} />
+              <MobileEventCard
+                key={event.id}
+                event={event}
+                activeBoosts={activeBoosts[event.id] ?? 0}
+                hasBilan={hasBilan(event)}
+              />
             ))}
           </div>
           {/* Desktop: existing horizontal rows. */}
@@ -245,7 +237,11 @@ export default function EventsPage() {
               ) : event.status.state === "cancelled" ? (
                 <CancelledRow key={event.id} event={event} />
               ) : (
-                <UpcomingEventRow key={event.id} event={event} />
+                <UpcomingEventRow
+                key={event.id}
+                event={event}
+                activeBoosts={activeBoosts[event.id] ?? 0}
+              />
               ),
             )}
           </div>

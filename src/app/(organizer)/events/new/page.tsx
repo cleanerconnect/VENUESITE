@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Sparkles } from "lucide-react";
-import { getEventById } from "@/lib/mock/events";
 import { WizardLayout } from "@/components/wizard/WizardLayout";
 import { StepInfo } from "@/components/wizard/StepInfo";
 import { StepTiers, emptyTier } from "@/components/wizard/StepTiers";
@@ -15,6 +14,8 @@ import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { useRole } from "@/lib/auth/role";
 import type { DraftEvent } from "@/lib/types/domain";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { PermissionDenied } from "@/components/data/QueryState";
 
 const INITIAL_DRAFT: DraftEvent = {
   // Smart defaults, date pre-fills the next Friday at 23:00 because the
@@ -56,10 +57,6 @@ function CreateEventInner() {
   const router = useRouter();
   const role = useRole();
   const search = useSearchParams();
-  // Route-level guard: Scanner role can't create events. Bounce to /events.
-  useEffect(() => {
-    if (role === "scanner") router.replace("/events");
-  }, [role, router]);
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [visited, setVisited] = useState(1);
@@ -68,9 +65,19 @@ function CreateEventInner() {
   // clearing dates and suffixing the name with " (copie)". Festival
   // organizers run the same lineup year over year.
   const duplicateFromId = search.get("duplicateFrom");
+  const sourceQuery = useEventQuery(
+    (repo) =>
+      duplicateFromId ? repo.getEvent(duplicateFromId) : Promise.resolve(null),
+    [duplicateFromId],
+  );
+  // Scanner cannot create events. This used to be a redirect, which
+  // flashed the wizard and then dropped the user on the list with no
+  // reason given.
+  const denied = role === "scanner";
+
   const seededDraft = useMemo<DraftEvent>(() => {
     if (!duplicateFromId) return INITIAL_DRAFT;
-    const src = getEventById(duplicateFromId);
+    const src = sourceQuery.data;
     if (!src) return INITIAL_DRAFT;
     return {
       ...INITIAL_DRAFT,
@@ -93,9 +100,20 @@ function CreateEventInner() {
             }))
           : [emptyTier()],
     };
-  }, [duplicateFromId]);
+  }, [duplicateFromId, sourceQuery.data]);
 
   const [draft, setDraft] = useState<DraftEvent>(seededDraft);
+
+  // The source event now arrives asynchronously, so the initial state
+  // above can be the empty draft. Seed it once the read lands — guarded
+  // on the source id so a later keystroke is never overwritten.
+  const seededFrom = useRef<string | null>(null);
+  useEffect(() => {
+    if (!duplicateFromId || !sourceQuery.data) return;
+    if (seededFrom.current === duplicateFromId) return;
+    seededFrom.current = duplicateFromId;
+    setDraft(seededDraft);
+  }, [duplicateFromId, sourceQuery.data, seededDraft]);
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -161,6 +179,15 @@ function CreateEventInner() {
     if (step === 4) return <StepMedia draft={draft} setDraft={setDraft} />;
     return <StepReview draft={draft} onJumpTo={(n) => setStep(n)} />;
   };
+
+  if (denied) {
+    return (
+      <PermissionDenied
+        what="la création d'événements"
+        requiredRole="un propriétaire ou un administrateur"
+      />
+    );
+  }
 
   return (
     <>

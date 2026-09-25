@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Pill } from "@/components/ui/Pill";
 import { useToast } from "@/components/ui/Toast";
-import { getAllEvents } from "@/lib/mock/events";
+import type { LyfeEvent } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
 import type { PromoCodeKind, PromoCodeScope } from "@/lib/types/promoCodes";
+import { useEventQuery } from "@/lib/data/useQuery";
 
 type StepIdx = 0 | 1 | 2 | 3;
 const STEPS: { idx: StepIdx; label: string }[] = [
@@ -62,7 +63,8 @@ export function CreatePromoCodeDialog({
   onOpenChange: (next: boolean) => void;
 }) {
   const { toast } = useToast();
-  const events = useMemo(() => getAllEvents(), []);
+  const eventsQuery = useEventQuery((repo) => repo.listEvents(), []);
+  const events = useMemo(() => eventsQuery.data ?? [], [eventsQuery.data]);
   const [state, setState] = useState<DraftCode>(INITIAL);
 
   const set = <K extends keyof DraftCode>(key: K, value: DraftCode[K]) =>
@@ -141,7 +143,7 @@ export function CreatePromoCodeDialog({
                 <header className="flex items-start gap-3 p-6 border-b border-line-soft">
                   <span
                     aria-hidden
-                    className="h-10 w-10 rounded-[12px] bg-violet-soft flex items-center justify-center shrink-0"
+                    className="h-10 w-10 rounded-chip bg-violet-soft flex items-center justify-center shrink-0"
                   >
                     <Tag size={18} strokeWidth={1.7} className="text-violet-deep" />
                   </span>
@@ -349,7 +351,7 @@ function StepScope({
 }: {
   state: DraftCode;
   set: SetFn;
-  events: ReturnType<typeof getAllEvents>;
+  events: LyfeEvent[];
 }) {
   const eligibleEvents = events.filter(
     (e) =>
@@ -518,7 +520,7 @@ function StepRecap({
   events,
 }: {
   state: DraftCode;
-  events: ReturnType<typeof getAllEvents>;
+  events: LyfeEvent[];
 }) {
   const valueLabel =
     state.kind === "percentage"

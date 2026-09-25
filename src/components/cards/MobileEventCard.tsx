@@ -16,8 +16,6 @@ import type { LyfeEvent } from "@/lib/types/domain";
 import { Pill, StatusPill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Button } from "@/components/ui/Button";
-import { hasBilan } from "@/lib/mock/bilan";
-import { getCampaigns } from "@/lib/mock/visibility";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 
 // Mobile event card — replaces the desktop horizontal row with a full
@@ -34,7 +32,16 @@ type SecondAction = {
   tone: "secondary" | "warning" | "violet";
 };
 
-export function MobileEventCard({ event }: { event: LyfeEvent }) {
+export function MobileEventCard({
+  event,
+  /** Supplied by the list, which reads both once for every row. */
+  activeBoosts = 0,
+  hasBilan = false,
+}: {
+  event: LyfeEvent;
+  activeBoosts?: number;
+  hasBilan?: boolean;
+}) {
   const router = useRouter();
   const sold = event.tiers.reduce((s, t) => s + t.sold, 0);
   const cap = event.tiers.reduce((s, t) => s + t.quantity, 0);
@@ -43,9 +50,6 @@ export function MobileEventCard({ event }: { event: LyfeEvent }) {
     0,
   );
   const sellThroughPct = cap > 0 ? Math.round((sold / cap) * 100) : 0;
-  const activeBoosts = getCampaigns().filter(
-    (c) => c.eventId === event.id && c.status === "active",
-  ).length;
 
   // Headline metric varies by lifecycle. Past + settled lead with
   // sell-through (the bilan is the next step), on_sale leads with
@@ -84,7 +88,7 @@ export function MobileEventCard({ event }: { event: LyfeEvent }) {
     }
     if (
       (event.status.state === "past" || event.status.state === "settled") &&
-      hasBilan(event)
+      hasBilan
     ) {
       return {
         label: "Voir le bilan",
@@ -149,7 +153,7 @@ export function MobileEventCard({ event }: { event: LyfeEvent }) {
               className="absolute inset-0"
               style={{
                 background:
-                  "radial-gradient(circle at 30% 30%, rgba(201,166,76,0.45), transparent 70%)",
+                  "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--color-gold) 45%, transparent), transparent 70%)",
               }}
             />
             {isMuted ? (
@@ -206,7 +210,7 @@ export function MobileEventCard({ event }: { event: LyfeEvent }) {
           {/* Progress + key metric */}
           {cap > 0 ? (
             <div className="mt-4 space-y-2">
-              <ProgressBar value={sold} max={cap} tone="gold" size="xs" />
+              <ProgressBar value={sold} max={cap} tone="violet" size="xs" />
               <div className="flex items-baseline justify-between gap-3 text-meta num">
                 <span className="text-ink-soft">
                   <span className="font-bold text-ink">{sold}</span>

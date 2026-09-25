@@ -1,0 +1,152 @@
+import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { resolveSession } from "@/lib/auth/server-session";
+import { getRestaurantRepository } from "@/lib/data";
+import { demoRepository } from "@/lib/data/demo-repository";
+import { DEMO_STATE_PARAM, parseDemoState } from "@/lib/data/demo-state";
+import { RepositoryError } from "@/lib/data/repository";
+import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
+import { ScreenError } from "@/components/restaurant/ScreenError";
+import { VenueSettings } from "@/components/settings/VenueSettings";
+import { RestaurantSpecScreen } from "@/components/restaurant/RestaurantSpecScreen";
+import { buildPresenceScreen } from "@/lib/restaurant/presence";
+import { activeLot } from "@/lib/lot";
+
+// Venue settings.
+//
+// A dedicated route rather than a spec screen: forms are not blocks, and
+// pretending they were would mean inventing a block type per field. The
+// spec engine keeps the read surfaces; this is the write surface.
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { title: "Ma fiche · LYFE" };
+
+interface Props {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function MaFichePage({ searchParams }: Props) {
+  const session = await resolveSession();
+  if (!session) redirect("/login");
+  const lot = activeLot();
+
+  // `?etat=` forces the three states here too, so every one of the
+  // thirty screens can be shown failing or empty on demand rather than
+  // only when something actually breaks.
+  const query = await searchParams;
+  const demo = parseDemoState(
+    Array.isArray(query[DEMO_STATE_PARAM])
+      ? query[DEMO_STATE_PARAM][0]
+      : query[DEMO_STATE_PARAM],
+  );
+  if (demo === "chargement") return <ScreenSkeleton />;
+
+  // Every read goes through the repository, so this route works
+  // identically on SQLite, on the static snapshot, and against a real
+  // backend. It used to reach into the store — and raw SQL — directly,
+  // which made it the one screen that still required a database.
+  const repo = demoRepository(getRestaurantRepository(), demo);
+  const venueId = session.venueId;
+
+  try {
+  // Three of these eight are Lot 2's: the carte, its file and the staff
+  // list belong to Menu and Équipe, and the panels that render them are
+  // not in this route's `only` under Lot 1. Asking for them anyway made
+  // a basique deployment require three endpoints it draws nothing from.
+  const lot2 = lot === 2;
+  const [profile, menu, availability, photos, menuFiles, staff, overview, settings] =
+    await Promise.all([
+      repo.getVenueProfile(venueId),
+      lot2 ? repo.listMenuItems(venueId) : [],
+      repo.getAvailability(venueId),
+      repo.listAssets(venueId, "photo"),
+      lot2 ? repo.listAssets(venueId, "menu_file") : [],
+      lot2 ? repo.listStaff(venueId) : [],
+      repo.getOverview(venueId),
+      repo.getVenueSettings(venueId),
+    ]);
+
+  if (!profile) redirect("/restaurant");
+
+  // Two halves, and the split is honest rather than arbitrary: the form
+  // owns what needs a file picker and a drag handle, the spec owns
+  // everything that is a value — zones, dress code, hours, the preview.
+  const presence = buildPresenceScreen({
+    profile,
+    zones: overview.zones,
+    availability,
+    settings,
+    configuration: settings.configuration,
+    photoCount: photos.length,
+  });
+
+  return (
+    <div className="space-y-8">
+      {/* « Création de Venue », Planning V3 sprint Prio 02: the record
+          itself. Identity carries the name, the address and the contact;
+          Horaires carries the opening hours; Photos carries the photos.
+          Fiche — price range, tags, features, ambience — is the listing
+          that Prio 08's advanced dashboard curates, and a tag is one of
+          the concepts a basique deployment must not show at all. */}
+      <VenueSettings
+      only={
+        lot === 1
+          ? ["identity", "hours", "media"]
+          : ["identity", "listing", "media"]
+      }
+      title="Ma fiche"
+      subtitle={
+        lot === 1
+          ? "L'établissement tel que l'application le montre : identité, adresse, contact, photos et horaires."
+          : "Tout ce que l'application montre de l'établissement, modifiable ici. Miroir de la fiche, rien de plus."
+      }
+      role={session.role}
+      identity={{
+        name: profile.name,
+        shortName: profile.shortName,
+        description: profile.description,
+        category: profile.cuisine,
+        address: profile.address,
+        city: profile.city,
+        latitude: profile.latitude == null ? "" : String(profile.latitude),
+        longitude: profile.longitude == null ? "" : String(profile.longitude),
+        contactEmail: profile.contactEmail,
+        contactPhone: profile.contactPhone,
+        website: profile.website,
+        // Establishment type (restaurant / bar) — distinct from
+        // `profile.kind`, which is the cuisine style. It comes off the
+        // session's membership, already resolved.
+        kind:
+          session.venues.find((v) => v.id === venueId)?.kind === "drinks"
+            ? "drinks"
+            : "restaurant",
+      }}
+      listing={{
+        priceRange: profile.priceRange,
+        tags: profile.tags,
+        features: profile.features,
+        ambience: profile.ambience,
+      }}
+      menuItems={menu}
+      availability={availability}
+      photos={photos}
+      menuFiles={menuFiles}
+      staff={staff}
+      />
+
+      {/* Zones, dress code, facilities and the client preview are all
+          readings of a listing Prio 02 does not curate. The hours a
+          venue can be booked for are in the form above, and the rest of
+          them on Disponibilités. */}
+      {lot === 2 ? <RestaurantSpecScreen spec={presence} /> : null}
+    </div>
+  );
+  } catch (error) {
+    // Only a repository failure becomes the error screen. `notFound()`
+    // and `redirect()` throw too, and swallowing those would turn a
+    // deliberate 404 into a misleading "something went wrong".
+    if (!(error instanceof RepositoryError)) throw error;
+    return <ScreenError reference={error.code} />;
+  }
+}

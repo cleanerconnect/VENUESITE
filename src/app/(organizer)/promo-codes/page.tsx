@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "motion/react";
 import { Copy, MoreVertical, Plus, Tag } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Button } from "@/components/ui/Button";
@@ -10,13 +9,13 @@ import { Pill } from "@/components/ui/Pill";
 import { useToast } from "@/components/ui/Toast";
 import { CreatePromoCodeDialog } from "@/components/promoCodes/CreatePromoCodeDialog";
 import { PromoCodeDetailDrawer } from "@/components/promoCodes/PromoCodeDetailDrawer";
-import {
-  getPromoCodes,
-  getPromoCodesAggregate,
-} from "@/lib/mock/promoCodes";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
-import { cn } from "@/lib/utils/cn";
 import type { PromoCode } from "@/lib/types/promoCodes";
+import { FilterTabs } from "@/components/ui/FilterTabs";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton, KpiGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 type Filter = "all" | "active" | "expired" | "depleted";
 
@@ -56,8 +55,13 @@ const STATUS_ORDER: Record<PromoCode["status"], number> = {
 
 export default function PromoCodesPage() {
   const { toast } = useToast();
-  const codes = useMemo(getPromoCodes, []);
-  const aggregate = useMemo(getPromoCodesAggregate, []);
+  const codesQuery = useEventQuery((repo) => repo.listPromoCodes(), []);
+  const aggregateQuery = useEventQuery(
+    (repo) => repo.getPromoCodesAggregate(),
+    [],
+  );
+  const codes = useMemo(() => codesQuery.data ?? [], [codesQuery.data]);
+  const aggregate = aggregateQuery.data;
 
   const [filter, setFilter] = useState<Filter>("all");
   const [createOpen, setCreateOpen] = useState(false);
@@ -90,15 +94,39 @@ export default function PromoCodesPage() {
     toast({ tone: "success", title: `Code ${code} copié` });
   };
 
+  // The hero strip reads the aggregate, so the page waits on it rather
+  // than rendering three empty figures above a loading table.
+  if (codesQuery.status !== "ready" || !aggregate) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Codes promo"
+          subtitle="Réductions ciblées, partenariats, et tracking de redemptions."
+        />
+        <QueryState
+          query={{ ...codesQuery, isEmpty: codes.length === 0 }}
+          label="Chargement de vos codes promo"
+          skeleton={
+            <div className="space-y-6">
+              <Skeleton shape="card" className="h-32 w-full" />
+              <EntityListSkeleton rows={5} />
+            </div>
+          }
+          empty={{
+            title: "Aucun code promo",
+            body: "Créez un code pour offrir une réduction ciblée.",
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* === Header === */}
-      <div>
-        <h1 className="text-h1 text-ink">Codes promo</h1>
-        <p className="text-body text-ink-soft mt-1.5">
-          Réductions ciblées, partenariats, et tracking de redemptions.
-        </p>
-      </div>
+      <PageHeader
+        title="Codes promo"
+        subtitle="Réductions ciblées, partenariats, et tracking de redemptions."
+      />
 
       {/* === Hero strip — 3 Fraunces aggregates === */}
       <Card variant="surface" size="md">
@@ -125,40 +153,13 @@ export default function PromoCodesPage() {
 
       {/* === Filter bar + Create CTA === */}
       <div className="flex items-end justify-between gap-3 flex-wrap">
-        <div className="border-b border-line-soft overflow-x-auto scroll-thin flex-1 min-w-0">
-          <div className="flex gap-1 min-w-max">
-            {FILTERS.map((f) => {
-              const active = filter === f.id;
-              return (
-                <button
-                  key={f.id}
-                  onClick={() => setFilter(f.id)}
-                  className={cn(
-                    "relative px-4 py-3 text-[13px] font-semibold whitespace-nowrap transition-colors",
-                    active ? "text-ink" : "text-ink-mute hover:text-ink",
-                  )}
-                >
-                  {f.label}
-                  <span
-                    className={cn(
-                      "ml-2 inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[11px] rounded-full num",
-                      active ? "bg-ink text-canvas" : "bg-ink/[0.06] text-ink-soft",
-                    )}
-                  >
-                    {counts[f.id] ?? 0}
-                  </span>
-                  {active ? (
-                    <motion.span
-                      layoutId="promo-filter-underline"
-                      className="absolute bottom-0 left-2 right-2 h-[2px] bg-violet rounded-full"
-                      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                    />
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FilterTabs
+          className="flex-1 min-w-0"
+          layoutId="promo-filter-underline"
+          value={filter}
+          onChange={setFilter}
+          tabs={FILTERS.map((f) => ({ ...f, count: counts[f.id] ?? 0 }))}
+        />
         <Button
           size="md"
           iconLeft={<Plus size={16} strokeWidth={2} />}
@@ -311,7 +312,7 @@ export default function PromoCodesPage() {
                               onSelect={() =>
                                 toast({
                                   tone: "info",
-                                  title: "Action non disponible en démo",
+                                  title: "Action non disponible",
                                 })
                               }
                               className="px-3 h-9 flex items-center rounded-[var(--radius-sm)] text-[13.5px] hover:bg-ink/[0.04] cursor-pointer outline-none text-ink"
@@ -322,7 +323,7 @@ export default function PromoCodesPage() {
                               onSelect={() =>
                                 toast({
                                   tone: "info",
-                                  title: "Action non disponible en démo",
+                                  title: "Action non disponible",
                                 })
                               }
                               className="px-3 h-9 flex items-center rounded-[var(--radius-sm)] text-[13.5px] hover:bg-ink/[0.04] cursor-pointer outline-none text-danger"

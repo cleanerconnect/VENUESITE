@@ -8,7 +8,6 @@ import {
   ArrowRight,
   Building2,
   Check,
-  CreditCard,
   Landmark,
   Lock,
   Mail,
@@ -33,14 +32,17 @@ import {
 import { cn } from "@/lib/utils/cn";
 import type { OrganizerType } from "@/lib/types/domain";
 
-type StepIdx = 1 | 2 | 3 | 4 | 5;
+type StepIdx = 1 | 2 | 3 | 4;
 
+// Four steps, not five. The fifth was a Payzone connection whose only
+// control was a disabled button — a step a partner could do nothing with
+// but click past. Payment provider onboarding happens at Payzone, not
+// here, and settlements already explains how payouts work.
 const STEPS: { idx: StepIdx; label: string }[] = [
   { idx: 1, label: "Bienvenue" },
   { idx: 2, label: "Profil" },
   { idx: 3, label: "Banque" },
-  { idx: 4, label: "Payzone" },
-  { idx: 5, label: "Équipe" },
+  { idx: 4, label: "Équipe" },
 ];
 
 const MOROCCAN_BANKS = [
@@ -69,13 +71,13 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<StepIdx>(1);
   const [draft, setDraft] = useState<OnboardingDraft>({ lastStep: 0 });
 
-  // Resume on mount: jump to step lastStep + 1, capped at 5.
+  // Resume on mount: jump to step lastStep + 1, capped at 4.
   useEffect(() => {
     if (!profile) return;
     const existing = readDraft(profile.id);
     setDraft(existing);
     if (existing.lastStep > 0) {
-      const resume = Math.min(5, existing.lastStep + 1) as StepIdx;
+      const resume = Math.min(4, existing.lastStep + 1) as StepIdx;
       setStep(resume);
     }
   }, [profile?.id]);
@@ -143,7 +145,7 @@ export default function OnboardingPage() {
         </div>
         <div className="max-w-3xl mx-auto px-5 md:px-8 pb-3 flex items-baseline justify-between">
           <span className="text-meta text-ink-mute">
-            Étape {step} sur 5 · {STEPS[step - 1].label}
+            Étape {step} sur 4 · {STEPS[step - 1].label}
           </span>
           {step > 1 ? (
             <button
@@ -189,20 +191,11 @@ export default function OnboardingPage() {
                   advance({ ...draft, banking: payload })
                 }
               />
-            ) : step === 4 ? (
-              <StepPayzone
-                onSkip={() =>
-                  advance({ ...draft, payzoneSkipped: true })
-                }
-                onConfirm={() =>
-                  advance({ ...draft, payzoneSkipped: false })
-                }
-              />
             ) : (
               <StepTeam
                 draft={draft}
                 onFinish={(invites) =>
-                  finish({ ...draft, invites, lastStep: 5 })
+                  finish({ ...draft, invites, lastStep: 4 })
                 }
               />
             )}
@@ -449,75 +442,6 @@ function StepBanking({
 }
 
 // ─── Step 4 — Connexion Payzone ─────────────────────────────────────────
-
-function StepPayzone({
-  onSkip,
-  onConfirm,
-}: {
-  onSkip: () => void;
-  onConfirm: () => void;
-}) {
-  return (
-    <div className="space-y-6">
-      <StepHeader
-        icon={<CreditCard size={18} strokeWidth={1.7} />}
-        eyebrow="Paiements en ligne"
-        title="Connectez Payzone."
-        subtitle="Payzone encaisse les paiements de vos acheteurs et les reverse à LYFE pour les versements automatiques. La connexion bouclera la chaîne d'encaissement."
-      />
-
-      <div className="rounded-[var(--radius-lg)] bg-violet-soft p-5 md:p-6">
-        <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
-          <span className="inline-flex items-center gap-2 h-8 px-3 rounded-full bg-canvas/70 text-ink text-[12px] font-bold">
-            <CreditCard size={13} strokeWidth={1.8} className="text-violet-deep" />
-            Payzone Maroc
-          </span>
-          <Pill tone="neutral">
-            <Lock size={11} strokeWidth={2} className="-ml-0.5" />
-            À configurer
-          </Pill>
-        </div>
-        <p className="text-[14px] text-ink leading-relaxed">
-          Cartes bancaires Maroc, MasterCard et Visa internationales,
-          Apple Pay, paiement en plusieurs fois. Onboarding KYC géré
-          directement par Payzone — comptez 48h pour la validation.
-        </p>
-        <div className="mt-5">
-          <Button
-            variant="secondary"
-            size="md"
-            iconLeft={<Lock size={13} strokeWidth={1.9} />}
-            disabled
-          >
-            Connecter Payzone
-          </Button>
-          <p className="text-meta text-ink-mute mt-2">
-            Bientôt disponible — l&apos;intégration ouvre fin 2026 pendant la
-            phase BETA. Vous pouvez configurer plus tard sans bloquer la
-            création de votre premier événement.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-        <button
-          type="button"
-          onClick={onSkip}
-          className="text-meta font-semibold text-ink-mute hover:text-ink transition-colors"
-        >
-          Configurer plus tard
-        </button>
-        <Button
-          size="md"
-          onClick={onConfirm}
-          iconRight={<ArrowRight size={14} strokeWidth={1.8} />}
-        >
-          Suivant
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 // ─── Step 5 — Inviter votre équipe ──────────────────────────────────────
 

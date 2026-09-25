@@ -10,8 +10,9 @@ import {
   YAxis,
 } from "recharts";
 import type { Cohort } from "@/lib/types/analytics";
+import { CHART, seriesColor } from "@/lib/charts/theme";
 
-const COHORT_COLORS = ["#865BA6", "#6B3F8A", "#C7B2DB"];
+const COHORT_COLORS = [seriesColor(0), "var(--color-violet-deep)", CHART.projection];
 
 // Cohort retention chart — one line per acquisition cohort, x-axis is
 // the index of the event since acquisition (0 = first event), y-axis
@@ -52,13 +53,13 @@ export function CohortChart({ cohorts }: { cohorts: Cohort[] }) {
             margin={{ top: 16, right: 16, bottom: 4, left: 4 }}
           >
             <CartesianGrid
-              stroke="#E8E2EE"
+              stroke={CHART.grid}
               strokeDasharray="2 4"
               vertical={false}
             />
             <XAxis
               dataKey="label"
-              tick={{ fill: "#6B7689", fontSize: 11 }}
+              tick={{ fill: CHART.axis, fontSize: 11 }}
               axisLine={false}
               tickLine={false}
               tickMargin={8}
@@ -66,7 +67,7 @@ export function CohortChart({ cohorts }: { cohorts: Cohort[] }) {
             <YAxis
               width={40}
               tickFormatter={(v) => `${v} %`}
-              tick={{ fill: "#6B7689", fontSize: 11 }}
+              tick={{ fill: CHART.axis, fontSize: 11 }}
               axisLine={false}
               tickLine={false}
               domain={[0, 100]}
@@ -74,7 +75,7 @@ export function CohortChart({ cohorts }: { cohorts: Cohort[] }) {
             />
             <Tooltip
               cursor={{
-                stroke: "#865BA6",
+                stroke: "var(--color-violet)",
                 strokeWidth: 1,
                 strokeDasharray: "4 4",
               }}
@@ -124,13 +125,13 @@ export function CohortChart({ cohorts }: { cohorts: Cohort[] }) {
                 dot={{
                   r: 3.5,
                   fill: COHORT_COLORS[idx % COHORT_COLORS.length],
-                  stroke: "#FFFFFF",
+                  stroke: CHART.surface,
                   strokeWidth: 2,
                 }}
                 activeDot={{
                   r: 5,
                   fill: COHORT_COLORS[idx % COHORT_COLORS.length],
-                  stroke: "#FFFFFF",
+                  stroke: CHART.surface,
                   strokeWidth: 2,
                 }}
                 connectNulls={false}

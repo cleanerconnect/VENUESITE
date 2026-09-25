@@ -10,14 +10,21 @@ import { Pill, StatusPill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useToast } from "@/components/ui/Toast";
 import { CancelEventDialog } from "@/components/event/CancelEventDialog";
-import { getCampaigns } from "@/lib/mock/visibility";
 import { getEventActions, type EventActionId } from "@/lib/event/actions";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
 
 // 96px-tall row card. Hover lifts. Click goes to event detail.
-export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
+export function UpcomingEventRow({
+  event,
+  /** Active paid campaigns on this event. The list that renders these
+   *  rows reads them once, so a row never fetches its own badge. */
+  activeBoosts = 0,
+}: {
+  event: LyfeEvent;
+  activeBoosts?: number;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -29,10 +36,6 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
     0,
   );
   const pct = cap > 0 ? Math.round((sold / cap) * 100) : 0;
-  // Whether at least one paid campaign is currently active for this event.
-  const activeBoosts = getCampaigns().filter(
-    (c) => c.eventId === event.id && c.status === "active",
-  ).length;
   const actions = getEventActions(event.status.state);
 
   const handleAction = (id: EventActionId) => {
@@ -53,7 +56,7 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
         setCancelOpen(true);
         return;
       case "scan":
-        // Real wiring: open ScannerModal scoped to this event. For demo
+        // Real wiring: open ScannerModal scoped to this event. Until
         // we just navigate to the detail page where the Scanner tab lives.
         router.push(`/events/${event.id}#scanner`);
         return;
@@ -61,7 +64,7 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
         router.push(`/events/${event.id}#bilan`);
         return;
       default:
-        toast({ tone: "info", title: "Action non disponible en démo" });
+        toast({ tone: "info", title: "Action non disponible" });
     }
   };
 
@@ -83,7 +86,7 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
             <div className="flex items-center gap-4">
               {/* Thumbnail, 80x80, gradient placeholder */}
               <div
-                className="hidden sm:block w-20 h-20 rounded-[12px] shrink-0 relative overflow-hidden"
+                className="hidden sm:block w-20 h-20 rounded-chip shrink-0 relative overflow-hidden"
                 style={{
                   background:
                     "linear-gradient(135deg, var(--color-violet-soft), var(--color-tint-sky))",
@@ -94,7 +97,7 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
                   className="absolute inset-0"
                   style={{
                     background:
-                      "radial-gradient(circle at 30% 30%, rgba(201,166,76,0.45), transparent 70%)",
+                      "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--color-gold) 45%, transparent), transparent 70%)",
                   }}
                 />
               </div>
@@ -118,7 +121,7 @@ export function UpcomingEventRow({ event }: { event: LyfeEvent }) {
                 {cap > 0 ? (
                   <div className="mt-3 flex items-center gap-3">
                     <div className="flex-1 max-w-[280px]">
-                      <ProgressBar value={sold} max={cap} tone="gold" size="xs" />
+                      <ProgressBar value={sold} max={cap} tone="violet" size="xs" />
                     </div>
                     <div className="text-meta text-ink-soft num shrink-0">
                       <span className="font-bold text-ink">{sold}</span>

@@ -12,8 +12,13 @@
   --color-ink-soft: #2c3e5c;
   --color-ink-mute: #6b7689;
 
-  /* Gold lives only inside the wordmark SVG now — kept defined so the logo
-     paths still resolve, but the chrome no longer uses it. */
+  /* Gold is no longer a chrome accent — violet took the CTAs, pulses and
+     status marks. It survives in the wordmark SVG and in four warm radial
+     glows over dark hero surfaces (event detail, the mobile event cards,
+     the upcoming-event row), where violet reads cold against navy. That
+     is the whole remaining surface; do not spend it anywhere else.
+     A previous version of this comment claimed gold was wordmark-only,
+     which was not true of the glows. */
   --color-gold: #c9a64c;
   --color-gold-deep: #a8852e;
   --color-gold-soft: #f2e9cd;
@@ -35,6 +40,16 @@
 
   /* Surfaces — white canvas so the LYFE wordmark sits flush. canvas-2 is
      a faint violet wash for sidebar / footer / sticky bars. */
+  /* On-dark counterparts. Text and marks that sit on `surface-ink` need
+     their own values — the light-surface tokens do not survive there. */
+  --color-on-ink: #faf7f0;
+  --color-on-ink-mute: #f2ddd6;
+  --color-violet-on-ink: #b388d6;
+  /* The cool counterpart to on-ink, for the secondary glow at the bottom
+     of a dark hero. on-ink is warm, and two warm glows on one surface
+     turn it muddy. */
+  --color-on-ink-cool: #dce8f2;
+
   --color-canvas: #ffffff;
   --color-canvas-2: #f8f5fb;
   --color-surface: #ffffff;
@@ -63,10 +78,26 @@
   /* Radii */
   --radius-xs: 6px;
   --radius-sm: 10px;
+  /* The icon-chip radius. Sits between sm and md because a 36–48px square
+     chip reads as over-rounded at 14px and as a hard square at 10px. It
+     was an inline arbitrary value in twenty-six places before it was a
+     token; if you need a new one, add it here rather than inline. */
+  --radius-chip: 12px;
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
   --radius-pill: 9999px;
+
+  /* ── Spacing ──
+     The base unit every spacing utility derives from: `gap-3` is
+     `calc(var(--spacing) * 3)` = 12px. Declared explicitly rather than
+     inherited silently from Tailwind's default, so the scale is a token
+     like every other and `/styleguide#tokens` can render it from here.
+
+     The steps the portal actually uses, in units of this base:
+     0.5 1 1.5 2 2.5 3 3.5 4 5 6 7 8 9 10 12 14 16 20 32.
+     Page rhythm is `space-y-5 md:space-y-7`; card padding is 4/6/7/8. */
+  --spacing: 4px;
 
   /* Shadows — earned, never default */
   --shadow-soft:
@@ -79,6 +110,53 @@
   --font-sans: var(--font-urbanist), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-mono: var(--font-urbanist), ui-monospace, monospace;
+
+  /* ── Data visualisation ──
+     Named by role, not by hue. A chart never reaches for a hex: it asks
+     for `series-1` or `axis`, so a rebrand is one edit here. Ordered so
+     adjacent series stay distinguishable at 2px stroke width. */
+  --color-series-1: #865ba6;
+  --color-series-2: #6395bd;
+  --color-series-3: #c4a777;
+  --color-series-4: #2f6b3d;
+  --color-series-5: #a12c2c;
+  --color-series-6: #6b7689;
+  --color-chart-axis: #6b7689;
+  --color-chart-grid: #f0ecf3;
+  --color-chart-track: #f0ecf3;
+  --color-chart-cursor: rgba(134, 91, 166, 0.08);
+  /* Projections and targets — the same hue as series-1, lightened, so a
+     dashed forecast reads as the faded twin of the solid actual. */
+  --color-chart-projection: #c7b2db;
+  --color-chart-reference: rgba(10, 31, 61, 0.18);
+
+  /* ── Metric type scale ──
+     The oversized figures a KPI or a hero shows. Sizes big enough that
+     Tailwind's body scale does not reach them, so they were inline
+     before. */
+  --text-metric-sm: 22px;
+  --text-metric-md: 32px;
+  --text-metric-lg: 44px;
+  --text-metric-xl: 64px;
+
+  /* ── Control type scale ──
+     The three button sizes. These were arbitrary `text-[13px]`,
+     `text-[14px]` and `text-[15px]` values in `Button`; 15px matched no
+     step in the scale above, which made it the last font-size literal in
+     the codebase. Declared here it is a step like any other, and the
+     `--text-*` namespace generates `text-control-{sm,md,lg}` for free. */
+  --text-control-sm: 13px;
+  --text-control-md: 14px;
+  --text-control-lg: 15px;
+
+  /* ── Motion ──
+     One curve, four durations. Every transition in the portal picks a
+     step here rather than inventing a number. */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-instant: 120ms;
+  --duration-fast: 180ms;
+  --duration-base: 280ms;
+  --duration-slow: 420ms;
 }
 
 /* Force the canvas everywhere — never pure white at the page level. */
@@ -135,6 +213,156 @@ body {
   letter-spacing: 0.08em;
   font-weight: 700;
   text-transform: uppercase;
+}
+/* ─────────────────────────────────────────────────────────────
+   Host density — the Dashboard basique scale
+   ─────────────────────────────────────────────────────────────
+
+   Lot 1 is read by a restaurant owner who is not comfortable with
+   software, standing at a host stand, often at arm's length. The Lot 2
+   scale is a dense analyst's scale: 14px body, 12px meta, grey
+   secondary text. At a host stand that is a screen you lean into.
+
+   This is the same design system at a different density, not a second
+   one. Every token, colour and component is unchanged — the type steps
+   up, the secondary colour becomes ink at 70% rather than a separate
+   grey, and controls get a 44px minimum. A mode rather than a set of
+   per-screen overrides, so a component that never heard of Lot 1 still
+   comes out right inside it.
+
+   Applied by `data-density="host"` on the shell; `activeLot()` decides.
+
+   Rules, from the brief:
+     base 16px · nothing below 13px · secondary is ink/70, never grey   */
+
+[data-density="host"] {
+  /* The one colour change: secondary text is the ink at 70%, so it
+     stays in the same family as the primary rather than drifting to a
+     grey that reads as disabled. */
+  --host-soft: rgb(10 31 61 / 0.70);
+  --host-faint: rgb(10 31 61 / 0.55);
+}
+
+[data-density="host"] .text-body {
+  font-size: 16px;
+  line-height: 1.55;
+}
+[data-density="host"] .text-meta {
+  /* The floor. Meta was 12px, which is below it. */
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--host-soft);
+}
+[data-density="host"] .text-eyebrow {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--host-soft);
+}
+/* Headings are NOT retuned here. They were — 36/24/18 stepped down to
+   30/22/18 — and that made the basique dashboard's headlines smaller
+   than the event dashboard's, which is the wrong way round for the one
+   deployment read standing up. A partner who holds both spaces meets
+   one product, so the greeting card and the page titles keep the
+   type scale of the event Overview. */
+
+/* Grey secondary text becomes ink/70 wherever a component reached for
+   the muted token directly. The token itself is untouched — Lot 2 still
+   gets the grey — this only retunes it inside the host shell. */
+[data-density="host"] .text-ink-mute {
+  color: var(--host-soft);
+}
+[data-density="host"] .text-ink-soft {
+  color: var(--host-soft);
+}
+
+/* Controls a hand finds without aiming. 44px is the smallest target
+   that does not need a second attempt, and it is the floor rather than
+   the size — a primary action is taller. */
+[data-density="host"] button,
+[data-density="host"] a[role="button"],
+[data-density="host"] select,
+[data-density="host"] input:not([type="checkbox"]):not([type="radio"]) {
+  min-height: 44px;
+}
+[data-density="host"] input[type="checkbox"],
+[data-density="host"] input[type="radio"] {
+  width: 20px;
+  height: 20px;
+}
+[data-density="host"] .text-control-sm {
+  font-size: 15px;
+}
+[data-density="host"] .text-control-md {
+  font-size: 15px;
+}
+[data-density="host"] .text-control-lg {
+  font-size: 16px;
+}
+
+/* ── Sidebar ──
+   Also NOT retuned. The nav entries were 20px on a 52px row here and
+   13.5px on a 40px row on the event side, and the two sidebars sat
+   beside each other in the same account looking like two products. The
+   chrome is shared, so it is sized once: whatever the event sidebar
+   does. Host density still governs the content beside it — the rows, the
+   fields, the 44px controls — which is where reading from a stand
+   actually bites. */
+/* ── The booking row ──
+   Time and party size are what a host reads first: they decide what
+   happens in the next ten minutes. The name is second, because it is
+   what they say out loud. Everything else — zone, channel, note — is
+   context, and context is tertiary. */
+.text-host-lead {
+  font-size: 22px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.text-host-name {
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+.text-host-detail {
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: rgb(10 31 61 / 0.70);
+}
+/* The slot header a paper book would have written across the page. */
+.text-host-slot {
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
+.text-metric-sm {
+  font-size: var(--text-metric-sm);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+.text-metric-md {
+  font-size: var(--text-metric-md);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+.text-metric-lg {
+  font-size: var(--text-metric-lg);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+.text-metric-xl {
+  font-size: var(--text-metric-xl);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 800;
 }
 .text-mono {
   font-size: 13px;
@@ -308,4 +536,24 @@ input[type="time"] {
     background: #ffffff !important;
     border-left: 3px solid #0a1f3d !important;
   }
+}
+
+/* A date input used as a picker and nothing else.
+ *
+ * `<input type="date">` formats its own value from the browser's UI
+ * locale rather than the page's, so on a French portal it can render
+ * `09/25/2026` beside a row that spells the same day "vendredi 25
+ * septembre" — two formats for one date, one of them not French. Where
+ * the row already states the day, the input keeps only its calendar
+ * button. The rule is WebKit/Blink-only; elsewhere the text stays, in
+ * the reader's own locale, which is the harmless outcome. */
+.date-compact::-webkit-datetime-edit,
+.date-compact::-webkit-inner-spin-button,
+.date-compact::-webkit-clear-button {
+  display: none;
+}
+.date-compact::-webkit-calendar-picker-indicator {
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
 }

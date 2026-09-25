@@ -58,14 +58,14 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(160deg, #0A1F3D 0%, #2C3E5C 60%, #865BA6 130%)",
+                  "linear-gradient(160deg, var(--color-ink) 0%, var(--color-ink-soft) 60%, var(--color-violet) 130%)",
               }}
             />
             <div
               className="absolute inset-0"
               style={{
                 background:
-                  "radial-gradient(circle at 70% 30%, rgba(134,91,166,0.50), transparent 60%)",
+                  "radial-gradient(circle at 70% 30%, color-mix(in oklab, var(--color-violet) 50%, transparent), transparent 60%)",
               }}
             />
             <div className="absolute top-12 left-4 inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-canvas/15 backdrop-blur-sm">
@@ -152,16 +152,19 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
 
           {/* Sticky bottom CTA */}
           <div className="border-t border-line-soft px-4 py-3 bg-canvas">
-            <button
+            {/* A picture of the app's CTA, not a control. Rendered as a
+                div so it never takes focus — a disabled button here read
+                to a screen reader as a broken button on this page. */}
+            <div
+              aria-hidden
               className="w-full h-11 rounded-full bg-violet text-canvas text-[13px] font-bold flex items-center justify-center gap-2 num"
-              disabled
             >
               {lowestTier
                 ? `Réserver, à partir de ${formatMAD(
                     computeCustomerPrice(lowestTier.faceValueMad).customerPaysMad,
                   )}`
                 : "Réserver"}
-            </button>
+            </div>
           </div>
         </div>
       </motion.div>

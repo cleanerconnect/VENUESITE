@@ -11,11 +11,24 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { ChartTooltip } from "@/components/ui/ChartTooltip";
+import {
+  activeDot,
+  areaGradient,
+  gridProps,
+  lineCursor,
+  seriesColor,
+  xAxisProps,
+  yAxisProps,
+} from "@/lib/charts/theme";
 import { formatMAD } from "@/lib/utils/format";
 import type { RevenuePoint } from "@/lib/types/domain";
 
-// Recharts area chart with the gold area gradient + ink stroke. Custom
-// tooltip, white card with gold accent left border.
+// Area chart with the primary series gradient and a dashed guide.
+// Appearance comes entirely from the chart theme.
+const COLOR = seriesColor(0);
+const GRADIENT = areaGradient(COLOR);
+
 export function RevenueChart({ data }: { data: RevenuePoint[] }) {
   return (
     <div className="w-full h-[260px]">
@@ -26,58 +39,40 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
         >
           <defs>
             <linearGradient id="revenueArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#865BA6" stopOpacity={0.32} />
-              <stop offset="100%" stopColor="#865BA6" stopOpacity={0} />
+              <stop offset="0%" {...GRADIENT.from} />
+              <stop offset="100%" {...GRADIENT.to} />
             </linearGradient>
           </defs>
-          <CartesianGrid
-            stroke="#E8E2EE"
-            strokeDasharray="2 4"
-            vertical={false}
-          />
+          <CartesianGrid {...gridProps} />
           <XAxis
             dataKey="day"
             tickFormatter={(iso) =>
               format(new Date(iso), "d MMM", { locale: fr })
             }
-            tick={{ fill: "#6B7689", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            tickMargin={8}
-            interval="preserveStartEnd"
-            minTickGap={28}
+            {...xAxisProps}
           />
-          <YAxis
-            width={56}
-            tickFormatter={(v) => formatMAD(v, false)}
-            tick={{ fill: "#6B7689", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-          />
+          <YAxis tickFormatter={(v) => formatMAD(v, false)} {...yAxisProps} />
           <Tooltip
-            cursor={{ stroke: "#865BA6", strokeWidth: 1, strokeDasharray: "4 4" }}
+            cursor={lineCursor}
             content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;
-              const v = Number(payload[0]?.value ?? 0);
               return (
-                <div className="bg-surface border-l-2 border-violet border border-line rounded-[var(--radius-sm)] shadow-soft px-3 py-2 num">
-                  <div className="text-eyebrow text-ink-mute">
-                    {format(new Date(String(label)), "d MMM yyyy", { locale: fr })}
-                  </div>
-                  <div className="text-[15px] font-bold text-ink mt-0.5">
-                    {formatMAD(v)}
-                  </div>
-                </div>
+                <ChartTooltip
+                  heading={format(new Date(String(label)), "d MMM yyyy", {
+                    locale: fr,
+                  })}
+                  rows={[{ value: formatMAD(Number(payload[0]?.value ?? 0)) }]}
+                />
               );
             }}
           />
           <Area
             type="monotone"
             dataKey="amount"
-            stroke="#865BA6"
+            stroke={COLOR}
             strokeWidth={1.8}
             fill="url(#revenueArea)"
-            activeDot={{ r: 5, fill: "#865BA6", stroke: "#FFFFFF", strokeWidth: 2 }}
+            activeDot={activeDot(COLOR)}
           />
         </AreaChart>
       </ResponsiveContainer>

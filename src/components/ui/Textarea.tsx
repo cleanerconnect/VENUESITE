@@ -18,8 +18,15 @@ export const Textarea = forwardRef<HTMLTextAreaElement, Props>(function Textarea
   const inputId = id ?? useId();
   return (
     <div className="flex flex-col gap-1.5">
+      {/* Sentence case at field weight, not a small-caps eyebrow: this
+          label sits beside the floating labels of the Inputs around it,
+          and two ways of naming a field in one form reads as two kinds
+          of field. */}
       {label ? (
-        <label htmlFor={inputId} className="text-eyebrow text-ink-soft">
+        <label
+          htmlFor={inputId}
+          className="text-[14px] font-semibold leading-snug text-ink"
+        >
           {label}
         </label>
       ) : null}
@@ -28,7 +35,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, Props>(function Textarea
         id={inputId}
         rows={5}
         className={cn(
-          "w-full px-3.5 py-3 bg-surface border rounded-[var(--radius-sm)] text-ink text-[14px] outline-none resize-y",
+          "w-full px-3.5 py-3 bg-surface border rounded-[var(--radius-sm)] text-ink text-body outline-none resize-y",
           "transition-colors duration-150 placeholder:text-ink-mute",
           "focus:border-ink",
           error ? "border-danger/60" : "border-line",

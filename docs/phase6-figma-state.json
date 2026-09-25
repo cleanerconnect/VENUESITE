@@ -1,0 +1,235 @@
+{
+  "runId": "lyfe-figma-phase6",
+  "file": {
+    "name": "LYFE Portail Partenaire",
+    "key": "fztoNaEvTrZrWDaLy1MEWg",
+    "url": "https://www.figma.com/design/fztoNaEvTrZrWDaLy1MEWg",
+    "editorType": "design"
+  },
+  "pages": {
+    "00 Lisez-moi": "14:11",
+    "01 Fondations": "14:12",
+    "02 Composants": "14:13",
+    "03 Entrée": "14:14",
+    "04 Espace partenaire": "14:15",
+    "05 Espace organisateur": "14:16",
+    "06 États": "14:17",
+    "07 Téléphone": "14:18",
+    "08 Exemple complet · Dar Zellij": "53:2",
+    "09 Lot 1 · Dar Zellij": "128:2"
+  },
+  "collections": {
+    "Primitives": {
+      "mode": "Valeur",
+      "count": 24
+    },
+    "Couleur": {
+      "mode": "Clair",
+      "count": 62,
+      "note": "43 semantic + 19 opacite/* alpha variables"
+    },
+    "Espacement": {
+      "mode": "Valeur",
+      "count": 19
+    },
+    "Rayon": {
+      "mode": "Valeur",
+      "count": 7
+    },
+    "Typographie": {
+      "mode": "Valeur",
+      "count": 14
+    },
+    "Mouvement": {
+      "mode": "Valeur",
+      "count": 5
+    }
+  },
+  "textStyles": [
+    "text-display",
+    "text-h1",
+    "text-h2",
+    "text-h3",
+    "text-body",
+    "text-mono",
+    "text-meta",
+    "text-eyebrow",
+    "text-metric-xl",
+    "text-metric-lg",
+    "text-metric-md",
+    "text-metric-sm",
+    "font-serif-italic"
+  ],
+  "effectStyles": [
+    "shadow-soft",
+    "shadow-lift",
+    "shadow-deep"
+  ],
+  "fonts": {
+    "sans": "Urbanist",
+    "serif": "Fraunces",
+    "gotcha": "Urbanist weight names have NO space: SemiBold, ExtraBold. Fraunces has no static Medium Italic."
+  },
+  "reuse": "No design system assets to reuse: 8 community kits subscribed, search_design_system returned empty for components, variables and styles. Everything built from code tokens.",
+  "darkMode": "None. globals.css has no prefers-color-scheme block. Light mode only.",
+  "unvalidated": [],
+  "ecarts": {
+    "status": "fixed in code — nothing to reproduce in Figma; 00 Lisez-moi gets no Écarts constatés heading",
+    "fixed": [
+      "Card variant gold-soft removed (was bg-violet-soft, a duplicate of violet-soft).",
+      "ProgressBar tone gold removed (was bg-violet, a duplicate of tone violet).",
+      "Pill's 11 rgba tones are now token classes; the stray rgba(107,78,168) violet is gone.",
+      "26 inline rounded-[12px] replaced by --radius-chip / rounded-chip.",
+      "EmptyState DefaultMark now fills with --color-violet.",
+      "Input's 'gold focus ring' comment corrected to violet.",
+      "--spacing: 4px declared, scale documented, specimen added at /styleguide#tokens.",
+      "33 rgba literals across 21 files swept to color-mix(in oklab, var(--color-X) N%, transparent).",
+      "New token --color-on-ink-cool (#dce8f2) for the cool hero glow that matched nothing.",
+      "globals.css gold comment corrected: gold survives in the wordmark AND four hero glows.",
+      "routes.ts pointed at /events/evt_jazz_2026, an id in no dataset; now /events/evt_jzb_robbie."
+    ],
+    "notFixable": "Fraunces weight 500 italic has no static Figma instance; the text style uses Italic (400) and says so in its description."
+  },
+  "completedSteps": [
+    "P0",
+    "P1 foundations",
+    "P2 components",
+    "P3 screens",
+    "P4 états",
+    "P5 téléphone",
+    "P6 report"
+  ],
+  "remainingSteps": [
+    "P2 components",
+    "P3 screens",
+    "P4 états",
+    "P5 téléphone",
+    "P6 report"
+  ],
+  "verification": {
+    "tools": [
+      "tools/verify/walk.mjs",
+      "tools/verify/events.mjs",
+      "tools/verify/states.mjs",
+      "tools/verify/configuration.mjs",
+      "tools/verify/audience.mjs (new)"
+    ],
+    "lastRun": "all five pass after the coherence pass: 31/31 venue at 1440x900 and at 390x844, 19/19 event+shared at 1440x900, 3 states on 31 routes, configuration as specified, Audience holds the minimum group of ten in both configurations (db driver and static driver). Re-run against a production build after every change.",
+    "trap": "A stale next start holding :3210 makes every check measure the old build. pkill -9 -f next-server and confirm the port is free before rebuilding."
+  },
+  "figmaSeatAtLastWrite": "Full on pro — 200 tool calls/day, unlimited pages",
+  "phase": "complete",
+  "totals": {
+    "variables": 131,
+    "textStyles": 13,
+    "effectStyles": 3,
+    "components": 29,
+    "variants": 175,
+    "frames": 81
+  },
+  "keyComponentIds": {
+    "sidebarRestaurant": "26:2",
+    "sidebarLounge": "26:121",
+    "sidebarEvents": "41:2",
+    "topbar": "26:254",
+    "bottomTabs": "46:2",
+    "pageHeaderNoAction": "22:150",
+    "pageHeaderAction": "22:143",
+    "metricTileSurface1": "22:2",
+    "cardSurfaceMd": "20:5",
+    "filterTabsCount": "23:2"
+  },
+  "figmaGotchas": [
+    "A use_figma script is transactional: a throw rolls back everything it did.",
+    "Paint opacity is lost when an instance inherits a variable-bound fill. Use an opacite/* variable instead.",
+    "Instances are structurally sealed: appendChild into one throws. Override text, do not inject children.",
+    "figma.currentPage cannot be removed; switch away before deleting a page.",
+    "Variable names reject '.', so Tailwind half-steps are espace/0-5 etc.",
+    "For a wrapped horizontal auto-layout, the width is the PRIMARY axis and must be FIXED."
+  ],
+  "openFindings": [],
+  "phase7": {
+    "page": "08 Exemple complet · Dar Zellij",
+    "pageId": "53:2",
+    "sections": [
+      "Entrée",
+      "1 · Aujourd'hui",
+      "2 · En service",
+      "3 · Clients",
+      "4 · Ma présence",
+      "5 · Croissance",
+      "6 · Vie nocturne",
+      "7 · Paiements",
+      "8 · Pilotage",
+      "9 · Établissement",
+      "10 · Compte",
+      "Téléphone"
+    ],
+    "frames": 44,
+    "marginNotes": 7,
+    "source": "docs/phase7-dar-zellij.json (DEPTH=full) + docs/phase7-reference/*.png",
+    "audit": {
+      "fillsBound": 6013,
+      "fillsUnbound": 0,
+      "strokesUnbound": 12,
+      "radiiUnbound": 12,
+      "note": "the twelve unbound strokes and radii are the Figma Sections' own chrome, exactly as on page 04"
+    },
+    "gotchas": [
+      "Sections keep child coordinates RELATIVE: appendChild preserves x/y, so absolute position shifts by the section origin. Reset x/y after reparenting.",
+      "eval and new Function both work in the plugin sandbox — a long renderer can be parked in a TEXT node once and re-run from later calls instead of being re-sent.",
+      "figma.createNodeFromSvg imports recharts path geometry; the imported wrapper frame carries a white fill that must be cleared or the no-literals audit fails.",
+      "Applying a text style then setting fontName clears textStyleId — the Fraunces italic clause in the Accueil title is the one node on the page without a style."
+    ],
+    "coherencePass": {
+      "scope": "every frame of page 08 read against six questions: numbers reconcile with the list or chart beside them; scope named wherever two scopes share a screen; the current service resolves from the clock; French dates and times with bookable slots on :00 or :30; copy verbatim from the portal; one row in hover on any list with actions",
+      "rule": "fixed in the portal first, then re-captured and re-rendered — nothing was patched in Figma alone",
+      "rootCause": "four of the findings were one mistake made four times: a headline number typed beside its rows instead of summed from them (services.booked_covers/arrived_covers/no_show_covers, service_slot_load, customers.visit_count, and today's analytics_daily.no_shows under a label saying 'ce service')",
+      "derivedNow": [
+        "services.booked_covers",
+        "services.arrived_covers",
+        "services.no_show_covers",
+        "services.revenue_cents",
+        "service_slot_load.covers"
+      ],
+      "seamChange": "listCustomerBookings(venueId, customerId) added to RestaurantRepository and to all three drivers, plus bookingsByCustomer in the static snapshot — the Fiche client's Historique block had no source at all",
+      "framesTouched": "the stable half of the page: Accueil (and its phone frame), Réservations (and its phone frame), Ma fiche, Disponibilités, Avis, Bilans, Abonnement, Audience, Performance, Visibilité, Fiche client, plus the seven hover rows. Labels, captions, scope words, French time forms, derived counters and the elements removed or added — not the clock-relative values.",
+      "hover": "one row per list whose rows carry actions, in --shadow-soft, the elevation EntityListBlock gives a row card on hover; the actions are always visible in the portal, so hover changes the shadow and not the content",
+      "leftAsDesigned": [
+        "the :15 and :45 ticks of Accueil's four-hour band — the spec asks for arrivals per fifteen minutes",
+        "input type=date and input type=time values (2026-09-20, 18:00) — native control values",
+        "waitlist join times, review timestamps and message-log send times — event times, not bookable slots",
+        "'base de 60 couverts' on Audience — the configuration vocabulary rule outranks the reading",
+        "Liste d'attente's 'Tout 6' against four rows — the default filter is 'En cours'",
+        "Briefing's 100 couverts against the service's 104 — the briefing excludes the six no-show covers",
+        "the six oddities of PHASE7 §6 — none of them is a contradiction between two numbers"
+      ],
+      "captureDrift": "page 08 carries an early-September capture: Accueil's band reads 10h58 – 15h28, Performance's axis 4 août – 3 sept., the Notifications journal jeu. 3 sept. Most of the page is clock- or date-relative, not the two blocks PHASE7 §6.6 named. Syncing those values would match one capture and no other.",
+      "rendererGap": "the Phase 7 block-registry renderer was parked in a TEXT node on the page, is no longer there and was never committed. Four blocks are missing from the frames as a result and cannot be filled by editing text: Réservations' carnet (7 rows against 26), Briefing's nine lists (counters, no rows), Check-in's expected list, and the timing badges on Notifications' message rows. Rebuilding it as a committed tool is the next piece of work on this page.",
+      "hoverRows": [
+        "Accueil · À traiter",
+        "Calendrier · créneaux creux",
+        "Liste d'attente · À la porte",
+        "Tags et segments · segments enregistrés",
+        "Visibilité · Ce qui pèse sur le classement",
+        "Acomptes · Registre des acomptes",
+        "Performance · créneaux creux à venir"
+      ]
+    }
+  },
+  "closedFindings": [
+    "src/lib/db/overview-store.ts — Accueil subtitle now reads venue_settings.configuration via configFor()/covers(); lounge says 'personnes réservées'.",
+    "src/lib/restaurant/screens.ts — feminine agreement fixed via VenueConfig.cover.gender + coverAgreement()/coverLabel(); five sites, not the two §5 named.",
+    "components/ui/Button.tsx — text sizes now spend --text-control-sm|md|lg; 15px joined the type scale as a token."
+  ],
+  "lots": {
+    "setting": "LYFE_LOT, default 1 (src/lib/lot/)",
+    "lot1": "18 screens: Connexion, Accueil, Réservations, Check-in, Disponibilités, Performance, Visibilité, Avis, Liste clients, Fiche client, Équipe et rôles, Notifications, Paramètres, Abonnement, Support, Bilans, Ma fiche, Menu — row 39 of ChiffrageV3.0 plus the September scope email",
+    "lot2": "14 venue screens: Calendrier, Liste d'attente, Briefing, Tags et segments, Audience, Offres, Expériences, Guest list, Tables minimums, Promoteurs, Acomptes, Annulations, Lyfe Pay, Campagnes — front-end and design only",
+    "page04": "every screen frame carries its lot in the frame name, [lot 1] or [lot 2]: 17 and 14",
+    "page09": "the Lot 1 product on its own — 18 frames cloned from page 08 and cut to the contracted feature set, so page 08 is untouched",
+    "sidebar": "Chrome / Sidebar · Lot 1, a second chrome component in 02 Composants holding the eight Lot 1 groups; every page 09 frame swaps to it rather than detaching",
+    "capture": "docs/lot1-dar-zellij.json and docs/lot1-reference/*.png, captured with LYFE_LOT=1 on both the server and the tool",
+    "verification": "all five tools pass in both modes: 17/17 venue screens in lot 1 at 1440 and 390, 31/31 in lot 2; audience.mjs reports its screen unregistered in lot 1 and exits clean; configuration.mjs expects eight groups in lot 1 and nine or ten in lot 2"
+  }
+}

@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Download, Lock, MoreHorizontal, Plus, Sparkles, Users } from "lucide-react";
+import { ChevronRight, Download, MoreHorizontal, Plus, Users } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
-import { Tabs } from "@/components/ui/Tabs";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -15,57 +14,78 @@ import {
 } from "@/components/visibility/BoostFormatIcon";
 import { BoostWizardLauncher } from "@/components/visibility/BoostWizard";
 import { CampaignStatusPill } from "@/components/visibility/CampaignStatusPill";
-import {
-  getAudienceSegments,
-  getCampaignHistory,
-  getCampaigns,
-  getPortfolioStats,
-} from "@/lib/mock/visibility";
+import type {
+  AudienceSegment,
+  Campaign,
+  CampaignHistoryRow,
+  PortfolioStats,
+} from "@/lib/types/visibility";
 import { formatDateFR, formatMAD } from "@/lib/utils/format";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton, KpiGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function VisibilitePage() {
-  const stats = getPortfolioStats();
-  const campaigns = getCampaigns();
-  const segments = getAudienceSegments();
-  const history = getCampaignHistory();
+  const statsQuery = useEventQuery((repo) => repo.getPortfolioStats(), []);
+  const campaignsQuery = useEventQuery((repo) => repo.listCampaigns(), []);
+  const segmentsQuery = useEventQuery((repo) => repo.listAudienceSegments(), []);
+  const historyQuery = useEventQuery((repo) => repo.getCampaignHistory(), []);
+
+  const stats = statsQuery.data;
+  const campaigns = campaignsQuery.data ?? [];
+  const segments = segmentsQuery.data ?? [];
+  const history = historyQuery.data ?? [];
+
+  // The tabs all read `stats`, so the page waits on it rather than
+  // rendering three panels that each say "loading" on their own.
+  if (statsQuery.status !== "ready" || !stats) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Visibilité"
+          subtitle="Vos campagnes de mise en avant et vos partenaires affiliés. Le ROAS est la métrique qui compte."
+        />
+        <QueryState
+          query={{ ...statsQuery, isEmpty: !stats }}
+          label="Chargement de vos campagnes"
+          skeleton={
+            <div className="space-y-6">
+              <KpiGridSkeleton count={4} />
+              <EntityListSkeleton rows={3} />
+            </div>
+          }
+          empty={{
+            title: "Aucune campagne",
+            body: "Lancez un boost pour mettre un événement en avant.",
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* === Header === */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-h1 text-ink">Visibilité</h1>
-          <p className="text-body text-ink-soft mt-1.5 max-w-xl">
-            Vos campagnes de mise en avant et vos partenaires affiliés. Le
-            ROAS est la métrique qui compte.
-          </p>
-        </div>
-        <BoostWizardLauncher className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[14px] rounded-[var(--radius-sm)] font-semibold bg-violet text-canvas hover:bg-violet-deep transition-colors">
-          <Plus size={16} strokeWidth={2} />
-          Lancer un boost
-        </BoostWizardLauncher>
-      </div>
+      <PageHeader
+        title="Visibilité"
+        subtitle="Vos campagnes de mise en avant et vos partenaires affiliés. Le ROAS est la métrique qui compte."
+        action={
+          <BoostWizardLauncher className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[14px] rounded-[var(--radius-sm)] font-semibold bg-violet text-canvas hover:bg-violet-deep transition-colors">
+            <Plus size={16} strokeWidth={2} />
+            Lancer un boost
+          </BoostWizardLauncher>
+        }
+      />
 
-      <Tabs
-        tabs={[
-          {
-            id: "boosts",
-            label: "Boosts",
-            content: (
-              <BoostsPane
-                stats={stats}
-                campaigns={campaigns}
-                segments={segments}
-                history={history}
-              />
-            ),
-          },
-          {
-            id: "affilies",
-            label: "Affiliés",
-            content: <AffiliesPane />,
-          },
-        ]}
+      {/* One pane, so no tab strip. The affiliate programme is not
+          something LYFE ships, and a tab that only ever showed a
+          "bientôt disponible" panel taught partners to ignore tabs. */}
+      <BoostsPane
+        stats={stats}
+        campaigns={campaigns}
+        segments={segments}
+        history={history}
       />
     </div>
   );
@@ -77,10 +97,10 @@ function BoostsPane({
   segments,
   history,
 }: {
-  stats: ReturnType<typeof getPortfolioStats>;
-  campaigns: ReturnType<typeof getCampaigns>;
-  segments: ReturnType<typeof getAudienceSegments>;
-  history: ReturnType<typeof getCampaignHistory>;
+  stats: PortfolioStats;
+  campaigns: Campaign[];
+  segments: AudienceSegment[];
+  history: CampaignHistoryRow[];
 }) {
   return (
     <Stagger className="space-y-6 md:space-y-7">
@@ -116,6 +136,12 @@ function BoostsPane({
 
       {/* === Active campaigns === */}
       <StaggerItem>
+        {campaigns.length === 0 ? (
+          <EmptyState
+            title="Aucune campagne"
+            description="Lancez un boost pour mettre un événement en avant auprès d'un segment d'audience."
+          />
+        ) : (
         <Card variant="surface" size="md" className="!p-0">
           <div className="px-6 pt-6 pb-4 flex items-end justify-between flex-wrap gap-3">
             <div>
@@ -224,6 +250,7 @@ function BoostsPane({
             </table>
           </div>
         </Card>
+        )}
       </StaggerItem>
 
       {/* === Saved audiences === */}
@@ -246,7 +273,7 @@ function BoostsPane({
                 <div className="flex items-start gap-3">
                   <span
                     aria-hidden
-                    className="h-9 w-9 rounded-[12px] bg-violet-soft flex items-center justify-center shrink-0"
+                    className="h-9 w-9 rounded-chip bg-violet-soft flex items-center justify-center shrink-0"
                   >
                     <Users
                       size={16}
@@ -360,118 +387,6 @@ const AFFILIATES_PREVIEW = [
   { handle: "@karim.event", sales: 31, commission: 372 },
   { handle: "@anfa.lifestyle", sales: 18, commission: 216 },
 ];
-
-function AffiliesPane() {
-  return (
-    <div className="space-y-5">
-      <Card variant="violet-soft" size="lg" className="text-center !p-10">
-        <span
-          aria-hidden
-          className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-canvas/60 mb-5"
-        >
-          <Sparkles size={22} strokeWidth={1.6} className="text-violet-deep" />
-        </span>
-        <div className="flex items-center justify-center gap-2 flex-wrap mb-3">
-          <Pill tone="neutral">
-            <Lock size={11} strokeWidth={2} className="-ml-0.5" />
-            Bientôt disponible
-          </Pill>
-        </div>
-        <h2
-          className="text-ink"
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontWeight: 600,
-            fontSize: "clamp(28px, 4vw, 40px)",
-            lineHeight: 1.05,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Attribution affiliés et promoteurs.
-        </h2>
-        <p className="text-body text-ink-soft mt-4 max-w-xl mx-auto leading-relaxed">
-          Liens de tracking par partenaire, règles de commission par
-          tarif, et payout automatique sur vos versements LYFE — sans
-          jongler avec un outil tiers.
-        </p>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FeatureBlock
-          title="Liens trackés"
-          body="Un lien unique par affilié, avec attribution last-click sur 30 jours. Génération en lot pour les campagnes presse ou influenceurs."
-        />
-        <FeatureBlock
-          title="Règles de commission"
-          body="Pourcentage ou flat MAD, applicables par tarif ou par événement. Plafonds par affilié, exclusions des comps et boosts payants."
-        />
-        <FeatureBlock
-          title="Payout automatique"
-          body="Les commissions tombent sur vos versements existants — pas d'outil séparé, pas d'export comptable manuel. Intégration RIB Maroc."
-        />
-      </div>
-
-      {/* Grayed-out table preview */}
-      <Card variant="surface" size="md" className="!p-0">
-        <div className="px-6 pt-6 pb-4 border-b border-line-soft flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h3 className="text-h3 text-ink-mute">Aperçu</h3>
-            <p className="text-meta text-ink-mute mt-1">
-              Données fictives — illustration de ce que vous verrez ici
-            </p>
-          </div>
-          <Pill tone="neutral">Désactivé</Pill>
-        </div>
-        <div className="overflow-x-auto scroll-thin opacity-60 select-none">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="text-eyebrow text-ink-mute text-left border-b border-line-soft">
-                <th className="px-4 py-3 font-semibold">Affilié</th>
-                <th className="px-4 py-3 font-semibold text-right">Ventes attribuées</th>
-                <th className="px-4 py-3 font-semibold text-right">Commission</th>
-                <th className="px-4 py-3 font-semibold">Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {AFFILIATES_PREVIEW.map((row) => (
-                <tr
-                  key={row.handle}
-                  className="border-b border-line-soft last:border-0"
-                >
-                  <td className="px-4 py-3.5">
-                    <span className="font-mono font-semibold text-ink-soft num">
-                      {row.handle}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-right num font-bold text-ink-soft">
-                    {row.sales}
-                  </td>
-                  <td className="px-4 py-3.5 text-right num font-bold text-ink-soft">
-                    {row.commission} MAD
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <Pill tone="neutral">Désactivé</Pill>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function FeatureBlock({ title, body }: { title: string; body: string }) {
-  return (
-    <Card variant="surface" size="md">
-      <h3 className="text-[15px] font-semibold text-ink leading-tight">
-        {title}
-      </h3>
-      <p className="text-meta text-ink-soft mt-2 leading-relaxed">{body}</p>
-    </Card>
-  );
-}
 
 function PortfolioStat({
   label,

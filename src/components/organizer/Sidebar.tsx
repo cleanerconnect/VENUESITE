@@ -7,103 +7,79 @@ import { AnimatePresence, motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as RadixDialog from "@radix-ui/react-dialog";
 import {
-  Building2,
-  CalendarDays,
   Check,
   ChevronRight,
-  FileText,
-  LayoutDashboard,
   LogOut,
-  type LucideIcon,
-  Megaphone,
-  MessageCircle,
   MoreVertical,
-  PlusCircle,
-  Settings,
-  Sparkles,
-  Tag,
-  Ticket,
-  UserCog,
-  Users,
-  Wallet,
 } from "lucide-react";
+import { Icon } from "@/components/dashboard/primitives";
+import { VenueSwitcher, type SwitchableVenue } from "./VenueSwitcher";
+import {
+  WORKSPACES,
+  type NavItem,
+  type Workspace,
+  isActive,
+  resolveWorkspace,
+  visibleGroups,
+  visibleItems,
+} from "@/lib/nav/workspaces";
 import { Brand } from "./Brand";
 import { MobilePlusMenu } from "./MobilePlusMenu";
-import { emitSessionChanged, useProfile, useRole } from "@/lib/auth/role";
+import { emitSessionChanged, useProfile, useRole, useUser } from "@/lib/auth/role";
 import {
   ROLE_LABEL,
   type Role,
   clearSession,
-  switchProfile,
-  switchRole,
 } from "@/lib/auth/session";
-import { PROFILES } from "@/lib/mock/profiles";
+import { PROFILES } from "@/lib/auth/static/profiles";
 import { useMobileNavStore } from "@/lib/stores/mobileNav";
 import { cn } from "@/lib/utils/cn";
+import { signOut } from "@/app/actions/auth";
+import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 
-interface Item {
-  label: string;
-  href: string;
-  icon: LucideIcon;
-  pulse?: boolean;
-  /** When set, this nav item is hidden for any role NOT in the allow list. */
-  allow?: Role[];
-}
+const PORTAL_ROLE_LABEL: Record<string, string> = {
+  owner: "Propriétaire",
+  manager: "Manager",
+  staff: "Équipe",
+};
 
-// Two groups, no spelled-out labels, separated by a hairline divider.
-// The grouping reads visually; the items are obvious enough.
-const GROUP_A: Item[] = [
-  { label: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Mes événements", href: "/events", icon: Ticket },
-  { label: "Bilans", href: "/bilans", icon: FileText, allow: ["owner", "admin"] },
-  { label: "Support", href: "/support", icon: MessageCircle, allow: ["owner", "admin"] },
-  { label: "Audiences", href: "/audiences", icon: Sparkles, allow: ["owner", "admin"] },
-  { label: "Visibilité", href: "/visibilite", icon: Megaphone, allow: ["owner", "admin"] },
-  { label: "Codes promo", href: "/promo-codes", icon: Tag, allow: ["owner", "admin"] },
-  {
-    label: "Créer un événement",
-    href: "/events/new",
-    icon: PlusCircle,
-    pulse: true,
-    allow: ["owner", "admin"],
-  },
-];
-
-const GROUP_B: Item[] = [
-  { label: "Versements", href: "/settlements", icon: Wallet, allow: ["owner", "admin"] },
-  { label: "Équipe", href: "/team", icon: Users, allow: ["owner", "admin"] },
-  { label: "Réglages", href: "/settings", icon: Settings },
-];
-
-export function Sidebar() {
+export function Sidebar({
+  venues = [],
+  activeVenueId = "",
+  viewerName = "",
+  viewerRole,
+}: {
+  venues?: SwitchableVenue[];
+  activeVenueId?: string;
+  viewerName?: string;
+  viewerRole?: string;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const role = useRole();
   const profile = useProfile();
+  const user = useUser();
 
   const handleLogout = () => {
+    // Clears the client mirror and the server cookies. Clearing only the
+    // mirror left the server still signed in, so the next navigation
+    // walked straight back into the portal.
     clearSession();
-    router.push("/splash");
+    void signOut().then(() => router.replace("/login"));
   };
 
-  const handleSwitchRole = (next: Role) => {
-    switchRole(next);
-    emitSessionChanged();
-    router.refresh();
-  };
-
-  const handleSwitchProfile = (organizerId: string) => {
-    switchProfile(organizerId);
-    emitSessionChanged();
-    router.refresh();
-  };
-
-  const groupA = GROUP_A.filter(
-    (i) => !i.allow || (role && i.allow.includes(role)),
-  );
-  const groupB = GROUP_B.filter(
-    (i) => !i.allow || (role && i.allow.includes(role)),
-  );
+  // Which product this route belongs to decides the whole sidebar:
+  // caption, identity card, nav groups. Nothing below knows the names of
+  // any of them.
+  const workspace = resolveWorkspace(pathname);
+  // Three filters, in order: the lot decides which screens this
+  // deployment registers at all, the establishment's configuration
+  // decides which groups exist (Vie nocturne appears only for a lounge),
+  // then the role decides which of their items are visible.
+  const { configuration, lot } = useWorkspaceAccess();
+  const groups = visibleGroups(workspace, configuration, lot)
+    .map((group) => ({ ...group, items: visibleItems(group.items, role) }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
@@ -111,10 +87,13 @@ export function Sidebar() {
         pathname={pathname}
         role={role}
         profile={profile}
-        groupA={groupA}
-        groupB={groupB}
-        handleSwitchRole={handleSwitchRole}
-        handleSwitchProfile={handleSwitchProfile}
+        user={user}
+        workspace={workspace}
+        groups={groups}
+        venues={venues}
+        activeVenueId={activeVenueId}
+        viewerName={viewerName}
+        viewerRole={viewerRole}
         handleLogout={handleLogout}
       />
     </aside>
@@ -125,6 +104,7 @@ export function Sidebar() {
 // the left. Triggered by the topbar hamburger.
 export function MobileSidebarDrawer() {
   const pathname = usePathname();
+  const workspace = resolveWorkspace(pathname);
   const open = useMobileNavStore((s) => s.drawerOpen);
   const setOpen = useMobileNavStore((s) => s.setDrawerOpen);
 
@@ -161,7 +141,7 @@ export function MobileSidebarDrawer() {
                 <header className="px-5 pt-5 pb-3 border-b border-line-soft shrink-0">
                   <Brand height={32} />
                   <div className="text-meta text-ink-mute mt-2 lowercase">
-                    organisateur
+                    {workspace.caption}
                   </div>
                 </header>
                 <div className="flex-1 overflow-y-auto scroll-thin p-5">
@@ -197,21 +177,41 @@ function SidebarBody({
   pathname,
   role,
   profile,
-  groupA,
-  groupB,
-  handleSwitchRole,
-  handleSwitchProfile,
+  user,
+  workspace,
+  groups,
+  venues,
+  activeVenueId,
+  viewerName,
+  viewerRole,
   handleLogout,
 }: {
   pathname: string | null;
   role: Role | null;
   profile: ReturnType<typeof useProfile>;
-  groupA: Item[];
-  groupB: Item[];
-  handleSwitchRole: (next: Role) => void;
-  handleSwitchProfile: (organizerId: string) => void;
+  user: ReturnType<typeof useUser>;
+  workspace: Workspace;
+  groups: { label: string; items: NavItem[] }[];
+  venues: SwitchableVenue[];
+  activeVenueId: string;
+  viewerName: string;
+  viewerRole?: string;
   handleLogout: () => void;
 }) {
+  // The workspace supplies its own identity when it has one (the
+  // restaurant); otherwise the signed-in organizer profile fills it.
+  const entity = workspace.entity ?? {
+    initials: profile?.initials ?? "",
+    shortName: profile?.shortName ?? "",
+    subline: profile?.subline ?? "",
+  };
+
+  // Read from context rather than props: the mobile drawer renders
+  // this same body without going through <Sidebar>.
+  const workspaces = useWorkspaceAccess();
+  // Labels earn their place over ten groups, not over two.
+  const labelGroups = groups.length > 2;
+
   return (
     <>
       {/* Brand, real wordmark, no accompanying "LYFE" text label.
@@ -219,40 +219,102 @@ function SidebarBody({
           without clipping. */}
       <div className="px-6 pt-7 pb-5">
         <Brand height={44} />
+        {/* The caption names which of the two spaces you are in —
+            "organisateur" or "établissement" — and it says it in the
+            same place, at the same size, on both. An account that holds
+            both switches between them from the card below; the label is
+            what tells you where you landed. */}
         <div className="text-meta text-ink-mute mt-2 lowercase">
-          organisateur
+          {workspace.caption}
         </div>
       </div>
 
-      {/* Organizer switcher card — derived from the active demo profile. */}
+      {/* Venue switcher on the venue side, organisation switcher on the
+          event side. Either way, a link to the other workspace appears
+          only when the account holds it. */}
       <div className="px-4 mb-3">
-        <button className="w-full flex items-center gap-3 bg-surface rounded-[var(--radius-md)] p-3.5 text-left hover:shadow-soft transition-shadow">
-          <div
-            className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
-            style={{ background: "var(--color-violet-soft)" }}
-          >
-            {profile?.initials ?? "JZ"}
-          </div>
-          <div className="min-w-0 flex-1 leading-tight">
-            <div className="text-[13px] font-semibold text-ink truncate">
-              {profile?.shortName ?? "Jazzablanca"}
-            </div>
-            <div className="text-meta text-ink-mute truncate">
-              {profile?.subline ?? "Festival · Casablanca"}
-            </div>
-          </div>
-          <ChevronRight size={14} className="text-ink-mute shrink-0" />
-        </button>
+        {venues.length > 0 && workspace.id === "restaurant" ? (
+          // The link to the other space used to sit under the card as a
+          // row of its own. On the event side the same switch is an item
+          // inside the card's menu, so it is an item inside this card's
+          // menu too — one identity card per sidebar, and it is the
+          // thing you press to go anywhere else.
+          <VenueSwitcher
+            venues={venues}
+            activeVenueId={activeVenueId}
+            eventSpaceHref={workspaces.event ? WORKSPACES[0].home : undefined}
+          />
+        ) : (
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button className="w-full flex items-center gap-2.5 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow">
+                <div
+                  className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
+                  style={{ background: "var(--color-violet-soft)" }}
+                >
+                  {entity.initials}
+                </div>
+                <div className="min-w-0 flex-1 leading-tight">
+                  <div className="text-[13px] font-semibold text-ink truncate">
+                    {entity.shortName}
+                  </div>
+                  <div className="text-meta text-ink-mute truncate">
+                    {entity.subline}
+                  </div>
+                </div>
+                <ChevronRight size={14} className="text-ink-mute shrink-0" />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                side="bottom"
+                align="start"
+                sideOffset={6}
+                className="min-w-[228px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
+              >
+                {WORKSPACES.filter((w) =>
+                  w.id === "restaurant" ? workspaces.venue : workspaces.event,
+                ).map((w) => (
+                  <DropdownMenu.Item key={w.id} asChild>
+                    <Link
+                      href={w.home}
+                      className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                    >
+                      <span className="flex-1">{w.switcherLabel}</span>
+                      {w.id === workspace.id ? (
+                        <Check size={14} strokeWidth={2} className="text-violet-deep" />
+                      ) : null}
+                    </Link>
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+        )}
       </div>
 
-      {/* Nav, groups separated by a 1px line-soft divider, no labels */}
+      {/* Groups render with a hairline between them and no spelled-out
+          labels — the grouping reads visually. Any number of groups. */}
       <nav className="flex-1 px-3 overflow-y-auto scroll-thin">
-        <NavGroup items={groupA} pathname={pathname} />
-        <div
-          aria-hidden
-          className="my-3 mx-3 h-px bg-line-soft"
-        />
-        <NavGroup items={groupB} pathname={pathname} />
+        {/* Ten named groups on the venue side under Lot 2: the label is
+            what makes thirty links readable, and an unlabelled list of
+            thirty is a list nobody scans. Six links do not need them,
+            and the event sidebar does not label its two groups either —
+            the hairline between them is the grouping. So a basique
+            deployment draws the entries and the rule, and nothing else. */}
+        {groups.map((group, i) => (
+          <div key={group.label}>
+            {i > 0 ? (
+              <div aria-hidden className="my-3 mx-3 h-px bg-line-soft" />
+            ) : null}
+            {labelGroups ? (
+              <p className="px-3 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-ink-mute/70">
+                {group.label}
+              </p>
+            ) : null}
+            <NavGroup items={group.items} pathname={pathname} home={workspace.home} />
+          </div>
+        ))}
       </nav>
 
       {/* User card with kebab dropdown for account actions (logout). */}
@@ -262,14 +324,27 @@ function SidebarBody({
             className="h-9 w-9 rounded-full flex items-center justify-center text-ink font-bold text-[12px] shrink-0"
             style={{ background: "var(--color-tint-peach)" }}
           >
-            MR
+            {(viewerName || user?.name || "")
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((w) => w[0])
+              .join("")}
           </div>
           <div className="min-w-0 flex-1 leading-tight">
             <div className="text-[13px] font-semibold text-ink truncate">
-              Mido Reffas
+              {viewerName || user?.name}
             </div>
+            {/* The role, and only the role. The establishment was named
+                twice — here and in the card at the top of the same
+                column — and the event sidebar's footer says "Owner" on
+                its own. */}
             <div className="text-meta text-ink-mute truncate">
-              {role ? ROLE_LABEL[role] : "Directeur"} · Jazzablanca
+              {viewerRole
+                ? PORTAL_ROLE_LABEL[viewerRole] ?? viewerRole
+                : role
+                  ? ROLE_LABEL[role]
+                  : null}
             </div>
           </div>
           <DropdownMenu.Root>
@@ -288,90 +363,9 @@ function SidebarBody({
                 sideOffset={8}
                 className="min-w-[200px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
               >
-                <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
-                >
-                  <CalendarDays size={14} strokeWidth={1.8} className="text-ink-mute" />
-                  Calendrier
-                </DropdownMenu.Item>
-                <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
-
-                {/* Demo-only role switcher. Removed in production. */}
-                <DropdownMenu.Sub>
-                  <DropdownMenu.SubTrigger
-                    className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none data-[state=open]:bg-ink/[0.04]"
-                  >
-                    <UserCog size={14} strokeWidth={1.8} className="text-ink-mute" />
-                    <span className="flex-1">Vue démo</span>
-                    <ChevronRight size={12} strokeWidth={2} className="text-ink-mute" />
-                  </DropdownMenu.SubTrigger>
-                  <DropdownMenu.Portal>
-                    <DropdownMenu.SubContent
-                      sideOffset={4}
-                      className="min-w-[200px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
-                    >
-                      {(["owner", "admin", "scanner"] as Role[]).map((r) => {
-                        const active = role === r;
-                        return (
-                          <DropdownMenu.Item
-                            key={r}
-                            onSelect={() => handleSwitchRole(r)}
-                            className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
-                          >
-                            <span className="flex-1">{ROLE_LABEL[r]}</span>
-                            {active ? (
-                              <Check size={14} strokeWidth={2} className="text-violet-deep" />
-                            ) : null}
-                          </DropdownMenu.Item>
-                        );
-                      })}
-                    </DropdownMenu.SubContent>
-                  </DropdownMenu.Portal>
-                </DropdownMenu.Sub>
-
-                {/* Demo-only profile switcher (festival vs venue). Drives
-                    the conditional rendering of Settings → Détails du
-                    lieu and the chrome's org card. */}
-                <DropdownMenu.Sub>
-                  <DropdownMenu.SubTrigger
-                    className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none data-[state=open]:bg-ink/[0.04]"
-                  >
-                    <Building2 size={14} strokeWidth={1.8} className="text-ink-mute" />
-                    <span className="flex-1">Profil démo</span>
-                    <ChevronRight size={12} strokeWidth={2} className="text-ink-mute" />
-                  </DropdownMenu.SubTrigger>
-                  <DropdownMenu.Portal>
-                    <DropdownMenu.SubContent
-                      sideOffset={4}
-                      className="min-w-[260px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
-                    >
-                      {Object.values(PROFILES).map((p) => {
-                        const active = profile?.id === p.id;
-                        return (
-                          <DropdownMenu.Item
-                            key={p.id}
-                            onSelect={() => handleSwitchProfile(p.id)}
-                            className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <div className="font-semibold truncate">
-                                {p.shortName}
-                              </div>
-                              <div className="text-meta text-ink-mute truncate">
-                                {p.type === "venue" ? "Lieu" : p.type === "festival" ? "Festival" : "Promoteur"} · {p.city}
-                              </div>
-                            </div>
-                            {active ? (
-                              <Check size={14} strokeWidth={2} className="text-violet-deep shrink-0" />
-                            ) : null}
-                          </DropdownMenu.Item>
-                        );
-                      })}
-                    </DropdownMenu.SubContent>
-                  </DropdownMenu.Portal>
-                </DropdownMenu.Sub>
-
-                <DropdownMenu.Separator className="h-px bg-line-soft my-1" />
+                {/* It held a Calendrier row that navigated nowhere and two
+                    separators around it. Signing out is what a kebab on
+                    an account card is for. */}
                 <DropdownMenu.Item
                   onSelect={handleLogout}
                   className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
@@ -391,23 +385,24 @@ function SidebarBody({
 function NavGroup({
   items,
   pathname,
+  home,
 }: {
-  items: Item[];
+  items: NavItem[];
   pathname: string | null;
+  home: string;
 }) {
   return (
     <div>
       {items.map((item) => {
-        const active =
-          pathname === item.href ||
-          (item.href !== "/dashboard" && pathname?.startsWith(item.href));
-        const Icon = item.icon;
+        const active = isActive(pathname, item.href, home);
         return (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "relative flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium",
+              // `sidebar-item` is the hook host density resizes; the
+              // sizes here stay the Lot 2 ones.
+              "sidebar-item relative flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium",
               "transition-colors duration-150",
               active
                 ? "text-ink"
@@ -423,10 +418,11 @@ function NavGroup({
               />
             ) : null}
             <Icon
+              name={item.icon}
               size={18}
               strokeWidth={1.6}
               className={cn(
-                "relative z-10 shrink-0",
+                "sidebar-item-icon relative z-10 shrink-0",
                 active ? "text-ink" : "text-ink-mute",
               )}
             />

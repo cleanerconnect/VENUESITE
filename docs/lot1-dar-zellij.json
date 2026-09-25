@@ -1,0 +1,1113 @@
+{
+  "base": "http://localhost:3210",
+  "venue": "rst_dar_zellij",
+  "account": "yassine@darzellij.ma",
+  "depth": "full",
+  "lot": 1,
+  "capturedAt": "2026-09-24T23:25:44.408Z",
+  "screens": {
+    "/restaurant": {
+      "label": "Accueil",
+      "purpose": "Ce qui se passe aujourd'hui : chiffres du jour, file d'attente à traiter, bande des quatre prochaines heures.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "title": "Bonsoir, Yassine. Le service est lancé.",
+      "eyebrow": "Bonsoir",
+      "subtitle": "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées.",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "rows",
+          "heading": null,
+          "subheading": null,
+          "actions": [
+            "Ouvrir le carnet",
+            "Check-in"
+          ],
+          "facets": [],
+          "texts": [
+            "Bonsoir",
+            "Le service est lancé.",
+            "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées."
+          ],
+          "rows": [
+            {
+              "lines": [
+                "Bonsoir",
+                "Le service est lancé.",
+                "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées."
+              ],
+              "pills": [],
+              "actions": []
+            }
+          ]
+        },
+        {
+          "kind": "split",
+          "left": {
+            "kind": "prose",
+            "heading": "À traiter",
+            "subheading": "Ces clients attendent une réponse.",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "À traiter",
+              "Ces clients attendent une réponse."
+            ],
+            "body": "À traiterCes clients attendent une réponse.",
+            "pills": []
+          },
+          "right": {
+            "kind": "list",
+            "heading": null,
+            "subheading": null,
+            "actions": [
+              "Accepter",
+              "Refuser",
+              "Absent",
+              "Accepter",
+              "Refuser",
+              "Absent"
+            ],
+            "facets": [],
+            "texts": [
+              "22h30",
+              "1 table",
+              "22h30",
+              "2 couverts",
+              "Nabil Cherkaoui",
+              "À confirmer",
+              "LYFE",
+              "Demande une table près de la fontaine"
+            ],
+            "items": [
+              {
+                "title": "Nabil Cherkaoui",
+                "meta": null,
+                "initials": "Dem",
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Accepter",
+                  "Refuser",
+                  "Absent",
+                  "Accepter"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "split",
+          "left": {
+            "kind": "empty",
+            "heading": "Prochaines arrivées",
+            "subheading": "Confirmées, pas encore en salle.",
+            "actions": [],
+            "facets": [],
+            "texts": [
+              "Prochaines arrivées",
+              "Confirmées, pas encore en salle."
+            ],
+            "body": "Prochaines arrivéesConfirmées, pas encore en salle.",
+            "pills": []
+          },
+          "right": {
+            "kind": "list",
+            "heading": null,
+            "subheading": null,
+            "actions": [
+              "Check-in",
+              "Absent",
+              "Check-in",
+              "Absent",
+              "Check-in",
+              "Absent",
+              "Check-in",
+              "Absent",
+              "Check-in",
+              "Absent",
+              "Check-in",
+              "Absent",
+              "Check-in",
+              "Absent",
+              "Check-in",
+              "Absent"
+            ],
+            "facets": [],
+            "texts": [
+              "22h30",
+              "4 tables",
+              "22h30",
+              "4 couverts",
+              "Salma Bennani",
+              "Confirmée",
+              "Patio · LYFE",
+              "Anniversaire, dessert avec bougie",
+              "22h30",
+              "6 couverts",
+              "Groupe Karam",
+              "Confirmée",
+              "Grande salle · Téléphone",
+              "Sans gluten pour deux couverts",
+              "22h30",
+              "4 couverts",
+              "Yasmine El Alaoui",
+              "Confirmée",
+              "Terrasse",
+              "22h30",
+              "5 couverts",
+              "Hind Tazi",
+              "Confirmée",
+              "Grande salle · Téléphone"
+            ],
+            "items": [
+              {
+                "title": "Salma Bennani",
+                "meta": null,
+                "initials": "Ann",
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Check-in",
+                  "Absent",
+                  "Check-in",
+                  "Absent"
+                ]
+              },
+              {
+                "title": "Groupe Karam",
+                "meta": null,
+                "initials": "San",
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Check-in",
+                  "Absent",
+                  "Check-in",
+                  "Absent"
+                ]
+              },
+              {
+                "title": "Yasmine El Alaoui",
+                "meta": null,
+                "initials": null,
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Check-in",
+                  "Absent",
+                  "Check-in",
+                  "Absent"
+                ]
+              },
+              {
+                "title": "Hind Tazi",
+                "meta": null,
+                "initials": null,
+                "trailing": null,
+                "pills": [],
+                "actions": [
+                  "Check-in",
+                  "Absent",
+                  "Check-in",
+                  "Absent"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "prose",
+          "heading": "Arrivés",
+          "subheading": "Afficher",
+          "actions": [
+            "21 tables installéesAfficher"
+          ],
+          "facets": [],
+          "texts": [
+            "Arrivés",
+            "21 tables installées",
+            "Afficher"
+          ],
+          "body": "Arrivés21 tables installéesAfficher",
+          "pills": []
+        }
+      ]
+    },
+    "/restaurant/reservations": {
+      "label": "Réservations",
+      "purpose": "Le carnet d'une journée : accepter, refuser avec motif, modifier, marquer arrivé, absent, annuler.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "title": "Réservations",
+      "eyebrow": null,
+      "subtitle": "jeudi 24 septembre · Dîner · 19h00 – 23h30",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": null,
+          "subheading": "Aujourd'hui.",
+          "actions": [
+            "Déjeuner",
+            "Dîner"
+          ],
+          "facets": [],
+          "texts": [
+            "jeudi 24 septembre",
+            "Aujourd'hui.",
+            "Choisir une date",
+            "Déjeuner",
+            "Dîner"
+          ],
+          "fields": [
+            {
+              "label": "Aujourd'hui.",
+              "value": "2026-09-24",
+              "type": "date"
+            }
+          ],
+          "toggles": []
+        },
+        {
+          "kind": "list",
+          "heading": "Carnet du service",
+          "subheading": "Trier par",
+          "actions": [
+            "Check-in",
+            "Absent",
+            "Check-in",
+            "Absent",
+            "Check-in",
+            "Absent",
+            "Check-in",
+            "Absent",
+            "Check-in",
+            "Absent",
+            "Check-in",
+            "Absent",
+            "Accepter",
+            "Refuser",
+            "Absent",
+            "Accepter",
+            "Refuser",
+            "Absent",
+            "Check-in",
+            "Absent",
+            "Check-in",
+            "Absent"
+          ],
+          "facets": [
+            {
+              "label": "Tous",
+              "count": "26"
+            },
+            {
+              "label": "À confirmer",
+              "count": "1"
+            },
+            {
+              "label": "Confirmées",
+              "count": "4"
+            },
+            {
+              "label": "Arrivés",
+              "count": "21"
+            }
+          ],
+          "texts": [
+            "Carnet du service",
+            "Trier par",
+            "Prochaine arrivée",
+            "Heure · tôt → tard",
+            "Heure · tard → tôt",
+            "Couverts",
+            "Nom",
+            "26",
+            "1",
+            "4",
+            "21",
+            "22h30",
+            "5 tables",
+            "22h30",
+            "4 couverts",
+            "Salma Bennani",
+            "Confirmée",
+            "Patio · LYFE",
+            "Anniversaire, dessert avec bougie",
+            "22h30",
+            "6 couverts",
+            "Groupe Karam",
+            "Confirmée",
+            "Grande salle · Téléphone",
+            "Sans gluten pour deux couverts",
+            "22h30",
+            "4 couverts",
+            "Yasmine El Alaoui",
+            "Confirmée",
+            "Terrasse",
+            "22h30",
+            "2 couverts",
+            "Nabil Cherkaoui",
+            "À confirmer",
+            "LYFE",
+            "Demande une table près de la fontaine",
+            "22h30",
+            "5 couverts",
+            "Hind Tazi",
+            "Confirmée",
+            "Grande salle · Téléphone",
+            "19h00",
+            "3 tables",
+            "19h00",
+            "2 couverts",
+            "Famille Alami",
+            "Arrivé",
+            "Grande salle · LYFE",
+            "19h00",
+            "4 couverts",
+            "Groupe Atlas",
+            "Arrivé",
+            "Grande salle · Téléphone",
+            "19h00",
+            "6 couverts",
+            "Table Koutoubia",
+            "Arrivé",
+            "Grande salle",
+            "19h30",
+            "3 tables",
+            "19h30",
+            "4 couverts",
+            "Rachid Benjelloun",
+            "Arrivé",
+            "Patio · Téléphone",
+            "19h30",
+            "8 couverts",
+            "Anniversaire Chraïbi",
+            "Arrivé",
+            "Patio",
+            "19h30",
+            "4 couverts",
+            "Adil Berrechid",
+            "Arrivé",
+            "Patio · LYFE",
+            "20h00",
+            "3 tables",
+            "20h00",
+            "2 couverts",
+            "Sanaa Mourad",
+            "Arrivé",
+            "Terrasse",
+            "20h00",
+            "2 couverts",
+            "Nawal Rifai",
+            "Arrivé",
+            "Terrasse · LYFE",
+            "20h00",
+            "4 couverts",
+            "Hakim Sbaï",
+            "Arrivé",
+            "Terrasse · LYFE",
+            "20h30",
+            "2 tables",
+            "20h30",
+            "6 couverts",
+            "Groupe Ziyad",
+            "Arrivé",
+            "Grande salle · LYFE",
+            "20h30",
+            "4 couverts",
+            "Karim Belmekki",
+            "Arrivé",
+            "Grande salle · LYFE",
+            "21h00",
+            "2 tables",
+            "21h00",
+            "4 couverts",
+            "Khalid Naciri",
+            "Arrivé",
+            "Patio · LYFE",
+            "21h00",
+            "6 couverts",
+            "Famille Tazi",
+            "Arrivé",
+            "Patio · Téléphone",
+            "21h30",
+            "2 tables",
+            "21h30",
+            "2 couverts"
+          ],
+          "items": [
+            {
+              "title": "Salma Bennani",
+              "meta": null,
+              "initials": "Ann",
+              "trailing": null,
+              "pills": [],
+              "actions": [
+                "Check-in",
+                "Absent",
+                "Check-in",
+                "Absent"
+              ]
+            },
+            {
+              "title": "Groupe Karam",
+              "meta": null,
+              "initials": "San",
+              "trailing": null,
+              "pills": [],
+              "actions": [
+                "Check-in",
+                "Absent",
+                "Check-in",
+                "Absent"
+              ]
+            },
+            {
+              "title": "Yasmine El Alaoui",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [
+                "Check-in",
+                "Absent",
+                "Check-in",
+                "Absent"
+              ]
+            },
+            {
+              "title": "Nabil Cherkaoui",
+              "meta": null,
+              "initials": "Dem",
+              "trailing": null,
+              "pills": [],
+              "actions": [
+                "Accepter",
+                "Refuser",
+                "Absent",
+                "Accepter"
+              ]
+            },
+            {
+              "title": "Hind Tazi",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [
+                "Check-in",
+                "Absent",
+                "Check-in",
+                "Absent"
+              ]
+            },
+            {
+              "title": "Famille Alami",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Atlas",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Table Koutoubia",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Rachid Benjelloun",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Anniversaire Chraïbi",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Adil Berrechid",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Sanaa Mourad",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Nawal Rifai",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Hakim Sbaï",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Ziyad",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Karim Belmekki",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Khalid Naciri",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Famille Tazi",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Imane Sefrioui",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Sofia Guessous",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Table Ourika",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Réda Amrani",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Mehdi Bouzoubaa",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Groupe Majorelle",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Couple Lambert",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            },
+            {
+              "title": "Laila Zniber",
+              "meta": null,
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": []
+            }
+          ]
+        }
+      ],
+      "surfaces": [
+        {
+          "name": "Détail réservation",
+          "title": "Salma Bennani",
+          "lines": [
+            "Salma Bennani",
+            "22h30 · 4 couverts · LYFE",
+            "La réservation",
+            "Heure",
+            "22h30",
+            "Personnes",
+            "4",
+            "Espace",
+            "Patio",
+            "Canal",
+            "LYFE",
+            "Le client",
+            "Téléphone",
+            "+212 661 20 44 18",
+            "Note de salle",
+            "Anniversaire, dessert avec bougie"
+          ],
+          "pills": [
+            "CONFIRMÉE"
+          ],
+          "buttons": [
+            "Marquer comme arrivé"
+          ],
+          "width": 460
+        },
+        {
+          "name": "Refuser",
+          "title": "Refuser la demande",
+          "lines": [
+            "Refuser la demande",
+            "Nabil Cherkaoui sera prévenu dans l'application.",
+            "Motif du refus",
+            "Complet sur ce créneau",
+            "Groupe trop nombreux",
+            "Hors service",
+            "Fermeture exceptionnelle",
+            "Doublon",
+            "Autre",
+            "Précision (facultatif)",
+            "Annuler",
+            "Refuser la demande"
+          ],
+          "pills": [],
+          "buttons": [
+            "Complet sur ce créneau",
+            "Groupe trop nombreux",
+            "Hors service",
+            "Fermeture exceptionnelle",
+            "Doublon",
+            "Autre",
+            "Annuler",
+            "Refuser la demande"
+          ],
+          "width": 448
+        }
+      ]
+    },
+    "/restaurant/check-in": {
+      "label": "Check-in",
+      "purpose": "Valider une arrivée : caméra, code saisi, recherche par nom, annulation dans les cinq minutes.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "title": "Check-in",
+      "eyebrow": null,
+      "subtitle": "Dar Zellij · 5 arrivées encore attendues",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": null,
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Check-in",
+            "Dar Zellij · 5 arrivées encore attendues"
+          ],
+          "body": "Check-inDar Zellij · 5 arrivées encore attendues",
+          "pills": []
+        },
+        {
+          "kind": "settings",
+          "heading": "Prochaines arrivées",
+          "subheading": "Appuyez sur Check-in pour enregistrer une arrivée sans code.",
+          "actions": [
+            "Scanner le code",
+            "Check-in",
+            "Check-in",
+            "Check-in",
+            "Check-in",
+            "Check-in",
+            "Valider"
+          ],
+          "facets": [],
+          "texts": [
+            "Prochaines arrivées",
+            "Appuyez sur Check-in pour enregistrer une arrivée sans code.",
+            "22h30",
+            "Salma Bennani",
+            "4 couverts · Patio",
+            "Anniversaire, dessert avec bougie",
+            "Check-in",
+            "22h30",
+            "Groupe Karam",
+            "6 couverts · Grande salle",
+            "Sans gluten pour deux couverts",
+            "Check-in",
+            "22h30",
+            "Yasmine El Alaoui",
+            "4 couverts · Terrasse",
+            "Check-in",
+            "22h30",
+            "Nabil Cherkaoui",
+            "2 couverts",
+            "Demande une table près de la fontaine",
+            "Check-in",
+            "22h30",
+            "Hind Tazi",
+            "5 couverts · Grande salle",
+            "Check-in",
+            "Sans le code du client",
+            "Cherchez le nom dans la liste ci-dessus, ou saisissez le code à la main.",
+            "Chercher par nom",
+            "Code de réservation",
+            "Valider",
+            "Trente dernières minutes",
+            "Une erreur de scan se voit dans les cinq minutes. Au-delà, l'annulation passe par le carnet.",
+            "Aucune arrivée",
+            "Les clients validés depuis cet écran apparaîtront ici."
+          ],
+          "fields": [
+            {
+              "label": "Chercher par nom",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "label": "Code de réservation",
+              "value": "",
+              "type": "text"
+            }
+          ],
+          "toggles": []
+        }
+      ]
+    },
+    "/restaurant/ma-fiche": {
+      "label": "Ma fiche",
+      "purpose": "Ce que l'application montre de l'établissement : identité, fiche, photos. Enregistré pour de vrai.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Ma fiche",
+      "eyebrow": null,
+      "subtitle": "L'établissement tel que l'application le montre : identité, adresse, contact, photos et horaires.",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Identité",
+          "subheading": "Ce que les clients voient dans l'application.",
+          "actions": [
+            "Identité",
+            "Horaires",
+            "Photos",
+            "Enregistrer"
+          ],
+          "facets": [],
+          "texts": [
+            "Ma fiche",
+            "L'établissement tel que l'application le montre : identité, adresse, contact, photos et horaires.",
+            "Horaires",
+            "Photos",
+            "Identité",
+            "Ce que les clients voient dans l'application.",
+            "Nom du lieu",
+            "Nom court",
+            "Affiché dans les listes de l'application.",
+            "Description",
+            "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
+            "Catégorie",
+            "Ex. Marocaine contemporaine",
+            "Adresse et contact",
+            "Adresse",
+            "Ville",
+            "Téléphone",
+            "E-mail",
+            "Site web",
+            "https://…",
+            "À jour",
+            "Enregistrer"
+          ],
+          "fields": [
+            {
+              "label": "Nom du lieu",
+              "value": "Dar Zellij",
+              "type": "text"
+            },
+            {
+              "label": "Nom court",
+              "value": "Dar Zellij",
+              "type": "text"
+            },
+            {
+              "label": "Description",
+              "value": "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
+              "type": "textarea"
+            },
+            {
+              "label": "Catégorie",
+              "value": "Marocaine contemporaine",
+              "type": "text"
+            },
+            {
+              "label": "Adresse",
+              "value": "12 derb Sidi Ahmed Soussi, Médina",
+              "type": "text"
+            },
+            {
+              "label": "Ville",
+              "value": "Marrakech",
+              "type": "text"
+            },
+            {
+              "label": "Téléphone",
+              "value": "+212 524 38 26 00",
+              "type": "text"
+            },
+            {
+              "label": "E-mail",
+              "value": "reservations@darzellij.ma",
+              "type": "text"
+            },
+            {
+              "label": "Site web",
+              "value": "https://darzellij.ma",
+              "type": "text"
+            }
+          ],
+          "toggles": []
+        }
+      ]
+    },
+    "/restaurant/disponibilites": {
+      "label": "Disponibilités",
+      "purpose": "Ce qui décide de ce que l'application propose : services, cadence, fenêtre de réservation, jours exceptionnels.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Disponibilités",
+      "eyebrow": null,
+      "subtitle": "Ce qui décide de ce que l'application propose",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": null,
+          "actions": [
+            "Enregistrer"
+          ],
+          "facets": [],
+          "texts": [
+            "À jour",
+            "Enregistrer"
+          ],
+          "body": "À jourEnregistrer",
+          "pills": []
+        }
+      ]
+    },
+    "/restaurant/notifications": {
+      "label": "Notifications",
+      "purpose": "Les alertes de l'équipe et les messages aux clients, avec leur canal, leur moment et leur journal de délivrance.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "Les canaux, les horaires et les gabarits s'enregistrent. L'expédition attend le compte Twilio ou Infobip de LYFE.",
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "title": "Notifications",
+      "eyebrow": null,
+      "subtitle": "Ce dont vous êtes prévenu, et par quel canal",
+      "venue": "YA",
+      "blocks": [
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": null,
+          "actions": [
+            "Enregistrer"
+          ],
+          "facets": [],
+          "texts": [
+            "À jour",
+            "Enregistrer"
+          ],
+          "body": "À jourEnregistrer",
+          "pills": []
+        }
+      ]
+    },
+    "/login": {
+      "label": "Connexion",
+      "purpose": "Le seul point d'entrée. Résout le compte vers son espace ; propose de choisir le lieu quand il y en a plusieurs.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "title": "Gérez les réservations de votre établissement, de la demande à l'arrivée en salle.",
+      "eyebrow": "Espace partenaire",
+      "subtitle": "LYFE · Maroc",
+      "venue": null,
+      "blocks": [
+        {
+          "kind": "settings",
+          "heading": "Connectez-vous",
+          "subheading": "LYFE · Maroc",
+          "actions": [
+            "Mot de passe oublié ?",
+            "Se connecter"
+          ],
+          "facets": [],
+          "texts": [
+            "Espace partenaire",
+            "Gérez les réservations de votre établissement, de la demande à l'arrivée en salle.",
+            "LYFE · Maroc",
+            "Connectez-vous",
+            "L'accès à votre établissement sur LYFE.",
+            "Adresse e-mail",
+            "Mot de passe",
+            "Se souvenir de moi",
+            "Mot de passe oublié ?",
+            "Se connecter",
+            "Inscrire mon établissement"
+          ],
+          "fields": [
+            {
+              "label": "Adresse e-mail",
+              "value": "",
+              "type": "email"
+            },
+            {
+              "label": "Mot de passe",
+              "value": "",
+              "type": "password"
+            },
+            {
+              "label": "Se souvenir de moi",
+              "value": "on",
+              "type": "checkbox"
+            }
+          ],
+          "toggles": [
+            {
+              "label": "Se souvenir de moiMot de passe oublié ?",
+              "on": true
+            }
+          ]
+        }
+      ]
+    },
+    "/splash": {
+      "label": "Splash",
+      "purpose": "Écran de lancement de l'application mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "venue": null,
+      "blocks": []
+    },
+    "/inscription": {
+      "label": "Inscription",
+      "purpose": "« Création de Venue » : six étapes pour inscrire un établissement — vous, l'établissement, l'adresse, une photo, les horaires, un récapitulatif. Le brouillon est enregistré à chaque étape, donc fermer l'onglet ne perd rien.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "title": "Vous",
+      "eyebrow": null,
+      "subtitle": "Vos coordonnées, pour que nous sachions à qui écrire. Rien n'est public.",
+      "venue": null,
+      "blocks": []
+    },
+    "/contact": {
+      "label": "Nous contacter",
+      "purpose": "Formulaire public pour un partenaire sans accès.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "venue": null,
+      "blocks": [
+        {
+          "kind": "prose",
+          "heading": null,
+          "subheading": "Casablanca · Rabat · Marrakech",
+          "actions": [],
+          "facets": [],
+          "texts": [
+            "Parlons de votre événement.",
+            "LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures.",
+            "Casablanca · Rabat · Marrakech"
+          ],
+          "body": "Parlons de votre événement.LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures.hello@lyfe.maCasablanca · Rabat · Marrakech",
+          "pills": []
+        }
+      ]
+    }
+  },
+  "nav": {
+    "groups": []
+  }
+}

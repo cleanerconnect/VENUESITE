@@ -82,7 +82,7 @@ function BilanCard({
           className="absolute -top-12 -right-8 w-32 h-32 rounded-full pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle, rgba(134,91,166,0.10), transparent 70%)",
+              "radial-gradient(circle, color-mix(in oklab, var(--color-violet) 10%, transparent), transparent 70%)",
           }}
         />
 

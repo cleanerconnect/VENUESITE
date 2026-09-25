@@ -44,7 +44,10 @@ export function CapacityRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="rgba(255,255,255,0.10)"
+          // strokeOpacity rather than a mixed colour: an SVG presentation
+          // attribute is the one place color-mix support is not worth relying on.
+          stroke="var(--color-canvas)"
+          strokeOpacity={0.1}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -52,7 +55,7 @@ export function CapacityRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#865BA6"
+          stroke="var(--color-violet)"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           fill="none"

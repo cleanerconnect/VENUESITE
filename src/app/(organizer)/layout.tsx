@@ -2,24 +2,92 @@ import { MobileSidebarDrawer, Sidebar } from "@/components/organizer/Sidebar";
 import { Topbar } from "@/components/organizer/Topbar";
 import { BottomTabs } from "@/components/organizer/BottomTabs";
 import { ScannerModal } from "@/components/organizer/ScannerModal";
+import { CheckInSheet } from "@/components/restaurant/CheckInSheet";
 import { AssistantFAB } from "@/components/organizer/Assistant";
-import { SessionGuard } from "@/components/auth/SessionGuard";
+import { SessionSync } from "@/components/auth/SessionSync";
+import { WorkspaceAccessProvider } from "@/lib/auth/workspace-access";
+import { resolveSession } from "@/lib/auth/server-session";
+import { resolveAccount } from "@/lib/auth/accounts";
+import { getRestaurantRepository } from "@/lib/data";
+import { redirect } from "next/navigation";
+import { activeLot } from "@/lib/lot";
 
 // Shell, sticky sidebar (desktop), top app bar, mobile bottom tabs.
-// ScannerModal and AssistantFAB live here so they're persistent across
-// every route. Keyboard shortcuts (⌘+Shift+S, ⌘+J) are wired in Topbar.
-// SessionGuard is the front door — it redirects to /login if no valid
-// session exists in localStorage.
-export default function OrganizerLayout({
+// ScannerModal, CheckInSheet and AssistantFAB live here so they're
+// persistent across every route. Keyboard shortcuts (⌘+Shift+S, ⌘+J)
+// are wired in Topbar. The assistant renders in Lot 2 only.
+//
+// The gate is server-side: the middleware bounces a request with no
+// session cookie, and this layout redirects if the cookie resolves to
+// nothing. There used to be a third gate reading localStorage, which
+// could disagree with the other two — a client could be signed out
+// while the server considered it signed in.
+export default async function OrganizerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Resolved server-side so the shell knows which venue is active and
+  // which others this account holds, without the client asking.
+  const session = await resolveSession();
+  if (!session) redirect("/login?expired=1");
+
+  const account = await resolveAccount(session.userId);
+
+  // The active venue's configuration decides whether Vie nocturne is
+  // part of the navigation at all. Read here, once, and published — the
+  // three pieces of chrome that need it must not each guess.
+  const configuration =
+    session.venues.length > 0
+      ? (await getRestaurantRepository().getVenueSettings(session.venueId)).configuration
+      : "restaurant";
+
+  const access = {
+    event: (account?.organizations.length ?? 0) > 0,
+    venue: session.venues.length > 0,
+    configuration,
+    // Read once here for the same reason as the configuration: the
+    // sidebar, the drawer and the Plus sheet all filter on it, and
+    // `process.env` does not exist in any of the three.
+    lot: activeLot(),
+  };
+
   return (
-    <SessionGuard>
-      <div className="min-h-screen flex">
+    <WorkspaceAccessProvider value={access}>
+      <SessionSync
+        userId={session.userId}
+        email={session.email}
+        organizerId={account?.organizations[0]?.id ?? ""}
+        // A venue membership decides the role where there is one; an
+        // event-only account takes its role from the account directory,
+        // or it would land as a scanner and lose most of the nav.
+        role={
+          session.venues.length > 0
+            ? session.role === "owner"
+              ? "owner"
+              : session.role === "manager"
+                ? "admin"
+                : "scanner"
+            : (account?.eventRole ?? "scanner")
+        }
+      />
+      {/* Lot 1 runs at host density: the same tokens and components, a
+          scale built for a stand rather than a desk. See the block in
+          globals.css — it is a mode, so nothing below has to know. */}
+      <div
+        className="min-h-screen flex"
+        data-density={access.lot === 1 ? "host" : undefined}
+      >
         <div className="no-print contents">
-          <Sidebar />
+          <Sidebar
+            venues={session.venues}
+            activeVenueId={session.venueId}
+            viewerName={session.fullName}
+            // Only pass the venue role when there is a venue. Otherwise
+            // the sidebar labelled an event owner "Équipe", which is the
+            // venue vocabulary applied to the wrong product.
+            viewerRole={session.venues.length > 0 ? session.role : undefined}
+          />
           <MobileSidebarDrawer />
         </div>
         <div className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">
@@ -35,9 +103,14 @@ export default function OrganizerLayout({
 
           {/* Persistent global surfaces */}
           <ScannerModal />
-          <AssistantFAB />
+          <CheckInSheet />
+          {/* The assistant is not in the Dashboard basique row, so a
+              Lot 1 deployment does not carry it — and it is the one
+              floating surface, which on a booking list is a violet disc
+              sitting over a row's covers. Lot 2 keeps it. */}
+          {access.lot === 2 ? <AssistantFAB /> : null}
         </div>
       </div>
-    </SessionGuard>
+    </WorkspaceAccessProvider>
   );
 }

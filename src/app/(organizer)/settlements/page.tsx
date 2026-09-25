@@ -1,45 +1,75 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Download, Lock, Megaphone, Zap } from "lucide-react";
+import { ArrowRight, Download, Megaphone } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { BOOST_LABEL, BoostFormatIcon } from "@/components/visibility/BoostFormatIcon";
-import { getInvoices, getPayouts } from "@/lib/mock/finance";
-import { getCampaigns } from "@/lib/mock/visibility";
 import {
   formatDateFR,
   formatDateTimeFR,
   formatMAD,
 } from "@/lib/utils/format";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { useEventQuery } from "@/lib/data/useQuery";
+import { QueryState } from "@/components/data/QueryState";
+import { EntityListSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 export default function SettlementsPage() {
-  const payouts = getPayouts();
-  const invoices = getInvoices();
+  const payoutsQuery = useEventQuery((repo) => repo.listPayouts(), []);
+  const invoicesQuery = useEventQuery((repo) => repo.listInvoices(), []);
+
+  const payouts = payoutsQuery.data ?? [];
+  const invoices = invoicesQuery.data ?? [];
   const next = payouts.find((p) => p.status !== "paid") ?? payouts[0];
   const history = payouts.filter((p) => p.status === "paid");
 
-  const daysToNext = Math.max(
-    0,
-    Math.ceil(
-      (new Date(next.scheduledFor).getTime() - Date.now()) /
-        (1000 * 60 * 60 * 24),
-    ),
-  );
+  const daysToNext = next
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(next.scheduledFor).getTime() - Date.now()) /
+            (1000 * 60 * 60 * 24),
+        ),
+      )
+    : 0;
+
+  // The hero reads `next`, so the whole page waits on the payout list
+  // rather than rendering a header above an empty card.
+  if (payoutsQuery.status !== "ready" || !next) {
+    return (
+      <div className="space-y-5 md:space-y-7">
+        <PageHeader
+          title="Versements"
+          subtitle="L'argent de vos billets, sur votre compte. J+3 après la fin de chaque événement."
+        />
+        <QueryState
+          query={{ ...payoutsQuery, isEmpty: !next }}
+          label="Chargement de vos versements"
+          skeleton={
+            <div className="space-y-5">
+              <Skeleton shape="card" className="h-52 w-full" />
+              <EntityListSkeleton rows={4} />
+            </div>
+          }
+          empty={{
+            title: "Aucun versement pour l'instant",
+            body: "Votre premier versement arrivera trois jours après votre premier événement.",
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 md:space-y-7">
-      {/* === Header === */}
-      <div>
-        <h1 className="text-h1 text-ink">Versements</h1>
-        <p className="text-body text-ink-soft mt-1.5">
-          L'argent de vos billets, sur votre compte. J+3 après la fin de
-          chaque événement.
-        </p>
-      </div>
+      <PageHeader
+        title="Versements"
+        subtitle="L'argent de vos billets, sur votre compte. J+3 après la fin de chaque événement."
+      />
 
       {/* === Next payout, dark hero with Fraunces money headline === */}
       <Card variant="ink" size="hero" glow>
@@ -122,7 +152,6 @@ export default function SettlementsPage() {
       </Card>
 
       {/* === Pre-event payout advance — signaled capability === */}
-      <PayoutAdvanceCard />
 
       {/* === Boost spend, deducted from upcoming settlements === */}
       <BoostSpendCard />
@@ -239,57 +268,15 @@ export default function SettlementsPage() {
   );
 }
 
-// Signaled capability — pre-event payout advance. Disabled CTA, lock
-// icon, violet-soft tint. The card is intentionally calm so it signals
-// the capability to demo viewers without competing with the live data
-// above it.
-function PayoutAdvanceCard() {
-  return (
-    <Card variant="violet-soft" size="md">
-      <div className="grid lg:grid-cols-[1fr_auto] gap-5 items-center">
-        <div className="flex items-start gap-3">
-          <span
-            aria-hidden
-            className="h-10 w-10 rounded-[12px] bg-canvas/60 flex items-center justify-center shrink-0"
-          >
-            <Zap size={18} strokeWidth={1.7} className="text-violet-deep" />
-          </span>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-eyebrow text-violet-deep">
-                Avance sur ventes confirmées
-              </span>
-              <Pill tone="neutral">
-                <Lock size={11} strokeWidth={2} className="-ml-0.5" />
-                Bientôt disponible
-              </Pill>
-            </div>
-            <p className="text-[14px] text-ink mt-2 leading-relaxed">
-              Recevez jusqu&apos;à 70 % de vos ventes confirmées 30 jours
-              avant l&apos;événement. Frais transparents, remboursement
-              automatique sur le versement post-événement.
-            </p>
-          </div>
-        </div>
-        <Button
-          variant="secondary"
-          size="md"
-          iconLeft={<Lock size={13} strokeWidth={1.9} />}
-          disabled
-        >
-          Demander une avance
-        </Button>
-      </div>
-    </Card>
-  );
-}
-
 function BoostSpendCard() {
-  // Spend = sum of all currently-active and recently-completed campaigns
-  // for the period. In production this is a window-bounded query; for the
-  // demo we surface every campaign in the mock factory.
-  const campaigns = getCampaigns();
-  if (campaigns.length === 0) return null;
+  // Spend = every campaign in the window. In production this is a
+  // window-bounded query; the static dataset returns them all.
+  const query = useEventQuery((repo) => repo.listCampaigns(), []);
+  const campaigns = query.data ?? [];
+  // A card that is only ever additive context stays out of the way while
+  // it loads and if it fails — a spend figure is not worth an error card
+  // on a page whose subject is payouts.
+  if (query.status !== "ready" || campaigns.length === 0) return null;
   const total = campaigns.reduce((s, c) => s + c.spentMad, 0);
 
   return (
@@ -298,7 +285,7 @@ function BoostSpendCard() {
         <div className="flex items-start gap-3">
           <span
             aria-hidden
-            className="h-10 w-10 rounded-[12px] bg-violet-soft flex items-center justify-center shrink-0"
+            className="h-10 w-10 rounded-chip bg-violet-soft flex items-center justify-center shrink-0"
           >
             <Megaphone size={18} strokeWidth={1.7} className="text-violet-deep" />
           </span>
@@ -365,7 +352,7 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div>
       <div
         className="text-[10px] font-bold uppercase tracking-[0.12em]"
-        style={{ color: "rgba(250,247,240,0.55)" }}
+        style={{ color: "color-mix(in oklab, var(--color-on-ink) 55%, transparent)" }}
       >
         {label}
       </div>
