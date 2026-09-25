@@ -255,3 +255,22 @@ export interface VenueValidationInput {
   status: "validated" | "rejected";
   reason: string;
 }
+
+/** One time the venue can still seat on a given day. */
+export interface BookableSlot {
+  /** ISO instant. */
+  at: string;
+  /** Which sitting it belongs to — « Déjeuner », « Nuit ». */
+  serviceLabel: string;
+}
+
+/**
+ * Décaler. The new time must be one `getBookableSlots` returned for its
+ * day, and the driver checks that rather than trusting the caller.
+ */
+export interface RescheduleBookingInput {
+  restaurantId: string;
+  reservationId: string;
+  /** ISO instant. */
+  at: string;
+}

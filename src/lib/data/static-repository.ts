@@ -1,5 +1,9 @@
 import type { PendingVenue } from "@/lib/types/restaurant";
-import type { VenueValidationInput } from "@/lib/types/business";
+import type {
+  VenueValidationInput,
+  RescheduleBookingInput,
+  BookableSlot,
+} from "@/lib/types/business";
 import "server-only";
 
 // The no-infrastructure driver.
@@ -136,6 +140,41 @@ export class StaticRestaurantRepository implements RestaurantRepository {
 
   async cancelReservation({ restaurantId, reservationId }: ReservationRefInput) {
     return this.transition(restaurantId, reservationId, "cancelled");
+  }
+
+  /**
+   * The snapshot holds a day's book, not the service definitions the
+   * grid is built from, so it can offer nothing rather than offer times
+   * it made up.
+   */
+  /**
+   * The snapshot holds one day, so a cross-day search has nothing to
+   * cross. It searches the day it has rather than claiming none.
+   */
+  async searchReservations(_venueId: string, query: string): Promise<Reservation[]> {
+    const term = query.trim().toLowerCase();
+    if (term.length < 2) return [];
+    const digits = term.replace(/\D/g, "");
+    const overview = await this.getOverview(_venueId);
+    return overview.upcomingReservations.filter(
+      (r) =>
+        r.guestName.toLowerCase().includes(term) ||
+        (digits !== "" && r.guestPhone.replace(/\D/g, "").includes(digits)),
+    );
+  }
+
+  async getBookableSlots(): Promise<BookableSlot[]> {
+    return [];
+  }
+
+  async rescheduleReservation(
+    _input: RescheduleBookingInput,
+  ): Promise<RestaurantOverview> {
+    throw new RepositoryError(
+      "Aucune base de données : décaler une réservation a besoin d'une base. En local : `npm run db:reset`.",
+      503,
+      "store_required",
+    );
   }
 
   async rejectReservation({ restaurantId, reservationId }: RejectBookingInput) {

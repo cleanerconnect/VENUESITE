@@ -579,6 +579,91 @@ utile complète plutôt qu'un `204`, pour que le client réconcilie sa copie
 optimiste avec ce qui s'est réellement passé au lieu de déclencher un
 second appel et de vivre avec une fenêtre où les deux divergent.
 
+### 3.1 Ce que la gestion des réservations et la création de venue ajoutent
+
+Quatre changements, et ce qu'ils demandent à un backend. Tout le reste de
+ce document reste vrai.
+
+**Un établissement est validé par LYFE avant d'exister dans
+l'application.** `venues` porte trois colonnes de plus :
+
+| Colonne | Valeurs | Sens |
+|---|---|---|
+| `status` | `pending_review` · `validated` · `rejected` | `/inscription` crée un `pending_review`. **Seul un `validated` est listé par l'application.** Le tableau de bord du partenaire fonctionne dans les trois cas. |
+| `status_reason` | texte | Le motif du refus, et **la seule chose que le partenaire voit** à son sujet. Vide sauf si `status = 'rejected'`. |
+| `status_changed_at` | ISO 8601 | Quand LYFE a décidé. |
+
+L'autorisation est une table, `platform_admins`, et non un rôle
+d'établissement : un propriétaire ne doit pas pouvoir valider sa propre
+fiche, et un rôle porté par son appartenance à un lieu serait exactement
+cela.
+
+| Méthode | Chemin | Requête | Réponse |
+|---|---|---|---|
+| `GET` | `/api/business/venues/pending` | — | `PendingVenue[]` |
+| `PUT` | `/api/business/venues/{id}/validation` | `{ status, reason }` | `PendingVenue[]` — la file après la décision |
+
+`PendingVenue` porte ce qu'il faut pour décider et rien d'autre : `id`,
+`name`, `kind`, `city`, `address`, `contactEmail`, `contactPhone`,
+`ownerName`, `createdAt`, `hasPhoto`, `openDays`. Les deux derniers sont
+des booléens de complétude, pas des photos ni des horaires : la question
+est « est-ce un vrai établissement », pas « à quoi ressemble sa fiche ».
+
+**Décaler une réservation**, la quatrième décision sur une ligne :
+
+| Méthode | Chemin | Requête | Réponse |
+|---|---|---|---|
+| `GET` | `/api/business/venues/{id}/slots?date=YYYY-MM-DD` | — | `BookableSlot[]` — `{ at, serviceLabel }` |
+| `PUT` | `/api/business/bookings/{id}/reschedule` | `{ at }` | `RestaurantOverview` |
+
+Trois règles que le backend doit tenir, parce que le portail les tient :
+
+1. **`at` doit être un créneau que `slots` a renvoyé pour son jour.** Le
+   portail le vérifie avant d'écrire ; un service qui ne le vérifie pas
+   laissera passer une heure que l'application refuserait, et le client
+   se présentera devant une table qui n'a jamais été tenue.
+2. **L'état ne change pas.** Décaler répond à *quand*, pas à *si* : une
+   demande décalée reste une demande en attente de réponse, une
+   réservation acceptée reste acceptée. Un décalage qui accepterait
+   silencieusement une demande serait l'établissement s'engageant sur une
+   table sur laquelle il ne s'est pas engagé.
+3. **Le client est prévenu par le même appel.** Une réservation déplacée
+   sans que le client le sache est le mode de défaillance de cette
+   fonctionnalité, et en faire deux appels est ce qui permet d'oublier le
+   second. Le portail écrit une ligne `messages_log` de type
+   `reservation_decalee`.
+
+**Chercher une réservation dans tout le carnet**, et non filtrer la
+journée affichée :
+
+| Méthode | Chemin | Réponse |
+|---|---|---|
+| `GET` | `/api/business/venues/{id}/bookings/search?q=` | `Reservation[]` |
+
+Trois entrées, parce que ce sont les trois choses qu'un hôte a en main :
+un **nom** (insensible à la casse, n'importe où dedans), un
+**téléphone** — comparé **chiffres seuls**, ce qui est ce qui fait que
+`4418` trouve `+212 661 20 44 18`, les quatre derniers chiffres étant la
+façon dont un client relit son numéro au téléphone — et une **date**
+(`2026-09-25` ou `25/09`). Le portail groupe le résultat par jour.
+
+**La durée d'un créneau est choisie par l'établissement**, par service :
+
+| Colonne | Valeurs | Sens |
+|---|---|---|
+| `service_definitions.slot_minutes` | `15` · `30` · `60` | La grille sur laquelle ce service place ses réservations. Réservations groupe ses lignes dessus, la courbe de charge est découpée dessus, **et l'application doit proposer ses créneaux dessus** — sinon les deux produits ne s'accordent pas sur ce qui est réservable. |
+
+Par défaut `30`, qui est la valeur que les deux produits supposaient
+avant que le champ existe : rien de déjà réservé n'est redécoupé.
+
+**Le client sur la ligne et dans le tiroir.** `GET
+/api/business/overview` et `GET /api/business/bookings` doivent porter,
+sur chaque réservation, `guestEmail` et `guestBirthYear` en plus de ce
+qu'elles portaient — tous deux **facultatifs**, parce que l'application
+les demande dans un profil que personne n'est obligé de remplir. Le
+portail ne dessine pas la ligne quand la valeur manque : un « — » dans un
+champ Âge se lit comme un fait sur le client.
+
 ---
 
 ## 4. Ce que le portail n'appelle plus
@@ -929,24 +1014,25 @@ liste que l'estimation DB de 2 jours doit couvrir.
 
 ## 7. Les tables du Lot 1
 
-Sur les 67 tables de `db/schema.sql`, voici celles que les sept écrans
+Sur les 69 tables de `db/schema.sql`, voici celles que les sept écrans
 touchent. Le pilote SQLite est la spécification exécutable de ce que
 votre backend doit pouvoir répondre.
 
 | Table | Lue par | Écrite par |
 |---|---|---|
-| `venues` | Accueil, Ma fiche, Connexion | Ma fiche (identité), Inscription (étape 6) |
+| `venues` | Accueil, Ma fiche, Connexion, Validations | Ma fiche (identité), Inscription (étape 6), Validations (`status`) |
 | `venue_tags` | Accueil, Ma fiche | Ma fiche (fiche, Lot 2) |
 | `venue_settings` | les six écrans | Notifications, Paramètres |
 | `business_accounts` | Connexion (compte métier) | Inscription (étape 6) |
 | `partner_accounts` | Connexion (mot de passe d'un partenaire inscrit) | Inscription (étape 1) |
 | `onboarding_drafts` | Inscription (reprise) | Inscription (chaque étape) |
 | `staff` | Connexion (annuaire, périmètre) | Équipe (Lot 2), Inscription (étape 6) |
-| `reservations` | Accueil, Réservations, Check-in | Check-in, cycle de vie |
+| `reservations` | Accueil, Réservations, Check-in, recherche | Check-in, cycle de vie, Décaler (`at`) |
+| `platform_admins` | la porte de `/admin/validations` | — (l'équipe LYFE, hors portail) |
 | `reservation_status_history` | — | Check-in, cycle de vie |
-| `customers` | Accueil, Réservations (jointure) | — |
+| `customers` | Accueil, Réservations (jointure : visites, e-mail, année de naissance) | — |
 | `services` · `service_slot_load` | Accueil, Réservations | — |
-| `service_definitions` · `service_zones` | Disponibilités, Réservations | Disponibilités |
+| `service_definitions` · `service_zones` | Disponibilités, Réservations (la grille), Décaler | Disponibilités, dont `slot_minutes` |
 | `pacing_rules` | Disponibilités | Disponibilités |
 | `availability_slots` · `closures` | Ma fiche, Disponibilités | Ma fiche (horaires) |
 | `zones` | Accueil, Ma fiche | Ma fiche (disponibilité d'une zone) |

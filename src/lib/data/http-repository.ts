@@ -1,5 +1,9 @@
 import type { PendingVenue } from "@/lib/types/restaurant";
-import type { VenueValidationInput } from "@/lib/types/business";
+import type {
+  VenueValidationInput,
+  RescheduleBookingInput,
+  BookableSlot,
+} from "@/lib/types/business";
 import "server-only";
 import type { AudienceInsights } from "@/lib/types/venue-operations";
 
@@ -114,6 +118,28 @@ export class HttpRestaurantRepository implements RestaurantRepository {
       "PUT",
       `/api/business/bookings/${reservationId}/reject`,
       { reason, note },
+    );
+  }
+
+  rescheduleReservation({ reservationId, at }: RescheduleBookingInput) {
+    return this.request<RestaurantOverview>(
+      "PUT",
+      `/api/business/bookings/${reservationId}/reschedule`,
+      { at },
+    );
+  }
+
+  searchReservations(venueId: string, query: string) {
+    return this.request<Reservation[]>(
+      "GET",
+      `/api/business/venues/${venueId}/bookings/search?q=${encodeURIComponent(query)}`,
+    );
+  }
+
+  getBookableSlots(venueId: string, date: string) {
+    return this.request<BookableSlot[]>(
+      "GET",
+      `/api/business/venues/${venueId}/slots?date=${encodeURIComponent(date)}`,
     );
   }
 

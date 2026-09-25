@@ -1129,7 +1129,15 @@ export function buildReservationsScreen(
         ? []
         : ([{ id: "risk", label: "À risque", match: { facet: "risk", values: ["high"] } }] satisfies FilterTab[])),
     ],
-    search: { placeholder: "Rechercher un client, un téléphone, une table…" },
+    // Names what the box now actually does. It used to filter the rows
+    // of one day; it searches the whole book, and the four digits are
+    // worth saying because nobody would guess that a number with spaces
+    // in it can be found by its tail.
+    search: {
+      placeholder: lot1
+        ? "Un nom, 4 chiffres du téléphone, ou 25/09…"
+        : "Rechercher un client, un téléphone, une table…",
+    },
     sorts: [
       // The default a host works to: the next table to arrive, first.
       // Sorting by clock time put a party seated at noon above one due
@@ -1877,11 +1885,12 @@ function slotOf(at: string, slotMinutes: number): string {
  * accepter once the request has been accepted.
  */
 function reservationActions(reservation: Reservation): CtaAction[] | undefined {
-  // Absent is a judgement about a table that did not turn up, and it
-  // cannot be made before the table was due. Offered early it is a
-  // mis-tap waiting to happen — one that writes a no-show against a
-  // guest who is simply not late yet.
-  const due = Date.parse(reservation.at) <= Date.now();
+  // Absent used to wait for the table to be due, on the reasoning that
+  // offering it early is a mis-tap waiting to happen. In a real service
+  // it is the other way round: a host who can see the party is not
+  // coming reaches for it before the clock does, and a button that
+  // appears halfway through the evening is a button nobody trusts. It is
+  // drawn on every open row now, like the other two.
   const absent: CtaAction = {
     action: {
       kind: "command",
@@ -1893,7 +1902,38 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
     variant: "ghost",
   };
 
-  if (reservation.state === "requested") {
+  // Décaler. A time that does not suit is not a refusal — the table is
+  // wanted, the hour is wrong — and until now the host's only honest
+  // move was to refuse and ask the guest to book again. It sits beside
+  // Refuser on every open row, because the choice is between the two.
+  const reschedule: CtaAction = {
+    action: {
+      kind: "command",
+      command: "reservation.reschedule",
+      payload: {
+        id: reservation.id,
+        name: reservation.guestName,
+        at: reservation.at,
+        party: reservation.partySize,
+      },
+      label: "Décaler",
+      icon: "calendar-clock",
+    },
+    variant: "ghost",
+  };
+
+  const refuse: CtaAction = {
+    action: {
+      kind: "command",
+      command: "reservation.reject",
+      payload: { id: reservation.id, name: reservation.guestName },
+      label: "Refuser",
+      icon: "ban",
+    },
+    variant: "secondary",
+  };
+
+  if (reservation.state === "requested" || reservation.state === "waitlisted") {
     return [
       {
         action: {
@@ -1905,19 +1945,15 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
         },
         variant: "primary",
       },
-      {
-        action: {
-          kind: "command",
-          command: "reservation.reject",
-          payload: { id: reservation.id, name: reservation.guestName },
-          label: "Refuser",
-          icon: "ban",
-        },
-        variant: "secondary",
-      },
-      ...(due ? [absent] : []),
+      refuse,
+      reschedule,
+      absent,
     ];
   }
+  // Already accepted, so Accepter is Check-in — the next thing that
+  // happens to this table. Refuser stays: a venue that has to cancel an
+  // accepted booking had no way to say so on the row, and the state it
+  // writes is the same refusal with the same reason.
   if (reservation.state === "confirmed") {
     return [
       {
@@ -1930,9 +1966,13 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
         },
         variant: "primary",
       },
-      ...(due ? [absent] : []),
+      refuse,
+      reschedule,
+      absent,
     ];
   }
+  // Arrived, completed, refused, cancelled, absent: the time on the row
+  // is a record of what happened, and a record takes no decisions.
   return undefined;
 }
 

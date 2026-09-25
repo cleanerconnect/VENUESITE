@@ -386,6 +386,55 @@ const ROUTES = [
     return bundle.overview;
   }],
   ["POST", /^\/api\/business\/bookings\/([^/]+)\/remind$/, () => null],
+
+  // Décaler. The slot is checked against what this venue offers, because
+  // that check is a contract rule (§3.1) and a double that skipped it
+  // would let the portal ship a call no real service accepts.
+  ["PUT", /^\/api\/business\/bookings\/([^/]+)\/reschedule$/, (m, q, body) => {
+    const bundle = scoped(q);
+    const at = String(body?.at ?? "");
+    const day = at.slice(0, 10);
+    if (!slotsFor(bundle, day).some((slot) => slot.at === at)) {
+      return { status: 422, body: { code: "slot_unavailable" } };
+    }
+    const row = [...bundle.overview.upcomingReservations, ...bundle.overview.waitlist].find(
+      (r) => r.id === m[1],
+    );
+    if (!row) return { status: 404, body: { code: "not_found" } };
+    // The state is untouched on purpose — see §3.1, rule 2.
+    row.at = at;
+    return bundle.overview;
+  }],
+  ["GET", /^\/api\/business\/venues\/([^/]+)\/slots$/, (_m, q) =>
+    slotsFor(scoped(q), String(q.get("date") ?? "")),
+  ],
+  ["GET", /^\/api\/business\/venues\/([^/]+)\/bookings\/search$/, (_m, q) => {
+    const bundle = scoped(q);
+    const term = String(q.get("q") ?? "").trim().toLowerCase();
+    if (term.length < 2) return [];
+    const digits = term.replace(/\D/g, "");
+    return [...bundle.overview.upcomingReservations, ...bundle.overview.waitlist].filter(
+      (r) =>
+        r.guestName.toLowerCase().includes(term) ||
+        (digits !== "" && String(r.guestPhone).replace(/\D/g, "").includes(digits)) ||
+        String(r.at).slice(0, 10) === term,
+    );
+  }],
+
+  // LYFE's review of a listing.
+  ["GET", /^\/api\/business\/venues\/pending$/, () => pendingVenues()],
+  ["PUT", /^\/api\/business\/venues\/([^/]+)\/validation$/, (m, _q, body) => {
+    const status = body?.status === "rejected" ? "rejected" : "validated";
+    if (status === "rejected" && String(body?.reason ?? "").trim() === "") {
+      return { status: 422, body: { code: "reason_required" } };
+    }
+    const bundle = db.venues[m[1]];
+    if (!bundle) return { status: 404, body: { code: "venue_not_found" } };
+    bundle.profile.status = status;
+    bundle.profile.statusReason = status === "rejected" ? String(body.reason) : "";
+    bundle.profile.statusChangedAt = isoNow();
+    return pendingVenues();
+  }],
   ["POST", /^\/api\/business\/bookings\/([^/]+)\/check-in$/, (m, q, body) =>
     checkIn(scoped(q), m[1], body?.qr_code ?? "")],
   ["POST", /^\/api\/business\/bookings\/check-in$/, (_m, q, body) =>
@@ -495,6 +544,12 @@ function makeVenueFromDraft(draft) {
     website: "",
     currency: "MAD",
     onboardingCompleted: true,
+    // Like the real driver: a listing waits for LYFE. The double has to
+    // agree, or a portal in `http` mode would show no banner where a
+    // portal on the database shows one.
+    status: "pending_review",
+    statusReason: "",
+    statusChangedAt: null,
     description: "",
     address: draft.address,
     latitude: draft.latitude ?? undefined,
@@ -632,6 +687,67 @@ function needVenue(id) {
  */
 function scoped(q) {
   return needVenue(q.venue_id ?? Object.keys(db.venues)[0]);
+}
+
+// ── LYFE's review, and the venue's own slots ──────────────────
+
+/**
+ * The listings waiting for a decision.
+ *
+ * The captured venues are live — the snapshot is of a running
+ * establishment — so the queue only ever holds what this process
+ * created through /inscription, which is exactly what makes it a useful
+ * double: walk the six steps and the venue appears here.
+ */
+function pendingVenues() {
+  return Object.entries(db.venues)
+    .filter(([, b]) => (b.profile.status ?? "validated") === "pending_review")
+    .map(([id, b]) => ({
+      id,
+      name: b.profile.name,
+      kind: b.profile.kind === "drinks" ? "drinks" : "restaurant",
+      city: b.profile.city,
+      address: b.profile.address ?? "",
+      contactEmail: b.profile.contactEmail ?? "",
+      contactPhone: b.profile.contactPhone ?? "",
+      ownerName: b.staff?.[0]?.fullName ?? "—",
+      createdAt: b.profile.createdAt ?? isoNow(),
+      hasPhoto: (b.photos ?? []).length > 0,
+      openDays: new Set((b.availability?.slots ?? []).map((x) => x.weekday)).size,
+    }));
+}
+
+/**
+ * The times one day can take, on each service's own grid.
+ *
+ * The same walk the SQLite driver does — the weekdays a service runs,
+ * its opening, its last accepted booking and its `slotMinutes` — because
+ * a double that offered a different set would let the portal ship a
+ * Décaler sheet that only works against one of the two.
+ */
+function slotsFor(bundle, date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+  if ((bundle.availability?.closures ?? []).some((c) => c.date === date)) return [];
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay();
+  const weekday = day === 0 ? 7 : day;
+  const minutes = (hhmm) => {
+    const [h, m] = String(hhmm).split(":").map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
+  const out = [];
+  for (const svc of bundle.operations?.serviceConfiguration?.services ?? []) {
+    if (!svc.enabled || !(svc.weekdays ?? []).includes(weekday)) continue;
+    const step = [15, 30, 60].includes(svc.slotMinutes) ? svc.slotMinutes : 30;
+    const start = minutes(svc.startsAt);
+    const raw = minutes(svc.lastBookingAt);
+    const last = raw < start ? raw + 24 * 60 : raw;
+    for (let m = start; m <= last; m += step) {
+      const d = new Date(`${date}T00:00:00.000Z`);
+      d.setUTCMinutes(m);
+      out.push({ at: d.toISOString(), serviceLabel: svc.name });
+    }
+  }
+  return out.sort((a, b) => a.at.localeCompare(b.at));
 }
 
 function assetsOf(bundle, kind) {

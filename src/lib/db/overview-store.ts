@@ -28,9 +28,11 @@ import type {
 } from "@/lib/types/restaurant";
 import { isVenueStatus } from "@/lib/types/restaurant";
 import { asSlotMinutes } from "@/lib/types/venue-operations";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
+import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 import type { VenueConfiguration } from "@/lib/types/venue-operations";
 import { configFor, coverAgreement, covers } from "@/lib/venue/config";
-import { all, bool, one, run, toMad } from "./store";
+import { all, bool, one, run, toMad, transaction } from "./store";
 
 const day = (d: Date) => format(d, "yyyy-MM-dd");
 const pctChange = (now: number, before: number) =>
@@ -859,4 +861,249 @@ export async function visibility(
     boostActive: boost !== null,
     boostEndsAt: boost ? String(boost.ends_at) : undefined,
   };
+}
+
+// ── What the venue can still offer ───────────────────────────
+
+/**
+ * The times a booking can be moved to on one day.
+ *
+ * Built from the venue's own service definitions — the weekdays each
+ * service runs, its opening time, the last booking it accepts and the
+ * grid it seats on — so « within the venue's slots » is the venue's
+ * answer and not a guess. A closure on that date empties the list
+ * rather than offering times behind a locked door.
+ *
+ * Returns ISO instants, because the sheet shows them and the write
+ * stores them: a bare "20:30" would be re-interpreted by whichever
+ * clock read it next, which is the bug the venue timezone already cost
+ * us once.
+ */
+export async function bookableSlots(
+  venueId: string,
+  date: string,
+): Promise<{ at: string; serviceLabel: string }[]> {
+  const closed = await one(
+    "SELECT id FROM closures WHERE venue_id = ? AND date = ?",
+    venueId,
+    date,
+  );
+  if (closed) return [];
+
+  // ISO weekday: 1 Monday … 7 Sunday, which is what `weekdays` stores.
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay();
+  const weekday = day === 0 ? 7 : day;
+
+  const services = await all(
+    `SELECT name, weekdays, starts_at, last_booking_at, slot_minutes
+       FROM service_definitions
+      WHERE venue_id = ? AND enabled = 1
+      ORDER BY starts_at`,
+    venueId,
+  );
+
+  const out: { at: string; serviceLabel: string }[] = [];
+  for (const s of services) {
+    const days = String(s.weekdays)
+      .split(",")
+      .map((d) => Number(d.trim()));
+    if (!days.includes(weekday)) continue;
+
+    const step = asSlotMinutes(s.slot_minutes);
+    const start = minutesOf(String(s.starts_at));
+    // A service that closes after midnight — a bar's « Nuit » runs to
+    // 02:00 — has a last booking earlier in the clock than its start.
+    // The window is still real, so it is measured forward rather than
+    // discarded.
+    const last =
+      minutesOf(String(s.last_booking_at)) < start
+        ? minutesOf(String(s.last_booking_at)) + 24 * 60
+        : minutesOf(String(s.last_booking_at));
+
+    for (let m = start; m <= last; m += step) {
+      const at = fromZonedTime(
+        `${date} ${pad(Math.floor(m / 60) % 24)}:${pad(m % 60)}:00`,
+        VENUE_TIME_ZONE,
+      );
+      // Past midnight belongs to the next calendar day, which is what
+      // the guest was told and what the book has to file it under.
+      if (m >= 24 * 60) at.setDate(at.getDate() + 1);
+      out.push({ at: at.toISOString(), serviceLabel: String(s.name) });
+    }
+  }
+  return out.sort((a, b) => a.at.localeCompare(b.at));
+}
+
+const minutesOf = (hhmm: string) => {
+  const [h, m] = hhmm.split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * Moves a booking, and tells the guest.
+ *
+ * **The state does not change**, and that is deliberate. The schema has
+ * a `modified` state and it was tempting to write it, but moving a
+ * booking answers a question about *when*, not about *whether*: a
+ * request that is moved is still a request waiting for the venue's
+ * answer, and an accepted booking that is moved is still accepted. A
+ * reschedule that silently accepted a pending request would be the venue
+ * agreeing to a table it had not agreed to.
+ *
+ * The history entry therefore records the same state on both sides, with
+ * the old time in the note — because « décalée » with no before is an
+ * audit trail that cannot answer the only question anyone asks of it.
+ *
+ * The message is logged in `messages_log` like every other outbound: a
+ * notification the portal claims to have sent and cannot show is not a
+ * notification.
+ */
+export async function rescheduleBooking(
+  venueId: string,
+  reservationId: string,
+  at: string,
+): Promise<{ moved: boolean; reason?: "not_found" | "settled" }> {
+  const current = await one(
+    `SELECT r.state, r.at, r.guest_name, r.guest_phone, r.customer_id, c.email
+       FROM reservations r
+       LEFT JOIN customers c ON c.id = r.customer_id
+      WHERE r.id = ? AND r.venue_id = ?`,
+    reservationId,
+    venueId,
+  );
+  if (!current) return { moved: false, reason: "not_found" };
+  // A party already seated, gone, or refused is not moved: the time on
+  // it is a record of what happened, not a plan.
+  const settled = ["arrived", "completed", "no_show", "cancelled", "rejected"];
+  if (settled.includes(String(current.state))) {
+    return { moved: false, reason: "settled" };
+  }
+
+  const now = new Date().toISOString();
+  const wasAt = String(current.at);
+
+  await transaction(async () => {
+    await run(
+      `UPDATE reservations SET at = ?, updated_at = ?
+        WHERE id = ? AND venue_id = ?`,
+      at,
+      now,
+      reservationId,
+      venueId,
+    );
+    await run(
+      `INSERT INTO reservation_status_history
+         (id, reservation_id, from_state, to_state, actor, actor_id, reason_code, note, at)
+       VALUES (?, ?, ?, ?, 'venue', NULL, 'rescheduled', ?, ?)`,
+      `sh_${reservationId}_${Date.now().toString(36)}`,
+      reservationId,
+      String(current.state),
+      String(current.state),
+      `de ${wasAt} à ${at}`,
+      now,
+    );
+    const email = current.email ? String(current.email) : "";
+    await run(
+      `INSERT INTO messages_log
+         (id, venue_id, customer_id, reservation_id, channel, kind, recipient,
+          preview, status, failure_reason, at)
+       VALUES (?, ?, ?, ?, ?, 'reservation_decalee', ?, ?, 'envoye', '', ?)`,
+      `ml_${reservationId}_${Date.now().toString(36)}`,
+      venueId,
+      current.customer_id ?? null,
+      reservationId,
+      email ? "email" : "sms",
+      email || String(current.guest_phone),
+      `Votre réservation est décalée à ${formatInTimeZone(
+        new Date(at),
+        VENUE_TIME_ZONE,
+        "HH'h'mm 'le' d MMMM",
+      )}.`,
+      now,
+    );
+  });
+
+  return { moved: true };
+}
+
+// ── Finding a booking ────────────────────────────────────────
+
+/**
+ * Finds a booking anywhere in the venue's book.
+ *
+ * The chrome's search box used to filter the rows already on screen,
+ * which answers « where is Bennani in tonight's service » and nothing
+ * else. The question a host actually asks is « where is Bennani », and
+ * the answer is often on another day — so this looks across the whole
+ * book and the caller groups what comes back by day.
+ *
+ * Three ways in, because they are the three things a host has in hand:
+ *
+ *  · **a name**, matched case-insensitively anywhere in it;
+ *  · **a phone number**, matched on digits only, which is what makes
+ *    « 4418 » find `+212 661 20 44 18` — the last four digits are how a
+ *    guest reads their own number back over the phone, and the spaces in
+ *    the stored form are why a plain LIKE never found them;
+ *  · **a date**, when the query parses as one.
+ *
+ * Capped, and deliberately: a host searching « a » wants the box to stop
+ * being useful, not to wait for four hundred rows.
+ */
+export async function searchReservations(
+  venueId: string,
+  query: string,
+): Promise<Reservation[]> {
+  const term = query.trim().toLowerCase();
+  if (term.length < 2) return [];
+
+  const digits = term.replace(/\D/g, "");
+  const date = parseQueryDate(term);
+
+  const rows = await all(
+    `SELECT r.*, c.visit_count, c.email AS guest_email, c.birth_year
+       FROM reservations r
+       LEFT JOIN customers c ON c.id = r.customer_id
+      WHERE r.venue_id = ?
+        AND (
+          lower(r.guest_name) LIKE ?
+          OR (? <> '' AND replace(replace(replace(replace(r.guest_phone, ' ', ''), '-', ''), '+', ''), '.', '') LIKE ?)
+          OR (? <> '' AND substr(r.at, 1, 10) = ?)
+        )
+      ORDER BY r.at DESC
+      LIMIT 60`,
+    venueId,
+    `%${term}%`,
+    digits,
+    `%${digits}%`,
+    date ?? "",
+    date ?? "",
+  );
+  return rows.map(reservationRow);
+}
+
+/**
+ * A date in a search box, in the two shapes people type it.
+ *
+ * `2026-09-25` because that is what a machine wrote, and `25/09` or
+ * `25/09/2026` because that is what a person writes. A bare `25` is
+ * deliberately not a date: it is far more often a party size or part of
+ * a phone number, and guessing wrong empties the results.
+ */
+function parseQueryDate(term: string): string | null {
+  const iso = term.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+
+  const slash = term.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+  if (slash) {
+    const [, d, m, y] = slash;
+    const year = y
+      ? y.length === 2
+        ? 2000 + Number(y)
+        : Number(y)
+      : new Date().getFullYear();
+    return `${year}-${pad(Number(m))}-${pad(Number(d))}`;
+  }
+  return null;
 }

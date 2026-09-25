@@ -9,6 +9,8 @@ import { DashboardRenderer } from "@/components/dashboard/DashboardRenderer";
 import { ActionControl } from "@/components/dashboard/primitives";
 import type { CommandHandler } from "@/components/dashboard/commands";
 import { useDetailStore } from "@/lib/stores/detail";
+import { useSearchStore } from "@/lib/stores/search";
+import { BookingSearchResults } from "./BookingSearchResults";
 import {
   useHydrateRestaurant,
   useRestaurantStore,
@@ -18,6 +20,10 @@ import {
   RejectBookingDialog,
   type RejectTarget,
 } from "./RejectBookingDialog";
+import {
+  RescheduleSheet,
+  type RescheduleTarget,
+} from "./RescheduleSheet";
 import { REJECTION_REASONS } from "@/lib/types/business";
 import { COPY } from "@/lib/copy/fr";
 import { markGuestArrived } from "@/app/actions/checkin";
@@ -26,6 +32,7 @@ import {
   confirmBooking,
   rejectBooking,
   reportNoShowBooking,
+  rescheduleBooking,
 } from "@/app/actions/bookings";
 import { FormDialog } from "@/components/dashboard/FormDialog";
 import { useVenueCommands } from "./useVenueCommands";
@@ -53,12 +60,18 @@ export function RestaurantScreen({
   const { toast } = useToast();
   const data = useHydrateRestaurant(serverData, context.configuration);
   const closeDetail = useDetailStore((s) => s.close);
+  // Réservations is the one screen whose search reaches past what is on
+  // it. Two characters, because one is every guest in the book.
+  const searchQuery = useSearchStore((s) => s.query);
+  const searching = slug === "reservations" && searchQuery.trim().length >= 2;
 
   // Business slices are fetched server-side and passed through unchanged;
   // only the service payload is re-derived from the optimistic copy.
   // Refusal needs a reason before it can be applied, so the command opens
   // a dialog instead of mutating; the store call happens on confirm.
   const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null);
+  const [rescheduleTarget, setRescheduleTarget] =
+    useState<RescheduleTarget | null>(null);
 
   const spec = useMemo(
     () => buildScreen(slug, { ...context, overview: data }),
@@ -127,6 +140,17 @@ export function RestaurantScreen({
         setRejectTarget({
           id: String(payload?.id ?? ""),
           guestName: String(payload?.name ?? "Ce client"),
+        }),
+
+      // Like refusing, this one opens a sheet instead of mutating: the
+      // new hour has to come from the venue's own slots, and there is no
+      // optimistic guess to make about which one the host will pick.
+      "reservation.reschedule": (payload) =>
+        setRescheduleTarget({
+          id: String(payload?.id ?? ""),
+          guestName: String(payload?.name ?? "Ce client"),
+          at: String(payload?.at ?? new Date().toISOString()),
+          party: Number(payload?.party ?? 2),
         }),
 
       "reservation.noShow": (payload) => {
@@ -250,11 +274,55 @@ export function RestaurantScreen({
           ) : null}
         </header>
       )}
-      <DashboardRenderer spec={spec} commands={commands} />
+      {/* The chrome's box searches the whole book on Réservations, so a
+          live query replaces the day rather than filtering it — see
+          BookingSearchResults for why that is the right way round. Every
+          other screen keeps the in-list filtering it had. */}
+      {searching ? <BookingSearchResults query={searchQuery} /> : null}
+      {/* Hidden rather than unmounted while a search is showing, and
+          that is not a detail: the list is what *claims* the chrome's
+          search box, and a claim released on unmount resets the query —
+          which made the results replace the list, the list release the
+          box, the query clear, and the list come back, forever. */}
+      <div hidden={searching}>
+        <DashboardRenderer spec={spec} commands={commands} />
+      </div>
 
       {/* Mounted once per screen, like the detail drawer. Any button
           whose command the spec declared a form for raises it. */}
       <FormDialog />
+
+      <RescheduleSheet
+        target={rescheduleTarget}
+        onClose={() => setRescheduleTarget(null)}
+        onConfirm={(at) => {
+          if (!rescheduleTarget) return;
+          const id = rescheduleTarget.id;
+          setRescheduleTarget(null);
+          closeDetail();
+          // No optimistic move: the store's copy of a booking carries
+          // the sitting it files under and the service's counters, and
+          // re-deriving those in the browser for a write that the driver
+          // may refuse as an unbookable slot is how the book and the
+          // room start disagreeing. The server answers, then the screen
+          // changes.
+          void rescheduleBooking(id, at).then((result) => {
+            if (!result.ok) {
+              toast({
+                tone: "danger",
+                title: result.message ?? COPY.form.savingFailed,
+              });
+              return;
+            }
+            toast({
+              tone: "success",
+              title: "Réservation décalée.",
+              description: "Le client a été informé du nouvel horaire.",
+            });
+            router.refresh();
+          });
+        }}
+      />
 
       <RejectBookingDialog
         target={rejectTarget}
