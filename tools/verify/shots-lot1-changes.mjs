@@ -58,8 +58,11 @@ const stamp = Date.now().toString(36);
 await go("/inscription");
 await page.getByLabel("Votre nom").fill("Salma Benjelloun");
 await page.getByLabel("E-mail").fill(`shots.${stamp}@lyfe-verify.ma`);
-await page.getByLabel("Téléphone").fill("+212 6 62 11 22 33");
-await page.getByLabel("Mot de passe").fill("motdepasse1");
+await page.getByLabel("Téléphone", { exact: true }).fill("+212 6 62 11 22 33");
+// `exact`, because row 39's confirmation field exists now and
+// « Confirmation du mot de passe » contains « Mot de passe ».
+await page.getByLabel("Mot de passe", { exact: true }).fill("motdepasse1");
+await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1500);
 

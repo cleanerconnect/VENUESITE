@@ -34,7 +34,22 @@ const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const DEPTH = process.env.DEPTH ?? "outline";
-const OUT = process.env.OUT ?? (DEPTH === "full" ? "docs/phase7-dar-zellij.json" : "docs/phase6-screens.json");
+// The lot is in the name, because it is in the content.
+//
+// This file writes what a *lot* renders — 34 screens under Lot 2, 10
+// under Lot 1 — and both used to land on the same path. Re-capturing
+// the Lot 1 reference therefore replaced the Lot 2 record with a
+// third of itself, and the Figma export reads the Lot 2 one. `OUT`
+// still overrides everything.
+const DEFAULT_OUT =
+  DEPTH === "full"
+    ? LOT === 1
+      ? "docs/lot1-dar-zellij.json"
+      : "docs/phase7-dar-zellij.json"
+    : LOT === 1
+      ? "docs/lot1-screens.json"
+      : "docs/phase6-screens.json";
+const OUT = process.env.OUT ?? DEFAULT_OUT;
 const VENUE = process.env.VENUE ?? "";
 const SHOTS = process.env.SHOTS ?? "";
 const ACCOUNT = process.env.ACCOUNT ?? "yassine@darzellij.ma";
