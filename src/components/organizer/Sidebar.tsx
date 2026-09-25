@@ -242,7 +242,17 @@ function SidebarBody({
           <VenueSwitcher
             venues={venues}
             activeVenueId={activeVenueId}
-            eventSpaceHref={workspaces.event ? WORKSPACES[0].home : undefined}
+            // Lot 1 is the venue dashboard of Prio 02 and nothing else.
+            // The Events dashboard is Prio 01 — Planning V3 row 38 —
+            // and the account an acceptance signs in with holds an
+            // organisation, so this card was one click from a workspace
+            // that is not part of what Prio 02 delivers. The routes
+            // stay; the door out of the venue portal is Lot 2's.
+            eventSpaceHref={
+              workspaces.event && workspaces.lot === 2
+                ? WORKSPACES[0].home
+                : undefined
+            }
           />
         ) : (
           <DropdownMenu.Root>

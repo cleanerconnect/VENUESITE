@@ -34,10 +34,16 @@ export default async function ValidationsPage() {
   return (
     <div className="max-w-3xl">
       <header className="mb-6">
-        <h1 className="font-display text-2xl md:text-3xl text-[--color-ink]">
+        {/* `text-[--color-ink]` is Tailwind v3 syntax for a variable and
+            compiles to nothing under the v4 `@theme` this project uses:
+            the heading and the line under it were taking whatever colour
+            they inherited. `text-ink` and `text-ink-soft` are the real
+            utilities, and they are what every other component here
+            uses. */}
+        <h1 className="font-display text-2xl md:text-3xl text-ink">
           Établissements à valider
         </h1>
-        <p className="mt-1 text-sm text-[--color-ink-soft]">
+        <p className="mt-1 text-sm text-ink-soft">
           {pending.length === 0
             ? "Rien en attente. Les inscriptions arrivent ici dès la dernière étape."
             : pending.length === 1

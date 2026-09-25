@@ -208,6 +208,17 @@ export type ReservationState =
 export type ReservationChannel =
   | "lyfe"
   | "phone"
+  /**
+   * « Réservation via whatsapp » — Planning V3 Prio 02, and Détail
+   * Sprint row 42, both in the same sprint as this dashboard.
+   *
+   * The channel was missing from this union, so a booking the backend
+   * marks `whatsapp` had no label: `RESERVATION_CHANNEL[channel]` came
+   * back `undefined` and the row's source line printed nothing. The
+   * front-end has to be able to *show* a WhatsApp booking even though
+   * taking one is the backend's job.
+   */
+  | "whatsapp"
   | "walk_in"
   | "partner"
   | "instagram";

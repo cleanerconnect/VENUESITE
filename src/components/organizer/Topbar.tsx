@@ -109,16 +109,25 @@ export function Topbar() {
           <Brand height={26} />
         </div>
 
-        <button
-          aria-label="Notifications"
-          className="md:hidden relative h-10 w-10 -mr-2 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
-        >
-          <Bell size={18} strokeWidth={1.6} />
-          <span
-            aria-hidden
-            className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-danger ring-2 ring-canvas"
-          />
-        </button>
+        {/* The bell is Lot 2's.
+            « Cacher la cloche de notif au niveau de tous les ecrans
+            puisque les notifications ne sont pas encore traitées » —
+            Détail Sprint, row 44, SP-Prio 02, a change request in the
+            same sprint as this dashboard. It was drawn here with a red
+            unread dot and no handler: a promise of unread news that
+            could not be opened and was not true. */}
+        {lot === 2 ? (
+          <button
+            aria-label="Notifications"
+            className="md:hidden relative h-10 w-10 -mr-2 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
+          >
+            <Bell size={18} strokeWidth={1.6} />
+            <span
+              aria-hidden
+              className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-danger ring-2 ring-canvas"
+            />
+          </button>
+        ) : null}
 
         {/* === DESKTOP: search + scanner + bell + create CTA === */}
         <div className="hidden md:flex flex-1 max-w-[480px]">
@@ -161,16 +170,19 @@ export function Topbar() {
             </button>
           ) : null}
 
-          <button
-            aria-label="Notifications"
-            className="relative h-10 w-10 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
-          >
-            <Bell size={18} strokeWidth={1.6} />
-            <span
-              aria-hidden
-              className="absolute top-2 right-2.5 h-1.5 w-1.5 rounded-full bg-violet"
-            />
-          </button>
+          {/* Lot 2 only — Détail Sprint row 44. See the phone bell above. */}
+          {lot === 2 ? (
+            <button
+              aria-label="Notifications"
+              className="relative h-10 w-10 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
+            >
+              <Bell size={18} strokeWidth={1.6} />
+              <span
+                aria-hidden
+                className="absolute top-2 right-2.5 h-1.5 w-1.5 rounded-full bg-violet"
+              />
+            </button>
+          ) : null}
 
           {primaryAction ? (
             <RoleGate allow={primaryAction.allow ?? ["owner", "admin"]}>

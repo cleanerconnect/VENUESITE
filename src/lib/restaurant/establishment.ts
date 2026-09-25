@@ -10,7 +10,7 @@
 // out: it is the one edit that changes what a guest can book right now,
 // so a stale write is refused rather than merged.
 
-import { SLOT_MINUTES } from "@/lib/types/venue-operations";
+import { asSlotMinutes, SLOT_MINUTES } from "@/lib/types/venue-operations";
 import type { Block, ScreenSpec, SettingRow } from "@/lib/dashboard/spec";
 import { COUNT, MAD, PERCENT } from "@/lib/dashboard/formats";
 import type {
@@ -367,7 +367,13 @@ function serviceCard(
     id: `service-${service.id}`,
     type: "settings",
     heading: service.name,
-    subheading: `${weekdayLabel(service.weekdays)} · ${clock(service.startsAt)} – ${clock(service.endsAt)} · créneaux de ${service.slotMinutes === 60 ? "1 heure" : `${service.slotMinutes} minutes`}`,
+    // `asSlotMinutes` rather than the raw field: `slotMinutes` is typed
+    // as required, and a payload is not a type. The committed snapshot
+    // predates the field, so the static driver and the mock service
+    // both served a service definition without it — and this line read
+    // « créneaux de undefined minutes » on the screen. A backend that
+    // omits it gets the schema's default instead.
+    subheading: `${weekdayLabel(service.weekdays)} · ${clock(service.startsAt)} – ${clock(service.endsAt)} · créneaux de ${asSlotMinutes(service.slotMinutes) === 60 ? "1 heure" : `${asSlotMinutes(service.slotMinutes)} minutes`}`,
     rows: [
       {
         id: id("weekdays"),
@@ -407,7 +413,7 @@ function serviceCard(
         hint: "Les heures que l'application propose, et la façon dont le carnet regroupe la journée.",
         control: {
           kind: "select",
-          value: String(service.slotMinutes),
+          value: String(asSlotMinutes(service.slotMinutes)),
           options: SLOT_MINUTES.map((m) => ({
             value: String(m),
             label: m === 60 ? "1 heure" : `${m} minutes`,
