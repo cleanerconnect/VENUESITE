@@ -182,3 +182,62 @@ Noté parce que la prochaine personne qui écrira un test tombera dessus :
   `PromoCodeDetailDrawer`) formatent encore dans le fuseau du runtime.
   Ils n'affichent qu'un jour, jamais une heure, et sont hors Lot 1 ; le
   `TZ` du serveur les couvre côté SSR.
+
+---
+
+## Étape 2 — Durcir : les chemins qu'on prend par accident
+
+### Fait
+
+**Un second outil, `tools/verify/edges.mjs`.** `journey.mjs` marche le
+chemin prévu ; celui-ci marche les autres : un mot de passe faux, une
+adresse qui n'a pas de compte, une session morte avec un formulaire
+ouvert, deux tapes sur le même bouton, un réseau qui met une seconde à
+répondre, une photo de 12 Mo sortie d'un téléphone, un établissement
+vide, un bar. Chaque cas a la même condition de réussite : **le portail
+dit ce qui s'est passé, en français, et reste utilisable.**
+
+Les dix cas de la liste, et où ils sont couverts :
+
+| Cas | Où |
+|---|---|
+| session expirée | `edges` — formulaire ouvert, cookies retirés, enregistrement |
+| mot de passe faux | `edges` — et une adresse inconnue, qui ne dit pas si le compte existe |
+| double envoi | `edges` — deux clics dans le même tick sur Enregistrer et sur Accepter |
+| réseau lent | `edges` — 350 ms sur chaque requête, et la décision doit répondre avant |
+| états vides | `journey` — les six écrans du nouvel établissement |
+| établissement sans réservation | `journey` — « un carnet vide le dit » |
+| configuration bar | `edges` (Nomad Rooftop) et `journey` passe 2, qui s'inscrit comme bar |
+| accents français | `journey` — « Amine El Fassi-Ouazzani », « Riad Zitoun n° », « Médina », relus depuis la base |
+| téléphone marocain | `journey` — `+212 6 61 22 33 44`, relu tel quel |
+| photo hors limite | `edges` — 12 Mo refusés avec la limite nommée |
+
+### Trouvé — et corrigé
+
+**1. Une session expirée perdait la saisie en silence.** Le cas le plus
+grave de la nuit. Un partenaire modifie sa fiche, sa session meurt
+entre-temps, il appuie sur Enregistrer : le middleware répondait à
+l'appel d'action serveur par un **307 vers /login**, le `fetch` de
+l'action suivait la redirection, recevait une page HTML au lieu d'un
+résultat, et le formulaire n'entendait **ni succès ni échec** — la barre
+restait sur « Enregistrement… » indéfiniment et ce qui avait été tapé
+était perdu sans un mot.
+
+Deux corrections. Le middleware **laisse passer les actions serveur** :
+ce sont les pages qu'il protège, et chaque action garde sa propre porte
+(`requireVenueAccess` sur toute écriture liée à un établissement), donc
+l'action répond « Session expirée. Reconnectez-vous. » comme *résultat*,
+que le formulaire affiche en gardant les valeurs à l'écran. Et
+`useOptimisticForm` a désormais un plafond de quinze secondes : une
+écriture qui ne répond pas est annoncée comme échouée plutôt que filée
+en boucle.
+
+**2. Un bar lisait « Couverts » dans son carnet.** Le tri de
+Réservations avait ce libellé en dur — le dernier endroit du carnet qui
+parlait encore la langue du restaurant à un lounge. Il passe par
+`coverNoun(vocabulary)`, comme le reste de l'écran.
+
+### Reste
+
+- La vérification de l'étape : `journey` et `edges` propres sur les deux
+  largeurs, et la matrice complète relancée derrière.

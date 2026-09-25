@@ -31,6 +31,20 @@ export function middleware(req: NextRequest) {
   const hasSession = req.cookies.get(COOKIE)?.value === "1";
   if (hasSession) return NextResponse.next();
 
+  // A server action is not a page, and redirecting one is how a partner
+  // whose session died watched « Enregistrement… » spin for ever: the
+  // action's fetch followed the 307 to /login, came back with an HTML
+  // page instead of a result, and the form never heard either way —
+  // silently losing what they had typed.
+  //
+  // So actions are let through. Each one asserts its own session —
+  // `requireVenueAccess` on every venue-scoped write — and returns
+  // « Votre session a expiré » as a *result*, which the form shows and
+  // which leaves the typed values on screen to retry after signing in.
+  if (req.method === "POST" && req.headers.has("next-action")) {
+    return NextResponse.next();
+  }
+
   const loginUrl = req.nextUrl.clone();
   loginUrl.pathname = "/login";
   loginUrl.search = "";

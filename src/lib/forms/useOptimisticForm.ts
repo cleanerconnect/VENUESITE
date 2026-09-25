@@ -30,6 +30,8 @@ export interface OptimisticForm<T> {
 }
 
 const SAVED_VISIBLE_MS = 2_400;
+/** Long enough for a slow Moroccan 3G round trip, short enough to tell. */
+const SAVE_TIMEOUT_MS = 15_000;
 
 export function useOptimisticForm<T extends object, R>({
   initial,
@@ -93,7 +95,15 @@ export function useOptimisticForm<T extends object, R>({
 
     let result: WriteResult<R>;
     try {
-      result = await submit(attempted);
+      // A ceiling, because a write that never answers is worse than one
+      // that fails: the bar span « Enregistrement… » and the partner had
+      // no way to tell whether their edit had landed.
+      result = await Promise.race([
+        submit(attempted),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), SAVE_TIMEOUT_MS),
+        ),
+      ]);
     } catch {
       // Network failure is indistinguishable from a rejected write as far
       // as the UI is concerned: neither saved, so neither may be shown as

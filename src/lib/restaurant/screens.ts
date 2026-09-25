@@ -1128,7 +1128,14 @@ export function buildReservationsScreen(
         : []),
       { id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" },
       { id: "time_desc", label: "Heure · tard → tôt", key: "time", direction: "desc" },
-      { id: "party", label: "Couverts", key: "party", direction: "desc" },
+      // A lounge books people, not covers: the sort label was the last
+      // place in the book that still said « Couverts » to a bar.
+      {
+        id: "party",
+        label: coverNoun(vocabulary),
+        key: "party",
+        direction: "desc",
+      },
       ...(lot1
         ? []
         : ([{ id: "visits", label: "Fidélité", key: "visits", direction: "desc" }] as const)),

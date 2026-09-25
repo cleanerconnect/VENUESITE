@@ -268,6 +268,18 @@ check(
   (await fieldValue("Adresse")).includes("Derb Sidi Bouloukat"),
   await fieldValue("Adresse"),
 );
+// A Moroccan number keeps its shape: +212, a space-grouped mobile.
+check(
+  "le téléphone marocain est relu tel quel",
+  (await fieldValue("Téléphone")).replace(/\s/g, "").includes("+2126612233"),
+  await fieldValue("Téléphone"),
+);
+// The accents and the ° survived the round trip through the database.
+check(
+  "les accents du nom survivent à la base",
+  (await fieldValue("Nom du lieu")).includes("n°"),
+  await fieldValue("Nom du lieu"),
+);
 check("Ma fiche porte une carte", (await page.locator(".leaflet-container").count()) > 0);
 const renamed = `${venueName} — Patio`;
 const nameField = page.getByLabel("Nom du lieu");
