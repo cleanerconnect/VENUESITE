@@ -16,8 +16,8 @@ export function TableBlock({ block }: { block: Spec }) {
   return (
     <Card variant="surface" size="md">
       {block.heading ? (
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <h2 className="text-h3 text-ink">{block.heading}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-h3 text-ink min-w-0">{block.heading}</h2>
           {block.headingAction ? (
             <ActionLink action={block.headingAction} />
           ) : null}

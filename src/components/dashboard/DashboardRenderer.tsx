@@ -204,9 +204,12 @@ function Group({
 }) {
   return (
     <section>
+      {/* The heading row wraps: at 390 a heading with a « Nouvelle
+          réservation » beside it is wider than the screen, and a row
+          that cannot wrap makes the whole document scroll sideways. */}
       {block.heading ? (
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <h2 className="text-h2 text-ink">{block.heading}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-h2 text-ink min-w-0">{block.heading}</h2>
           {block.headingAction ? (
             <ActionLink action={block.headingAction} />
           ) : null}

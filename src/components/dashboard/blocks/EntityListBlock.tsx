@@ -117,14 +117,17 @@ export function EntityListBlock({ block }: { block: Spec }) {
   return (
     <section>
       {block.heading ? (
-        <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
           <div className="min-w-0">
             <h2 className="text-h2 text-ink">{block.heading}</h2>
             {block.subheading ? (
               <p className="text-meta text-ink-mute mt-1">{block.subheading}</p>
             ) : null}
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          {/* The sort control and the heading action wrap against each
+              other too: together they are wider than 390, and a row
+              that only wraps against the heading still overflows. */}
+          <div className="flex flex-wrap items-center gap-3 max-w-full">
             {sortControl}
             {block.headingAction ? (
               <ActionLink action={block.headingAction} />

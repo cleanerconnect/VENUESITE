@@ -224,10 +224,10 @@ minimum group size on Audience.
 
 ### Before you trust a change, walk it
 
-Five browser checks are committed under `tools/verify/`, kept out of
-`package.json` deliberately — they need a running server and a browser
-binary, and a check that pretends to be a unit test is a check that gets
-skipped in CI and then deleted.
+Six browser checks and one recorder are committed under
+`tools/verify/`, kept out of `package.json` deliberately — they need a
+running server and a browser binary, and a check that pretends to be a
+unit test is a check that gets skipped in CI and then deleted.
 
 ```bash
 npm install --no-save playwright          # once
@@ -238,6 +238,7 @@ node tools/verify/events.mjs          # the 19 event + shared routes
 node tools/verify/states.mjs          # ?etat= forceable on every venue route in the lot
 node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
 node tools/verify/audience.mjs        # the minimum group of ten, both configurations
+node tools/verify/inscription.mjs     # the six onboarding steps, the resume, the landing
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
 ```
 
@@ -255,7 +256,9 @@ LYFE_LOT=2 npx next start -p 3210     # 31
 LYFE_LOT=2 node tools/verify/walk.mjs
 ```
 
-Both modes pass. Under Lot 1 `audience.mjs` reports that its screen is
+Both modes pass at **both widths** — `W=390 H=844` included, which is
+the check that catches a page scrolling sideways on a phone. Under
+Lot 1 `audience.mjs` reports that its screen is
 not registered and exits clean rather than failing on a 404 it asked for
 itself, and `configuration.mjs` asserts a different sidebar in each lot:
 in Lot 2 the nine or ten named groups, in Lot 1 the six entries, the
