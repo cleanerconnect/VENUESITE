@@ -341,3 +341,91 @@ Elle est hors du contrat Lot 1, et volontairement minimale.
   n'était pas demandé.
 - Rien n'est déployé côté LYFE. La branche `claude/awesome-heisenberg-klorrv`
   est poussée ; aucune demande de fusion n'a été ouverte.
+
+---
+
+## Étape 4 — Finir
+
+### Fait
+
+- **`docs/HANDOFF.md`** : la liste des outils passe de six à neuf
+  (`journey`, `edges`, `handshake` s'y ajoutent, avec ce que chacun
+  couvre), le décompte du schéma est corrigé (67 tables, pas 65), et la
+  §8 gagne « The consumer app reads the same tables » — le tableau des
+  routes, la variable `PORTAL_BASE_URL`, et la commande qui rejoue la
+  poignée de main.
+- **`docs/LOT1_API_CONTRACT.md`** : nouvelle §5.5. Elle dit ce qu'un
+  backend doit savoir maintenant que les tables ont deux lecteurs : la
+  forme d'une réservation venue de l'application, la table de traduction
+  des états, la table `app_sessions` hors contrat, et pourquoi
+  `GET /api/business/overview` n'est pas servi par l'API de
+  l'application.
+- **Une étape, un commit**, sur `claude/restaurant-dashboard-mfqab0` :
+  `e9923cb` étape 0, `a3e8c6c` étape 1, `7386006` étape 2, `912ad76`
+  étape 3, et celui-ci.
+- La demande de fusion **#5** — successeur de #4, fusionnée — décrit les
+  cinq étapes.
+
+### Reste — et pourquoi
+
+**Les captures de référence de `docs/lot1-reference/` n'ont pas été
+refaites.** Deux écrans ont changé d'aspect depuis : l'étape 3 de
+l'inscription et l'onglet Adresse de Ma fiche, où la carte a remplacé le
+placeholder. Les refaire *ici* donnerait une carte grise : le conteneur
+n'a pas d'accès sortant vers `tile.openstreetmap.org` ni
+`nominatim.openstreetmap.org` — le proxy refuse le CONNECT — donc la
+capture montrerait un composant sans tuiles, ce qui est une moins bonne
+référence que celle qui existe. C'est le seul endroit de la nuit où le
+réseau du conteneur a décidé à ma place. À refaire depuis une machine
+avec un accès normal :
+
+```bash
+LYFE_LOT=1 SHOTS=docs/lot1-reference node tools/verify/inscription.mjs
+LYFE_LOT=1 W=390 H=844 SHOTS=docs/lot1-reference node tools/verify/inscription.mjs
+LYFE_LOT=1 DEPTH=full SHOTS=docs/lot1-reference node tools/verify/extract.mjs
+```
+
+Les outils, eux, passent ici : ils filtrent ces deux hôtes du bruit
+console au lieu de compter leur échec comme une panne du portail.
+
+---
+
+## À regarder en premier
+
+Cinq choses, dans cet ordre.
+
+1. **La session expirée qui perdait la saisie** (étape 2, `7386006`).
+   C'est le défaut le plus grave trouvé cette nuit et la correction
+   touche `src/middleware.ts` : les requêtes d'action serveur ne sont
+   plus redirigées vers `/login`. C'est une porte qu'on croit fermée et
+   qui s'ouvre — la raison pour laquelle c'est sûr est que **chaque
+   écriture liée à un établissement appelle `requireVenueAccess`**. Si
+   vous ne deviez relire qu'un diff, relisez celui-là.
+
+2. **L'heure de l'établissement** (étape 1, `a3e8c6c`). Le serveur
+   tournait en UTC, le navigateur en UTC+1, et le constructeur d'écran
+   tournant deux fois donnait deux résultats : React jetait l'hydratation
+   sur trois écrans et les heures se lisaient une heure trop tôt.
+   `VENUE_TIME_ZONE` vaut `Africa/Casablanca` par défaut et
+   `NEXT_PUBLIC_VENUE_TZ` le change. **À poser dans Vercel si LYFE sort
+   du Maroc** — et un jour, à mettre par établissement.
+
+3. **Le déploiement Neon**, `docs/HANDOFF.md` § « Déployer ». Il reste
+   trois gestes à faire dans la console, qui ne peuvent pas être faits
+   d'ici : rattacher la base, redéployer, et semer une fois. Le contrôle
+   est `GET /api/health` : `"data": "db"`, `"dataEngine": "postgres"`.
+   Tant qu'il dit `"static"`, l'étape 6 de l'inscription refuse de créer
+   l'établissement.
+
+4. **La base partagée avec l'application**, `docs/HANDOFF.md` §8 et le
+   contrat §5.5. C'est la décision structurante de la nuit : les deux
+   produits cessent d'avoir deux vérités sur le même établissement. Elle
+   vit dans l'autre dépôt, sur `claude/awesome-heisenberg-klorrv`, elle
+   ne s'active qu'avec `DATABASE_URL`, et rien de l'interface de
+   l'application n'a bougé. Aucune demande de fusion n'y a été ouverte —
+   c'est à vous de décider si vous la voulez.
+
+5. **`node tools/verify/journey.mjs`**, une fois, sur le déploiement.
+   C'est le seul des neuf outils qui se comporte comme un partenaire
+   plutôt que comme un test : il s'inscrit, remplit, se trompe, revient.
+   Trente secondes, et il dit si la journée d'un partenaire tient.
