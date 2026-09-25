@@ -199,10 +199,10 @@ await signOut();
 await signIn("yassine@darzellij.ma");
 await openPending();
 
-const row = page.locator('[data-row="open"]').filter({
-  has: page.locator('button:has-text("Accepter")'),
-}).first();
-const hasRow = (await row.count()) > 0;
+// The row is a card whose own button carries `data-row="open"`, with
+// the decisions as its siblings — so the decisions are counted on the
+// page rather than scoped to a container that does not exist.
+const hasRow = (await page.locator('button:has-text("Accepter"):visible').count()) > 0;
 check("une demande est sur le carnet", hasRow);
 
 if (hasRow) {
@@ -223,7 +223,7 @@ if (hasRow) {
   check("Décaler sur chaque ligne ouverte", decaler >= accepter, `${decaler}`);
 
   // Décaler: the sheet, the venue's own slots, and the move.
-  await row.locator('button:has-text("Décaler")').first().click();
+  await page.locator('button:has-text("Décaler"):visible').first().click();
   await settle(1500);
   const sheet = await text();
   check("Décaler ouvre une feuille", /Décaler la réservation/i.test(sheet));
@@ -314,7 +314,7 @@ await openPending();
 const book = await text();
 check("le téléphone est sur la ligne", /\+212\s?\d/.test(book));
 
-const firstRow = page.locator("li, tr").filter({ hasText: /\+212/ }).first();
+const firstRow = page.locator('button[data-row="open"]:visible').first();
 if (await firstRow.count()) {
   await firstRow.click();
   await settle(1600);
