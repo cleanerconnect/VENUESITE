@@ -1,6 +1,17 @@
 // Copies a seeded SQLite file into Postgres.
 //
 //   DATABASE_URL=postgres://… node db/push.mjs [path]
+//   DATABASE_URL=postgres://… node db/push.mjs --if-empty [path]
+//
+// Two modes, and the difference matters because one of them destroys
+// data. The default **empties every table first** — it is the local
+// « give me the demo dataset back » command, reached through
+// `npm run db:reset`. With `--if-empty` it truncates nothing: it copies
+// only into a database that has no venue yet, and on a database that
+// already has one it writes nothing and exits clean. That is the mode
+// the Vercel build step uses, so a fresh Neon database is furnished on
+// the first deploy and every later deploy leaves the partners' rows
+// alone.
 //
 // One seed generator, two destinations. `db/seed.mjs` is two thousand
 // lines of deterministic dataset and it writes SQLite; rather than keep
@@ -17,7 +28,9 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { connect, schemaTables, jsonColumns } from "./pg.mjs";
 
-const path = resolve(process.argv.slice(2).find((a) => !a.startsWith("--")) ?? ".data/lyfe.db");
+const args = process.argv.slice(2);
+const ifEmpty = args.includes("--if-empty");
+const path = resolve(args.find((a) => !a.startsWith("--")) ?? ".data/lyfe.db");
 if (!existsSync(path)) {
   console.error(`Aucune base SQLite à ${path}. Lancez d'abord \`npm run db:seed\`.`);
   process.exit(1);
@@ -36,9 +49,54 @@ let skipped = 0;
 
 try {
   await client.query("BEGIN");
-  // Emptied in one statement so the foreign keys never see a half-copied
-  // database, and in the same transaction as the insert.
-  await client.query(`TRUNCATE TABLE ${tables.map((t) => `"${t}"`).join(", ")} CASCADE`);
+
+  if (ifEmpty) {
+    // The decision and the copy have to be one transaction, or two
+    // builds starting together both read an empty database and both
+    // insert. `venues` is locked rather than an advisory lock because
+    // Neon's pooled endpoint pools by transaction: a table lock is
+    // transaction-scoped and therefore actually held, and the second
+    // build waits here, then finds the venue the first one wrote.
+    await client.query("LOCK TABLE venues IN ACCESS EXCLUSIVE MODE");
+    const { rows: venueRows } = await client.query(
+      "SELECT COUNT(*)::int AS n FROM venues",
+    );
+    if (venueRows[0].n > 0) {
+      await client.query("ROLLBACK");
+      console.log(
+        `la base porte déjà ${venueRows[0].n} établissement(s) — rien copié, rien effacé`,
+      );
+      await client.end();
+      sqlite.close();
+      process.exit(0);
+    }
+
+    // No venue, but rows elsewhere: something half-seeded or hand-made
+    // is in there, and inserting on top of it would either collide on a
+    // primary key or leave two datasets interleaved. Say so and stop
+    // rather than guess which one was wanted.
+    const { rows: filled } = await client.query(
+      `SELECT t FROM (${tables
+        .map((t) => `SELECT '${t}' AS t, EXISTS (SELECT 1 FROM "${t}") AS filled`)
+        .join(" UNION ALL ")}) s WHERE filled`,
+    );
+    if (filled.length > 0) {
+      await client.query("ROLLBACK");
+      console.error(
+        "La base n'a aucun établissement mais n'est pas vide : " +
+          `${filled.map((r) => r.t).join(", ")}.\n` +
+          "Rien n'a été écrit. Videz-la, ou utilisez `npm run db:reset` " +
+          "qui la remet à zéro explicitement.",
+      );
+      await client.end();
+      sqlite.close();
+      process.exit(1);
+    }
+  } else {
+    // Emptied in one statement so the foreign keys never see a half-copied
+    // database, and in the same transaction as the insert.
+    await client.query(`TRUNCATE TABLE ${tables.map((t) => `"${t}"`).join(", ")} CASCADE`);
+  }
 
   for (const table of tables) {
     const rows = sqlite.prepare(`SELECT * FROM ${table}`).all();

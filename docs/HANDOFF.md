@@ -330,6 +330,8 @@ dialectes. Une seule variable décide : `DATABASE_URL`.
 | *(absente)* | pilote `db` sur **SQLite** si `.data/lyfe.db` existe, sinon pilote `static` (le jeu de données figé) |
 | `LYFE_LOT` | `1` par défaut — le Dashboard basique. `2` n'est à mettre que pour montrer le périmètre complet. |
 | `DATABASE_POOL_MAX` | facultatif, 4 par défaut : le plafond de connexions par instance |
+| `NEXT_PUBLIC_VENUE_TZ` | facultatif, `Africa/Casablanca` par défaut : le fuseau de l'établissement |
+| `LYFE_SKIP_DB_BOOTSTRAP` | facultatif : saute l'étape de base au build (voir plus bas) |
 
 **Dans Vercel**, une fois par projet :
 
@@ -339,34 +341,100 @@ dialectes. Une seule variable décide : `DATABASE_URL`.
    il n'y a pas de clé d'API à fournir, la carte utilise
    OpenStreetMap.
 2. **Redéployer** — les variables ne sont lues qu'au démarrage d'une
-   instance.
-3. **Semer une fois**, depuis une machine qui a le dépôt et l'URL
-   (copiez la chaîne *pooled* depuis Neon ou Vercel) :
-
-```bash
-export DATABASE_URL="postgres://…-pooler.…neon.tech/neondb?sslmode=require"
-npm run db:migrate     # applique schema.sql + les fonctions de compatibilité
-npm run db:reset       # génère le jeu de démonstration et le copie dans Postgres
-```
-
-`db:reset` écrit d'abord `.data/lyfe.db` — le générateur de données
-n'existe qu'en un seul exemplaire — puis applique le schéma et copie
-chaque table dans Postgres, dans l'ordre où `db/schema.sql` les déclare,
-qui est un ordre de dépendances. `npm run db:push` refait la copie seule.
-Les deux bases portent alors les mêmes lignes, ce qui est ce qui rend
-comparable un passage des outils sur l'une et sur l'autre.
-
-4. **Vérifier** : `GET /api/health` doit répondre
+   instance, et c'est le build du redéploiement qui prépare la base.
+3. **Vérifier** : `GET /api/health` doit répondre
 
 ```json
 { "adapters": { "data": "db", "dataEngine": "postgres" } }
 ```
+
+Il n'y a pas de quatrième geste. **Il n'y a rien à semer à la main** : le
+build le fait, une fois, et jamais deux.
 
 `"data": "static"` sur un déploiement veut dire qu'aucune base n'est
 rattachée : les écrans s'affichent depuis l'instantané, mais l'étape 6
 de l'inscription refuse de créer l'établissement — il n'y a rien où
 l'écrire. `"dataEngine": "sqlite"` en production veut dire que le
 portail écrit dans un fichier qu'un redéploiement jettera.
+
+#### Ce que fait l'étape de build
+
+`vercel.json` fixe la commande de build à
+
+```
+node db/bootstrap.mjs && next build
+```
+
+`db/bootstrap.mjs` est court et n'a que trois issues, qu'il nomme dans
+le journal de build :
+
+| Ce qu'il trouve | Ce qu'il fait |
+|---|---|
+| pas de `DATABASE_URL` | rien. Le portail retombe sur SQLite ou sur l'instantané, ce qui est le comportement documenté d'un déploiement sans base. |
+| une base **vide** | applique le schéma, génère le jeu de démonstration et le copie. Le premier déploiement d'un projet Neon neuf atterrit donc sur Dar Zellij plutôt que sur un portail vide. |
+| une base **avec au moins un établissement** | applique le schéma — c'est idempotent, et c'est ainsi qu'un changement de schéma arrive en production — et **n'écrit rien d'autre**. |
+
+**Aucun `TRUNCATE` dans ce chemin.** C'est la différence entre cette
+étape et `db:reset`, et elle est structurelle : `db/push.mjs` a deux
+modes, et celui que le build utilise (`--if-empty`) ne contient pas
+l'instruction qui efface.
+
+Deux détails qui comptent parce que Vercel peut lancer deux builds dans
+la même seconde :
+
+- **La décision et la copie sont une seule transaction**, qui commence
+  par `LOCK TABLE venues IN ACCESS EXCLUSIVE MODE`. Le second build
+  attend là, puis trouve l'établissement que le premier vient d'écrire
+  et ne copie rien. Sans cela, deux builds simultanés liraient tous les
+  deux une base vide et sèmeraient tous les deux.
+- **Le schéma s'applique sous un verrou consultatif de transaction**
+  (`db/migrate.mjs`). `CREATE TABLE IF NOT EXISTS` est idempotent mais
+  pas concurrent : deux sessions créant la même table au même instant se
+  disputent le catalogue et l'une échoue. Les deux verrous sont
+  *transactionnels* et non de session, parce que l'endpoint *pooled* de
+  Neon regroupe par transaction — un verrou de session n'y tiendrait
+  pas.
+
+Un cas est refusé plutôt que deviné : une base **sans établissement mais
+non vide**. Le build s'arrête en nommant les tables qui portent des
+lignes, sans rien écrire, parce qu'insérer par-dessus laisserait soit une
+collision de clé primaire, soit deux jeux de données entrelacés.
+
+`LYFE_SKIP_DB_BOOTSTRAP=1` saute l'étape entière. C'est pour le mauvais
+après-midi où la base est injoignable et où il faut livrer un correctif
+d'interface quand même : le build passe, et le schéma sera appliqué par
+le déploiement suivant.
+
+Deux choses à savoir avant de toucher aux réglages du projet. La
+commande de build de `vercel.json` **prime sur celle du tableau de
+bord** : si vous en aviez posé une là, c'est celle du fichier qui
+s'applique désormais, et un réglage personnalisé doit être reporté
+dedans. Et le générateur de données utilise `node:sqlite`, donc le build
+demande **Node 22.5 ou plus** ; c'est le cas par défaut, mais un projet
+épinglé à une version plus ancienne échouera à l'import.
+
+#### La commande destructive reste locale
+
+```bash
+export DATABASE_URL="postgres://…-pooler.…neon.tech/neondb?sslmode=require"
+npm run db:migrate     # applique schema.sql + les fonctions de compatibilité
+npm run db:reset       # ⚠️ vide toutes les tables et recopie la démo
+npm run db:push        # ⚠️ la copie seule, même vidage
+npm run db:bootstrap   # ce que fait le build : ne vide jamais rien
+```
+
+`db:reset` écrit d'abord `.data/lyfe.db` — le générateur de données
+n'existe qu'en un seul exemplaire — puis applique le schéma et copie
+chaque table dans Postgres, dans l'ordre où `db/schema.sql` les déclare,
+qui est un ordre de dépendances. Les deux bases portent alors les mêmes
+lignes, ce qui est ce qui rend comparable un passage des outils sur l'une
+et sur l'autre.
+
+**Les deux premières effacent.** Elles sont faites pour une base de
+développement ; pointées sur la base de production, elles emportent les
+établissements que des partenaires ont créés. C'est pour cela qu'elles
+restent des commandes qu'une personne tape, et que ce n'est pas elles que
+le build appelle.
 
 **Ce que Postgres change dans le code : rien.** Les sept magasins
 parlent aux quatre mêmes fonctions — `all`, `one`, `run`,

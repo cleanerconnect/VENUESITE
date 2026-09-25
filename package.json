@@ -11,6 +11,7 @@
     "db:reset": "node db/seed.mjs --reset",
     "db:snapshot": "tsx db/snapshot.mjs",
     "db:migrate": "node db/migrate.mjs",
+    "db:bootstrap": "node db/bootstrap.mjs",
     "db:push": "node db/push.mjs"
   },
   "dependencies": {
