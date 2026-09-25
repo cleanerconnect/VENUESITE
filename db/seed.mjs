@@ -6,6 +6,7 @@
 //
 //   node db/seed.mjs [path]        # default: .data/lyfe.db
 //   node db/seed.mjs --reset       # drop and recreate first
+//   node db/seed.mjs --sqlite-only # generate the file, touch no Postgres
 
 import { DatabaseSync } from "node:sqlite";
 import { readFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
@@ -14,6 +15,9 @@ import { execFileSync } from "node:child_process";
 
 const args = process.argv.slice(2);
 const reset = args.includes("--reset");
+// `db/bootstrap.mjs` wants the rows generated but not pushed: it does the
+// copy itself, in the one mode that never truncates.
+const sqliteOnly = args.includes("--sqlite-only");
 const dbPath = resolve(args.find((a) => !a.startsWith("--")) ?? ".data/lyfe.db");
 
 if (reset && existsSync(dbPath)) rmSync(dbPath);
@@ -1996,7 +2000,7 @@ db.close();
 // One generator, two destinations. With `DATABASE_URL` set, the rows
 // just written are migrated and copied into Postgres, so seeding Neon
 // is the same command a contributor runs locally.
-if (process.env.DATABASE_URL) {
+if (process.env.DATABASE_URL && !sqliteOnly) {
   console.log("\nDATABASE_URL présent — application du schéma puis copie vers Postgres");
   execFileSync(process.execPath, ["db/migrate.mjs"], { stdio: "inherit" });
   execFileSync(process.execPath, ["db/push.mjs", dbPath], { stdio: "inherit" });

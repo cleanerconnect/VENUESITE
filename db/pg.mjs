@@ -6,6 +6,15 @@
 
 import pg from "pg";
 
+/**
+ * The advisory lock `db/migrate.mjs` holds while it applies the schema.
+ *
+ * An arbitrary constant; it only has to be the same number in every
+ * process that applies the schema, so that two concurrent builds take
+ * it in turn instead of racing in the system catalogue.
+ */
+export const SCHEMA_LOCK = 847_12026;
+
 export function requireUrl() {
   const url = process.env.DATABASE_URL;
   if (!url) {
