@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { directory } from "@/lib/auth/directory";
 import { resolveSession, VENUE_COOKIE } from "@/lib/auth/server-session";
+import { sign, THIRTY_DAYS } from "@/lib/auth/cookie";
+import { allowAttempt } from "@/lib/auth/rate-limit";
 
 // Venue switch.
 //
@@ -23,6 +25,16 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "not_authenticated" }, { status: 401 });
   }
 
+  // Authenticated, but still worth a ceiling: this route is the one a
+  // script can hammer to enumerate venue ids against a stolen session.
+  const gate = allowAttempt(`venue:${session.userId}`, 30);
+  if (!gate.allowed) {
+    return Response.json(
+      { error: "too_many_requests", retryInSeconds: gate.retryInSeconds },
+      { status: 429 },
+    );
+  }
+
   const body = (await request.json().catch(() => null)) as { venueId?: string } | null;
   const venueId = body?.venueId;
   if (!venueId) {
@@ -38,7 +50,18 @@ export async function POST(request: NextRequest) {
   const response = Response.json({ ok: true, venueId });
   response.headers.append(
     "Set-Cookie",
-    `${VENUE_COOKIE}=${venueId}; Path=/; Max-Age=${60 * 60 * 24 * 30}; SameSite=Lax`,
+    // Signed, HttpOnly and Secure like every other write of this
+    // cookie. Hand-rolled here because the route returns a Response
+    // rather than using the cookie jar; the flags are the same set
+    // `identityCookie()` produces, and `cookie.ts` says why each one.
+    [
+      `${VENUE_COOKIE}=${sign(venueId)}`,
+      "Path=/",
+      `Max-Age=${THIRTY_DAYS}`,
+      "SameSite=Lax",
+      "HttpOnly",
+      ...(process.env.NODE_ENV === "production" ? ["Secure"] : []),
+    ].join("; "),
   );
   return response;
 }

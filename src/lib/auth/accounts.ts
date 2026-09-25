@@ -11,13 +11,32 @@ import "server-only";
 // account holds — event organisations, venues, or both — and that is
 // resolved here rather than by two separate entrances.
 //
-// This is the file a real backend replaces. Credentials are literals in
-// a fixture dataset with no production counterpart, which is the only
-// reason that is acceptable; the check is isolated in one function so
-// swapping it for a hash comparison is a one-line change.
+// This is the file a real backend replaces. The password literals below
+// are a fixture, and a fixture is only acceptable while it cannot
+// authenticate anything real — which was not true: the database
+// directory fell through to them whenever `partner_accounts` had no
+// matching row, so on a deployment with Neon attached (`db` mode, which
+// is what production runs) `yassine@darzellij.ma` / `demo` signed in
+// off a string in the bundle, and so did `validation@lyfe.ma`, the
+// account that validates listings.
+//
+// They are now consulted in exactly two cases, and `demoAccountsUsable()`
+// below is the whole rule:
+//
+//   · `static` — no database exists, so these are the only way in, and
+//     a cold clone has to be walkable. Nothing real is behind it.
+//   · `LYFE_DEMO_ACCOUNTS=1` — set on purpose, by someone who wants the
+//     demo pairs live on a database.
+//
+// With a database and without that flag, the same addresses still work:
+// `db/seed.mjs` writes them into `partner_accounts` with a salted
+// scrypt hash, and `verifyPartnerPassword()` checks them there — the
+// same path a partner created by `/inscription` goes through.
+// `/api/health` reports which state the deployment is in.
 
 import { directory, type DirectoryMembership } from "./directory";
 import { dataMode } from "@/lib/data/mode";
+import { activeLot } from "@/lib/lot";
 import { PROFILES } from "./static/profiles";
 import type { OrganizerProfile } from "@/lib/types/domain";
 
@@ -118,6 +137,18 @@ const ACCOUNTS: DemoAccount[] = [
 const byEmail = new Map(ACCOUNTS.map((a) => [a.email, a]));
 const byId = new Map(ACCOUNTS.map((a) => [a.userId, a]));
 
+/**
+ * Whether the fixture pairs above may authenticate.
+ *
+ * `static` has no database, so they are the only door and there is
+ * nothing real behind it. Anything else needs `LYFE_DEMO_ACCOUNTS=1`,
+ * set deliberately.
+ */
+export function demoAccountsUsable(): boolean {
+  if (dataMode() === "static") return true;
+  return process.env.LYFE_DEMO_ACCOUNTS === "1";
+}
+
 /** Display name from the account list, for users with no venue. */
 export function accountName(userId: string): string | null {
   return byId.get(userId)?.fallbackName ?? null;
@@ -201,7 +232,16 @@ export function destinationFor(account: ResolvedAccount): {
   // Events is the older, denser product, so it is the better default for
   // an account holding both. The switcher makes that reversible in one
   // click, which is why this does not need to be an extra screen.
-  if (hasEvents) {
+  //
+  // Except in Lot 1, where the deployment *is* the venue portal:
+  // `Planning V3` row 39 buys the Restau & Drinks dashboard, and the
+  // Events dashboard belongs to Prio 01 (row 38). The account a recette
+  // signs in with — `yassine@darzellij.ma`, Dar Zellij's owner — also
+  // holds `org_rooftop_mansour`, so typing the credentials from
+  // HANDOFF.md landed the reviewer on `/dashboard`: a screen that is
+  // not the delivery, in a lot that does not sell it. A partner who
+  // holds a venue goes to their venue.
+  if (hasEvents && !(activeLot() === 1 && hasVenues)) {
     return { workspace: "event", href: "/dashboard", needsVenueChoice: false };
   }
 
@@ -242,6 +282,9 @@ export async function verifyCredentials(
     // fixture partners below are just as local, so a miss falls through.
     if (dir.exclusiveVerify) return { ok: false, reason: "bad_password" };
   }
+
+  // The fixture, and only where it cannot authenticate anything real.
+  if (!demoAccountsUsable()) return { ok: false, reason: "bad_password" };
 
   const account = byEmail.get(email.trim().toLowerCase());
   if (!account) return { ok: false, reason: "unknown_account" };
