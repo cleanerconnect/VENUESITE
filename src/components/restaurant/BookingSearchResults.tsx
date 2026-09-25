@@ -41,15 +41,15 @@ export function BookingSearchResults({ query }: { query: string }) {
 
   if (results === null) {
     return (
-      <p className="text-sm text-[--color-ink-soft]">Recherche dans le carnet…</p>
+      <p className="text-sm text-ink-soft">Recherche dans le carnet…</p>
     );
   }
 
   if (results.length === 0) {
     return (
-      <div className="rounded-2xl border border-[--color-line] bg-[--color-surface] p-6">
-        <p className="font-medium text-[--color-ink]">Aucune réservation trouvée</p>
-        <p className="mt-1 text-sm text-[--color-ink-soft]">
+      <div className="rounded-2xl border border-line bg-surface p-6">
+        <p className="font-medium text-ink">Aucune réservation trouvée</p>
+        <p className="mt-1 text-sm text-ink-soft">
           Cherchez un nom, un numéro de téléphone — les quatre derniers chiffres
           suffisent — ou une date comme 25/09.
         </p>
@@ -68,7 +68,7 @@ export function BookingSearchResults({ query }: { query: string }) {
 
   return (
     <div className="space-y-6" data-search-results={results.length}>
-      <p className="text-sm text-[--color-ink-soft]">
+      <p className="text-sm text-ink-soft">
         {results.length === 1
           ? "Une réservation trouvée"
           : `${results.length} réservations trouvées`}{" "}
@@ -77,7 +77,7 @@ export function BookingSearchResults({ query }: { query: string }) {
 
       {[...groups.entries()].map(([day, rows]) => (
         <section key={day}>
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-[--color-ink-soft]">
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-soft">
             {formatInTimeZone(
               new Date(`${day}T12:00:00Z`),
               VENUE_TIME_ZONE,
@@ -85,21 +85,21 @@ export function BookingSearchResults({ query }: { query: string }) {
               { locale: fr },
             )}
           </h2>
-          <ul className="divide-y divide-[--color-line] rounded-2xl border border-[--color-line] bg-[--color-surface]">
+          <ul className="divide-y divide-line rounded-2xl border border-line bg-surface">
             {rows.map((r) => (
               <li key={r.id}>
                 <Link
                   href={`/restaurant/reservations?date=${day}`}
-                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-4 py-3 hover:bg-[--color-canvas-2]"
+                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-4 py-3 hover:bg-canvas-2"
                 >
-                  <span className="tabular-nums font-medium text-[--color-ink]">
+                  <span className="tabular-nums font-medium text-ink">
                     {formatInTimeZone(new Date(r.at), VENUE_TIME_ZONE, "HH'h'mm")}
                   </span>
-                  <span className="font-medium text-[--color-ink]">{r.guestName}</span>
-                  <span className="text-sm text-[--color-ink-soft]">
+                  <span className="font-medium text-ink">{r.guestName}</span>
+                  <span className="text-sm text-ink-soft">
                     {r.guestPhone}
                   </span>
-                  <span className="ml-auto text-sm text-[--color-ink-soft]">
+                  <span className="ml-auto text-sm text-ink-soft">
                     {r.partySize} · {RESERVATION_CHANNEL[r.channel]}
                   </span>
                 </Link>

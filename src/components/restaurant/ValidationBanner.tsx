@@ -29,16 +29,16 @@ export function ValidationBanner({
       className={[
         "mb-6 rounded-2xl border px-4 py-3 md:px-5 md:py-4",
         pending
-          ? "border-[--color-gold-soft] bg-[--color-gold-soft]/30"
-          : "border-[--color-danger]/40 bg-[--color-danger]/10",
+          ? "border-gold-soft bg-gold-soft/30"
+          : "border-danger/40 bg-danger/10",
       ].join(" ")}
     >
-      <p className="font-medium text-[--color-ink]">
+      <p className="font-medium text-ink">
         {pending
           ? "LYFE vérifie votre établissement."
           : "LYFE n'a pas validé votre établissement."}
       </p>
-      <p className="mt-1 text-sm text-[--color-ink-soft]">
+      <p className="mt-1 text-sm text-ink-soft">
         {pending
           ? "Votre tableau de bord fonctionne normalement. L'établissement n'apparaîtra dans l'application LYFE qu'une fois la fiche validée."
           : reason.trim() !== ""
@@ -46,7 +46,7 @@ export function ValidationBanner({
             : "Aucun motif n'a été enregistré. Écrivez-nous et nous vous dirons ce qui manque."}
       </p>
       {pending ? null : (
-        <p className="mt-1 text-sm text-[--color-ink-soft]">
+        <p className="mt-1 text-sm text-ink-soft">
           Corrigez votre fiche puis écrivez à validation@lyfe.ma pour une
           nouvelle vérification.
         </p>

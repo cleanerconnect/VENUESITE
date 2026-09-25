@@ -101,7 +101,7 @@ export function RescheduleSheet({
     >
       <div className="space-y-4">
         <div>
-          <p className="mb-2 text-sm font-medium text-[--color-ink]">Le jour</p>
+          <p className="mb-2 text-sm font-medium text-ink">Le jour</p>
           <div className="flex flex-wrap gap-2">
             {days.map((key) => (
               <button
@@ -111,8 +111,8 @@ export function RescheduleSheet({
                 className={cn(
                   "rounded-full border px-3 py-2 text-sm",
                   key === day
-                    ? "border-[--color-violet] bg-[--color-violet] text-white"
-                    : "border-[--color-line] text-[--color-ink]",
+                    ? "border-violet bg-violet text-canvas"
+                    : "border-line text-ink",
                 )}
               >
                 {formatInTimeZone(
@@ -127,11 +127,11 @@ export function RescheduleSheet({
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium text-[--color-ink]">L'heure</p>
+          <p className="mb-2 text-sm font-medium text-ink">L'heure</p>
           {slots === null || loading ? (
-            <p className="text-sm text-[--color-ink-soft]">Lecture des créneaux…</p>
+            <p className="text-sm text-ink-soft">Lecture des créneaux…</p>
           ) : slots.length === 0 ? (
-            <p className="text-sm text-[--color-ink-soft]">
+            <p className="text-sm text-ink-soft">
               L'établissement ne prend pas de réservation ce jour-là. Choisissez un
               autre jour.
             </p>
@@ -146,8 +146,8 @@ export function RescheduleSheet({
                   className={cn(
                     "rounded-xl border px-3 py-2 text-sm tabular-nums",
                     slot.at === chosen
-                      ? "border-[--color-violet] bg-[--color-violet] text-white"
-                      : "border-[--color-line] text-[--color-ink]",
+                      ? "border-violet bg-violet text-canvas"
+                      : "border-line text-ink",
                   )}
                 >
                   {formatInTimeZone(new Date(slot.at), VENUE_TIME_ZONE, "HH'h'mm")}
@@ -157,7 +157,7 @@ export function RescheduleSheet({
           )}
         </div>
 
-        <p className="text-sm text-[--color-ink-soft]">
+        <p className="text-sm text-ink-soft">
           Le client sera informé du nouvel horaire.
         </p>
 

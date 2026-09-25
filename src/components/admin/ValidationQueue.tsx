@@ -52,21 +52,21 @@ export function ValidationQueue({ venues }: { venues: PendingVenue[] }) {
       {venues.map((venue) => (
         <li
           key={venue.id}
-          className="rounded-2xl border border-[--color-line] bg-[--color-surface] p-4 md:p-5"
+          className="rounded-2xl border border-line bg-surface p-4 md:p-5"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="font-medium text-[--color-ink]">{venue.name}</p>
-              <p className="text-sm text-[--color-ink-soft]">
+              <p className="font-medium text-ink">{venue.name}</p>
+              <p className="text-sm text-ink-soft">
                 {venue.kind === "drinks" ? "Bar ou lounge" : "Restaurant"} ·{" "}
                 {venue.city}
               </p>
-              <p className="mt-2 text-sm text-[--color-ink-soft]">{venue.address}</p>
-              <p className="mt-2 text-sm text-[--color-ink-soft]">
+              <p className="mt-2 text-sm text-ink-soft">{venue.address}</p>
+              <p className="mt-2 text-sm text-ink-soft">
                 {venue.ownerName} · {venue.contactPhone || "pas de téléphone"} ·{" "}
                 {venue.contactEmail || "pas d'e-mail"}
               </p>
-              <p className="mt-2 text-xs text-[--color-ink-soft]">
+              <p className="mt-2 text-xs text-ink-soft">
                 Inscrit le{" "}
                 {formatInTimeZone(
                   new Date(venue.createdAt),
@@ -105,7 +105,7 @@ export function ValidationQueue({ venues }: { venues: PendingVenue[] }) {
           </div>
 
           {refusing === venue.id ? (
-            <div className="mt-4 border-t border-[--color-line] pt-4">
+            <div className="mt-4 border-t border-line pt-4">
               <Textarea
                 label="Ce que le partenaire verra"
                 value={reason}
