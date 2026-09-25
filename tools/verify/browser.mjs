@@ -29,3 +29,10 @@ export async function chromiumOrExplain() {
     process.exit(1);
   }
 }
+
+/** The whole module, for the two tools that also need `devices`. */
+export async function playwrightOrExplain() {
+  const chromium = await chromiumOrExplain();
+  const playwright = await import("playwright");
+  return { ...playwright, chromium };
+}
