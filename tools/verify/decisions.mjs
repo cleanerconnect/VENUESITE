@@ -171,13 +171,23 @@ await go("/admin/validations");
 const queue = await text();
 check("l'équipe LYFE ouvre la file", /Établissements à valider/i.test(queue));
 check("le nouvel établissement y est", queue.includes(`Café ${stamp}`));
+
+// The row for *this* venue, not the first one in the queue.
+//
+// `inscription.mjs` runs before this tool in the matrix and leaves its
+// own establishment waiting, so the queue usually holds more than one —
+// and clicking the first Valider validated somebody else's, which made
+// the two checks below fail while the product was working. A queue is
+// shared by definition; a tool that assumes it holds one row is a tool
+// that passes only when it runs alone.
+const ownRow = page.locator("li").filter({ hasText: `Café ${stamp}` }).first();
 check(
   "avec Valider et Refuser sur la ligne",
-  (await page.locator('button:has-text("Valider")').count()) > 0 &&
-    (await page.locator('button:has-text("Refuser")').count()) > 0,
+  (await ownRow.locator('button:has-text("Valider")').count()) > 0 &&
+    (await ownRow.locator('button:has-text("Refuser")').count()) > 0,
 );
 
-await page.locator('button:has-text("Valider")').first().click();
+await ownRow.locator('button:has-text("Valider")').first().click();
 await settle(2500);
 check(
   "valider retire l'établissement de la file",
