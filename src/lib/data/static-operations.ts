@@ -1196,6 +1196,7 @@ export function applyConfiguration(
         lastBookingAt: action.lastBookingAt,
         capacityCovers: action.capacityCovers,
         coversPerQuarter: action.coversPerQuarter,
+        slotMinutes: action.slotMinutes,
         turnMinutesSmall: action.turnMinutesSmall,
         turnMinutesLarge: action.turnMinutesLarge,
         zoneIds: action.zoneIds,

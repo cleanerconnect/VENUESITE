@@ -11,6 +11,7 @@
 // A spec that arrived over the wire could ask for any command in this
 // file and nothing outside it.
 
+import { asSlotMinutes } from "@/lib/types/venue-operations";
 import { revalidatePath } from "next/cache";
 import { requireVenueAccess, resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
@@ -653,6 +654,7 @@ export async function runScreenCommand(
           lastBookingAt: str(values, "lastBookingAt", "22:00"),
           capacityCovers: num(values, "capacityCovers", 60),
           coversPerQuarter: num(values, "coversPerQuarter", 10),
+          slotMinutes: asSlotMinutes(num(values, "slotMinutes", 30)),
           turnMinutesSmall: num(values, "turnMinutesSmall", 90),
           turnMinutesLarge: num(values, "turnMinutesLarge", 120),
           zoneIds: existing?.zoneIds ?? [],
@@ -685,6 +687,10 @@ export async function runScreenCommand(
           weekdays: field === "weekdays" ? weekdays(values, "value") : existing.weekdays,
           startsAt: field === "startsAt" ? str(values, "value", existing.startsAt) : existing.startsAt,
           endsAt: field === "endsAt" ? str(values, "value", existing.endsAt) : existing.endsAt,
+          slotMinutes:
+            field === "slotMinutes"
+              ? asSlotMinutes(num(values, "value", existing.slotMinutes))
+              : existing.slotMinutes,
           lastBookingAt:
             field === "lastBookingAt"
               ? str(values, "value", existing.lastBookingAt)

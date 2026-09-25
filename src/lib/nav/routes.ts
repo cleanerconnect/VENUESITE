@@ -30,7 +30,15 @@ export interface RouteEntry {
   label: string;
   /** One line: what a partner does here. */
   purpose: string;
-  workspace: "entry" | "event" | "venue" | "shared";
+  /**
+   * Which product this screen belongs to.
+   *
+   * `admin` is LYFE's own: not a partner screen, not in any sidebar, and
+   * not walked by the verify tools, which check what a partner can
+   * reach. Its gate is checked in `edges.mjs` instead, where the other
+   * access-control cases live.
+   */
+  workspace: "entry" | "event" | "venue" | "shared" | "admin";
   /** Who can open it. Empty means anyone signed in. */
   roles?: string;
   status: RouteStatus;
@@ -592,6 +600,17 @@ export const ROUTES: RouteEntry[] = [
     workspace: "shared",
     status: "built",
   },
+  // ── LYFE's own ──
+  {
+    path: "/admin/validations",
+    lot: 1,
+    label: "Validations",
+    purpose:
+      "L'équipe LYFE relit les établissements qui viennent de s'inscrire et les valide ou les refuse.",
+    workspace: "admin",
+    roles: "Équipe LYFE (platform_admins)",
+    status: "built",
+  },
 ];
 
 export const WORKSPACE_LABEL: Record<RouteEntry["workspace"], string> = {
@@ -599,6 +618,7 @@ export const WORKSPACE_LABEL: Record<RouteEntry["workspace"], string> = {
   event: "Espace événements",
   venue: "Espace lieux",
   shared: "Partagé",
+  admin: "Équipe LYFE",
 };
 
 /**

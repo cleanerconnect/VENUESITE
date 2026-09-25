@@ -225,6 +225,7 @@ function closedService(shape: Service, date: string): Service {
     closesAt: `${date}T00:00:00.000Z`,
     state: "closed",
     capacity: 0,
+    slotMinutes: shape.slotMinutes,
     bookedCovers: 0,
     arrivedCovers: 0,
     noShowCovers: 0,
@@ -586,7 +587,17 @@ export function buildDashboardScreen(
       : data.upcomingReservations
           .filter((r) => r.state !== "arrived" && Date.parse(r.at) >= Date.now())
           .slice(0, 6)
-    ).map((r) => reservationRow(r, data.zones, configuration, undefined, lot)),
+    ).map((r) =>
+      reservationRow(
+        r,
+        data.zones,
+        configuration,
+        undefined,
+        lot,
+        false,
+        data.currentService.slotMinutes,
+      ),
+    ),
     empty: lot1
       ? {
           title: "Aucune réservation aujourd'hui",
@@ -616,7 +627,15 @@ export function buildDashboardScreen(
   //                           space belongs to the two groups above.
   const dayRows = data.upcomingReservations;
   const hostRow = (r: Reservation) =>
-    reservationRow(r, data.zones, configuration, undefined, lot, true);
+    reservationRow(
+      r,
+      data.zones,
+      configuration,
+      undefined,
+      lot,
+      true,
+      data.currentService.slotMinutes,
+    );
   const byTime = (a: Reservation, b: Reservation) =>
     Date.parse(a.at) - Date.parse(b.at);
 
@@ -1110,7 +1129,15 @@ export function buildReservationsScreen(
         ? []
         : ([{ id: "risk", label: "À risque", match: { facet: "risk", values: ["high"] } }] satisfies FilterTab[])),
     ],
-    search: { placeholder: "Rechercher un client, un téléphone, une table…" },
+    // Names what the box now actually does. It used to filter the rows
+    // of one day; it searches the whole book, and the four digits are
+    // worth saying because nobody would guess that a number with spaces
+    // in it can be found by its tail.
+    search: {
+      placeholder: lot1
+        ? "Un nom, 4 chiffres du téléphone, ou 25/09…"
+        : "Rechercher un client, un téléphone, une table…",
+    },
     sorts: [
       // The default a host works to: the next table to arrive, first.
       // Sorting by clock time put a party seated at noon above one due
@@ -1142,7 +1169,15 @@ export function buildReservationsScreen(
       { id: "name", label: "Nom", key: "name", direction: "asc" },
     ],
     rows: all.map((r) =>
-      reservationRow(r, data.zones, configuration, depositByReservation.get(r.id), lot, true),
+      reservationRow(
+        r,
+        data.zones,
+        configuration,
+        depositByReservation.get(r.id),
+        lot,
+        true,
+        service.slotMinutes,
+      ),
     ),
     empty: {
       title: "Carnet vide",
@@ -1396,10 +1431,9 @@ function serviceLoadBlock(
     id: "service-load",
     type: "slot-grid",
     heading: "Charge du service",
-    subheading: `${coverLabel(
-      vocabulary,
-      "réservé",
-    )} par créneau de 30 min. La ligne marque ce que la salle peut tourner.`,
+    subheading: `${coverLabel(vocabulary, "réservé")} par créneau de ${
+      service.slotMinutes === 60 ? "1 h" : `${service.slotMinutes} min`
+    }. La ligne marque ce que la salle peut tourner.`,
     capacity: perSlotCapacity,
     capacityLabel: `${perSlotCapacity} ${vocabulary.cover.many} / créneau`,
     unitLabel: vocabulary.cover.many,
@@ -1408,7 +1442,7 @@ function serviceLoadBlock(
       return {
         label: hm(slot.at),
         value: slot.covers,
-        current: now >= start && now < start + 30 * 60_000,
+        current: now >= start && now < start + service.slotMinutes * 60_000,
       };
     }),
   };
@@ -1695,6 +1729,8 @@ function reservationRow(
   // bookings beside an attention queue that already carries them, and
   // two copies of Accepter on one screen is one too many.
   inlineActions = false,
+  /** The service's grid, which decides the sitting this row files under. */
+  slotMinutes = 30,
 ): EntityRow {
   const vocabulary = configFor(configuration);
   const lot1 = lot === 1;
@@ -1756,9 +1792,13 @@ function reservationRow(
     status: lot1 ? reservationBand(reservation.state) : undefined,
     // The sitting this booking files under, on the half hour the whole
     // dataset is already aligned to.
-    slot: lot1 ? slotOf(reservation.at) : undefined,
+    slot: lot1 ? slotOf(reservation.at, slotMinutes) : undefined,
+    // The phone, on the row, because the one thing a host does with a
+    // booking that is not on this screen is ring the guest — and going
+    // to the drawer for a number is the tap that gets skipped when the
+    // stand is busy.
     meta: lot1
-      ? place || undefined
+      ? [reservation.guestPhone, place].filter(Boolean).join(" · ") || undefined
       : `${hm(reservation.at)} · ${coversIn(configuration, reservation.partySize)} · ${place}`,
     badges,
     signal: reservation.note ? { text: reservation.note, icon: "note" } : undefined,
@@ -1817,9 +1857,19 @@ function reservationRow(
  * rounds down rather than inventing a bucket — a 19h05 booking taken by
  * phone still files under the 19h00 sitting a host is working.
  */
-function slotOf(at: string): string {
+/**
+ * The sitting a booking files under, on the venue's own grid.
+ *
+ * Used to be hardcoded to the half hour, which was fine while every
+ * venue was assumed to seat on it. A bar that seats every quarter hour
+ * saw two sittings collapsed into one heading, and one seating on the
+ * hour saw a heading for 20h00 and another for 20h30 with one booking
+ * each. The grid is the service's, so the heading is too.
+ */
+function slotOf(at: string, slotMinutes: number): string {
   const d = new Date(at);
-  d.setMinutes(d.getMinutes() < 30 ? 0 : 30, 0, 0);
+  const step = slotMinutes > 0 ? slotMinutes : 30;
+  d.setMinutes(Math.floor(d.getMinutes() / step) * step, 0, 0);
   return hm(d.toISOString());
 }
 
@@ -1835,11 +1885,12 @@ function slotOf(at: string): string {
  * accepter once the request has been accepted.
  */
 function reservationActions(reservation: Reservation): CtaAction[] | undefined {
-  // Absent is a judgement about a table that did not turn up, and it
-  // cannot be made before the table was due. Offered early it is a
-  // mis-tap waiting to happen — one that writes a no-show against a
-  // guest who is simply not late yet.
-  const due = Date.parse(reservation.at) <= Date.now();
+  // Absent used to wait for the table to be due, on the reasoning that
+  // offering it early is a mis-tap waiting to happen. In a real service
+  // it is the other way round: a host who can see the party is not
+  // coming reaches for it before the clock does, and a button that
+  // appears halfway through the evening is a button nobody trusts. It is
+  // drawn on every open row now, like the other two.
   const absent: CtaAction = {
     action: {
       kind: "command",
@@ -1851,7 +1902,38 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
     variant: "ghost",
   };
 
-  if (reservation.state === "requested") {
+  // Décaler. A time that does not suit is not a refusal — the table is
+  // wanted, the hour is wrong — and until now the host's only honest
+  // move was to refuse and ask the guest to book again. It sits beside
+  // Refuser on every open row, because the choice is between the two.
+  const reschedule: CtaAction = {
+    action: {
+      kind: "command",
+      command: "reservation.reschedule",
+      payload: {
+        id: reservation.id,
+        name: reservation.guestName,
+        at: reservation.at,
+        party: reservation.partySize,
+      },
+      label: "Décaler",
+      icon: "calendar-clock",
+    },
+    variant: "ghost",
+  };
+
+  const refuse: CtaAction = {
+    action: {
+      kind: "command",
+      command: "reservation.reject",
+      payload: { id: reservation.id, name: reservation.guestName },
+      label: "Refuser",
+      icon: "ban",
+    },
+    variant: "secondary",
+  };
+
+  if (reservation.state === "requested" || reservation.state === "waitlisted") {
     return [
       {
         action: {
@@ -1863,19 +1945,15 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
         },
         variant: "primary",
       },
-      {
-        action: {
-          kind: "command",
-          command: "reservation.reject",
-          payload: { id: reservation.id, name: reservation.guestName },
-          label: "Refuser",
-          icon: "ban",
-        },
-        variant: "secondary",
-      },
-      ...(due ? [absent] : []),
+      refuse,
+      reschedule,
+      absent,
     ];
   }
+  // Already accepted, so Accepter is Check-in — the next thing that
+  // happens to this table. Refuser stays: a venue that has to cancel an
+  // accepted booking had no way to say so on the row, and the state it
+  // writes is the same refusal with the same reason.
   if (reservation.state === "confirmed") {
     return [
       {
@@ -1888,9 +1966,13 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
         },
         variant: "primary",
       },
-      ...(due ? [absent] : []),
+      refuse,
+      reschedule,
+      absent,
     ];
   }
+  // Arrived, completed, refused, cancelled, absent: the time on the row
+  // is a record of what happened, and a record takes no decisions.
   return undefined;
 }
 
@@ -2020,16 +2102,35 @@ function reservationDetail(
         label: "Le client",
         items: [
           { label: "Téléphone", metric: { value: reservation.guestPhone } },
-          // A visit count is the guest base's figure, and Liste clients
-          // is Prio 08.
-          ...(lot === 1
-            ? []
-            : [
+          // Only when there is one. A booking taken by phone has no
+          // address, and an empty E-mail row reads like a guest who
+          // refused to give one.
+          ...(reservation.guestEmail
+            ? [{ label: "E-mail", metric: { value: reservation.guestEmail } }]
+            : []),
+          // The app asks for a birth year in a profile nobody has to
+          // fill, so this is absent far more often than it is present —
+          // and an age is what a host actually reads, not a year.
+          ...(reservation.guestBirthYear
+            ? [
                 {
-                  label: "Visites",
-                  metric: { value: reservation.visits, format: COUNT },
+                  label: "Âge",
+                  metric: {
+                    value: `${
+                      new Date().getFullYear() - reservation.guestBirthYear
+                    } ans`,
+                  },
                 },
-              ]),
+              ]
+            : []),
+          // The visit count at *this* venue, which is what the
+          // `customers` row counts — it is scoped to the venue like
+          // every other read. Not a CRM: one number, no history, no
+          // spend, and nothing to click through to.
+          {
+            label: "Visites ici",
+            metric: { value: reservation.visits, format: COUNT },
+          },
           // An amount the Lot 1 partner cannot see taken, refunded or
           // released, because Acomptes is a Lot 2 screen.
           ...(reservation.depositMad && lot !== 1
@@ -2051,8 +2152,18 @@ function reservationDetail(
         ],
       },
     ],
+    // « Note de salle » was the venue's own word for it, from when this
+    // field was only ever typed by a host. The app now writes the
+    // guest's special request into the same column, and a Lot 1 partner
+    // reads far more of the second kind than the first.
     notes: reservation.note
-      ? [{ label: "Note de salle", text: reservation.note, icon: "note" }]
+      ? [
+          {
+            label: lot === 1 ? "Demande particulière" : "Note de salle",
+            text: reservation.note,
+            icon: "note",
+          },
+        ]
       : undefined,
     actions: [
       {

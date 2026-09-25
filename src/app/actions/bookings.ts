@@ -20,6 +20,7 @@ import { getRestaurantRepository } from "@/lib/data";
 import { RepositoryError, StaleWriteError } from "@/lib/data/repository";
 import { COPY } from "@/lib/copy/fr";
 import type { RejectionReason } from "@/lib/types/business";
+import type { Reservation } from "@/lib/types/restaurant";
 
 const RESTAURANT_PATH = "/restaurant/[[...section]]";
 
@@ -113,4 +114,55 @@ export async function cancelBooking(reservationId: string) {
       reservationId,
     }),
   );
+}
+
+/**
+ * Décaler — the booking keeps its guest and its party, and changes hour.
+ *
+ * The slot is validated in the driver against the venue's own service
+ * definitions, not here: a time is only bookable if the venue says so,
+ * and that answer lives next to the data that gives it.
+ */
+export async function rescheduleBooking(
+  reservationId: string,
+  at: string,
+): Promise<BookingResult> {
+  return withVenue((venueId) =>
+    getRestaurantRepository().rescheduleReservation({
+      restaurantId: venueId,
+      reservationId,
+      at,
+    }),
+  );
+}
+
+/**
+ * The times one day can still take.
+ *
+ * A read behind a server action rather than a route, so it goes through
+ * the same session and venue check as every write: the days a venue is
+ * open are not secret, but which venue is being asked about is resolved
+ * from the session and never from the caller.
+ */
+export async function bookableSlotsForDay(
+  date: string,
+): Promise<{ at: string; serviceLabel: string }[]> {
+  const session = await resolveSession();
+  if (!session?.venueId) return [];
+  await requireVenueAccess(session.venueId);
+  return getRestaurantRepository().getBookableSlots(session.venueId, date);
+}
+
+/**
+ * Finds a booking across the whole book.
+ *
+ * Behind a server action for the same reason as the slots read: the
+ * venue is resolved from the session, so a host can only ever search
+ * their own establishment's bookings.
+ */
+export async function searchBookings(query: string): Promise<Reservation[]> {
+  const session = await resolveSession();
+  if (!session?.venueId) return [];
+  await requireVenueAccess(session.venueId);
+  return getRestaurantRepository().searchReservations(session.venueId, query);
 }

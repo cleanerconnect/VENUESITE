@@ -1,3 +1,9 @@
+import type { PendingVenue } from "@/lib/types/restaurant";
+import type {
+  VenueValidationInput,
+  RescheduleBookingInput,
+  BookableSlot,
+} from "@/lib/types/business";
 import "server-only";
 import type { AudienceInsights } from "@/lib/types/venue-operations";
 
@@ -115,6 +121,28 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     );
   }
 
+  rescheduleReservation({ reservationId, at }: RescheduleBookingInput) {
+    return this.request<RestaurantOverview>(
+      "PUT",
+      `/api/business/bookings/${reservationId}/reschedule`,
+      { at },
+    );
+  }
+
+  searchReservations(venueId: string, query: string) {
+    return this.request<Reservation[]>(
+      "GET",
+      `/api/business/venues/${venueId}/bookings/search?q=${encodeURIComponent(query)}`,
+    );
+  }
+
+  getBookableSlots(venueId: string, date: string) {
+    return this.request<BookableSlot[]>(
+      "GET",
+      `/api/business/venues/${venueId}/slots?date=${encodeURIComponent(date)}`,
+    );
+  }
+
   cancelReservation({ reservationId }: ReservationRefInput) {
     return this.request<RestaurantOverview>(
       "PUT",
@@ -202,6 +230,20 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     return this.request<{ venueId: string }>(
       "POST",
       `/api/business/onboarding/${draftId}/submit`,
+    );
+  }
+
+  // ── LYFE's review ──
+
+  listPendingVenues() {
+    return this.request<PendingVenue[]>("GET", "/api/business/venues/pending");
+  }
+
+  decideVenueValidation(input: VenueValidationInput) {
+    return this.request<PendingVenue[]>(
+      "PUT",
+      `/api/business/venues/${input.venueId}/validation`,
+      { status: input.status, reason: input.reason },
     );
   }
 

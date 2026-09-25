@@ -10,10 +10,15 @@
 // fallback: an unseeded database raises rather than rendering a
 // plausible-looking empty dashboard.
 
+import type { PendingVenue } from "@/lib/types/restaurant";
+import type { VenueValidationInput, RescheduleBookingInput } from "@/lib/types/business";
+import { formatInTimeZone } from "date-fns-tz";
+import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 import type { DayBook, RestaurantOverview } from "@/lib/types/restaurant";
 import type { CheckInResult, NotificationPreferences } from "@/lib/types/business";
 import * as store from "@/lib/db/venue-store";
 import * as onboarding from "@/lib/db/onboarding-store";
+import * as validation from "@/lib/db/validation-store";
 import {
   listStaff as listStaffRows,
   updateVenueIdentity,
@@ -33,6 +38,9 @@ import {
   venueProfile,
   overview as overviewFromStore,
   transitionBooking,
+  bookableSlots,
+  rescheduleBooking,
+  searchReservations,
   visibility as visibilityFromStore,
   dayBookFor as dayBookFromStore,
 } from "@/lib/db/overview-store";
@@ -125,6 +133,45 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
 
   // ── Booking lifecycle ──
+  searchReservations(venueId: string, query: string) {
+    return searchReservations(venueId, query);
+  }
+
+  getBookableSlots(venueId: string, date: string) {
+    return bookableSlots(venueId, date);
+  }
+
+  async rescheduleReservation({
+    restaurantId,
+    reservationId,
+    at,
+  }: RescheduleBookingInput) {
+    // The offered times are the venue's, so the new one is checked
+    // against them here rather than trusted: a payload is a payload,
+    // and 03h15 on a Monday the venue is closed would otherwise be
+    // written and then shown to a guest.
+    const day = formatInTimeZone(new Date(at), VENUE_TIME_ZONE, "yyyy-MM-dd");
+    const offered = await bookableSlots(restaurantId, day);
+    if (!offered.some((slot) => slot.at === at)) {
+      throw new RepositoryError(
+        "Ce créneau n'est pas proposé par l'établissement.",
+        422,
+        "slot_unavailable",
+      );
+    }
+    const result = await rescheduleBooking(restaurantId, reservationId, at);
+    if (!result.moved) {
+      throw new RepositoryError(
+        result.reason === "settled"
+          ? "Cette réservation est déjà arrivée ou close : son heure ne se décale plus."
+          : "Réservation introuvable.",
+        result.reason === "settled" ? 409 : 404,
+        result.reason ?? "not_found",
+      );
+    }
+    return this.getOverview(restaurantId);
+  }
+
   async rejectReservation(input: RejectBookingInput) {
     // `rejected`, not `cancelled`: the schema keeps them apart, and the
     // coded reason is what makes a refusal aggregable. It is carried into
@@ -240,6 +287,31 @@ export class MockRestaurantRepository implements RestaurantRepository {
       throw new RepositoryError("Inscription introuvable.", 404, "draft_not_found");
     }
     return made;
+  }
+
+  // ── LYFE's review ──
+
+  listPendingVenues() {
+    return validation.pendingVenues();
+  }
+
+  async decideVenueValidation(input: VenueValidationInput) {
+    if (input.status === "rejected" && input.reason.trim() === "") {
+      throw new RepositoryError(
+        "Dites au partenaire ce qui manque : c'est la seule chose qu'il verra.",
+        422,
+        "reason_required",
+      );
+    }
+    const changed = await validation.setVenueStatus(
+      input.venueId,
+      input.status,
+      input.reason,
+    );
+    if (!changed) {
+      throw new RepositoryError("Établissement introuvable.", 404, "venue_not_found");
+    }
+    return validation.pendingVenues();
   }
 
   // ── Ma fiche's writes ──

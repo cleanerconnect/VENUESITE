@@ -10,6 +10,7 @@
 // out: it is the one edit that changes what a guest can book right now,
 // so a stale write is refused rather than merged.
 
+import { SLOT_MINUTES } from "@/lib/types/venue-operations";
 import type { Block, ScreenSpec, SettingRow } from "@/lib/dashboard/spec";
 import { COUNT, MAD, PERCENT } from "@/lib/dashboard/formats";
 import type {
@@ -366,7 +367,7 @@ function serviceCard(
     id: `service-${service.id}`,
     type: "settings",
     heading: service.name,
-    subheading: `${weekdayLabel(service.weekdays)} · ${clock(service.startsAt)} – ${clock(service.endsAt)}`,
+    subheading: `${weekdayLabel(service.weekdays)} · ${clock(service.startsAt)} – ${clock(service.endsAt)} · créneaux de ${service.slotMinutes === 60 ? "1 heure" : `${service.slotMinutes} minutes`}`,
     rows: [
       {
         id: id("weekdays"),
@@ -396,6 +397,23 @@ function serviceCard(
         hint: "L'heure après laquelle l'application ne propose plus ce service.",
         control: { kind: "time", value: service.lastBookingAt },
         ...write("lastBookingAt"),
+      },
+      {
+        // The grid, above capacity, because it is the choice that
+        // changes what every other number on the card means: a capacity
+        // of 72 is 72 per half hour or 72 per hour depending on it.
+        id: id("slotMinutes"),
+        label: "Créneaux de",
+        hint: "Les heures que l'application propose, et la façon dont le carnet regroupe la journée.",
+        control: {
+          kind: "select",
+          value: String(service.slotMinutes),
+          options: SLOT_MINUTES.map((m) => ({
+            value: String(m),
+            label: m === 60 ? "1 heure" : `${m} minutes`,
+          })),
+        },
+        ...write("slotMinutes"),
       },
       {
         id: id("capacityCovers"),

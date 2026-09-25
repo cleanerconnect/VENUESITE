@@ -37,7 +37,11 @@ if (!existsSync(path)) {
 }
 
 const schema = readFileSync(resolve("db/schema.sql"), "utf8");
-const tables = schemaTables(schema);
+// `schema_migrations` is the target database's own ledger of which
+// migrations it has had — a property of that database, not data to copy.
+// Copying it would also break `--if-empty`, whose emptiness test would
+// see the rows `db:migrate` had just written and refuse.
+const tables = schemaTables(schema).filter((t) => t !== "schema_migrations");
 const jsonCols = jsonColumns(schema);
 
 const sqlite = new DatabaseSync(path);

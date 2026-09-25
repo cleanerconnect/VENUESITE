@@ -224,7 +224,7 @@ minimum group size on Audience.
 
 ### Before you trust a change, walk it
 
-Nine browser checks and one recorder are committed under
+Ten browser checks and one recorder are committed under
 `tools/verify/`, kept out of `package.json` deliberately — they need a
 running server and a browser binary, and a check that pretends to be a
 unit test is a check that gets skipped in CI and then deleted.
@@ -241,6 +241,7 @@ node tools/verify/audience.mjs        # the minimum group of ten, both configura
 node tools/verify/inscription.mjs     # the six onboarding steps, the resume, the landing
 node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
 node tools/verify/edges.mjs           # the paths taken by accident — see below
+node tools/verify/decisions.mjs       # LYFE's review, Décaler, the search, the grid, the guest
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
 ```
 
@@ -734,7 +735,7 @@ was not there.
 
 ## 8. The schema is the Business Service contract
 
-`db/schema.sql` — **67 tables**. It is not an implementation detail of
+`db/schema.sql` — **69 tables**. It is not an implementation detail of
 this repository; it is the specification of what the Business Service must
 store. It is written on the Postgres/SQLite intersection precisely so it
 ports without translation, and `db/seed.mjs` fills it with a dataset the
@@ -820,6 +821,53 @@ browser, the app lists the venue with its address, map point and hours, a
 guest books it, Accueil counts the request, the partner accepts, the app
 reads it back as confirmed, and a cancellation made in the app shows up
 on the dashboard.
+
+### LYFE reviews a listing, and the venue chooses its grid
+
+Four changes to Lot 1, inside *gestion des réservations* and *création de
+venue*. `docs/LOT1_API_CONTRACT.md` §3.1 is the contract for all four;
+this is what they mean for running the thing.
+
+**A venue created at /inscription waits for LYFE.** `venues.status` is
+`pending_review`, `validated` or `rejected`. The partner's dashboard
+works in full — that is the point, they can set their hours and photos
+while LYFE looks — and every venue screen carries a banner saying the app
+will not list them until the fiche is validated. `/admin/validations` is
+the review queue, and its gate is a row in **`platform_admins`**, a
+platform role and not a venue role: a venue owner must never be able to
+validate their own listing. A partner who reaches the URL gets a 404.
+
+To make somebody a reviewer on a deployment, insert the row:
+
+```sql
+INSERT INTO platform_admins (user_id, full_name, email, created_at)
+VALUES ('usr_…', 'Prénom Nom', 'prenom@lyfe.ma', now()::text);
+```
+
+The demo dataset ships one: `validation@lyfe.ma`, password `demo`, who
+holds no venue and no organisation on purpose.
+
+**A booking has four decisions on its row**, always visible: Accepter,
+Refuser, Absent and the new **Décaler**, which moves it to another time
+the venue actually offers and tells the guest in the same call. The
+sheet's times come from the venue's service definitions, and the driver
+re-checks the chosen one before writing.
+
+**The chrome's search box searches the whole book**, not the day on
+screen: a name, a phone matched on digits only — so the last four work —
+or a date, with the results grouped by day.
+
+**Each service picks a slot length** of 15, 30 or 60 minutes on
+Disponibilités. Réservations groups by it and the load curve is cut on
+it. The two seeded venues disagree on purpose, so the dataset exercises
+the field.
+
+One thing this does **not** yet do: the consumer app's booking screen
+still offers a hardcoded list of half hours. `backend/postgres_dashboard.py`
+now serves `slot_minutes` and `bookable_times` on every restaurant
+payload, so the change is one line in
+`frontend/app/restaurants.tsx:1123` — but that is the app's UI, which
+the brief ring-fenced, so it is left for whoever owns that screen.
 
 ---
 

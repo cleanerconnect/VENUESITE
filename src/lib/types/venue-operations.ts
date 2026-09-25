@@ -107,6 +107,18 @@ export interface ServiceFloor {
 
 // ── Availability configuration ───────────────────────────────
 
+/** The three slot lengths a venue may choose between. */
+export type SlotMinutes = 15 | 30 | 60;
+
+export const SLOT_MINUTES: SlotMinutes[] = [15, 30, 60];
+
+export const isSlotMinutes = (value: unknown): value is SlotMinutes =>
+  value === 15 || value === 30 || value === 60;
+
+/** Falls back to the half hour both products assumed before the field. */
+export const asSlotMinutes = (value: unknown): SlotMinutes =>
+  isSlotMinutes(Number(value)) ? (Number(value) as SlotMinutes) : 30;
+
 export interface ServiceDefinition {
   id: string;
   name: string;
@@ -118,6 +130,16 @@ export interface ServiceDefinition {
   lastBookingAt: string;
   capacityCovers: number;
   coversPerQuarter: number;
+  /**
+   * How long one bookable slot is, in minutes: 15, 30 or 60.
+   *
+   * The venue's choice, and the one number that decides what the book
+   * looks like and what the app offers. Réservations groups its rows by
+   * it, Calendrier draws its columns on it, and the app's bookable times
+   * step by it — so a lounge seating every quarter hour and a tasting
+   * room seating on the hour need no code of their own.
+   */
+  slotMinutes: SlotMinutes;
   turnMinutesSmall: number;
   turnMinutesLarge: number;
   zoneIds: string[];

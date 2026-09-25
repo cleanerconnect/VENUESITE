@@ -242,3 +242,35 @@ export interface PortalNotification {
   /** Where acting on it takes you. */
   href?: string;
 }
+
+/**
+ * LYFE's decision on a listing.
+ *
+ * `reason` is required for a refusal and ignored for a validation: the
+ * partner is shown the sentence, so a refusal without one would be a
+ * dead end on their dashboard.
+ */
+export interface VenueValidationInput {
+  venueId: string;
+  status: "validated" | "rejected";
+  reason: string;
+}
+
+/** One time the venue can still seat on a given day. */
+export interface BookableSlot {
+  /** ISO instant. */
+  at: string;
+  /** Which sitting it belongs to — « Déjeuner », « Nuit ». */
+  serviceLabel: string;
+}
+
+/**
+ * Décaler. The new time must be one `getBookableSlots` returned for its
+ * day, and the driver checks that rather than trusting the caller.
+ */
+export interface RescheduleBookingInput {
+  restaurantId: string;
+  reservationId: string;
+  /** ISO instant. */
+  at: string;
+}

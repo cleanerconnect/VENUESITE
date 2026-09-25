@@ -16,6 +16,7 @@ import type {
   RestaurantOverview,
   RestaurantProfile,
   DayBook,
+  PendingVenue,
 } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
@@ -31,6 +32,9 @@ import type {
   VenueAnalytics,
   VenueAvailability,
   VisibilityMetrics,
+  VenueValidationInput,
+  RescheduleBookingInput,
+  BookableSlot,
 } from "@/lib/types/business";
 
 export interface ReservationRefInput {
@@ -195,6 +199,27 @@ export interface RestaurantRepository extends VenueOperationsRepository {
    */
   rejectReservation(input: RejectBookingInput): Promise<RestaurantOverview>;
   /**
+   * Décaler — move a booking to another time the venue actually offers,
+   * and tell the guest.
+   *
+   * The times come from `getBookableSlots`, which reads the venue's own
+   * service definitions, so the host cannot offer a slot the app would
+   * refuse. Notifying is part of this call rather than a second one: a
+   * booking moved without the guest being told is the failure mode, and
+   * making it two calls is what lets the second one be forgotten.
+   */
+  rescheduleReservation(input: RescheduleBookingInput): Promise<RestaurantOverview>;
+  /** The times one day can still take, per the venue's services. */
+  getBookableSlots(venueId: string, date: string): Promise<BookableSlot[]>;
+  /**
+   * Finds a booking anywhere in the book — by name, by phone (digits
+   * only, so the last four work), or by date.
+   *
+   * A read rather than a filter, because the answer is usually on
+   * another day and a day's payload cannot contain it.
+   */
+  searchReservations(venueId: string, query: string): Promise<Reservation[]>;
+  /**
    * Marks the guest arrived. `qrCode` comes from the app-side QR
    * (EP20-US9) or from the manual fallback — the server cannot tell the
    * difference and should not need to.
@@ -224,6 +249,17 @@ export interface RestaurantRepository extends VenueOperationsRepository {
   ): Promise<OnboardingDraft>;
   /** Idempotent: a spent draft returns the venue it already made. */
   submitOnboarding(draftId: string): Promise<{ venueId: string }>;
+
+  // ── LYFE's review of a listing ──
+  //
+  // The only two calls in this interface that are not venue-scoped. A
+  // venue created by /inscription is `pending_review`: its dashboard
+  // works in full and the consumer app does not list it. Authorisation
+  // is the `platform_admins` row, never a venue membership — a partner
+  // must not be able to validate their own listing.
+  listPendingVenues(): Promise<PendingVenue[]>;
+  /** Returns the queue as it stands after the decision. */
+  decideVenueValidation(input: VenueValidationInput): Promise<PendingVenue[]>;
 
   // ── Venue profile and settings ──
   //
@@ -326,6 +362,7 @@ import type {
   VenueSettings,
   WaitlistRemovalReason,
   WaitlistSource,
+  SlotMinutes,
 } from "@/lib/types/venue-operations";
 
 /** Services and the rules that decide what the app offers. */
@@ -544,6 +581,8 @@ export type ConfigurationAction =
       lastBookingAt: string;
       capacityCovers: number;
       coversPerQuarter: number;
+      /** 15, 30 or 60. The venue's bookable grid for this service. */
+      slotMinutes: SlotMinutes;
       turnMinutesSmall: number;
       turnMinutesLarge: number;
       zoneIds: string[];

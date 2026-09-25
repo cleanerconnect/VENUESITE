@@ -9,7 +9,7 @@
 //   node db/seed.mjs --sqlite-only # generate the file, touch no Postgres
 
 import { DatabaseSync } from "node:sqlite";
-import { readFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 
@@ -26,6 +26,16 @@ mkdirSync(dirname(dbPath), { recursive: true });
 const db = new DatabaseSync(dbPath);
 db.exec("PRAGMA foreign_keys = ON");
 db.exec(readFileSync(resolve("db/schema.sql"), "utf8"));
+
+// The schema already describes the result of every migration, so a
+// freshly created file is stamped rather than migrated — the same rule
+// `db/migrate.mjs` applies to a fresh Postgres database.
+for (const id of readdirSync(resolve("db/migrations")).filter((f) => f.endsWith(".sql")).sort()) {
+  db.prepare("INSERT OR IGNORE INTO schema_migrations (id, applied_at) VALUES (?, ?)").run(
+    id,
+    new Date().toISOString(),
+  );
+}
 
 const now = new Date();
 const iso = (d) => d.toISOString();
@@ -122,6 +132,7 @@ const insert = (table, row) => {
 insert("venues", {
   id: VENUE,
   kind: "restaurant",
+  status: "validated",
   name: "Dar Zellij",
   short_name: "Dar Zellij",
   initials: "DZ",
@@ -727,6 +738,7 @@ const VENUE2 = "bar_nomad_casa";
 insert("venues", {
   id: VENUE2,
   kind: "drinks",
+  status: "validated",
   name: "Nomad Rooftop",
   short_name: "Nomad",
   initials: "NR",
@@ -1064,11 +1076,16 @@ function seedOperations(opts) {
 
   // ── Service definitions, pacing and the booking window ──
   opts.serviceDefinitions.forEach((row, i) => {
-    const [id, name, kind, weekdays, startsAt, endsAt, lastBooking, cap, perQuarter] = row;
+    const [id, name, kind, weekdays, startsAt, endsAt, lastBooking, cap, perQuarter, slot] = row;
     insert("service_definitions", {
       id: p(id), venue_id: venue, name, kind, weekdays,
       starts_at: startsAt, ends_at: endsAt, last_booking_at: lastBooking,
       capacity_covers: cap, covers_per_quarter: perQuarter,
+      // The two venues deliberately disagree, so the dataset exercises
+      // the field rather than describing it: the restaurant seats on the
+      // half hour, the rooftop on the hour, and Réservations groups each
+      // one the way its own venue chose.
+      slot_minutes: slot ?? 30,
       turn_minutes_small: opts.turnSmall, turn_minutes_large: opts.turnLarge,
       enabled: 1, position: i, version: 1, updated_at: daysAgo(11),
     });
@@ -1563,8 +1580,8 @@ seedOperations({
   maxPartyOnline: 8,
   sameDayCutoff: "18:00",
   serviceDefinitions: [
-    ["sd_dej", "Déjeuner", "dejeuner", "1,2,3,4,5,6,7", "12:00", "15:00", "14:30", 72, 10],
-    ["sd_din", "Dîner", "diner", "1,2,3,4,5,6,7", "19:00", "23:30", "22:30", 120, 14],
+    ["sd_dej", "Déjeuner", "dejeuner", "1,2,3,4,5,6,7", "12:00", "15:00", "14:30", 72, 10, 30],
+    ["sd_din", "Dîner", "diner", "1,2,3,4,5,6,7", "19:00", "23:30", "22:30", 120, 14, 30],
   ],
   waitlistOnline: 1,
   defaultQuote: 25,
@@ -1683,8 +1700,8 @@ seedOperations({
   maxPartyOnline: 10,
   sameDayCutoff: "20:00",
   serviceDefinitions: [
-    ["sd_sunset", "Sunset", "creneau", "3,4,5,6,7", "18:00", "21:00", "20:30", 40, 8],
-    ["sd_night", "Nuit", "creneau", "3,4,5,6,7", "21:00", "02:00", "01:00", 70, 12],
+    ["sd_sunset", "Sunset", "creneau", "3,4,5,6,7", "18:00", "21:00", "20:30", 40, 8, 60],
+    ["sd_night", "Nuit", "creneau", "3,4,5,6,7", "21:00", "02:00", "01:00", 70, 12, 60],
   ],
   waitlistOnline: 0,
   defaultQuote: 20,
@@ -1968,6 +1985,15 @@ function seedAudience(venueId, prefix, extra, cityWeights, startIndex) {
 seedAudience(VENUE, "cus_aud_", 48, [["Casablanca", 74], ["Rabat", 13], ["Marrakech", 8], ["Mohammedia", 5]], 100);
 seedAudience(VENUE2, "cus_naud_", 22, [["Casablanca", 82], ["Rabat", 10], ["Marrakech", 4], ["Mohammedia", 4]], 200);
 
+// LYFE's own reviewer. Not a partner and not scoped to a venue: the one
+// account that can open /admin/validations.
+insert("platform_admins", {
+  user_id: "usr_lyfe_admin",
+  full_name: "Nawal Cherkaoui",
+  email: "validation@lyfe.ma",
+  created_at: daysAgo(400),
+});
+
 // Anonymised platform benchmarks. A cohort, never a named competitor.
 [
   ["restaurant_haut_de_gamme", "Casablanca", "occupancy", 0.72, 0.88, 34],
@@ -1992,7 +2018,7 @@ seedAudience(VENUE2, "cus_naud_", 22, [["Casablanca", 82], ["Rabat", 10], ["Marr
 const count = (t) => db.prepare(`SELECT COUNT(*) c FROM ${t}`).get().c;
 console.log(`seeded ${dbPath}`);
 for (const t of ["venues","business_accounts","staff","zones","venue_tags","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_items","menu_item_dietary","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity",
-  "venue_settings","subscriptions","invoices","support_tickets","service_definitions","service_zones","pacing_rules","capacity_overrides","waitlist","waitlist_settings","shift_notes","tags","customer_tags","tag_rules","segments","offers","offer_redemptions","experiences","experience_addons","tickets","deposit_policies","deposits","cancellation_policies","cancellation_log","transactions","guest_lists","guest_list_bands","guest_list_entries","promoters","table_types","table_offers","table_reservations","campaigns","messages_log","suppression_list","survey_config","audience_sources","platform_benchmarks"]) {
+  "venue_settings","subscriptions","invoices","support_tickets","service_definitions","service_zones","pacing_rules","capacity_overrides","waitlist","waitlist_settings","shift_notes","tags","customer_tags","tag_rules","segments","offers","offer_redemptions","experiences","experience_addons","tickets","deposit_policies","deposits","cancellation_policies","cancellation_log","transactions","guest_lists","guest_list_bands","guest_list_entries","promoters","table_types","table_offers","table_reservations","campaigns","messages_log","suppression_list","survey_config","audience_sources","platform_benchmarks","platform_admins"]) {
   console.log(`  ${t.padEnd(28)} ${count(t)}`);
 }
 db.close();

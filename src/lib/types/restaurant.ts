@@ -12,6 +12,41 @@ export type RestaurantKind =
   | "brasserie"
   | "street_food";
 
+/**
+ * Where a listing is in LYFE's review.
+ *
+ * `pending_review` is what /inscription creates: the partner's dashboard
+ * works in full, and the consumer app does not list the venue. Only
+ * `validated` is visible to a guest. `rejected` carries the reason LYFE
+ * gave, which is the one thing the partner is shown about it.
+ */
+export type VenueStatus = "pending_review" | "validated" | "rejected";
+
+export const VENUE_STATUSES: VenueStatus[] = [
+  "pending_review",
+  "validated",
+  "rejected",
+];
+
+export const isVenueStatus = (value: unknown): value is VenueStatus =>
+  typeof value === "string" && (VENUE_STATUSES as string[]).includes(value);
+
+/** One venue awaiting LYFE's decision, as /admin/validations lists it. */
+export interface PendingVenue {
+  id: string;
+  name: string;
+  kind: string;
+  city: string;
+  address: string;
+  contactEmail: string;
+  contactPhone: string;
+  ownerName: string;
+  createdAt: string;
+  /** Whether the partner got as far as a cover photo. */
+  hasPhoto: boolean;
+  openDays: number;
+}
+
 export interface RestaurantProfile {
   id: string;
   kind: RestaurantKind;
@@ -30,6 +65,11 @@ export interface RestaurantProfile {
   website: string;
   currency: string;
   onboardingCompleted: boolean;
+  /** LYFE's review. The app lists only a `validated` venue. */
+  status: VenueStatus;
+  /** Why LYFE refused. Empty unless `status` is `rejected`. */
+  statusReason: string;
+  statusChangedAt?: string;
   /** Free text shown on the listing. */
   description: string;
   address: string;
@@ -130,6 +170,15 @@ export interface Service {
   noShowCovers: number;
   revenueMad: number;
   /**
+   * The bookable grid this service runs on: 15, 30 or 60 minutes.
+   *
+   * Carried on the service rather than on the venue because it is the
+   * service's own choice — a venue can seat its lunch on the half hour
+   * and its late sitting on the hour. Réservations groups the book by
+   * it and the load curve is cut on it, so the two cannot disagree.
+   */
+  slotMinutes: 15 | 30 | 60;
+  /**
    * Booked covers per sitting slot across the service window. Comes from
    * the booking engine rather than being inferred from the reservation
    * list — the list a dashboard holds is a page of the book, not all of
@@ -175,6 +224,23 @@ export interface Reservation {
   channel: ReservationChannel;
   /** Seating area the guest asked for — terrace, salle, rooftop. */
   zoneId?: string;
+  /**
+   * The guest's address, when the app has one.
+   *
+   * From the `customers` row rather than the booking: a reservation is
+   * made with a name and a phone, and the address belongs to the guest.
+   * Absent for a booking taken by phone.
+   */
+  guestEmail?: string;
+  /**
+   * The year the guest was born, when the app collected it.
+   *
+   * Optional in the schema and optional here, because the consumer app
+   * asks for it in a profile nobody has to fill. The drawer turns it
+   * into an age and says nothing at all when it is missing — a "—" in
+   * an Âge field reads like a fact about the guest.
+   */
+  guestBirthYear?: number;
   /** Allergies, occasion, seating preference — shown on the row. */
   note?: string;
   /** Repeat guest, drives the VIP badge and the prep list. */

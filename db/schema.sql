@@ -19,6 +19,31 @@
 
 -- ── Tenancy ──────────────────────────────────────────────────
 
+-- LYFE's own staff, who review listings before the app shows them.
+--
+-- A platform role, not a venue role: `staff.role` says what somebody may
+-- do inside one establishment, and a row here says somebody works for
+-- LYFE. The two never mix, and nothing in this table is scoped to a
+-- venue. It is the authorisation rule behind
+-- `PUT /api/business/venues/{id}/validation`.
+CREATE TABLE IF NOT EXISTS platform_admins (
+  user_id    TEXT PRIMARY KEY,
+  full_name  TEXT NOT NULL,
+  email      TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL
+);
+
+-- Which files of `db/migrations/` this database has had applied.
+--
+-- A fresh database gets the whole of this file and is *stamped* with
+-- every migration id, because this file already describes their result.
+-- An existing database gets only the ids it is missing. See
+-- `db/migrate.mjs`.
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  id         TEXT PRIMARY KEY,
+  applied_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS venues (
   id                   TEXT PRIMARY KEY,
   kind                 TEXT NOT NULL CHECK (kind IN ('restaurant','drinks')),
@@ -39,6 +64,14 @@ CREATE TABLE IF NOT EXISTS venues (
   -- 1-4, rendered in the app as € to €€€€.
   price_range          INTEGER NOT NULL DEFAULT 2,
   onboarding_completed INTEGER NOT NULL DEFAULT 0,
+  -- LYFE reviews a listing before the app shows it to a guest. A venue
+  -- created through /inscription starts 'pending_review': its dashboard
+  -- works, and the app does not list it. 'rejected' carries the reason
+  -- LYFE gave, which is what the portal shows the partner.
+  status               TEXT NOT NULL DEFAULT 'pending_review'
+                         CHECK (status IN ('pending_review','validated','rejected')),
+  status_reason        TEXT NOT NULL DEFAULT '',
+  status_changed_at    TEXT,
   created_at           TEXT NOT NULL,
   updated_at           TEXT NOT NULL
 );
@@ -576,6 +609,13 @@ CREATE TABLE IF NOT EXISTS service_definitions (
   capacity_covers    INTEGER NOT NULL,
   -- Covers accepted per quarter hour — the pacing ceiling per slot.
   covers_per_quarter INTEGER NOT NULL DEFAULT 0,
+  -- How long one bookable slot is: 15, 30 or 60 minutes, chosen by the
+  -- venue. A tasting room that seats on the hour and a bar that seats
+  -- every quarter hour are the same product with a different number
+  -- here. The portal groups the book by it and the app offers times on
+  -- it, so the two never disagree about what is bookable.
+  slot_minutes       INTEGER NOT NULL DEFAULT 30
+                       CHECK (slot_minutes IN (15, 30, 60)),
   turn_minutes_small INTEGER NOT NULL DEFAULT 90,
   turn_minutes_large INTEGER NOT NULL DEFAULT 120,
   enabled            INTEGER NOT NULL DEFAULT 1,
