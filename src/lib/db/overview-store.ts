@@ -27,6 +27,7 @@ import type {
   Zone,
 } from "@/lib/types/restaurant";
 import { isVenueStatus } from "@/lib/types/restaurant";
+import { StaleWriteError } from "@/lib/data/repository";
 import { asSlotMinutes } from "@/lib/types/venue-operations";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { VENUE_TIME_ZONE } from "@/lib/time/zone";
@@ -699,35 +700,61 @@ export async function transitionBooking(
   reasonCode?: string,
   note?: string,
 ): Promise<void> {
-  const current = await one(
-    "SELECT state FROM reservations WHERE id = ? AND venue_id = ?",
-    reservationId,
-    venueId,
-  );
-  if (!current) return;
+  return transaction(async () => {
+    const current = await one(
+      "SELECT state FROM reservations WHERE id = ? AND venue_id = ?",
+      reservationId,
+      venueId,
+    );
+    if (!current) return;
 
-  const at = new Date().toISOString();
+    const from = String(current.state);
+    // Already there. Two taps on Accepter, or a retried action after a
+    // dropped connection, must not write a second history row saying
+    // the booking moved from `confirmed` to `confirmed`.
+    if (from === to) return;
 
-  await run(
-    "UPDATE reservations SET state = ?, updated_at = ? WHERE id = ? AND venue_id = ?",
-    to,
-    at,
-    reservationId,
-    venueId,
-  );
-  await run(
-    `INSERT INTO reservation_status_history
-       (id, reservation_id, from_state, to_state, actor, actor_id, reason_code, note, at)
-     VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?)`,
-    `sh_${reservationId}_${Date.now().toString(36)}`,
-    reservationId,
-    String(current.state),
-    to,
-    actor,
-    reasonCode ?? null,
-    note ?? null,
-    at,
-  );
+    const at = new Date().toISOString();
+
+    // Compare-and-set on the state this transaction read.
+    //
+    // This was a read, then an unconditional write, outside any
+    // transaction. Two hosts at one stand — one tapping Accepter, the
+    // other Absent — both read `requested`, both wrote, and the book
+    // ended on whichever landed last while the history recorded two
+    // departures from the same state. The guest was told twice, and the
+    // two messages disagreed.
+    //
+    // Now the loser writes nothing and hears about it: `StaleWriteError`
+    // is the class the actions already translate into « a changé
+    // entre-temps. Rechargez la page. »
+    const { changes } = await run(
+      "UPDATE reservations SET state = ?, updated_at = ? WHERE id = ? AND venue_id = ? AND state = ?",
+      to,
+      at,
+      reservationId,
+      venueId,
+      from,
+    );
+    if (changes === 0) throw new StaleWriteError("La réservation");
+
+    await run(
+      `INSERT INTO reservation_status_history
+         (id, reservation_id, from_state, to_state, actor, actor_id, reason_code, note, at)
+       VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?)`,
+      // The id carried only the reservation and the millisecond, so two
+      // transitions inside the same millisecond collided on the primary
+      // key. A short random suffix costs nothing and cannot.
+      `sh_${reservationId}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+      reservationId,
+      from,
+      to,
+      actor,
+      reasonCode ?? null,
+      note ?? null,
+      at,
+    );
+  });
 }
 
 // ── Analytics & visibility ───────────────────────────────────
@@ -964,7 +991,7 @@ export async function rescheduleBooking(
   venueId: string,
   reservationId: string,
   at: string,
-): Promise<{ moved: boolean; reason?: "not_found" | "settled" }> {
+): Promise<{ moved: boolean; reason?: "not_found" | "settled" | "changed" }> {
   const current = await one(
     `SELECT r.state, r.at, r.guest_name, r.guest_phone, r.customer_id, c.email
        FROM reservations r
@@ -984,20 +1011,32 @@ export async function rescheduleBooking(
   const now = new Date().toISOString();
   const wasAt = String(current.at);
 
+  let moved = true;
   await transaction(async () => {
-    await run(
+    // Conditional on the hour this transaction read, like every other
+    // write on a booking. Two hosts moving the same table to two
+    // different times both used to succeed — the book kept whichever
+    // landed last, and the guest received two messages naming two
+    // hours. The loser now writes nothing and says so.
+    const { changes } = await run(
       `UPDATE reservations SET at = ?, updated_at = ?
-        WHERE id = ? AND venue_id = ?`,
+        WHERE id = ? AND venue_id = ? AND at = ? AND state = ?`,
       at,
       now,
       reservationId,
       venueId,
+      wasAt,
+      String(current.state),
     );
+    if (changes === 0) {
+      moved = false;
+      return;
+    }
     await run(
       `INSERT INTO reservation_status_history
          (id, reservation_id, from_state, to_state, actor, actor_id, reason_code, note, at)
        VALUES (?, ?, ?, ?, 'venue', NULL, 'rescheduled', ?, ?)`,
-      `sh_${reservationId}_${Date.now().toString(36)}`,
+      `sh_${reservationId}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
       reservationId,
       String(current.state),
       String(current.state),
@@ -1010,7 +1049,7 @@ export async function rescheduleBooking(
          (id, venue_id, customer_id, reservation_id, channel, kind, recipient,
           preview, status, failure_reason, at)
        VALUES (?, ?, ?, ?, ?, 'reservation_decalee', ?, ?, 'envoye', '', ?)`,
-      `ml_${reservationId}_${Date.now().toString(36)}`,
+      `ml_${reservationId}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
       venueId,
       current.customer_id ?? null,
       reservationId,
@@ -1025,7 +1064,9 @@ export async function rescheduleBooking(
     );
   });
 
-  return { moved: true };
+  // `changed` rather than `settled`: nothing is wrong with the booking,
+  // somebody else moved it first.
+  return moved ? { moved: true } : { moved: false, reason: "changed" };
 }
 
 // ── Finding a booking ────────────────────────────────────────
