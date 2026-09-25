@@ -68,11 +68,25 @@ export function PinMap({
         scrollWheelZoom: false,
         attributionControl: true,
       });
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        errorTileUrl: BLANK,
-        attribution: "© OpenStreetMap",
-      }).addTo(instance);
+      // The tile provider, from the environment.
+      //
+      // `tile.openstreetmap.org` is the default because it needs no
+      // account and makes a cold clone draw a map. It is not a
+      // production provider: the OSMF tile usage policy asks
+      // applications with substantial traffic to run or buy their own,
+      // and a portal serving every LYFE partner is that. Set
+      // `NEXT_PUBLIC_MAP_TILE_URL` (and the attribution the provider
+      // requires) before opening the portal to partners.
+      L.tileLayer(
+        process.env.NEXT_PUBLIC_MAP_TILE_URL ??
+          "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          maxZoom: 19,
+          errorTileUrl: BLANK,
+          attribution:
+            process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION ?? "© OpenStreetMap",
+        },
+      ).addTo(instance);
 
       const icon = L.divIcon({
         className: "lyfe-pin",
@@ -86,7 +100,18 @@ export function PinMap({
 
       const marker = L.marker(
         latitude != null && longitude != null ? [latitude, longitude] : FALLBACK,
-        { draggable: true, icon, opacity: latitude != null && longitude != null ? 1 : 0.45 },
+        {
+          draggable: true,
+          icon,
+          opacity: latitude != null && longitude != null ? 1 : 0.45,
+          // Leaflet gives a draggable marker `role="button"` and a
+          // `tabindex`, and then no name: axe-core reports it as a
+          // serious `aria-command-name` violation, and a screen reader
+          // reads « bouton » with nothing after it. `title` becomes the
+          // element's title attribute, `alt` its alt text.
+          title: "Emplacement de l'établissement · déplacez le point pour l'ajuster",
+          alt: "Emplacement de l'établissement",
+        },
       ).addTo(instance);
 
       marker.on("dragend", () => {

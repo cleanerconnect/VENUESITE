@@ -62,6 +62,13 @@ export const COPY = {
     forgotSent:
       "Si un compte existe pour cette adresse, un lien de réinitialisation vient d'être envoyé.",
     forgotNeedsEmail: "Saisissez votre adresse e-mail, puis redemandez le lien.",
+    // Said when no service is connected to send the mail. The old
+    // behaviour claimed the link had been sent regardless, which left a
+    // locked-out partner refreshing an inbox nothing was coming to.
+    forgotNoService:
+      "Cette instance n'est pas reliée au service qui envoie les e-mails. Écrivez-nous depuis « Nous contacter » et nous réinitialisons le mot de passe.",
+    forgotFailed:
+      "Le service ne répond pas pour l'instant. Réessayez dans un moment.",
     notPartner: "Votre établissement n'est pas encore sur LYFE ?",
     notPartnerCta: "Inscrire mon établissement",
     submit: "Se connecter",

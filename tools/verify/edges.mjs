@@ -13,11 +13,17 @@
 // happened, in French, and stays usable. A stack trace, a blank screen
 // or a silent no-op is a failure.
 
-import { chromium } from "playwright";
+import { chromiumOrExplain } from "./browser.mjs";
 import { writeFileSync } from "node:fs";
-import { LOT_LABEL } from "./lot.mjs";
+import { LOT_LABEL, requireWrites, signIn as sharedSignIn } from "./lot.mjs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
+
+// This tool writes. Against the static driver there is nothing to
+// write to, so it says so and stops rather than failing.
+await requireWrites(BASE, "Les cas limites d'une session");
 const width = Number(process.env.W ?? 1440);
 const height = Number(process.env.H ?? 1000);
 const EXTERNAL_MAP = /tile\.openstreetmap\.org|nominatim\.openstreetmap\.org|\/api\/geocode/;
@@ -56,13 +62,12 @@ const go = async (path) => {
   await settle(1000);
 };
 const BROKEN = /Cette page n'a pas pu charger|Application error|Internal Server Error|Unhandled Runtime Error/i;
-const signIn = async (email = "yassine@darzellij.ma", password = "demo") => {
-  await go("/login");
-  await page.locator('input[type="email"]').first().fill(email);
-  await page.locator('input[type="password"]').first().fill(password);
-  await page.locator('button:has-text("Se connecter")').first().click();
-  await settle(2800);
-};
+// The shared helper, because this account owns two venues and the
+// login screen asks which one — and because a fixed sleep was long
+// enough on SQLite and not on Postgres, which made « le bon mot de
+// passe ouvre le portail » fail on one engine only. See `lot.mjs`.
+const signIn = async (email = "yassine@darzellij.ma", password = "demo") =>
+  sharedSignIn(page, BASE, { email, password, venue: "Dar Zellij" });
 
 /** The pending request may be at dinner while the screen opens on
  *  lunch, so the « À confirmer » chip is how a decision is found at any
@@ -119,6 +124,15 @@ if (original) {
       after.split("\n").find((l) => /session|expir|reconnect/i.test(l)) ?? page.url(),
     );
     check("et l'écran ne casse pas", !BROKEN.test(after));
+    // And the typing survives. A message that costs the partner their
+    // work is a message they read twice: once to understand it, once
+    // to remember what they had written.
+    const still = (await field.inputValue().catch(() => "")) ?? "";
+    check(
+      "et la saisie reste à l'écran",
+      still.includes("(session morte)"),
+      still,
+    );
   } else {
     check("Ma fiche a un bouton Enregistrer", false);
   }
@@ -170,7 +184,13 @@ if (await accept.count()) {
   const after = await text();
   check("un double clic sur Accepter reste propre", !BROKEN.test(after) && /Confirmée/.test(after));
 } else {
-  check("une demande attend une décision", false, "aucun bouton Accepter");
+  // Not a defect: the seed carries one pending request, and a tool
+  // that ran before this one on the same database may already have
+  // decided it. `decisions.mjs` is the tool that owns that path.
+  console.log(
+    "  —    le carnet ne porte aucune demande en attente · " +
+      "la décision est éprouvée par decisions.mjs",
+  );
 }
 
 // ── 6. A network that takes its time ────────────────────────
@@ -229,7 +249,14 @@ if (await photosTab.count()) {
 // The switcher is a dropdown in the sidebar; setting the cookie it
 // writes is the same thing without six clicks, and the assertion is
 // about the vocabulary, not about the menu.
-await context.addCookies([{ name: "lyfe.venue", value: "bar_nomad_casa", url: BASE }]);
+// The venue cookie is signed since the audit — an unsigned value is
+// ignored, which is the whole point of signing it. So the switch goes
+// through the route the switcher itself calls; `context.request` shares
+// this context's cookie jar, so the signed cookie lands where the page
+// will read it.
+await context.request.post(`${BASE}/api/session/venue`, {
+  data: { venueId: "bar_nomad_casa" },
+});
 await go("/restaurant");
 const bar = await text();
 // The establishment card lives in the sidebar, which a phone does not

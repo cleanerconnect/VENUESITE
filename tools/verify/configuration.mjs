@@ -11,8 +11,10 @@
 //
 //   node tools/verify/configuration.mjs
 
-import { chromium } from "playwright";
+import { chromiumOrExplain } from "./browser.mjs";
 import { LOT, LOT_LABEL, venuePaths } from "./lot.mjs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 

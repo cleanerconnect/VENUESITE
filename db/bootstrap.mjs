@@ -26,10 +26,21 @@
 // the next deploy.
 
 import { execFileSync } from "node:child_process";
+import { rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { connect } from "./pg.mjs";
 
-const SEED_FILE = resolve(".data/bootstrap.db");
+// Per process, not a fixed name.
+//
+// It was `.data/bootstrap.db`, and the generator writes a SQLite file
+// before copying it into Postgres — so two bootstraps running at once in
+// one working directory opened the same file and both died on « attempt
+// to write a readonly database » / « disk I/O error », leaving the
+// database empty. The Postgres side was already safe (`push.mjs
+// --if-empty` holds `LOCK TABLE venues IN ACCESS EXCLUSIVE MODE`, so
+// only one of them can insert); the shared scratch file was what
+// defeated it.
+const SEED_FILE = resolve(`.data/bootstrap-${process.pid}.db`);
 
 /**
  * Runs one of the sibling scripts, and stops the build with *its* exit
@@ -44,6 +55,15 @@ const run = (script, ...args) => {
   try {
     execFileSync(process.execPath, [script, ...args], { stdio: "inherit" });
   } catch (error) {
+    // The child's own message is above this line; this one says which
+    // step failed, because a build log read from the bottom otherwise
+    // ends on a Node stack trace with no context.
+    console.error(
+      `db:bootstrap — ${script} a échoué. Le schéma n'a pas été modifié ` +
+        "par cette étape ; relancez le déploiement, ou posez " +
+        "LYFE_SKIP_DB_BOOTSTRAP=1 pour livrer le front-end sans toucher " +
+        "à la base.",
+    );
     process.exit(typeof error.status === "number" ? error.status : 1);
   }
 };
@@ -87,4 +107,12 @@ if (venues > 0) {
 console.log("db:bootstrap — base vide, génération du jeu de démonstration");
 run("db/seed.mjs", "--reset", "--sqlite-only", SEED_FILE);
 run("db/push.mjs", "--if-empty", SEED_FILE);
+// The scratch file has done its job. Leaving it behind would make the
+// next `next build` in the same container see a SQLite database and
+// resolve `dataMode()` to `db` on it.
+try {
+  rmSync(SEED_FILE, { force: true });
+} catch {
+  // A leftover scratch file is untidy, not fatal.
+}
 console.log("db:bootstrap — base prête");

@@ -295,7 +295,25 @@ CREATE TABLE IF NOT EXISTS customers (
   birth_year            INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_customers_venue ON customers(venue_id);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_venue_phone ON customers(venue_id, phone);
+-- Not unique, and that matters twice over.
+--
+-- It was `CREATE UNIQUE INDEX`, which asserted that one venue has at
+-- most one guest per phone number. Two things break on that:
+--
+--   · **An empty number collides with itself.** The consumer app did
+--     not collect a phone, so `create_booking` wrote `''` for every
+--     guest — and the *second* person ever to book a given venue
+--     through the app hit « duplicate key value violates unique
+--     constraint » and a 500. Nothing in the portal or the app caught
+--     it, because nothing had two app guests at one venue.
+--   · **Two guests can share a number.** A couple, a family, a hotel
+--     concierge booking for three rooms. Refusing the second is wrong
+--     even when the number is filled in.
+--
+-- The index earns its place as a lookup — « is this returning guest
+-- already a customer here » — and that needs no uniqueness. Deduplicating
+-- is a decision for the caller, which can look at the name as well.
+CREATE INDEX IF NOT EXISTS idx_customers_venue_phone ON customers(venue_id, phone);
 
 CREATE TABLE IF NOT EXISTS customer_preferences (
   customer_id TEXT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,

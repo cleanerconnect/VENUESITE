@@ -6,11 +6,29 @@ import type { FieldError } from "./validation";
 
 // One hook behind every editable surface.
 //
-// The contract the brief asks for: apply the change immediately, roll the
-// value back if the write fails, and show the user which of those
-// happened. The rollback matters most — a UI that keeps showing an edit
-// the server refused is telling the user something untrue, and they will
-// only find out when they come back tomorrow and it is gone.
+// Apply the change immediately, and say plainly what happened to it.
+//
+// This used to roll the value back whenever a write failed, on the
+// reasoning that a screen still showing a refused edit is telling the
+// user something untrue. That reasoning was half right and the
+// behaviour was wrong twice over:
+//
+//   · A session that died while the form was open is not a verdict on
+//     the value. The partner typed a new phone number, walked away for
+//     an hour, came back, pressed Enregistrer and watched their typing
+//     vanish behind « Votre session a expiré » — so the work had to be
+//     done again after signing in. `src/middleware.ts` lets the action
+//     through precisely so this message arrives as a result rather than
+//     as a redirect, and then the result threw the typing away anyway.
+//   · A field error and a rollback contradict each other. « Ce nom est
+//     trop long » was drawn under a field showing the old, short name.
+//
+// So a failed write keeps what was typed. What makes it untrue is not
+// the value on screen — it is a screen that implies the value is saved,
+// and this hook reports `state: "error"`, the message and the field
+// errors, while `dirty` keeps the save bar and its « Annuler » on
+// screen. Discarding is then the partner's decision, which is whose it
+// should be.
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -105,17 +123,16 @@ export function useOptimisticForm<T extends object, R>({
         ),
       ]);
     } catch {
-      // Network failure is indistinguishable from a rejected write as far
-      // as the UI is concerned: neither saved, so neither may be shown as
-      // if it had.
-      setValue(committed.current);
+      // Network failure and a refused write are the same thing to the
+      // UI: neither saved. Neither is a reason to lose the typing —
+      // least of all a dropped connection, where retrying the same
+      // values is the whole remedy.
       setState("error");
       setMessage("La connexion a échoué. Rien n'a été enregistré.");
       return false;
     }
 
     if (!result.ok) {
-      setValue(committed.current);
       setState("error");
       setErrors(result.errors);
       setMessage(

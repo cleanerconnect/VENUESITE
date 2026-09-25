@@ -42,10 +42,24 @@ export const RESERVATION_STATE: Record<ReservationState, Term> = {
 export const RESERVATION_CHANNEL: Record<ReservationChannel, string> = {
   lyfe: "LYFE",
   phone: "Téléphone",
+  whatsapp: "WhatsApp",
   walk_in: "Sans réservation",
   partner: "Partenaire",
   instagram: "Instagram",
 };
+
+/**
+ * The channel's label, or the raw value.
+ *
+ * `RESERVATION_CHANNEL[channel]` is a `Record` lookup, which TypeScript
+ * types as always-present and the runtime does not. A backend that
+ * sends a channel this build has never heard of — and Prio 02 adds one,
+ * so that will happen — printed `undefined` into the row's source line.
+ * Showing the raw value is worse than a label and far better than
+ * nothing: a host reads « sms » and knows what it means.
+ */
+export const channelLabel = (channel: string): string =>
+  RESERVATION_CHANNEL[channel as ReservationChannel] ?? channel;
 
 export const SERVICE_KIND: Record<ServiceKind, Term> = {
   petit_dejeuner: { label: "Petit-déjeuner", tone: "neutral", icon: "sunrise" },

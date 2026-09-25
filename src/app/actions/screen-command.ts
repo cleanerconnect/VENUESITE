@@ -17,6 +17,7 @@ import { requireVenueAccess, resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
 import { StaleWriteError } from "@/lib/data/repository";
 import { COPY } from "@/lib/copy/fr";
+import { logFailure } from "@/lib/errors/reference";
 import type { NotificationChannel } from "@/lib/types/business";
 
 export interface CommandResult {
@@ -842,8 +843,11 @@ export async function runScreenCommand(
     if (error instanceof StaleWriteError) {
       return { ok: false, message: `${error.entity} a changé entre-temps. Rechargez la page.` };
     }
-    console.error(`[lyfe] ${command} a échoué`, error);
-    return { ok: false, message: COPY.error.body };
+    const reference = logFailure(command, error);
+    return {
+      ok: false,
+      message: `${COPY.error.body} ${COPY.error.reference} : ${reference}`,
+    };
   }
 }
 

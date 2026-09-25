@@ -8,8 +8,10 @@
 //
 //   node tools/verify/states.mjs
 
-import { chromium } from "playwright";
+import { chromiumOrExplain } from "./browser.mjs";
 import { LOT, LOT_LABEL, venuePaths } from "./lot.mjs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const ERROR_MARKER = "Cette page n'a pas pu charger";

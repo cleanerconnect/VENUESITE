@@ -64,14 +64,25 @@ const OUT = resolve("src/lib/data/static/venue-snapshot.json");
 // Every user the demo can sign in as, with the venues they hold. This is
 // the directory the session driver resolves against when there is no
 // database.
-const users = all(
-  "SELECT DISTINCT user_id, full_name, email FROM staff WHERE pending = 0",
-).map((r) => ({
-  userId: String(r.user_id),
-  fullName: String(r.full_name),
-  email: String(r.email),
-  venues: venue.venuesForUser(String(r.user_id)),
-}));
+// Awaited, all of it. The store's `all/one/run` became async when the
+// Postgres engine landed beside SQLite, and this file kept calling them
+// synchronously: `npm run db:snapshot` — the documented way to
+// regenerate the static dataset — has failed with « all(...).map is not
+// a function » ever since, which is why the committed snapshot predated
+// `slot_minutes` and the static driver read « créneaux de undefined
+// minutes ».
+const users = await Promise.all(
+  (
+    await all(
+      "SELECT DISTINCT user_id, full_name, email FROM staff WHERE pending = 0",
+    )
+  ).map(async (r) => ({
+    userId: String(r.user_id),
+    fullName: String(r.full_name),
+    email: String(r.email),
+    venues: await venue.venuesForUser(String(r.user_id)),
+  })),
+);
 
 const venueIds = [...new Set(users.flatMap((u) => u.venues.map((v) => v.id)))];
 
@@ -79,62 +90,76 @@ const perVenue = {};
 for (const id of venueIds) {
   // `overview()` takes the viewer's first name for the greeting. The
   // static driver re-derives that per request, so capture it empty.
+  const customers = await venue.customers(id);
   perVenue[id] = {
-    overview: overview.overview(id, ""),
+    overview: await overview.overview(id, ""),
     // One entry per day in the window, captured through the same
     // function the SQLite driver calls, so a day read without a
     // database is the day the database would have given.
     dayBooks: Object.fromEntries(
-      bookWindow().map((date) => [date, overview.dayBookFor(id, date)]),
+      await Promise.all(
+        bookWindow().map(async (date) => [date, await overview.dayBookFor(id, date)]),
+      ),
     ),
-    profile: overview.venueProfile(id),
-    menuItems: overview.menuItems(id),
-    availability: venue.availability(id),
-    customers: venue.customers(id),
-    notifications: venue.notifications(id),
-    notificationPreferences: venue.notificationPreferences(id),
-    staff: write.listStaff(id),
-    photos: assets.listAssets(id, "photo"),
-    menuFiles: assets.listAssets(id, "menu_file"),
+    profile: await overview.venueProfile(id),
+    menuItems: await overview.menuItems(id),
+    availability: await venue.availability(id),
+    customers,
+    notifications: await venue.notifications(id),
+    notificationPreferences: await venue.notificationPreferences(id),
+    staff: await write.listStaff(id),
+    photos: await assets.listAssets(id, "photo"),
+    menuFiles: await assets.listAssets(id, "menu_file"),
     analytics: Object.fromEntries(
-      PERIODS.map((p) => [p, overview.analytics(id, p)]),
+      await Promise.all(
+        PERIODS.map(async (p) => [p, await overview.analytics(id, p)]),
+      ),
     ),
     visibility: Object.fromEntries(
-      PERIODS.map((p) => [p, overview.visibility(id, p)]),
+      await Promise.all(
+        PERIODS.map(async (p) => [p, await overview.visibility(id, p)]),
+      ),
     ),
     // The Phase 5 bundles. Captured through the same store functions the
     // SQLite path reads with, for the same reason as everything above:
     // the snapshot is that path's payload, so the shapes cannot drift.
     operations: {
-      serviceFloor: ops.serviceFloor(id),
-      guestGraph: ops.guestGraph(id),
-      audience: audience.audienceInsights(id),
-      growth: ops.growth(id),
-      nightlife: ops.nightlife(id),
-      moneyDesk: ops.moneyDesk(id),
-      marketing: ops.marketing(id),
+      serviceFloor: await ops.serviceFloor(id),
+      guestGraph: await ops.guestGraph(id),
+      audience: await audience.audienceInsights(id),
+      growth: await ops.growth(id),
+      nightlife: await ops.nightlife(id),
+      moneyDesk: await ops.moneyDesk(id),
+      marketing: await ops.marketing(id),
       serviceConfiguration: {
-        services: ops.serviceDefinitions(id),
-        pacing: ops.pacingRules(id),
+        services: await ops.serviceDefinitions(id),
+        pacing: await ops.pacingRules(id),
       },
-      surveyConfig: ops.surveyConfig(id),
-      settings: ops.venueSettings(id),
-      subscription: ops.subscription(id),
-      supportTickets: ops.supportTickets(id),
-      spendByCustomer: ops.spendByCustomer(id),
+      surveyConfig: await ops.surveyConfig(id),
+      settings: await ops.venueSettings(id),
+      subscription: await ops.subscription(id),
+      supportTickets: await ops.supportTickets(id),
+      spendByCustomer: await ops.spendByCustomer(id),
       // One entry per guest, so the Fiche client's Historique has the
       // same rows without a database.
       bookingsByCustomer: Object.fromEntries(
-        venue.customers(id).map((c) => [c.id, overview.customerBookings(id, c.id)]),
+        await Promise.all(
+          customers.map(async (c) => [c.id, await overview.customerBookings(id, c.id)]),
+        ),
       ),
     },
   };
 }
 
 const businessAccounts = Object.fromEntries(
-  users
-    .map((u) => [u.userId, venue.businessAccountForUser(u.userId)])
-    .filter(([, account]) => account !== null),
+  (
+    await Promise.all(
+      users.map(async (u) => [
+        u.userId,
+        await venue.businessAccountForUser(u.userId),
+      ]),
+    )
+  ).filter(([, account]) => account !== null),
 );
 
 const snapshot = {

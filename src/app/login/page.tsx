@@ -51,7 +51,10 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        <p className="text-meta text-canvas/45 mt-16 md:mt-0">LYFE · Maroc</p>
+        {/* `/45` measured 4,33:1 against the ink panel — axe-core reports
+            it, and WCAG AA asks for 4,5:1 at this size. `/55` is what the
+            eyebrow above already uses. */}
+        <p className="text-meta text-canvas/55 mt-16 md:mt-0">LYFE · Maroc</p>
       </section>
 
       {/* === Right column — the one form === */}

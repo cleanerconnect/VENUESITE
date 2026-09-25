@@ -1,0 +1,3095 @@
+# Généré par une lecture du code, pas écrit à la main.
+# Voir info.description pour les trois sources et leur ordre.
+openapi: 3.1.0
+info:
+  title: LYFE · Business Service — contrat du Lot 1
+  version: 1.0.0
+  summary: Ce que le Portail Partenaire appelle, tel qu'il l'appelle.
+  description: |
+    Le tableau de bord basique de `Planning Lyfe V3`, sprint `Prio 02` —
+    « Dashobaord basique (Authentification + Création de Venue + Gestion des
+    reservation uniquement) ».
+
+    **Ce fichier est dérivé du code, pas de la documentation.** Trois
+    sources, dans cet ordre :
+
+    1. `src/lib/data/http-repository.ts` — la méthode, le chemin, la chaîne
+       de requête, les en-têtes et le corps, tels que le pilote HTTP les
+       envoie. C'est **la** référence : ce fichier est écrit à partir d'elle
+       et non l'inverse.
+    2. Le trafic capturé pendant qu'une passe complète de vérification du
+       lot 1 tournait contre `tools/mock-api.mjs` — 514 appels, 19 endpoints
+       distincts, aucun 404. Les formes de réponse en viennent, champ par
+       champ. Chaque opération dit si elle a été observée.
+    3. `src/lib/types/*.ts` pour les quelques charges qu'aucun outil du lot 1
+       ne déclenche.
+
+    Là où `docs/LOT1_API_CONTRACT.md` et ce fichier divergeaient, c'est le
+    markdown qui a été corrigé.
+
+    ## Sécurité, et une chose à lire avant de construire
+
+    Le portail est un **client serveur à serveur**. Il porte un jeton de
+    service unique — `LYFE_API_TOKEN` — et l'identité du partenaire voyage
+    en paramètre : `user_id` sur la session, `venue_id` sur les appels
+    scopés. Il n'existe pas de jeton par partenaire.
+
+    Deux conséquences, et la seconde est une obligation :
+
+    * Le commentaire « le service résout le périmètre depuis le jeton » qui
+      a circulé est **faux** pour ce montage : avec un seul jeton, `venue_id`
+      est le seul signal de périmètre. Le portail vérifie lui-même, à chaque
+      écriture, que le partenaire connecté détient l'établissement
+      (`requireVenueAccess`), et le service doit le vérifier aussi — deux
+      contrôles, parce qu'un seul est un contrôle qu'on oublie.
+    * **Ce jeton ne doit jamais être accepté depuis un navigateur.** Il
+      n'est lu que dans du code serveur (`server-only`), il n'est jamais
+      envoyé au client, et le service devrait refuser l'origine d'un
+      navigateur sur ces routes.
+
+    Le `401` a un sens précis ici : « le service ne nous connaît pas », pas
+    « ce partenaire n'a pas le droit ». Le second est un `403`. Le portail
+    traite les deux différemment.
+  contact:
+    name: LYFE · Portail Partenaire
+    url: https://github.com/cleanerconnect/VENUESITE
+  license:
+    name: Propriétaire
+    identifier: LicenseRef-LYFE
+servers:
+- url: '{baseUrl}'
+  description: '`LYFE_API_BASE_URL`. Le portail n''ajoute rien : les chemins ci-dessous sont
+    concaténés tels quels.'
+  variables:
+    baseUrl:
+      default: http://localhost:3311
+      description: Le double exécutable, `tools/mock-api.mjs`.
+security:
+- serviceToken: []
+tags:
+- name: Authentification
+  description: Connexion, session, mot de passe oublié.
+- name: Inscription
+  description: '« Création de Venue » : quatre appels.'
+- name: Réservations
+  description: '« Gestion des reservation » : le carnet et les décisions.'
+- name: Check-in
+  description: Honorer une réservation à la porte.
+- name: Ma fiche
+  description: L'établissement tel que l'application le montre.
+- name: Disponibilités
+  description: Ce qui décide de ce que l'application propose.
+- name: Notifications
+  description: Ce dont le partenaire est prévenu, et par quel canal.
+- name: Établissement
+  description: Réglages transverses lus par les six écrans.
+- name: Revue LYFE
+  description: SP-Prio 03. Réservé à l'administration LYFE.
+paths:
+  /api/business/auth/session:
+    post:
+      tags:
+      - Authentification
+      summary: Échanger une adresse et un mot de passe contre un compte
+      operationId: signIn
+      description: |
+        Le seul endroit où un mot de passe circule. Une adresse inconnue et un mot de passe faux répondent **le même** `401` avec le même `code` : deux réponses différentes feraient de ce formulaire l'annuaire des partenaires de LYFE.
+
+        À limiter en débit côté service : le portail plafonne à dix tentatives par adresse et par minute, en mémoire de processus, ce qui ne vaut que pour une instance.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessAccount'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '429':
+          description: Trop de requêtes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    get:
+      tags:
+      - Authentification
+      summary: Le compte derrière un identifiant connu
+      operationId: readSession
+      description: |
+        Appelé à **chaque requête** du portail pour résoudre identité, périmètre et rôle. Le pilote mémorise la réponse cinq secondes (`HttpDirectory.TTL_MS`) : une navigation ne devient pas cinq allers-retours, et un changement de rôle met au pire cinq secondes à prendre effet.
+
+        `user_id` **ou** `email`, jamais les deux.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: user_id
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: email
+        in: query
+        required: false
+        schema:
+          type: string
+          format: email
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessAccount'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/auth/password-reset:
+    post:
+      tags:
+      - Authentification
+      summary: Demander un lien de réinitialisation
+      operationId: requestPasswordReset
+      description: |
+        **La même réponse pour une adresse connue et une adresse inconnue** — un `404` sur une adresse absente transformerait ce formulaire en annuaire. `422` uniquement quand la chaîne n'est pas une adresse.
+
+        Le portail n'affiche « un lien vient d'être envoyé » qu'après avoir reçu le `204`. Le lien, sa durée de vie, son usage unique et l'écran qui accepte le nouveau mot de passe appartiennent au service : le lot 1 ne les rend pas.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '204':
+          description: Demande acceptée. Ne dit pas si le compte existe.
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '429':
+          description: Trop de requêtes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/onboarding:
+    post:
+      tags:
+      - Inscription
+      summary: Créer le compte et son brouillon — inscription, étape 1
+      operationId: startOnboarding
+      description: |
+        Le compte existe à partir d'ici, sans établissement. `409` quand l'adresse est déjà prise : c'est la seule chose que ce endpoint révèle, et le portail l'affiche comme « Cette adresse a déjà un compte. Connectez-vous. »
+
+        `Détail Sprint ` ligne 39 demande en plus un code de vérification envoyé par e-mail ou WhatsApp, et l'écran qui le saisit. Ni l'un ni l'autre n'existent — voir `docs/AUDIT_LOT1.md`, constat A-04.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - fullName
+              - email
+              - phone
+              - password
+              properties:
+                fullName:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - userId
+                - draft
+                properties:
+                  userId:
+                    type: string
+                  draft:
+                    $ref: '#/components/schemas/OnboardingDraft'
+        '409':
+          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
+            ou un état déjà décidé).'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '429':
+          description: Trop de requêtes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/onboarding/{draftId}:
+    get:
+      tags:
+      - Inscription
+      summary: Reprendre un brouillon
+      operationId: readOnboardingDraft
+      description: |
+        Le brouillon vit côté service, pas dans le navigateur : fermer l'onglet ne perd rien et le partenaire peut finir sur un autre appareil.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: draftId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Le brouillon.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingDraft'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      tags:
+      - Inscription
+      summary: Enregistrer une étape — étapes 2 à 5
+      operationId: saveOnboardingDraft
+      description: |
+        Un patch partiel : seuls les champs présents changent. `step` est l'étape la plus avancée atteinte et ne recule pas.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: draftId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Le brouillon.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                step:
+                  type: integer
+                venueName:
+                  type: string
+                venueType:
+                  type: string
+                  enum:
+                  - restaurant
+                  - bar
+                city:
+                  type: string
+                address:
+                  type: string
+                latitude:
+                  type:
+                  - number
+                  - 'null'
+                longitude:
+                  type:
+                  - number
+                  - 'null'
+                coverObjectKey:
+                  type: string
+                coverContentType:
+                  type: string
+                coverSizeBytes:
+                  type: integer
+                hours:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OnboardingDay'
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingDraft'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/onboarding/{draftId}/submit:
+    post:
+      tags:
+      - Inscription
+      summary: Créer l'établissement — étape 6
+      operationId: submitOnboarding
+      description: |
+        **Idempotent** : un brouillon déjà consommé rend l'établissement qu'il a créé plutôt qu'un second. L'établissement naît `pending_review` — son tableau de bord fonctionne entièrement, l'application ne le liste pas.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: draftId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Le brouillon.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - venueId
+                properties:
+                  venueId:
+                    type: string
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '409':
+          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
+            ou un état déjà décidé).'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/overview:
+    get:
+      tags:
+      - Réservations
+      summary: Le paquet que six écrans lisent
+      operationId: getOverview
+      description: |
+        Un appel, et l'Accueil, Réservations, Check-in, Ma fiche, Disponibilités et Notifications ont ce qu'il leur faut. C'est l'endpoint le plus appelé du portail.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - &id001
+        name: venue_id
+        in: query
+        required: true
+        schema:
+          type: string
+        description: 'L''établissement. **Un indice, pas une autorisation** : voir §Sécurité.'
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantOverview'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/bookings:
+    get:
+      tags:
+      - Réservations
+      summary: Le carnet d'un jour
+      operationId: getDayBook
+      description: |
+        Ce que Réservations lit quand le partenaire marche vers un autre jour. La fenêtre que le portail propose est de sept jours en arrière et trente en avant. Un jour sans service doit répondre `200` avec des tableaux vides, jamais `404` : une journée de fermeture est une information, pas une erreur.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - *id001
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+        description: AAAA-MM-JJ, dans le calendrier du lieu (Africa/Casablanca).
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DayBook'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/bookings/{reservationId}/confirm:
+    put:
+      tags:
+      - Réservations
+      summary: Accepter une réservation
+      operationId: confirmBooking
+      description: |
+        « pour accepter ou refuser la reservation » — `Détail Sprint ` ligne 46. Doit être un compare-and-set sur l'état lu : deux hôtes qui décident en même temps ne doivent pas produire deux transitions depuis le même état. `409` pour celui qui perd.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: reservationId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: La réservation.
+      responses:
+        '200':
+          description: L'aperçu complet après la décision, pour que le portail n'ait pas à
+            relire.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantOverview'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '409':
+          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
+            ou un état déjà décidé).'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/bookings/{reservationId}/reject:
+    put:
+      tags:
+      - Réservations
+      summary: Refuser une réservation
+      operationId: rejectBooking
+      description: |
+        `rejected`, **pas** `cancelled` : l'établissement a refusé, le client n'a pas renoncé. Les deux états restent distincts de bout en bout. Le motif est codé pour être exploitable en aval ; la note est libre.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: reservationId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: La réservation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - reason
+              properties:
+                reason:
+                  type: string
+                  description: Motif codé.
+                note:
+                  type: string
+                  description: Texte libre, facultatif.
+      responses:
+        '200':
+          description: L'aperçu complet après la décision, pour que le portail n'ait pas à
+            relire.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantOverview'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '409':
+          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
+            ou un état déjà décidé).'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/bookings/{reservationId}/cancel:
+    put:
+      tags:
+      - Réservations
+      summary: Annuler une réservation
+      operationId: cancelBooking
+      description: |
+        Le client renonce. Distinct de `reject`.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: reservationId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: La réservation.
+      responses:
+        '200':
+          description: L'aperçu complet après la décision, pour que le portail n'ait pas à
+            relire.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantOverview'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '409':
+          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
+            ou un état déjà décidé).'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/bookings/{reservationId}/reschedule:
+    put:
+      tags:
+      - Réservations
+      summary: Décaler une réservation
+      operationId: rescheduleBooking
+      description: |
+        « ou inviter l'utilisateur à choisir un autre créneau » — `Détail Sprint ` ligne 46. **`at` doit être un créneau que `GET /venues/{id}/slots` a rendu pour ce jour** : le portail le vérifie avant d'appeler, et le service doit le vérifier aussi. L'état ne change pas — une demande décalée reste une demande. `409` si la réservation a déjà bougé, ou si elle est arrivée, close ou refusée.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: reservationId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: La réservation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - at
+              properties:
+                at:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: L'aperçu complet après la décision, pour que le portail n'ait pas à
+            relire.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantOverview'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '409':
+          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
+            ou un état déjà décidé).'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/bookings/{reservationId}/no-show:
+    post:
+      tags:
+      - Réservations
+      summary: Signaler une absence
+      operationId: reportNoShow
+      description: |
+        L'autre moitié du résultat d'une réservation. Sans elle une table reste « confirmée » toute la nuit.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: reservationId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: La réservation.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantOverview'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '409':
+          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
+            ou un état déjà décidé).'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/bookings/{reservationId}/remind:
+    post:
+      tags:
+      - Réservations
+      summary: Demander une reconfirmation au client
+      operationId: sendReminder
+      description: |
+        Rendu par le lot 2 seulement. Listé parce que le pilote l'appelle.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: reservationId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: La réservation.
+      responses:
+        '204':
+          description: Message accepté.
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/venues/{venueId}/bookings/search:
+    get:
+      tags:
+      - Réservations
+      summary: Retrouver une réservation
+      operationId: searchReservations
+      description: |
+        Trois entrées, parce que ce sont les trois choses qu'un hôte a en main : un **nom** (insensible à la casse, n'importe où dedans), un **téléphone** — comparé **chiffres seuls**, ce qui fait que `4418` trouve `+212 661 20 44 18` — et une **date** (`2026-09-25` ou `25/09`). Le portail groupe le résultat par jour. Moins de deux caractères : tableau vide.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/venues/{venueId}/slots:
+    get:
+      tags:
+      - Réservations
+      summary: Les créneaux réservables d'un jour
+      operationId: getBookableSlots
+      description: |
+        Ce que la feuille Décaler propose, et **rien d'autre** : un hôte ne doit pas pouvoir placer une table à une heure que l'établissement ne sert pas. Découpé sur `slotMinutes` du service, et un service qui franchit minuit (« Nuit », 21h00 → 02h00) rend des créneaux du lendemain.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookableSlot'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/bookings/check-in:
+    post:
+      tags:
+      - Check-in
+      summary: Enregistrer une arrivée par code scanné
+      operationId: checkInByCode
+      description: |
+        Le code identifie la réservation à lui seul, ce qui est tout l'intérêt de le scanner. Le portail **valide** le code, il ne le fabrique jamais : le QR appartient à l'application.
+
+        Un code déjà utilisé répond `200` avec `ok: false` et `error: "already_used"` — un `409` obligerait le portail à deviner le message, et l'hôte doit lire « Ce client est déjà enregistré comme arrivé ».
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - qr_code
+              properties:
+                qr_code:
+                  type: string
+                  description: '**snake_case**, c''est ce que le pilote envoie.'
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckInResult'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/bookings/{reservationId}/check-in:
+    post:
+      tags:
+      - Check-in
+      summary: Enregistrer une arrivée depuis la liste
+      operationId: checkInByBooking
+      description: |
+        Le repli quand le client n'a pas son code : l'hôte touche le nom. Même corps que la version scannée, `qr_code` vide.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: reservationId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: La réservation.
+      - *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                qr_code:
+                  type: string
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckInResult'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/venues/{venueId}:
+    get:
+      tags:
+      - Ma fiche
+      summary: La fiche de l'établissement
+      operationId: getVenueProfile
+      description: |
+        Lu par Ma fiche — et par **chaque écran du lot 1**, parce que le bandeau de validation est un fait sur l'établissement que toutes les pages doivent porter. Un service qui le sert lentement ralentit tout le portail.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantProfile'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      tags:
+      - Ma fiche
+      summary: Enregistrer l'identité et l'adresse
+      operationId: saveVenueIdentity
+      description: |
+        Un patch partiel. Les coordonnées viennent du point que le partenaire place sur la carte ; elles peuvent être nulles tant qu'il ne l'a pas fait.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                shortName:
+                  type: string
+                description:
+                  type: string
+                category:
+                  type: string
+                address:
+                  type: string
+                city:
+                  type: string
+                latitude:
+                  type:
+                  - number
+                  - 'null'
+                longitude:
+                  type:
+                  - number
+                  - 'null'
+                contactEmail:
+                  type: string
+                contactPhone:
+                  type: string
+                website:
+                  type: string
+                kind:
+                  type: string
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantProfile'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/venues/{venueId}/listing:
+    put:
+      tags:
+      - Ma fiche
+      summary: Enregistrer la partie « annonce » de la fiche
+      operationId: saveVenueListing
+      description: |
+        Les champs que l'application montre dans une liste : gamme de prix, cuisine, étiquettes, ambiance.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantProfile'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/venues/{venueId}/availability:
+    get:
+      tags:
+      - Disponibilités
+      summary: Les fenêtres réservables de la semaine
+      operationId: getAvailability
+      description: |
+        Lu par l'onglet Horaires de Ma fiche et par Disponibilités.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueAvailability'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      tags:
+      - Disponibilités
+      summary: Enregistrer les horaires
+      operationId: saveAvailability
+      description: |
+        Le tableau complet, pas un patch : la grille hebdomadaire est un tout et un patch partiel laisse deux clients en désaccord sur les jours absents.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueAvailability'
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueAvailability'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/services/configuration:
+    get:
+      tags:
+      - Disponibilités
+      summary: Les services et le rythme
+      operationId: getServiceConfiguration
+      description: |
+        Le cœur de Disponibilités : un service par carte, avec ses jours, ses heures, sa capacité et **sa grille de créneaux**.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - *id001
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceConfiguration'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    post:
+      tags:
+      - Disponibilités
+      summary: Une action sur la configuration
+      operationId: runConfigurationAction
+      description: |
+        Une action JSON plutôt qu'un endpoint par champ : le `kind` est ce sur quoi le service branche. `expectedVersion` porte la concurrence optimiste — une version périmée répond `409` et le portail dit « a changé entre-temps ».
+
+        Actions du lot 1 : `service.create`, `service.edit`, `service.remove`, `service.set`, `pacing.set`.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - kind
+              properties:
+                kind:
+                  type: string
+                expectedVersion:
+                  type: integer
+              additionalProperties: true
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceConfiguration'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '409':
+          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
+            ou un état déjà décidé).'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/venues/{venueId}/assets:
+    get:
+      tags:
+      - Ma fiche
+      summary: Les photos de l'établissement
+      operationId: listAssets
+      description: |
+        `kind=photo` est le seul que le lot 1 demande. `kind=menu_file` est explicitement gardé derrière le lot 2.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      - name: kind
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - photo
+          - menu_file
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VenueAsset'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    post:
+      tags:
+      - Ma fiche
+      summary: Une action sur les photos
+      operationId: runAssetAction
+      description: |
+        Ajouter, retirer, réordonner. Le fichier lui-même monte par une URL signée que le service fournit ; le portail n'envoie jamais d'octets sur cet endpoint.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - kind
+              properties:
+                kind:
+                  type: string
+              additionalProperties: true
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VenueAsset'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/venues/{venueId}/notification-preferences:
+    get:
+      tags:
+      - Notifications
+      summary: Par quel canal part chaque alerte
+      operationId: getNotificationPreferences
+      description: |
+        « le restaurateur ne reçoit pas de mail pour accepter ou refuser la reservation » — `Détail Sprint ` ligne 46 — est ce que cet écran règle.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      tags:
+      - Notifications
+      summary: Enregistrer les canaux
+      operationId: saveNotificationPreferences
+      description: |
+        Le paquet complet. Un tableau vide veut dire « aucun canal », ce qui est un réglage et non une absence de réglage.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreferences'
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/settings:
+    get:
+      tags:
+      - Établissement
+      summary: Les réglages de l'établissement
+      operationId: getVenueSettings
+      description: |
+        Lu par **les six écrans**, parce que `configuration` décide le vocabulaire (« couverts » contre « personnes ») et que tous les écrans emploient le vocabulaire. Après `overview`, c'est l'appel le plus fréquent du portail : à servir vite ou à mettre en cache côté service.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      parameters:
+      - *id001
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueSettings'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      tags:
+      - Établissement
+      summary: Enregistrer les réglages
+      operationId: saveVenueSettings
+      description: |
+        Le paquet complet. `retentionMonths` est stocké ici et **appliqué par le service** : le portail ne purge rien — contrat §3.2.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueSettings'
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueSettings'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/zones/{zoneId}:
+    put:
+      tags:
+      - Disponibilités
+      summary: Ouvrir ou fermer un espace
+      operationId: setZoneAvailable
+      description: |
+        Patio, grande salle, terrasse. Fermer un espace le retire de ce que l'application propose sans toucher aux réservations déjà prises.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+      parameters:
+      - name: zoneId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'espace.
+      - *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - available
+              properties:
+                available:
+                  type: boolean
+      responses:
+        '204':
+          description: Enregistré.
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/venues/pending:
+    get:
+      tags:
+      - Revue LYFE
+      summary: Les établissements qui attendent la revue de LYFE
+      operationId: listPendingVenues
+      description: |
+        **Réservé à LYFE.** L'autorisation n'est pas un rôle sur un établissement : un propriétaire ne doit jamais pouvoir valider sa propre annonce. Le service doit refuser ce endpoint à tout jeton qui n'est pas celui de l'administration.
+
+        Relève de `Détail Sprint ` ligne 55, `SP-Prio 03`, et non de Prio 02.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+
+        Le portail ne demande ce endpoint **jamais** sur le pilote HTTP : `src/lib/auth/platform.ts` répond « personne n'est administrateur » dès que le pilote n'est pas `db`, délibérément — inventer un administrateur LYFE pour un instantané figé mettrait une file de validation devant quelqu'un qui regarde une démonstration. Tant que cette porte reste fermée, `/admin/validations` est un `404` sur le double et ce endpoint ne peut pas être éprouvé contre lui. C'est assumé : l'écran relève de `SP-Prio 03` et non du périmètre de recette du lot 1 — constat `C-07` de l'audit.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PendingVenue'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/venues/{venueId}/validation:
+    put:
+      tags:
+      - Revue LYFE
+      summary: Valider ou refuser une annonce
+      operationId: decideVenueValidation
+      description: |
+        `validated` la rend visible dans l'application ; `rejected` demande un motif, et ce motif est **la seule chose que le partenaire verra**. Le tableau de bord du partenaire fonctionne dans les trois états.
+
+        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+
+        Le portail ne demande ce endpoint **jamais** sur le pilote HTTP : `src/lib/auth/platform.ts` répond « personne n'est administrateur » dès que le pilote n'est pas `db`, délibérément — inventer un administrateur LYFE pour un instantané figé mettrait une file de validation devant quelqu'un qui regarde une démonstration. Tant que cette porte reste fermée, `/admin/validations` est un `404` sur le double et ce endpoint ne peut pas être éprouvé contre lui. C'est assumé : l'écran relève de `SP-Prio 03` et non du périmètre de recette du lot 1 — constat `C-07` de l'audit.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - status
+              properties:
+                status:
+                  type: string
+                  enum:
+                  - validated
+                  - rejected
+                reason:
+                  type: string
+                  description: Obligatoire quand `status` vaut `rejected`.
+      responses:
+        '200':
+          description: La file telle qu'elle est après la décision.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PendingVenue'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Corps syntaxiquement valide, contenu refusé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+components:
+  securitySchemes:
+    serviceToken:
+      type: http
+      scheme: bearer
+      description: '`Authorization: Bearer ${LYFE_API_TOKEN}`, sur chaque requête, y compris
+        les lectures. Un jeton de service, pas un jeton de partenaire — voir §Sécurité.'
+  schemas:
+    Erreur:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Code stable, lu par le portail pour décider du message. `RepositoryError.code`.
+        message:
+          type: string
+          description: Phrase en français, affichée telle quelle au partenaire quand le portail
+            n'a pas de message plus précis.
+      required:
+      - code
+      - message
+      description: Le corps de toute réponse ≥ 400. Le pilote lit exactement ces deux champs
+        (`src/lib/data/http-repository.ts`, `safeJson`) ; un corps d'une autre forme devient
+        « Une erreur est survenue ».
+    Membership:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifiant de l'établissement.
+        name:
+          type: string
+        shortName:
+          type: string
+        initials:
+          type: string
+          description: Deux caractères, pastille de la barre latérale.
+        city:
+          type: string
+        kind:
+          type: string
+          enum:
+          - restaurant
+          - drinks
+        role:
+          type: string
+          enum:
+          - owner
+          - manager
+          - staff
+      required:
+      - id
+      - name
+      - shortName
+      - initials
+      - city
+      - kind
+      - role
+    BusinessAccount:
+      type: object
+      properties:
+        userId:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        venues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Membership'
+      required:
+      - userId
+      - fullName
+      - email
+      - venues
+      description: 'Identité, périmètre et rôle en une réponse. Le portail n''a aucune autre
+        source : il ne décide d''aucun accès localement.'
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+        serviceId:
+          type: string
+          description: Le service auquel la réservation est rattachée. Vide pour une réservation
+            prise pour un jour à venir, que le portail place alors par son heure.
+        guestName:
+          type: string
+        guestPhone:
+          type: string
+          description: Peut être vide. Affiché sur la ligne du carnet.
+        partySize:
+          type: integer
+          minimum: 1
+        at:
+          type: string
+          format: date-time
+          description: Instant ISO 8601 avec fuseau.
+        state:
+          type: string
+          enum:
+          - requested
+          - confirmed
+          - modified
+          - cancelled
+          - rejected
+          - waitlisted
+          - arrived
+          - no_show
+          - completed
+        channel:
+          type: string
+          enum:
+          - lyfe
+          - phone
+          - whatsapp
+          - walk_in
+          - partner
+          - instagram
+          description: '**Minuscules.** `LYFE` n''est pas une valeur.'
+        zoneId:
+          type: string
+          description: Facultatif.
+        note:
+          type: string
+          description: Demande particulière. Peut contenir une allergie, donc une donnée de
+            santé au sens de la loi 09-08.
+        guestEmail:
+          type: string
+          format: email
+          description: Facultatif.
+        guestBirthYear:
+          type: integer
+          description: Facultatif. **Ne pas envoyer** sans finalité déclarée ni consentement
+            — voir le contrat §3.2.
+        visits:
+          type: integer
+          description: Nombre de passages de ce client dans cet établissement.
+        vip:
+          type: boolean
+        noShowRisk:
+          type: number
+          format: double
+          description: 0 à 1. Lu par le lot 2 seulement.
+      required:
+      - id
+      - guestName
+      - guestPhone
+      - partySize
+      - at
+      - state
+      - channel
+    SlotLoad:
+      type: object
+      properties:
+        at:
+          type: string
+          format: date-time
+        covers:
+          type: integer
+      required:
+      - at
+      - covers
+    Service:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+          - petit_dejeuner
+          - dejeuner
+          - diner
+          - tardif
+          - creneau
+        label:
+          type: string
+        date:
+          type: string
+          format: date
+        opensAt:
+          type: string
+          format: date-time
+        closesAt:
+          type: string
+          format: date-time
+        state:
+          type: string
+          enum:
+          - scheduled
+          - open
+          - peak
+          - closing
+          - closed
+        capacity:
+          type: integer
+        bookedCovers:
+          type: integer
+        arrivedCovers:
+          type: integer
+        noShowCovers:
+          type: integer
+        revenueMad:
+          type: number
+          format: double
+        slotMinutes:
+          type: integer
+          enum:
+          - 15
+          - 30
+          - 60
+          description: La grille du service. **Obligatoire.** Omis, le portail retombe sur
+            30 ; c'est un défaut, pas un contrat.
+        slotLoad:
+          type: array
+          items:
+            $ref: '#/components/schemas/SlotLoad'
+      required:
+      - id
+      - kind
+      - label
+      - date
+      - opensAt
+      - closesAt
+      - state
+      - capacity
+      - slotMinutes
+    Zone:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        capacity:
+          type: integer
+        available:
+          type: boolean
+      required:
+      - id
+      - name
+      - capacity
+      - available
+    RestaurantProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+          - restaurant
+          - drinks
+        name:
+          type: string
+        shortName:
+          type: string
+        initials:
+          type: string
+        city:
+          type: string
+        subline:
+          type: string
+        cuisine:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        latitude:
+          type:
+          - number
+          - 'null'
+          format: double
+        longitude:
+          type:
+          - number
+          - 'null'
+          format: double
+        priceRange:
+          type: integer
+          minimum: 1
+          maximum: 4
+        capacity:
+          type: integer
+        contactEmail:
+          type: string
+          format: email
+        contactPhone:
+          type: string
+        website:
+          type: string
+        currency:
+          type: string
+        onboardingCompleted:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        features:
+          type: array
+          items:
+            type: string
+        ambience:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - pending_review
+          - validated
+          - rejected
+          description: La revue de LYFE. Seul `validated` est listé par l'application.
+        statusReason:
+          type: string
+          description: Le motif d'un refus, et la seule chose que le partenaire en voit.
+      required:
+      - id
+      - kind
+      - name
+      - shortName
+      - initials
+      - city
+      - address
+    Greeting:
+      type: object
+      properties:
+        firstName:
+          type: string
+        salutation:
+          type: string
+        clause:
+          type: string
+        subline:
+          type: string
+      required:
+      - firstName
+      - salutation
+      - clause
+      - subline
+    RestaurantOverview:
+      type: object
+      properties:
+        restaurant:
+          $ref: '#/components/schemas/RestaurantProfile'
+        greeting:
+          $ref: '#/components/schemas/Greeting'
+        currentService:
+          $ref: '#/components/schemas/Service'
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+        zones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Zone'
+        upcomingReservations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+        waitlist:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+        activity:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              type:
+                type: string
+              actor:
+                type: string
+              message:
+                type: string
+              at:
+                type: string
+                format: date-time
+              reservationId:
+                type: string
+              needsAttention:
+                type: boolean
+            required:
+            - id
+            - type
+            - message
+            - at
+        coversToday:
+          type: object
+          properties:
+            count:
+              type: integer
+            deltaPctVsYesterday:
+              type: number
+              format: double
+            series24h:
+              type: array
+              items:
+                type: number
+                format: double
+            peakHourLabel:
+              type: string
+        averageTicket:
+          type: object
+          properties:
+            amountMad:
+              type: number
+              format: double
+            deltaPctVsLastWeek:
+              type: number
+              format: double
+        occupancy:
+          type: object
+          properties:
+            pct:
+              type: number
+              format: double
+            deltaPctVsLastWeek:
+              type: number
+              format: double
+        noShows:
+          type: object
+          properties:
+            count:
+              type: integer
+            lostRevenueMad:
+              type: number
+              format: double
+        revenueWeek:
+          type: object
+          properties:
+            amountMad:
+              type: number
+              format: double
+            deltaPctVsLastWeek:
+              type: number
+              format: double
+            series:
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    type: string
+                  value:
+                    type: number
+                    format: double
+        rating:
+          type: object
+          properties:
+            average:
+              type: number
+              format: double
+            reviewCount:
+              type: integer
+            deltaVsLastMonth:
+              type:
+              - number
+              - 'null'
+        nextPayout:
+          type: object
+          properties:
+            amountMad:
+              type: number
+              format: double
+            scheduledFor:
+              type: string
+              format: date-time
+        topItems:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              category:
+                type: string
+              priceMad:
+                type: number
+                format: double
+              signature:
+                type: boolean
+              visible:
+                type: boolean
+              dietary:
+                type: array
+                items:
+                  type: string
+        reviews:
+          type: array
+          items:
+            type: object
+            properties: {}
+            additionalProperties: true
+        payouts:
+          type: array
+          items:
+            type: object
+            properties: {}
+            additionalProperties: true
+      required:
+      - restaurant
+      - greeting
+      - currentService
+      - services
+      - zones
+      - upcomingReservations
+      description: 'Le paquet que six écrans du lot 1 lisent. Les tranches que seul le lot
+        2 rend — `topItems`, `reviews`, `payouts`, `averageTicket`, `occupancy`, `revenueWeek`,
+        `rating`, `nextPayout` — peuvent être servies vides : aucun écran contractuel ne les
+        affiche.'
+    DayBook:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+        reservations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+      required:
+      - date
+      - services
+      - reservations
+    BookableSlot:
+      type: object
+      properties:
+        at:
+          type: string
+          format: date-time
+        serviceLabel:
+          type: string
+          description: « Déjeuner », « Nuit » — le nom que la feuille Décaler affiche.
+      required:
+      - at
+      - serviceLabel
+    AvailabilitySlot:
+      type: object
+      properties:
+        id:
+          type: string
+        weekday:
+          type: integer
+          minimum: 1
+          maximum: 7
+          description: 'ISO : 1 = lundi.'
+        opensAt:
+          type: string
+          description: HH:mm
+        closesAt:
+          type: string
+          description: HH:mm
+        capacity:
+          type: integer
+        enabled:
+          type: boolean
+      required:
+      - id
+      - weekday
+      - opensAt
+      - closesAt
+      - capacity
+      - enabled
+    VenueAvailability:
+      type: object
+      properties:
+        venueId:
+          type: string
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailabilitySlot'
+        closures:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              date:
+                type: string
+                format: date
+              reason:
+                type: string
+            required:
+            - id
+            - date
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - venueId
+      - slots
+      - closures
+      - updatedAt
+    ServiceDefinition:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+          - petit_dejeuner
+          - dejeuner
+          - diner
+          - tardif
+          - creneau
+        weekdays:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+        startsAt:
+          type: string
+          description: HH:mm
+        endsAt:
+          type: string
+          description: HH:mm — inférieur à `startsAt` pour un service qui franchit minuit
+            (« Nuit », 21h00 → 02h00).
+        lastBookingAt:
+          type: string
+          description: HH:mm
+        capacityCovers:
+          type: integer
+        coversPerQuarter:
+          type: integer
+        slotMinutes:
+          type: integer
+          enum:
+          - 15
+          - 30
+          - 60
+          description: '**Obligatoire.** Voir `Service.slotMinutes`.'
+        turnMinutesSmall:
+          type: integer
+        turnMinutesLarge:
+          type: integer
+        zoneIds:
+          type: array
+          items:
+            type: string
+        enabled:
+          type: boolean
+        version:
+          type: integer
+          description: 'Concurrence optimiste : une écriture porte `expectedVersion` et un
+            conflit répond 409.'
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - kind
+      - weekdays
+      - startsAt
+      - endsAt
+      - capacityCovers
+      - slotMinutes
+      - enabled
+      - version
+    PacingRules:
+      type: object
+      properties:
+        maxArrivalsPerQuarter:
+          type: integer
+        maxCoversPerService:
+          type: integer
+        maxPartyOnline:
+          type: integer
+        minPartyOnline:
+          type: integer
+        requestOnlyAbove:
+          type: integer
+        bookingWindowDays:
+          type: integer
+        sameDayCutoff:
+          type: string
+          description: HH:mm
+        minLeadMinutes:
+          type: integer
+        onlineBookingOpen:
+          type: boolean
+        reopenAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        version:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+    ServiceConfiguration:
+      type: object
+      properties:
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDefinition'
+        pacing:
+          $ref: '#/components/schemas/PacingRules'
+      required:
+      - services
+      - pacing
+    NotificationPreferences:
+      type: object
+      properties:
+        venueId:
+          type: string
+        newBooking:
+          type: array
+          items:
+            type: string
+            enum:
+            - push
+            - email
+            - whatsapp
+        cancellation:
+          type: array
+          items:
+            type: string
+            enum:
+            - push
+            - email
+            - whatsapp
+        guestReminder:
+          type: array
+          items:
+            type: string
+            enum:
+            - push
+            - email
+            - whatsapp
+        review:
+          type: array
+          items:
+            type: string
+            enum:
+            - push
+            - email
+            - whatsapp
+        dailySummary:
+          type: array
+          items:
+            type: string
+            enum:
+            - push
+            - email
+            - whatsapp
+      required:
+      - venueId
+      - newBooking
+      - cancellation
+      - guestReminder
+      - review
+      - dailySummary
+      description: Un tableau de canaux par alerte, vide pour « aucun ». Le lot 1 rend `newBooking`,
+        `cancellation` et `guestReminder` ; il **stocke** `guestReminder` sans l'envoyer —
+        l'envoi au client n'est acheté par aucune ligne de Prio 02.
+    VenueSettings:
+      type: object
+      properties:
+        configuration:
+          type: string
+          enum:
+          - restaurant
+          - lounge
+          description: Décide le vocabulaire (« couverts » contre « personnes ») et, en lot
+            2, le groupe Vie nocturne.
+        legalName:
+          type: string
+        ice:
+          type: string
+        rc:
+          type: string
+        billingAddress:
+          type: string
+        iban:
+          type: string
+        language:
+          type: string
+        timezone:
+          type: string
+          description: Africa/Casablanca.
+        consentText:
+          type: string
+          description: Texte de consentement. Stocké ; c'est l'application qui le présente
+            au client.
+        retentionMonths:
+          type: integer
+          description: 'Durée de conservation. **Le portail ne l''applique pas** : c''est
+            au service de purger. Contrat §3.2.'
+        googlePlaceUrl:
+          type: string
+        instagramHandle:
+          type: string
+        whatsappNumber:
+          type: string
+        alertPhone:
+          type: string
+        alertEmail:
+          type: string
+          format: email
+        dressCode:
+          type: string
+        minimumAge:
+          type: integer
+        apiAccessEnabled:
+          type: boolean
+    VenueAsset:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+          - photo
+          - menu_file
+        url:
+          type: string
+        position:
+          type: integer
+        contentType:
+          type: string
+        sizeBytes:
+          type: integer
+      required:
+      - id
+      - kind
+      - url
+      - position
+    OnboardingDay:
+      type: object
+      properties:
+        weekday:
+          type: integer
+          minimum: 1
+          maximum: 7
+        closed:
+          type: boolean
+        opensAt:
+          type: string
+          description: HH:mm
+        closesAt:
+          type: string
+          description: HH:mm
+      required:
+      - weekday
+      - closed
+      - opensAt
+      - closesAt
+    OnboardingDraft:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        step:
+          type: integer
+          minimum: 1
+          maximum: 6
+          description: L'étape la plus avancée atteinte.
+        venueName:
+          type: string
+        venueType:
+          type: string
+          enum:
+          - restaurant
+          - bar
+        city:
+          type: string
+          enum:
+          - Casablanca
+          - Marrakech
+          - Rabat
+          - Tanger
+          - Agadir
+        address:
+          type: string
+        latitude:
+          type:
+          - number
+          - 'null'
+          format: double
+        longitude:
+          type:
+          - number
+          - 'null'
+          format: double
+        coverObjectKey:
+          type: string
+        coverContentType:
+          type: string
+        coverSizeBytes:
+          type: integer
+        hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnboardingDay'
+        submittedVenueId:
+          type:
+          - string
+          - 'null'
+          description: Renseigné une fois l'établissement créé. Un brouillon consommé ne peut
+            pas en créer un second.
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - ownerId
+      - step
+      - venueName
+      - venueType
+      - city
+      - address
+      - hours
+      - updatedAt
+    PendingVenue:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        contactEmail:
+          type: string
+          format: email
+        contactPhone:
+          type: string
+        ownerName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        hasPhoto:
+          type: boolean
+          description: Si le partenaire est allé jusqu'à une photo de couverture.
+        openDays:
+          type: integer
+          description: Nombre de jours ouverts dans la semaine déclarée.
+      required:
+      - id
+      - name
+      - kind
+      - city
+      - address
+      - contactEmail
+      - contactPhone
+      - ownerName
+      - createdAt
+      - hasPhoto
+      - openDays
+    CheckInResult:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        method:
+          type: string
+          enum:
+          - qr
+          - manual
+        bookingId:
+          type: string
+        guestName:
+          type: string
+        partySize:
+          type: integer
+        error:
+          type: string
+          enum:
+          - unknown_code
+          - already_used
+          - wrong_venue
+          - expired
+          description: Renseigné quand `ok` est faux.
+      required:
+      - ok
+      - method

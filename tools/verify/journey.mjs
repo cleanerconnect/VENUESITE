@@ -16,11 +16,17 @@
 // of bookings in whatever database the portal points at. Reseed
 // afterwards if the dataset is going anywhere.
 
-import { chromium } from "playwright";
+import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { LOT_LABEL } from "./lot.mjs";
+import { LOT, LOT_LABEL, requireWrites, signIn } from "./lot.mjs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
+
+// This tool writes. Against the static driver there is nothing to
+// write to, so it says so and stops rather than failing.
+await requireWrites(BASE, "Le parcours complet d'un partenaire");
 const width = Number(process.env.W ?? 1440);
 const height = Number(process.env.H ?? 1000);
 const phone = width <= 480;
@@ -50,7 +56,12 @@ page.on("console", (m) => {
   const text = m.text();
   const from = m.location()?.url ?? "";
   if (EXTERNAL_MAP.test(text) || EXTERNAL_MAP.test(from)) return;
+  // The `from` as well as the text: Chromium probes `/favicon.ico` even
+  // where a `<link rel="icon">` points at the SVG this portal ships, and
+  // the message it logs is a bare « Failed to load resource » whose only
+  // trace of the favicon is the URL.
   if (/favicon|preload|Download the React/i.test(text)) return;
+  if (/favicon/i.test(from)) return;
   noise.add(`console @${page.url().replace(BASE, "")}: ${text.slice(0, 140)} ${from.replace(BASE, "")}`);
 });
 
@@ -109,6 +120,38 @@ const go = async (path) => {
 
 console.log(`\nParcours complet · passe ${pass} · ${LOT_LABEL} · ${width}×${height}\n`);
 
+/**
+ * An affordance this tool drives that only Lot 1 draws.
+ *
+ * Réservations grew day arrows and a date picker for `Prio 02`, and
+ * Lot 1's Ma fiche is a three-tab form where Lot 2's is the customer
+ * preview (`src/lib/restaurant/presence.ts`). Asserting the Lot 1 shape
+ * in Lot 2 made this tool report two defects that are two different
+ * screens — so in Lot 2 its absence is written down and not counted.
+ */
+/**
+ * Wait for a sentence rather than for a stopwatch.
+ *
+ * A fixed `settle()` after a write is long enough on SQLite and short
+ * on the HTTP double, where the same read is a round trip to another
+ * process — which is how « le sélecteur de date ramène à aujourd'hui »
+ * failed on one driver and passed on the others. Same lesson as
+ * `signIn` in `lot.mjs`.
+ */
+const waitForText = async (pattern, timeout = 8000) => {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    if (pattern.test(await body())) return true;
+    await page.waitForTimeout(250);
+  }
+  return pattern.test(await body());
+};
+
+const lot1Only = (label) => {
+  if (LOT === 1) return check(label, false);
+  console.log(`  —    ${label} · forme du lot 1, absente du lot 2`);
+};
+
 // ── 1. A partner who has no account ─────────────────────────
 const stamp = Date.now().toString(36);
 const email = `parcours.${stamp}@lyfe-verify.ma`;
@@ -126,8 +169,9 @@ check("étape 1 · Vous", (await heading()) === "Vous");
 
 await page.getByLabel("Votre nom").fill(owner);
 await page.getByLabel("Adresse e-mail").fill(email);
-await page.getByLabel("Téléphone (facultatif)").fill("+212 6 61 22 33 44");
-await page.getByLabel("Mot de passe").fill("motdepasse1");
+await page.getByLabel("Téléphone", { exact: true }).fill("+212 6 61 22 33 44");
+await page.getByLabel("Mot de passe", { exact: true }).fill("motdepasse1");
+await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
 await shot("etape1");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(2000);
@@ -311,7 +355,7 @@ for (const tab of ["Horaires", "Photos"]) {
       check("la photo de couverture est là", /couverture|Photo|photo/i.test(await body()));
     }
   } else {
-    check(`Ma fiche a un onglet ${tab}`, false);
+    lot1Only(`Ma fiche a un onglet ${tab}`);
   }
 }
 
@@ -357,12 +401,15 @@ if (await kebab.count()) {
   }
 }
 await context.clearCookies();
-await go("/login");
-await page.locator('input[type="email"]').first().fill("yassine@darzellij.ma");
-await page.locator('input[type="password"]').first().fill("demo");
-await page.locator('button:has-text("Se connecter")').first().click();
-await page.waitForTimeout(3200);
-check("le compte du jeu de données ouvre son établissement", !page.url().includes("/login"), page.url());
+// This account owns two venues, so the login screen asks which one —
+// `signIn` answers « Dar Zellij » and waits for the portal rather than
+// for a stopwatch. See the note above `signIn` in `lot.mjs`.
+const landed = await signIn(page, BASE, { venue: "Dar Zellij" });
+check(
+  "le compte du jeu de données ouvre son établissement",
+  typeof landed === "string",
+  typeof landed === "string" ? landed : landed.refused,
+);
 
 await go("/restaurant/reservations");
 await rendersFine("Réservations (Dar Zellij)");
@@ -386,14 +433,20 @@ if ((await prev.count()) > 0 && (await next.count()) > 0) {
   check("le jour suivant change l'écran", forward !== back);
   await rendersFine("Réservations · autre jour");
 } else {
-  check("Réservations a des flèches de jour", false);
+  lot1Only("Réservations a des flèches de jour");
 }
 
 const picker = page.locator('input[type="date"]:visible').first();
 if (await picker.count()) {
-  await picker.fill(new Date().toISOString().slice(0, 10));
-  await settle(1500);
-  check("le sélecteur de date ramène à aujourd'hui", /Aujourd'hui/i.test(await body()));
+  // The day as the venue counts it, not as UTC does: between 23h and
+  // midnight UTC the two are different days in Casablanca, and the
+  // screen would be asked for yesterday.
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Casablanca" });
+  await picker.fill(today);
+  check(
+    "le sélecteur de date ramène à aujourd'hui",
+    await waitForText(/Aujourd'hui/i),
+  );
 } else {
   check("Réservations a un sélecteur de date", false);
 }
@@ -419,7 +472,11 @@ for (const chip of ["À confirmer", "Confirmées", "Arrivés", "Tous"]) {
 }
 
 // The search bar, then the decisions on a row.
-const search = page.locator('input[placeholder*="Recherch" i]:visible').first();
+// By role, not by placeholder: Lot 1's box says « Un nom, 4 chiffres
+// du téléphone, ou 25/09… », which does not contain « Recherch » — so
+// the placeholder selector silently found nothing and this tool
+// reported a missing search box that is on screen.
+const search = page.locator('input[type="search"]:visible').first();
 if (await search.count()) {
   // Whatever name is on the first row: the seed's pending booking may
   // have been decided by an earlier pass, so the query is taken from the
@@ -447,7 +504,15 @@ await shot("reservations");
 // Back to the day and the service the screen opens on: the tabs and
 // chips above left it on Déjeuner, where the seed's pending request —
 // a 22h30 booking — is not.
+// The « À confirmer » chip, not the service the screen opens on: the
+// seed's pending booking is at 22h30, so a run before dinner opens on
+// a service that does not hold it.
 await go("/restaurant/reservations");
+const pendingChip = page.locator('button:has-text("À confirmer"):visible').first();
+if (await pendingChip.count()) {
+  await pendingChip.click();
+  await settle(1300);
+}
 const accept = page.locator('button:has-text("Accepter"):visible').first();
 if (await accept.count()) {
   const row = await accept.locator("xpath=ancestor::*[self::li or self::div][1]").textContent();
@@ -458,24 +523,43 @@ if (await accept.count()) {
   await go("/restaurant/reservations");
   check("la confirmation survit au rechargement", /Confirmée/.test(await body()));
 } else {
-  check("une demande attend une décision", false, "aucun bouton Accepter");
+  // Not a failure: `decisions.mjs` and `edges.mjs` run before this one
+  // in the matrix and decide the seed's one request, so by the time
+  // this tool looks there is nothing left to decide. A tool that calls
+  // that a defect reports the order it ran in, not the product.
+  console.log(
+    "  —    le carnet ne porte aucune demande en attente · " +
+      "la décision est éprouvée par decisions.mjs",
+  );
 }
 
+// Refuser, with its reason, inside the dialog it opens — page-wide
+// locators found a tab of the same name behind the dialog's overlay and
+// then waited thirty seconds for a click that could never land.
 const refuse = page.locator('button:has-text("Refuser"):visible').first();
 if (await refuse.count()) {
   await refuse.click();
   await settle(1200);
-  const reason = page.locator('button:has-text("Complet"):visible, button:has-text("Fermé"):visible').first();
-  if (await reason.count()) {
-    await reason.click();
-    await settle(600);
-  }
-  const confirm = page
-    .locator('button:has-text("Refuser la demande"):visible, button:has-text("Confirmer"):visible')
-    .first();
-  if (await confirm.count()) {
-    await confirm.click();
-    await settle(2000);
+  const dialog = page.locator('[role="dialog"]:visible').first();
+  if (await dialog.count()) {
+    const reason = dialog
+      .locator('button:has-text("Complet"), button:has-text("Fermé")')
+      .first();
+    if (await reason.count()) {
+      await reason.click();
+      await settle(600);
+    }
+    const confirm = dialog.locator('button:has-text("Refuser la demande")').first();
+    if (await confirm.count()) {
+      await confirm.click();
+      await settle(2000);
+    }
+    // Whatever happened, the dialog must not be left open over the rest
+    // of the run.
+    if (await dialog.count()) {
+      await page.keyboard.press("Escape").catch(() => {});
+      await settle(500);
+    }
   }
   check("refuser se termine sans erreur", !/Une erreur|erreur inattendue/i.test(await body()));
 }

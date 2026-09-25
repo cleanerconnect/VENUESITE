@@ -15,11 +15,17 @@
 // whatever database the portal is pointed at. Reseed afterwards if the
 // dataset is going anywhere (`npm run db:reset`).
 
-import { chromium } from "playwright";
+import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync } from "node:fs";
-import { LOT, LOT_LABEL } from "./lot.mjs";
+import { LOT, LOT_LABEL, requireWrites } from "./lot.mjs";
+
+const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
+
+// This tool writes. Against the static driver there is nothing to
+// write to, so it says so and stops rather than failing.
+await requireWrites(BASE, "L'inscription d'un partenaire");
 const width = Number(process.env.W ?? 1440);
 const height = Number(process.env.H ?? 1000);
 const shots = process.env.SHOTS;
@@ -81,14 +87,23 @@ await shot("1-vous");
 // ── Step 1 · the account ──
 await page.getByLabel("Votre nom").fill("Partenaire Vérification");
 await page.getByLabel("Adresse e-mail").fill(email);
-await page.getByLabel("Téléphone (facultatif)").fill("+212 6 00 00 00 00");
+await page.getByLabel("Téléphone", { exact: true }).fill("+212 6 00 00 00 00");
 // Eight characters is the whole rule; a shorter one must be refused.
-await page.getByLabel("Mot de passe").fill("court");
+await page.getByLabel("Mot de passe", { exact: true }).fill("court");
+await page.getByLabel("Confirmation du mot de passe").fill("court");
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(900);
 check("mot de passe trop court refusé", (await heading()) === "Vous");
 
-await page.getByLabel("Mot de passe").fill("motdepasse1");
+// Row 39 asks for the password twice, so two that disagree must be
+// refused as well — otherwise the second field is decoration.
+await page.getByLabel("Mot de passe", { exact: true }).fill("motdepasse1");
+await page.getByLabel("Confirmation du mot de passe").fill("motdepasse2");
+await page.locator('button:has-text("Continuer")').first().click();
+await page.waitForTimeout(900);
+check("confirmation différente refusée", (await heading()) === "Vous");
+
+await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1800);
 check("étape 2 · Votre établissement", (await heading()) === "Votre établissement");

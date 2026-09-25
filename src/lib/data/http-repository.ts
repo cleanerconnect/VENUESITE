@@ -202,6 +202,17 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     );
   }
 
+  // ── Forgotten password ──
+  async requestPasswordReset(email: string) {
+    await this.request<void>("POST", "/api/business/auth/password-reset", {
+      email,
+    });
+    // The service answers the same way for a known and an unknown
+    // address, so reaching here means the request was accepted, not
+    // that an account exists.
+    return { sent: true };
+  }
+
   // ── Onboarding ──
   startOnboarding(input: OnboardingSignUpInput) {
     return this.request<{ userId: string; draft: OnboardingDraft }>(

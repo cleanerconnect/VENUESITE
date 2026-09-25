@@ -161,13 +161,13 @@ export class MockRestaurantRepository implements RestaurantRepository {
     }
     const result = await rescheduleBooking(restaurantId, reservationId, at);
     if (!result.moved) {
-      throw new RepositoryError(
+      const [message, status] =
         result.reason === "settled"
-          ? "Cette réservation est déjà arrivée ou close : son heure ne se décale plus."
-          : "Réservation introuvable.",
-        result.reason === "settled" ? 409 : 404,
-        result.reason ?? "not_found",
-      );
+          ? ["Cette réservation est déjà arrivée ou close : son heure ne se décale plus.", 409]
+          : result.reason === "changed"
+            ? ["Cette réservation a changé entre-temps. Rechargez le carnet.", 409]
+            : ["Réservation introuvable.", 404];
+      throw new RepositoryError(message, status, result.reason ?? "not_found");
     }
     return this.getOverview(restaurantId);
   }
@@ -256,6 +256,13 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
 
   // ── Onboarding ──
+  // No mail service sits behind a database. Saying so is the whole
+  // implementation — the screen reads `sent` and offers the partner a
+  // way that exists.
+  async requestPasswordReset(_email: string) {
+    return { sent: false };
+  }
+
   async startOnboarding(input: OnboardingSignUpInput) {
     try {
       const account = await onboarding.createPartnerAccount(input);

@@ -15,13 +15,39 @@ import { EntityListBlock } from "./blocks/EntityListBlock";
 import { SlotGridBlock } from "./blocks/SlotGridBlock";
 import { FeedBlock } from "./blocks/FeedBlock";
 import { TableBlock } from "./blocks/TableBlock";
-import { ChartBlock } from "./blocks/ChartBlock";
 import { CalendarBlock } from "./blocks/CalendarBlock";
 import { SettingsBlock } from "./blocks/SettingsBlock";
 import { SettingsSaveBar } from "./blocks/SettingsSaveBar";
 import { DayBarBlock } from "./blocks/DayBarBlock";
 import { containsBlockType } from "@/lib/dashboard/traverse";
 import { cn } from "@/lib/utils/cn";
+import dynamic from "next/dynamic";
+
+// Charts arrive on demand.
+//
+// `recharts` is about a hundred kilobytes gzipped and no Lot 1 screen
+// draws a chart — no spec in `src/lib/restaurant/screens.ts` carries a
+// `chart` block on the contractual surface. Imported statically it
+// travelled to every screen anyway, because this renderer is one
+// client component: the audit measured 308 Ko of script on Réservations
+// against a ceiling of 300. Loaded this way it travels with the screens
+// that actually draw one.
+//
+// `ssr: false` because the chart measures its container before it can
+// lay itself out, and a server render has no container to measure — the
+// blocks below already render nothing useful on the server for the same
+// reason.
+const ChartBlock = dynamic(
+  () => import("./blocks/ChartBlock").then((m) => ({ default: m.ChartBlock })),
+  {
+    ssr: false,
+    // The card's own footprint while the chunk arrives, so the screen
+    // does not jump when it does.
+    loading: () => (
+      <div className="h-[268px] rounded-[var(--radius-lg)] border border-line bg-surface" />
+    ),
+  },
+);
 
 // The renderer.
 //

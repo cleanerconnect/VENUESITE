@@ -12,6 +12,7 @@ import { DatabaseSync } from "node:sqlite";
 import { readFileSync, readdirSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
+import { randomBytes, scryptSync } from "node:crypto";
 
 const args = process.argv.slice(2);
 const reset = args.includes("--reset");
@@ -187,6 +188,48 @@ insert("business_accounts", {
   insert("staff", {
     id, venue_id: VENUE, user_id: user, full_name: name, email,
     role, last_active: minutesAgo(mins), pending: 0, created_at: daysAgo(200),
+  }),
+);
+
+// ── Partner credentials ──────────────────────────────────────
+//
+// Every account the portal documents, with a salted scrypt hash in
+// `partner_accounts` — the same table and the same `salt:hash` shape
+// `/inscription` writes, verified by the same
+// `verifyPartnerPassword()`.
+//
+// Why this exists. `src/lib/auth/accounts.ts` carried the seven demo
+// pairs as literals, and the database directory fell through to them
+// when `partner_accounts` had no row: on a deployment with Neon
+// attached — which is `db` mode, which is what production runs —
+// `yassine@darzellij.ma` / `demo` signed in from a comparison against a
+// string in the bundle, and so did `validation@lyfe.ma`, the account
+// that validates listings. Those literals are now consulted only
+// without a database (`static`, where they are the only way in) or
+// behind `LYFE_DEMO_ACCOUNTS=1`. The demo keeps working because the
+// credentials are real rows, hashed, reachable by the same code path a
+// partner who signed up uses.
+//
+// `LYFE_SEED_PASSWORD` sets the password for all of them. It defaults
+// to `demo` so the documented walkthrough still works; a deployment
+// that outlives the demo sets it, or deletes these rows.
+const SEED_PASSWORD = process.env.LYFE_SEED_PASSWORD ?? "demo";
+const hashed = (password) => {
+  const salt = randomBytes(16).toString("hex");
+  return `${salt}:${scryptSync(password, salt, 64).toString("hex")}`;
+};
+[
+  ["usr_mido", "Mido Reffas", "mido@jazzablanca.com", "+212 661 00 10 01"],
+  [OWNER, "Yassine Alami", "yassine@darzellij.ma", "+212 661 00 26 00"],
+  ["usr_sofia", "Sofia Bennis", "sofia@nomadrooftop.ma", "+212 661 00 26 01"],
+  ["usr_rachid", "Rachid Amrani", "rachid@darzellij.ma", "+212 661 00 26 02"],
+  ["usr_imane", "Imane Ouali", "imane@darzellij.ma", "+212 661 00 26 03"],
+  ["usr_lyfe_admin", "Nawal Cherkaoui", "validation@lyfe.ma", "+212 661 00 00 01"],
+  ["usr_nouveau", "Nouveau partenaire", "nouveau@lyfe.ma", "+212 661 00 00 02"],
+].forEach(([userId, fullName, email, phone]) =>
+  insert("partner_accounts", {
+    user_id: userId, full_name: fullName, email, phone,
+    password_hash: hashed(SEED_PASSWORD), created_at: daysAgo(200),
   }),
 );
 
@@ -2017,7 +2060,7 @@ insert("platform_admins", {
 
 const count = (t) => db.prepare(`SELECT COUNT(*) c FROM ${t}`).get().c;
 console.log(`seeded ${dbPath}`);
-for (const t of ["venues","business_accounts","staff","zones","venue_tags","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_items","menu_item_dietary","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity",
+for (const t of ["venues","business_accounts","partner_accounts","staff","zones","venue_tags","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_items","menu_item_dietary","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity",
   "venue_settings","subscriptions","invoices","support_tickets","service_definitions","service_zones","pacing_rules","capacity_overrides","waitlist","waitlist_settings","shift_notes","tags","customer_tags","tag_rules","segments","offers","offer_redemptions","experiences","experience_addons","tickets","deposit_policies","deposits","cancellation_policies","cancellation_log","transactions","guest_lists","guest_list_bands","guest_list_entries","promoters","table_types","table_offers","table_reservations","campaigns","messages_log","suppression_list","survey_config","audience_sources","platform_benchmarks","platform_admins"]) {
   console.log(`  ${t.padEnd(28)} ${count(t)}`);
 }

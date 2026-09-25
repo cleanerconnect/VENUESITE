@@ -7,7 +7,7 @@ import { searchBookings } from "@/app/actions/bookings";
 import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 import { formatInTimeZone } from "date-fns-tz";
 import { fr } from "date-fns/locale";
-import { RESERVATION_CHANNEL } from "@/lib/restaurant/vocabulary";
+import { channelLabel } from "@/lib/restaurant/vocabulary";
 
 // What the chrome's search box finds, grouped by day.
 //
@@ -100,7 +100,7 @@ export function BookingSearchResults({ query }: { query: string }) {
                     {r.guestPhone}
                   </span>
                   <span className="ml-auto text-sm text-ink-soft">
-                    {r.partySize} · {RESERVATION_CHANNEL[r.channel]}
+                    {r.partySize} · {channelLabel(r.channel)}
                   </span>
                 </Link>
               </li>

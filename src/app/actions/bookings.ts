@@ -19,6 +19,7 @@ import { requireVenueAccess, resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
 import { RepositoryError, StaleWriteError } from "@/lib/data/repository";
 import { COPY } from "@/lib/copy/fr";
+import { logFailure } from "@/lib/errors/reference";
 import type { RejectionReason } from "@/lib/types/business";
 import type { Reservation } from "@/lib/types/restaurant";
 
@@ -59,8 +60,11 @@ async function withVenue(
     if (error instanceof RepositoryError) {
       return { ok: false, message: error.message };
     }
-    console.error("[lyfe] écriture de réservation refusée", error);
-    return { ok: false, message: COPY.form.savingFailed };
+    const reference = logFailure("écriture de réservation", error);
+    return {
+      ok: false,
+      message: `${COPY.form.savingFailed} ${COPY.error.reference} : ${reference}`,
+    };
   }
 }
 

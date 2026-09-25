@@ -256,6 +256,10 @@ export class StaticRestaurantRepository implements RestaurantRepository {
   // this process, which is enough to demonstrate the six steps on a
   // clone with no database. The last step is where it stops: making a
   // venue means writing rows, and the snapshot is a committed capture.
+  async requestPasswordReset(_email: string) {
+    return { sent: false };
+  }
+
   async startOnboarding(input: OnboardingSignUpInput) {
     const userId = `usr_${Math.random().toString(36).slice(2, 10)}`;
     const draft: OnboardingDraft = {

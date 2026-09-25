@@ -224,7 +224,7 @@ minimum group size on Audience.
 
 ### Before you trust a change, walk it
 
-Ten browser checks and one recorder are committed under
+Eleven browser checks and one recorder are committed under
 `tools/verify/`, kept out of `package.json` deliberately — they need a
 running server and a browser binary, and a check that pretends to be a
 unit test is a check that gets skipped in CI and then deleted.
@@ -234,6 +234,7 @@ npm install --no-save playwright          # once
 npm run build && npx next start -p 3210   # in one terminal
 
 node tools/verify/walk.mjs            # the venue screens this lot registers (W/H/VENUE overridable)
+node tools/verify/payload.mjs         # no JavaScript value reaches the screen — undefined, NaN, [object Object]
 node tools/verify/events.mjs          # the 19 event + shared routes
 node tools/verify/states.mjs          # ?etat= forceable on every venue route in the lot
 node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
@@ -242,8 +243,27 @@ node tools/verify/inscription.mjs     # the six onboarding steps, the resume, th
 node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
 node tools/verify/edges.mjs           # the paths taken by accident — see below
 node tools/verify/decisions.mjs       # LYFE's review, Décaler, the search, the grid, the guest
+node tools/verify/handshake.mjs       # the app and the portal on one database — see §14
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
 ```
+
+Seven more scripts sit beside them with an underscore in front of the
+name — `_stress.mjs`, `_stress2.mjs`, `_store-stress.mts`, `_perf.mjs`,
+`_loadseed.mjs`, `_bundle.mjs`, `_pg-cases.sh`. They belong to the Lot 1
+acceptance audit (`docs/AUDIT_LOT1.md`) rather than to the daily walk:
+they seed 4 400 bookings, hammer the sign-in form, drive axe-core, or
+need a second Postgres database to themselves. The underscore is the
+whole convention — a tool without one is part of the walk above, a tool
+with one is part of an audit and is run on purpose. They are committed
+because a finding nobody can reproduce is an opinion.
+
+**Run the suite on a database you have just reset.** Five of these tools
+write, and the seed carries exactly one reservation waiting for a
+decision: whichever tool reaches it first decides it, and the ones
+after it find a book with nothing to decide. They no longer call that a
+failure — they say so and move on — but a suite run twice over one
+database is a suite measuring its own leftovers. `npm run db:reset`, or
+`DATABASE_URL=… npm run db:reset`, before the loop.
 
 The last two are the ones that found real defects rather than confirming
 known ones. `journey.mjs` signs a fresh partner up with accented names, a
@@ -263,10 +283,10 @@ on one side only and the tool asks for screens the server does not
 register, then calls the 404s failures.
 
 ```bash
-LYFE_LOT=1 npx next start -p 3210     # 17 venue screens
+LYFE_LOT=1 npx next start -p 3210     # 6 venue screens — walk reports 12/12, six on each of the two venues
 LYFE_LOT=1 node tools/verify/walk.mjs
 
-LYFE_LOT=2 npx next start -p 3210     # 31
+LYFE_LOT=2 npx next start -p 3210     # 31 venue screens
 LYFE_LOT=2 node tools/verify/walk.mjs
 ```
 

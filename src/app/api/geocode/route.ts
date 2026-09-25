@@ -13,7 +13,14 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const ENDPOINT = "https://nominatim.openstreetmap.org/search";
+// Nominatim's public instance is the default for the same reason the
+// map's default tiles are OSM's: it needs no account. Its usage policy
+// caps it at one request a second and forbids heavy use, so a
+// deployment serving every partner sets `GEOCODER_URL` to its own
+// Nominatim or a commercial geocoder. The response shape read below is
+// Nominatim's `jsonv2`.
+const ENDPOINT =
+  process.env.GEOCODER_URL ?? "https://nominatim.openstreetmap.org/search";
 const AGENT = "LYFE-Portail-Partenaire/1.0 (contact@lyfemaroc.org)";
 
 export async function GET(request: Request) {

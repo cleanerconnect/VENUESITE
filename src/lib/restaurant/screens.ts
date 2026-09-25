@@ -45,7 +45,7 @@ import { DIETARY_TAG, PRICE_RANGE_LABEL } from "@/lib/types/restaurant";
 import {
   ACTIVITY_TYPE,
   MENU_CATEGORY,
-  RESERVATION_CHANNEL,
+  channelLabel,
   RESERVATION_STATE,
   SERVICE_KIND,
   payoutBadge,
@@ -643,15 +643,38 @@ export function buildDashboardScreen(
   const expected = dayRows.filter((r) => r.state === "confirmed").sort(byTime);
   const seated = dayRows.filter((r) => r.state === "arrived").sort(byTime);
 
+  /**
+   * How many rows a group draws before it defers to the book.
+   *
+   * There was no ceiling, and on a real service that is a screen that
+   * takes six seconds. Measured on a seeded day of 2 005 bookings:
+   * Accueil rendered 3 220 rows and took 6,4 s to become interactive at
+   * 1440 and 5,9 s at 390 — the busiest evening of the year being
+   * exactly when a host cannot wait. Réservations was unaffected,
+   * because it scopes to the service in hand.
+   *
+   * Twelve, because that is more than a host reads at a glance and the
+   * group says how many there are in total, so nothing is hidden — the
+   * rest is one tap away in the book, which is the screen for working
+   * through a long list.
+   */
+  const GROUP_CEILING = 12;
+  const shown = (rows: Reservation[]) => rows.slice(0, GROUP_CEILING);
+  /** « … · les 12 premières sur 187 » when, and only when, it is cut. */
+  const reach = (rows: Reservation[], sentence: string) =>
+    rows.length > GROUP_CEILING
+      ? `${sentence} Les ${GROUP_CEILING} premières sur ${rows.length} — le reste est dans le carnet.`
+      : sentence;
+
   const toHandleBlock: Block = {
     id: "to-handle",
     type: "entity-list",
     heading: "À traiter",
     subheading:
       toHandle.length > 0
-        ? "Ces clients attendent une réponse."
+        ? reach(toHandle, "Ces clients attendent une réponse.")
         : "Rien en attente de décision.",
-    rows: toHandle.map(hostRow),
+    rows: shown(toHandle).map(hostRow),
     empty: {
       title: "Rien à traiter",
       body: "Aucune demande n'attend de réponse.",
@@ -663,8 +686,8 @@ export function buildDashboardScreen(
     id: "expected",
     type: "entity-list",
     heading: "Prochaines arrivées",
-    subheading: "Confirmées, pas encore en salle.",
-    rows: expected.map(hostRow),
+    subheading: reach(expected, "Confirmées, pas encore en salle."),
+    rows: shown(expected).map(hostRow),
     empty: {
       title: "Personne d'attendu",
       body: "Aucune table confirmée à venir aujourd'hui.",
@@ -677,9 +700,10 @@ export function buildDashboardScreen(
     type: "entity-list",
     heading: "Arrivés",
     // Collapsed by default: the work is done, and the count is the only
-    // thing a host needs from it mid-service.
+    // thing a host needs from it mid-service. The count is the whole
+    // group even when the rows below are the ceiling.
     collapsible: { summary: `${seated.length} ${seated.length === 1 ? "table installée" : "tables installées"}` },
-    rows: seated.map(hostRow),
+    rows: shown(seated).map(hostRow),
     empty: {
       title: "Personne encore arrivé",
       body: "Les clients installés apparaîtront ici.",
@@ -709,12 +733,18 @@ export function buildDashboardScreen(
         meta: `${hm(r.at)} · ${covers(configuration, r.partySize)} · demande en attente`,
         badges: [{ label: "À CONFIRMER", tone: "warning" as const }],
         facets: { queue: "requests" },
+        // `reservation.accept` and `reservation.refuse` were a second
+        // vocabulary for the two verbs the registry calls
+        // `reservation.confirm` and `reservation.reject`, and nothing
+        // registered either name: both buttons answered « Action non
+        // disponible ». One vocabulary, and the refusal carries the name
+        // its sheet asks the reviewer to write a sentence about.
         actions: [
           {
             action: {
               kind: "command" as const,
-              command: "reservation.accept",
-              payload: { id: r.id },
+              command: "reservation.confirm",
+              payload: { id: r.id, name: r.guestName },
               label: "Accepter",
               icon: "check" as const,
             },
@@ -723,8 +753,8 @@ export function buildDashboardScreen(
           {
             action: {
               kind: "command" as const,
-              command: "reservation.refuse",
-              payload: { id: r.id },
+              command: "reservation.reject",
+              payload: { id: r.id, name: r.guestName },
               label: "Refuser",
               icon: "ban" as const,
             },
@@ -1359,16 +1389,17 @@ export function buildReservationsScreen(
       // Taking a copy of the day away acts on the whole screen, not on
       // anything inside it, so it sits in the header rather than among
       // the controls that change what the screen shows.
+      //
+      // One action, not two. « Exporter la journée » dispatched
+      // `reservations.export`, and nothing registers that verb: the
+      // command registry answered « Action non disponible » and the most
+      // prominent control on the main Lot 1 screen did nothing. No row
+      // of Prio 02 buys an export either — « Définir le format des
+      // bilans extractables » is a Prio 06 prerequisite, Planning V3
+      // row 44 — so the button is gone rather than implemented, and the
+      // paper a host stand actually uses comes off « Imprimer », which
+      // works.
       headerActions: [
-        {
-          action: {
-            kind: "command",
-            command: "reservations.export",
-            label: "Exporter la journée",
-            icon: "file",
-          },
-          variant: "secondary",
-        },
         {
           action: {
             kind: "command",
@@ -1770,7 +1801,7 @@ function reservationRow(
     // booking actually arrived through.
     reservation.channel === "walk_in" && !lot1
       ? vocabulary.walkInLabel
-      : RESERVATION_CHANNEL[reservation.channel],
+      : channelLabel(reservation.channel),
   ]
     .filter(Boolean)
     .join(" · ");
@@ -1866,7 +1897,7 @@ function reservationRow(
  * hour saw a heading for 20h00 and another for 20h30 with one booking
  * each. The grid is the service's, so the heading is too.
  */
-function slotOf(at: string, slotMinutes: number): string {
+export function slotOf(at: string, slotMinutes: number): string {
   const d = new Date(at);
   const step = slotMinutes > 0 ? slotMinutes : 30;
   d.setMinutes(Math.floor(d.getMinutes() / step) * step, 0, 0);
@@ -2069,7 +2100,7 @@ function reservationDetail(
   return {
     title: reservation.guestName,
     subtitle: `${hm(reservation.at)} · ${covers(configuration, reservation.partySize)} · ${
-      RESERVATION_CHANNEL[reservation.channel]
+      channelLabel(reservation.channel)
     }`,
     badges: [
       reservationBadge(reservation.state),
@@ -2094,7 +2125,7 @@ function reservationDetail(
           },
           {
             label: "Canal",
-            metric: { value: RESERVATION_CHANNEL[reservation.channel] },
+            metric: { value: channelLabel(reservation.channel) },
           },
         ],
       },

@@ -25,7 +25,7 @@ Sign in with any of these; the password is `demo` for all of them:
 | Email | What it shows |
 |---|---|
 | `mido@jazzablanca.com` | Event organiser — two organisations, no venue |
-| `yassine@darzellij.ma` | Both workspaces — two venues *and* an organisation |
+| `yassine@darzellij.ma` | Both workspaces — two venues *and* an organisation. Under `LYFE_LOT=1` the events door is closed, so this account lands on the venue chooser like `rachid@` |
 | `rachid@darzellij.ma` | Two venues, no organisation — lands on the venue chooser |
 | `sofia@nomadrooftop.ma` | One venue, manager role |
 | `nouveau@lyfe.ma` | Credentials valid, nothing attached — the "no workspace" state |
