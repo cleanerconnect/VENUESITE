@@ -64,11 +64,32 @@ et **nulle part ailleurs**.
 - **Erreurs** : tout statut non-2xx est lu comme
   `{ "message": string, "code": string }` et remonté en `RepositoryError`
   avec le statut HTTP. Un `204` est accepté comme réponse vide.
-- **Le périmètre vient du jeton, pas de l'URL.** `venue_id` voyage en
-  paramètre de requête, mais ce n'est qu'une indication : le service
-  doit résoudre le périmètre depuis le jeton et **refuser** un
-  `venue_id` que le porteur ne détient pas. Le portail compte sur ce
-  refus ; il ne le simule pas.
+- **Le jeton est un jeton de service, pas un jeton de partenaire.**
+  Il n'en existe qu'un — `LYFE_API_TOKEN` — et l'identité du partenaire
+  voyage en paramètre : `user_id` sur la session, `venue_id` sur les
+  appels scopés. Ce paragraphe disait « le service doit résoudre le
+  périmètre depuis le jeton » ; avec un seul jeton c'est impossible, et
+  l'audit de recette l'a corrigé. Ce qui reste vrai, et qui est une
+  obligation des deux côtés :
+  - le portail vérifie lui-même, **à chaque écriture**, que le
+    partenaire connecté détient l'établissement (`requireVenueAccess`) ;
+  - le service doit vérifier que le `venue_id` demandé est bien celui
+    d'un partenaire du porteur, parce qu'un seul contrôle est un
+    contrôle qu'on oublie ;
+  - **ce jeton ne doit jamais être accepté depuis un navigateur.** Il
+    n'est lu que dans du code `server-only`, il n'atteint jamais le
+    client, et le service devrait refuser une origine navigateur sur ces
+    routes.
+- **`401` et `403` ne veulent pas dire la même chose.** `401` = « le
+  service ne nous connaît pas » ; `403` = « ce partenaire n'a pas le
+  droit ». Le portail les traite différemment.
+
+**Et une spécification exécutable :** `docs/lot1-openapi.yaml`, OpenAPI
+3.1, validée. Elle est dérivée de `http-repository.ts` et du trafic
+réellement observé — 514 appels, 19 endpoints, aucun 404 — et non de ce
+markdown. Là où les deux divergeaient, c'est ce fichier-ci qui a été
+corrigé. Chaque opération y indique si elle a été observée en trafic ou
+seulement lue dans les types.
 
 ---
 
@@ -535,6 +556,7 @@ c'est la liste qu'un parcours complet produit, pas une intention.
 | `PUT` | `/api/business/onboarding/{id}` | Inscription · étapes 2 à 5 |
 | `POST` | `/api/business/onboarding/{id}/submit` | Inscription · étape 6 |
 | `POST` | `/api/business/auth/session` | Connexion |
+| `POST` | `/api/business/auth/password-reset` | Connexion · « Mot de passe oublié ? » |
 | `GET` | `/api/business/auth/session?user_id=` | toutes les requêtes — identité, périmètre, rôle |
 | `GET` | `/api/business/settings?venue_id=` | les six écrans internes |
 | `GET` | `/api/business/overview?venue_id=` | Accueil, Réservations, Check-in, Ma fiche, Disponibilités, Notifications |
@@ -664,6 +686,74 @@ les demande dans un profil que personne n'est obligé de remplir. Le
 portail ne dessine pas la ligne quand la valeur manque : un « — » dans un
 champ Âge se lit comme un fait sur le client.
 
+### 3.2 Les données personnelles, et qui en répond
+
+Le Lot 1 affiche, sur une réservation, les données que l'application a
+déjà collectées auprès du client. Il n'en saisit aucune et n'en
+conserve aucune de son propre chef : la base appartient au service. La
+loi 09-08 et les délibérations de la CNDP demandent malgré tout que la
+finalité de chaque champ soit écrite, et que la durée de conservation
+soit effective — pas seulement paramétrable. Voici l'inventaire et les
+deux obligations qui restent au service.
+
+| Champ | Finalité, en une phrase | Qui l'a collecté |
+|---|---|---|
+| `guestName` | Appeler la table par son nom à l'arrivée. | L'application, au compte |
+| `guestPhone` | Joindre le client pour confirmer, décaler ou relancer — le seul geste qu'un hôte fait d'une réservation en dehors de l'écran. | L'application, au moment de réserver |
+| `guestEmail` | Joindre le client quand le téléphone ne répond pas. | L'application, au compte |
+| `partySize` | Placer la table. | L'application |
+| `note` | Honorer la demande : allergie, occasion, préférence de salle. | L'application |
+| `visits` | Reconnaître un habitué. Dérivé, jamais saisi. | Calculé |
+| `guestBirthYear` | **Aucune finalité déclarée, et aucun produit LYFE ne le collecte aujourd'hui.** Le portail affiche l'âge quand le champ arrive et ne dessine rien quand il manque. | personne |
+
+Deux conséquences, et elles sont fermes :
+
+1. **`note` peut contenir une donnée de santé.** « Sans gluten pour deux
+   couverts », « allergie aux fruits de mer » : au sens de la loi 09-08
+   c'est une donnée sensible, qui demande le consentement explicite du
+   client et un traitement plus strict que le reste. Le champ est
+   nécessaire — un restaurant qui ne le voit pas empoisonne quelqu'un —
+   mais le consentement se recueille dans l'application, au moment où le
+   client l'écrit, et pas dans ce portail.
+2. **`guestBirthYear` ne doit pas être envoyé** tant qu'un produit ne le
+   collecte pas avec une finalité écrite et un consentement. Le portail
+   n'est pas une raison de le collecter.
+
+**La conservation n'est pas appliquée.** `venue_settings.retention_months`
+existe, se règle dans Paramètres, se stocke, et **rien ne la lit** : aucun
+travail planifié, aucune requête, rien ne supprime ni n'anonymise un
+client après le délai. C'est au service de le faire, et voici la requête
+qu'il doit exécuter — anonymiser plutôt que supprimer, pour que les
+comptes d'un service passé restent justes :
+
+```sql
+-- Anonymise les clients d'un établissement qui n'ont plus réservé
+-- depuis `retention_months`. Les réservations restent, comptées et
+-- sans nom.
+UPDATE customers AS c
+   SET full_name = 'Client anonymisé',
+       phone     = '',
+       email     = '',
+       birth_year = NULL,
+       app_user_id = NULL
+ WHERE c.venue_id = $1
+   AND NOT EXISTS (
+     SELECT 1 FROM reservations r
+      WHERE r.customer_id = c.id
+        AND r.at > $2   -- now() - retention_months
+   );
+
+UPDATE reservations
+   SET guest_name = 'Client anonymisé', guest_phone = '', note = NULL
+ WHERE venue_id = $1 AND at <= $2;
+```
+
+Le droit d'accès et le droit de rectification se servent des mêmes
+endpoints que le tableau de bord ; le droit de suppression a besoin de
+la requête ci-dessus, déclenchée à la demande sur un client nommé. Le
+portail n'a pas d'écran pour cela en Lot 1 : la Fiche client, où il
+vivrait, est `SP-Prio 08`.
+
 ---
 
 ## 4. Ce que le portail n'appelle plus
@@ -766,6 +856,36 @@ La vérification des identifiants elle-même appartient au service dès
 qu'il est configuré : les couples adresse/mot de passe de
 `src/lib/auth/accounts.ts` sont un jeu de fixtures sans contrepartie en
 production, et ils ne sont plus consultés dans ce mode.
+
+### 5.1 bis « Mot de passe oublié ? » demande vraiment
+
+Le lien sous le formulaire de connexion répondait « un lien de
+réinitialisation vient d'être envoyé » sans que rien n'ait été prié
+d'envoyer quoi que ce soit. Il passe maintenant par le pilote, comme
+toute autre écriture.
+
+| Méthode | Chemin | Requête | Réponse |
+|---|---|---|---|
+| `POST` | `/api/business/auth/password-reset` | `{ email }` | `204` |
+
+Trois règles, et elles comptent :
+
+1. **La même réponse pour une adresse connue et une adresse inconnue.**
+   Un `404` sur une adresse absente transformerait ce formulaire en
+   annuaire des partenaires de LYFE. `204` dans les deux cas.
+2. **`422` uniquement si ce n'est pas une adresse** — une chaîne sans
+   `@`. C'est une erreur de saisie, pas un verdict sur le compte.
+3. **Le portail n'affiche jamais « envoyé » sans avoir reçu le `204`.**
+   Un déploiement sans service derrière (pilote `db` ou `static`) dit
+   au partenaire de passer par « Nous contacter » plutôt que de le
+   laisser attendre un e-mail qui n'arrivera pas.
+
+Le lien lui-même — sa durée de vie, son usage unique, l'écran qui
+accepte le nouveau mot de passe — appartient au service. Le portail ne
+sert pas d'écran de réinitialisation en Lot 1 : `Planning V3` ligne 39
+ne prévoit le bouton « mot de passe oublié » que pour l'organisateur
+côté Events, et le prévoir ici tient de l'anticipation raisonnable, pas
+du périmètre acheté.
 
 ### 5.2 Les cinq décisions partent
 
