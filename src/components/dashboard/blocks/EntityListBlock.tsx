@@ -338,6 +338,9 @@ function Row({ row }: { row: EntityRow }) {
   // the actions, the detail sheet — is the same component.
   const host = Boolean(row.lead);
 
+  // What the line offers at 390. See `onPhone` in the spec.
+  const phoneActions = (row.actions ?? []).filter((a) => a.onPhone !== "sheet");
+
   // The Lot 2 card row, unchanged: a card stacks its facts, and every
   // other list on the platform — events, tables, menu items — reads
   // that way.
@@ -573,10 +576,16 @@ function Row({ row }: { row: EntityRow }) {
         </div>
 
         {/* Phone only. On a wide screen the same buttons sit on the
-            row's right, inside `inner` — see the note there. */}
-        {row.actions?.length ? (
+            row's right, inside `inner` — see the note there.
+
+            Not all of them: an action marked `onPhone: "sheet"` is left
+            off here, because two 44px targets are what a 358px line
+            holds without wrapping, and four made the line 200px tall.
+            The spec is responsible for putting those actions in the
+            row's detail sheet — this only hides them. */}
+        {phoneActions.length ? (
           <div className={cn("md:hidden flex flex-wrap gap-2 px-4 pb-4 -mt-1", row.status && "pl-6")}>
-            {row.actions.map((cta, i) => (
+            {phoneActions.map((cta, i) => (
               <ActionControl
                 key={`${cta.action.label}-${i}`}
                 cta={cta}

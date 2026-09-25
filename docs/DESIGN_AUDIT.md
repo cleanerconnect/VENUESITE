@@ -57,15 +57,18 @@ ruban ne vaut pas ses chiffres.
 
 ## Le compte
 
-**57 constats** sur les huit écrans et le chrome qu'ils partagent, plus
-les **8 corrections d'instrument** ci-dessus.
+**60 constats** sur les huit écrans et le chrome qu'ils partagent, plus
+les **8 corrections d'instrument** ci-dessus. Les trois derniers — `R-11`,
+`R-12` et `S-17` — sont arrivés après la première remise : deux
+décisions de produit prises sur le carnet, et un défaut du jeu d'essai
+que les outils de cette recette ont trouvé en échouant à 00h17.
 
 | Sévérité | Ce que ça veut dire | Nombre | Corrigés | Justifiés | Décrits |
 |---|---|---:|---:|---:|---:|
-| **Structure** | l'écran est construit autrement qu'il devrait l'être : une ligne qui est une carte, une carte qui ne contient qu'un formulaire, un état introuvable, une colonne sans maximum | 16 | 15 | 1 | 0 |
+| **Structure** | l'écran est construit autrement qu'il devrait l'être : une ligne qui est une carte, une carte qui ne contient qu'un formulaire, un état introuvable, une colonne sans maximum, une décision au mauvais endroit | 19 | 18 | 1 | 0 |
 | **Rythme** | les distances ne disent pas ce qu'elles devraient dire | 17 | 17 | 0 | 0 |
 | **Polish** | la finition : un pas de type en trop, une capitale espacée, une icône à la mauvaise épaisseur, un mot de trop | 24 | 22 | 1 | 1 |
-| | | **57** | **54** | **2** | **1** |
+| | | **60** | **57** | **2** | **1** |
 
 Les trois qui ne sont pas « corrigés » sont nommés, pas cachés :
 `D-04` et `D-05` (les cartes de Disponibilités, justifiées par écrit
@@ -101,8 +104,12 @@ Et celui qui ne passe pas :
 |---|---|---|---|
 | Lignes de réservation au-dessus du pli, 1440 × 900 | **2,5** | **11 / 26** | §5 · douze à quinze |
 
-Onze, pas douze. Le détail de ce qui manque est en `R-01`, et la décision
-qu'il reste à prendre est en partie H.
+Onze, pas douze, et c'est le chiffre accepté : le détail est en `R-01` et
+la décision en dernière partie. Les deux colonnes sont mesurées sur un
+service de dîner complet — vingt-six couverts, le jeu d'essai à son
+heure de pointe. Une plaque prise entre deux services montre le même
+écran avec cinq lignes, parce que c'est ce que le carnet contient à ce
+moment-là ; voir la note sous la galerie.
 
 ---
 
@@ -130,6 +137,8 @@ ressort le carnet en papier.
 | R-08 | les filtres et le tri | deux lignes de chrome pour cinq contrôles | ce qui va ensemble est ensemble | §1 · §5 | une ligne, `justify-between` | R |
 | R-09 | l'animation d'entrée | `Stagger` : **490ms** avant que le dernier bloc se pose | pas d'animation d'entrée | §10 | supprimée | P |
 | R-10 | le survol de la ligne | `whileHover y:-1` + transition d'ombre sur chaque ligne | pas de transition au survol d'une carte | §10 | supprimé ; reste `hover:bg-canvas-2` | P |
+| R-11 | **Refuser** sur une ligne déjà confirmée | quatre décisions sur une ligne confirmée, dont celle qui annule le client, à un doigt de Check-in | une décision par ligne qui répond à l'état de la ligne | §4 · une seule action principale par région, et rien qui invite à l'erreur | Refuser ne répond plus qu'à une demande. Annuler une réservation acceptée est dans la feuille de la ligne, où le nom et le téléphone du client sont à l'écran pendant qu'on le fait | S |
+| R-12 | quatre décisions sur une ligne de 358px | la ligne passait de 44px à **200px** : les quatre cibles de 44 se replient en deux rangées de deux | deux décisions, et la ligne reste une ligne | §4 · 44 × 44 · §5 · densité | `onPhone: "sheet"` sort Décaler de toutes les lignes et Absent d'une demande. Reste la paire que l'état pose : Accepter ou Refuser, Check-in ou Absent. **200px → 69px** sans note, 148 avec | S |
 
 Chrome avant la première ligne : **490px → 320px**.
 
@@ -333,6 +342,7 @@ qui rapportent le plus : un correctif dans `SettingsBlock` ou dans
 | S-13 | `text-control-sm/md/lg` | **trois** tailles — 13, 14, 15 — pour « le texte d'un contrôle » | une | §2 | les trois à **16px** à la densité tablette | S |
 | S-14 | trois pas de l'échelle hôte | `.text-host-name` **17px** ; `.text-host-detail` **14px/1,40** ; `.text-host-slot` **15px**, interligne **1,00** | des pas de l'échelle, interlignes dans la bande | §2 | **18px** ; **13px/1,45** ; **16px/1,20** | P |
 | S-15 | un pas de type | `text-[14.5px]` — un demi-pixel | l'échelle | §2 | `text-body` | P |
+| S-17 | le service que le jeu d'essai résout | à 23h31 `resolveService` rendait « Déjeuner, ouverture 12h00, dernière réservation 14h00 » — **neuf heures dans le passé** — puis accrochait une journée de réservations à un service terminé | le service en cours, sinon le prochain | mesuré, pas stylistique : c'est le jeu d'essai de la recette | une journée sans service restant emprunte le premier du lendemain, ce que `currentService` répond déjà au tableau de bord. Trouvé par les outils de cette recette échouant à 00h17, pas par une relecture | S |
 | S-16 | le quatrième état | « accès refusé » n'était atteignable par aucune URL : il fallait un second compte pour le voir | les quatre états, photographiables côte à côte | §7 | `?etat=refus` ajouté au commutateur qui portait déjà les trois autres | S |
 
 **Sur `S-14`.** `.text-host-slot` garde ses capitales et son
@@ -572,6 +582,17 @@ Les fichiers sont dans `docs/design-audit/avant/` et
 `docs/design-audit/apres/`, nommés `<écran>@<largeur>.png` pour la page
 entière et `<écran>@<largeur>-fold.png` pour le pli.
 
+**À quelle heure ces plaques ont été prises, et pourquoi ça se voit.**
+Le jeu d'essai accroche sa journée au service en cours : à l'heure du
+dîner le carnet porte vingt-six couverts, entre deux services il en
+porte cinq et personne n'est encore arrivé. Les deux sont l'écran, à
+deux moments. Les plaques ci-dessous sont d'un déjeuner qui n'a pas
+encore commencé — c'est là que se lisent le mieux les décisions par
+état, parce que la journée porte une demande et quatre tables
+confirmées — et les chiffres de densité du tableau de mesure sont d'un
+dîner complet. Un audit qui présenterait les uns sous les autres
+mentirait sur l'un des deux.
+
 ### 1440
 
 | Écran | Avant | Après |
@@ -688,30 +709,25 @@ un build.
 
 ## Ce qu'une règle n'a pas tranché
 
-Ce qui reste tient en une phrase : **les cinq choses non réglées sont
-toutes des arbitrages de produit déguisés en questions de mise en page**,
-et les régler au ruban aurait donné des chiffres verts et un écran moins
-juste. Le carnet montre onze lignes au lieu de douze non pas parce que la
-typographie est trop grosse mais parce que la note du client est sur la
-ligne — et savoir si elle doit y être est une question qu'on pose à un
-restaurateur, pas à une gamme d'espacement. La ligne fait 200 pixels sur
-un téléphone parce que quatre décisions contractuelles ont besoin de
-quatre cibles de 44, et choisir laquelle sacrifier revient à modifier ce
-que le lot a acheté. Deux écrans de réglages dépassent le seuil de mots
-de trois et cinq mots, dont aucun n'est superflu, ce qui dit que le seuil
-d'un écran qu'on règle une fois n'est pas celui d'un écran qu'on lit
-debout. La clause en italique de la carte d'accueil enfreint deux règles
-et est couverte par l'exception que ce document accorde, mais rien dans
-le code n'empêche de la recopier ailleurs. Et deux éléments de la carte
-Leaflet restent sous le seuil tactile parce qu'appliquer une règle de
-contrôle à ce qui n'est pas un contrôle serait obéir à la lettre contre
-le lecteur. Chacune est détaillée ci-dessous, avec l'option qu'elle
-ouvre, pour être décidée plutôt que corrigée en passant.
+Ce qui restait tenait en une phrase : **les cinq choses non réglées
+étaient toutes des arbitrages de produit déguisés en questions de mise en
+page**, et les régler au ruban aurait donné des chiffres verts et un
+écran moins juste. Les deux premières ont depuis été tranchées, par le
+client et non par le ruban : elles sont ci-dessous, avec ce que chaque
+décision a coûté et rapporté. Trois restent, et pour la même raison.
+Deux écrans de réglages dépassent le seuil de mots de trois et cinq mots
+dont aucun n'est superflu, ce qui dit que le seuil d'un écran qu'on règle
+une fois n'est pas celui d'un écran qu'on lit debout. La clause en
+italique de la carte d'accueil enfreint deux règles et est couverte par
+l'exception que ce document accorde, mais rien dans le code n'empêche de
+la recopier ailleurs. Et deux éléments de la carte Leaflet restent sous
+le seuil tactile parce qu'appliquer une règle de contrôle à ce qui n'est
+pas un contrôle serait obéir à la lettre contre le lecteur.
 
 Le détail, dans l'ordre d'importance :
 
-**La première est la densité de Réservations à 1440, et c'est la plus
-importante.** La règle demande un service de déjeuner entier, douze à
+**La première est tranchée : la note reste sur la ligne, et onze lignes
+sont acceptées.** La règle demande un service de déjeuner entier, douze à
 quinze lignes, au-dessus du pli à 900 de haut. La ligne est passée de 84
 à 44 pixels, le chrome de 490 à 320, les vingt-six cartes à zéro, et le
 compte est de **onze**. Les quatre pixels qui manquent ne sont pas dans
@@ -724,26 +740,53 @@ la vraie question n'est donc pas typographique : **est-ce que la note du
 client doit être sur la ligne, ou derrière la ligne ?** Sur la ligne, elle
 coûte un tiers des lignes visibles ; derrière, elle coûte un geste au
 moment où le patron installe la table. Aucune règle de ce document ne
-tranche ça, et elle se tranche avec un restaurateur, pas avec un ruban.
-Le reste — resserrer la typographie, retirer l'état, raccourcir le nom —
-rendrait le carnet plus dense et moins lisible, ce qui est le contraire de
-l'objectif.
+tranchait ça, et ça ne se tranche pas avec un ruban.
 
-**La deuxième est le carnet à 390.** La ligne de réservation fait
-**177 pixels**, ou 200 quand elle porte une note, contre 44 et 66 sur un
-portable — et deux lignes tiennent au-dessus du pli. Ce n'est pas de la typographie non plus : c'est
-que les quatre décisions contractuelles — accepter, refuser, décaler,
-appeler — se replient en deux rangées de deux, à 44 pixels chacune, parce
-que 44 est le minimum tactile et que quatre fois 44 ne tient pas sur 358
-pixels à côté d'un nom. Les trois règles en jeu se contredisent
+**La décision est prise : la note reste sur la ligne.** Une allergie et
+un anniversaire sont ce qu'un hôte doit voir sans geste, et les quatre
+pixels que ça coûte sont moins chers qu'une table installée sans le
+savoir. Onze lignes au-dessus du pli au lieu de douze est donc le
+chiffre accepté, et il est accepté sachant ce qu'il vaut : un déjeuner
+tient à l'écran, un service chargé demande un défilement. Resserrer la
+typographie, retirer l'état ou raccourcir le nom rendrait le carnet plus
+dense et moins lisible, ce qui est le contraire de l'objectif.
+
+**La deuxième est tranchée aussi : deux décisions sur une ligne de
+téléphone, et Refuser ne répond qu'à une demande.** La ligne faisait
+**177 pixels**, ou 200 avec une note, contre 44 et 66 sur un portable,
+parce que les quatre décisions se repliaient en deux rangées de deux à
+44 pixels chacune. Les trois règles en jeu se contredisaient
 franchement : §4 veut 44, §5 veut la densité, et le périmètre du Lot 1
-veut les quatre décisions visibles sans geste supplémentaire. Deux sorties
-existent — ne montrer les décisions que sur les lignes qui en attendent
-une (une ligne confirmée n'a rien à décider), ou les mettre derrière une
-seule pression — et les deux touchent à ce que le lot a acheté. Elles sont
-décrites ici pour être choisies, pas appliquées en passant.
+veut les décisions visibles sans geste supplémentaire.
 
-**La troisième est la règle des quarante mots sur un écran de réglages.**
+Ce qui a été décidé, et ce que ça donne :
+
+| | Sur la ligne, à 1440 | Sur la ligne, à 390 | Dans la feuille |
+|---|---|---|---|
+| **À confirmer** | Accepter · Refuser · Décaler · Absent | **Accepter · Refuser** | Accepter · Décaler · Refuser · Absent |
+| **Confirmée** | Check-in · Absent · Décaler | **Check-in · Absent** | Marquer comme arrivé · Décaler · Refuser · Absent |
+
+Deux changements, pas un. Le premier est la densité : `onPhone: "sheet"`
+sort Décaler de toutes les lignes et Absent d'une demande, et la ligne
+du téléphone passe de **200 pixels à 69** sans note, 148 avec. Le second
+n'est pas une question de place — **Refuser a quitté la ligne confirmée
+aux deux largeurs**. Il y était pour qu'un établissement obligé
+d'annuler une table acceptée puisse le dire ; il le peut toujours, mais
+pas là. Refuser à un doigt de Check-in, c'est offrir à un hôte en plein
+service les deux bouts opposés de la même table, et celui qui annule un
+client confirmé ne se rattrape pas. Annuler est désormais un geste
+délibéré, dans la feuille de la ligne, où le nom et le téléphone du
+client sont à l'écran pendant qu'on le prend.
+
+Le verbe ne change pas entre les trois endroits — ligne, feuille,
+dialogue — parce que §6 le demande et parce que c'est le même état avec
+le même motif. `tools/verify/decisions.mjs` mesure les deux règles aux
+deux largeurs, en comptant plutôt qu'en lisant une liste d'étiquettes :
+Refuser exactement aussi souvent qu'Accepter, jamais sur une ligne
+confirmée, deux décisions par ligne à 390, et Décaler présent dans la
+feuille.
+
+**La première de celles qui restent est la règle des quarante mots sur un écran de réglages.**
 Six écrans sur huit sont sous le seuil. Disponibilités est à **43** et
 Notifications à **45**, et il ne reste sur ni l'un ni l'autre une seule
 phrase qui ne gagne pas sa place : « Coupé : visible, mais plus
@@ -761,7 +804,7 @@ la version défendable est « quarante sur un écran d'exploitation,
 cinquante sur un écran qu'on règle une fois ». Elle n'est pas écrite dans
 le styleguide, parce que c'est une décision de produit.
 
-**La quatrième est la clause en italique de la carte d'accueil.** §2
+**La deuxième est la clause en italique de la carte d'accueil.** §2
 interdit « un seul mot en italique ou en couleur dans un titre » et §3
 réserve le violet à l'action principale et à l'état actif. La carte
 d'accueil fait les deux : « Bonsoir, Yassine. » en sans, puis la clause du
@@ -774,7 +817,7 @@ code ne l'empêche d'être recopiée ailleurs : `emphasis` est un champ de
 spec que n'importe quel bloc peut remplir. C'est une frontière qui tient
 par convention, pas par construction.
 
-**La cinquième est le tiers sur la carte.** L'attribution OpenStreetMap et
+**La troisième est le tiers sur la carte.** L'attribution OpenStreetMap et
 le marqueur de Ma fiche restent sous les seuils — 15 pixels de haut pour
 un lien, 26 × 26 pour le marqueur. Les deux peuvent être couverts d'un
 sélecteur, comme l'ont été l'attribution et les boutons de zoom ; aucun ne

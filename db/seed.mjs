@@ -403,18 +403,33 @@ function resolveService(definitions, at) {
     })
     .sort((a, b) => a.from - b.from);
 
-  const w =
-    windows.find((x) => minutes >= x.from && minutes <= x.to) ??
-    windows.find((x) => x.from > minutes) ??
-    windows[0];
+  // The last service of the day is over.
+  //
+  // `windows.find(x => x.from > minutes)` returns nothing once the
+  // evening has closed, and the fallback was `windows[0]` — the first
+  // window of the same day, which by then ended hours ago. At 23h31 the
+  // seed resolved « Déjeuner, opening 12h00, last booking 14h00 » and
+  // then hung a whole day of bookings on a service nine hours in the
+  // past: no live service, no request still waiting, and five verify
+  // tools failing every night between the end of dinner and midnight
+  // with nothing wrong in the product.
+  //
+  // A day that has no service left borrows tomorrow's first one, which
+  // is the honest answer to « what is the next service » and the one
+  // `currentService` gives the dashboard.
+  const running = windows.find((x) => minutes >= x.from && minutes <= x.to);
+  const next = windows.find((x) => x.from > minutes);
+  const tomorrow = !running && !next;
+  const w = running ?? next ?? windows[0];
+  const day = tomorrow ? new Date(midnight.getTime() + 86_400_000) : midnight;
 
-  const opensAt = new Date(midnight.getTime() + w.from * 60_000);
+  const opensAt = new Date(day.getTime() + w.from * 60_000);
   return {
     ...w,
     opensAt,
-    closesAt: new Date(midnight.getTime() + w.to * 60_000),
-    lastBookingAt: new Date(midnight.getTime() + w.last * 60_000),
-    live: minutes >= w.from && minutes <= w.to,
+    closesAt: new Date(day.getTime() + w.to * 60_000),
+    lastBookingAt: new Date(day.getTime() + w.last * 60_000),
+    live: Boolean(running),
   };
 }
 

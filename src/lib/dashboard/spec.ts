@@ -109,6 +109,20 @@ export interface CtaAction {
   variant?: ActionVariant;
   /** Roles allowed to see it. Omit for "everyone". */
   allow?: string[];
+  /**
+   * Where the action lives on a phone.
+   *
+   * `"sheet"` keeps it off the row below `md`, and says the row's detail
+   * sheet carries it instead. At 390 the row is 358px wide and the touch
+   * minimum is 44, so four decisions wrap into two rows of two and the
+   * line grows from 44px to 200 — a third of the book for the two
+   * decisions a host reaches for least. Two stay on the line; the rest
+   * are one tap away, in the sheet the line already opens.
+   *
+   * Only meaningful on a row's `actions`. The sheet has to be given the
+   * action too: this field hides, it does not move.
+   */
+  onPhone?: "sheet";
 }
 
 /**

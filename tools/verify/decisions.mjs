@@ -7,10 +7,12 @@
 //
 //   1  a venue created by /inscription is pending, its dashboard works,
 //      and it says so — and /admin/validations is LYFE's alone;
-//   2  Accepter, Refuser, Absent and Décaler are on every open row, the
-//      sheet offers the venue's own slots and nothing else, and the
-//      chrome's search finds a booking by name, by the last four digits
-//      of the phone and by date, grouped by day;
+//   2  the decisions a state poses are on the line and the rest are in
+//      the sheet — Refuser only ever answers a request, and a phone
+//      line carries two of them, not four — the sheet offers the
+//      venue's own slots and nothing else, and the chrome's search
+//      finds a booking by name, by the last four digits of the phone
+//      and by date, grouped by day;
 //   3  Disponibilités offers 15 / 30 / 60 and the book groups by it;
 //   4  the row carries the phone and the drawer carries the guest.
 //
@@ -95,6 +97,40 @@ const openPending = async () => {
     await chip.click();
     await settle(1200);
   }
+};
+
+/**
+ * This tool needs a booking still waiting for an answer.
+ *
+ * Two things take one away. It decides one itself — accepts, refuses,
+ * moves it — and so do `journey` and `handshake`, so running after
+ * either against the same database leaves the book with nothing to
+ * decide. And the seed hangs its request on the service in hand, so
+ * once the last service of the day has closed there is no request
+ * either until the next one opens.
+ *
+ * Both read, from here, as a screen that has stopped offering its
+ * decisions — a design failure that has not happened. A tool lying
+ * about the product is worse than a tool that does not run, so it says
+ * which it is and stops with a zero exit, the way `requireWrites` does
+ * for a read-only driver.
+ */
+const requirePending = async () => {
+  await openPending();
+  const n = await page.locator('button:has-text("Accepter"):visible').count();
+  if (n > 0) return true;
+  console.log(
+    "\n  Aucune demande en attente sur le carnet.\n\n" +
+      "  Deux raisons possibles, et aucune n'est un défaut de l'écran :\n" +
+      "  cet outil décide une réservation — comme `journey` et `handshake` —\n" +
+      "  donc il consomme la demande du jeu d'essai ; ou le dernier service\n" +
+      "  de la journée est terminé, et le jeu d'essai accroche sa demande au\n" +
+      "  service en cours.\n\n" +
+      "  Relancer après `npm run db:reset`, avant ces deux-là, et pendant\n" +
+      "  un service.\n",
+  );
+  await browser.close();
+  process.exit(0);
 };
 
 console.log(`\nLes quatre décisions · ${LOT_LABEL} · ${width}×${height}\n`);
@@ -233,7 +269,7 @@ console.log("\n  — 2 · décisions au comptoir et recherche");
 
 await signOut();
 await signIn("yassine@darzellij.ma");
-await openPending();
+await requirePending();
 
 // The row is a card whose own button carries `data-row="open"`, with
 // the decisions as its siblings — so the decisions are counted on the
@@ -242,21 +278,136 @@ const hasRow = (await page.locator('button:has-text("Accepter"):visible').count(
 check("une demande est sur le carnet", hasRow);
 
 if (hasRow) {
-  // One of each per row, which is what « always visible » means: a
-  // count that matches is the claim, and a joined label list would pass
-  // on a kebab that happened to be open.
-  const accepter = await page.locator('button:has-text("Accepter"):visible').count();
-  const refuser = await page.locator('button:has-text("Refuser"):visible').count();
-  const absent = await page.locator('button:has-text("Absent"):visible').count();
-  const decaler = await page.locator('button:has-text("Décaler"):visible').count();
+  // One of each per row, counted rather than joined: a label list would
+  // pass on a kebab that happened to be open, and the claim is about
+  // how many decisions a line offers.
+  const count = async (label) =>
+    page.locator(`button:has-text("${label}"):visible`).count();
+  const accepter = await count("Accepter");
+  const refuser = await count("Refuser");
+  const absent = await count("Absent");
+  const decaler = await count("Décaler");
   check("Accepter est sur chaque demande", accepter > 0, `${accepter}`);
-  check("Refuser autant de fois qu'Accepter", refuser >= accepter, `${refuser}`);
+  // Exactly as often, not at least: Refuser answers a request and
+  // nothing else. It was on the confirmed line too, beside Check-in,
+  // which put the two opposite ends of the same table a keystroke
+  // apart. Cancelling an accepted booking is in the sheet now.
+  check(
+    "Refuser exactement autant de fois qu'Accepter",
+    refuser === accepter,
+    `${refuser} refuser · ${accepter} accepter`,
+  );
   check(
     "Absent sur chaque ligne ouverte, sans attendre l'heure",
     absent >= accepter,
     `${absent}`,
   );
   check("Décaler sur chaque ligne ouverte", decaler >= accepter, `${decaler}`);
+
+  // And on a confirmed line, by name: the count above would pass if
+  // every row were a request.
+  await go("/restaurant/reservations");
+  const confirmee = page.locator('button:has-text("Confirmées"):visible').first();
+  if (await confirmee.count()) {
+    await confirmee.click();
+    await settle(1200);
+    const onConfirmed = {
+      checkin: await count("Check-in"),
+      refuser: await count("Refuser"),
+      absent: await count("Absent"),
+      decaler: await count("Décaler"),
+    };
+    check(
+      "une ligne confirmée propose Check-in",
+      onConfirmed.checkin > 0,
+      `${onConfirmed.checkin}`,
+    );
+    check(
+      "et ne propose jamais Refuser",
+      onConfirmed.refuser === 0,
+      `${onConfirmed.refuser} Refuser sur les lignes confirmées`,
+    );
+    check(
+      "mais garde Absent et Décaler",
+      onConfirmed.absent > 0 && onConfirmed.decaler > 0,
+      `${onConfirmed.absent} absent · ${onConfirmed.decaler} décaler`,
+    );
+    // The sheet is where the cancellation went, so it has to be there.
+    const open = page.locator('[data-row="open"]:visible').first();
+    if (await open.count()) {
+      await open.click();
+      await settle(1200);
+      const sheet = await text();
+      check(
+        "la feuille de la ligne porte Refuser et Décaler",
+        /Refuser/.test(sheet) && /Décaler/.test(sheet),
+        "feuille de détail",
+      );
+      await page.keyboard.press("Escape");
+      await settle(600);
+    }
+  }
+
+  // ── The phone line: two decisions, not four ──
+  //
+  // At 390 a 358px line holds two 44px targets. Four wrapped into two
+  // rows and took the line from 44px to 200 — a third of the book for
+  // the two decisions a host reaches for least.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPending();
+  const phone = {
+    accepter: await count("Accepter"),
+    refuser: await count("Refuser"),
+    absent: await count("Absent"),
+    decaler: await count("Décaler"),
+  };
+  check(
+    "à 390 une demande propose Accepter et Refuser",
+    phone.accepter > 0 && phone.refuser === phone.accepter,
+    `${phone.accepter} accepter · ${phone.refuser} refuser`,
+  );
+  check(
+    "et rien d'autre : ni Décaler ni Absent sur la ligne",
+    phone.decaler === 0 && phone.absent === 0,
+    `${phone.decaler} décaler · ${phone.absent} absent`,
+  );
+  await go("/restaurant/reservations");
+  const confirmPhone = page.locator('button:has-text("Confirmées"):visible').first();
+  if (await confirmPhone.count()) {
+    await confirmPhone.click();
+    await settle(1200);
+    const p2 = {
+      checkin: await count("Check-in"),
+      absent: await count("Absent"),
+      refuser: await count("Refuser"),
+      decaler: await count("Décaler"),
+    };
+    check(
+      "à 390 une ligne confirmée propose Check-in et Absent",
+      p2.checkin > 0 && p2.absent > 0,
+      `${p2.checkin} check-in · ${p2.absent} absent`,
+    );
+    check(
+      "et ni Refuser ni Décaler",
+      p2.refuser === 0 && p2.decaler === 0,
+      `${p2.refuser} refuser · ${p2.decaler} décaler`,
+    );
+    const openPhone = page.locator('[data-row="open"]:visible').first();
+    if (await openPhone.count()) {
+      await openPhone.click();
+      await settle(1200);
+      const sheet = await text();
+      check(
+        "et sa feuille porte Décaler",
+        /Décaler/.test(sheet),
+        "feuille de détail à 390",
+      );
+      await page.keyboard.press("Escape");
+      await settle(600);
+    }
+  }
+  await page.setViewportSize({ width, height });
+  await openPending();
 
   // Décaler: the sheet, the venue's own slots, and the move.
   await page.locator('button:has-text("Décaler"):visible').first().click();
