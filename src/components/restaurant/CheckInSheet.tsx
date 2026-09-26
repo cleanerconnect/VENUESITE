@@ -143,14 +143,14 @@ export function CheckInSheet() {
     >
       <div className="space-y-6">
         <div>
-          <div className="mb-2.5 flex items-center justify-between gap-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
             <span className="text-eyebrow text-ink-soft">
               Code de réservation
             </span>
             <button
               type="button"
               onClick={() => setScanOpen((v) => !v)}
-              className="inline-flex items-center gap-1.5 text-meta font-bold uppercase tracking-[0.06em] text-violet-deep transition-colors hover:text-ink"
+              className="inline-flex items-center gap-2 text-meta font-bold uppercase tracking-[0.06em] text-violet-deep transition-colors hover:text-ink"
             >
               <Camera size={13} strokeWidth={2.2} />
               {scanOpen ? "Fermer la caméra" : "Scanner"}
@@ -196,7 +196,7 @@ export function CheckInSheet() {
         </div>
 
         <div>
-          <div className="text-eyebrow text-ink-soft mb-2.5">Attendus</div>
+          <div className="text-eyebrow text-ink-soft mb-2">Attendus</div>
           {!bookLoaded ? (
             <p className="text-body text-ink-soft">
               Ouvrez le carnet pour voir qui est attendu. Le code
@@ -215,7 +215,7 @@ export function CheckInSheet() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[14px] font-semibold text-ink truncate">
+                      <span className="text-body font-semibold text-ink truncate">
                         {r.guestName}
                       </span>
                       {r.state === "requested" ? (
@@ -223,7 +223,7 @@ export function CheckInSheet() {
                       ) : null}
                       {r.vip ? <Pill tone="violet">Habitué</Pill> : null}
                     </div>
-                    <div className="text-meta text-ink-mute mt-0.5 num">
+                    <div className="text-meta text-ink-mute mt-1 num">
                       {formatTimeFR(r.at)} · {COPY.booking.party(r.partySize)}
                     </div>
                   </div>

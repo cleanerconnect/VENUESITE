@@ -138,8 +138,8 @@ export function MobileSidebarDrawer() {
                 <RadixDialog.Title className="sr-only">
                   Menu principal
                 </RadixDialog.Title>
-                <header className="px-5 pt-5 pb-3 border-b border-line-soft shrink-0">
-                  <Brand height={32} />
+                <header className="p-4 border-b border-line-soft shrink-0">
+                  <Brand size="sm" />
                   <div className="text-meta text-ink-mute mt-2 lowercase">
                     {workspace.caption}
                   </div>
@@ -214,11 +214,13 @@ function SidebarBody({
 
   return (
     <>
-      {/* Brand, real wordmark, no accompanying "LYFE" text label.
-          44px height ensures the y descender + purple ascender both render
-          without clipping. */}
-      <div className="px-6 pt-7 pb-5">
-        <Brand height={44} />
+      {/* The wordmark, no accompanying "LYFE" text label, at the one
+          large size Brand declares, in the clear space Brand's rule
+          asks for: 24 on every side. It was px-6 pt-7 pb-5 — 24, 28 and
+          20, three numbers for one rule, two of them off the spacing
+          scale, and none of them the 24 that Connexion used. */}
+      <div className="p-6">
+        <Brand size="lg" />
         {/* The caption names which of the two spaces you are in —
             "organisateur" or "établissement" — and it says it in the
             same place, at the same size, on both. An account that holds
@@ -257,22 +259,22 @@ function SidebarBody({
         ) : (
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button className="w-full flex items-center gap-2.5 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow">
+              <button className="w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow">
                 <div
-                  className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
+                  className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-nav shrink-0"
                   style={{ background: "var(--color-violet-soft)" }}
                 >
                   {entity.initials}
                 </div>
-                <div className="min-w-0 flex-1 leading-tight">
-                  <div className="text-[13px] font-semibold text-ink truncate">
+                <div className="min-w-0 flex-1">
+                  <div className="text-nav text-ink truncate">
                     {entity.shortName}
                   </div>
                   <div className="text-meta text-ink-mute truncate">
                     {entity.subline}
                   </div>
                 </div>
-                <ChevronRight size={14} className="text-ink-mute shrink-0" />
+                <ChevronRight size={20} className="text-ink-mute shrink-0" />
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
@@ -288,11 +290,11 @@ function SidebarBody({
                   <DropdownMenu.Item key={w.id} asChild>
                     <Link
                       href={w.home}
-                      className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                      className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-nav font-medium text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
                     >
                       <span className="flex-1">{w.switcherLabel}</span>
                       {w.id === workspace.id ? (
-                        <Check size={14} strokeWidth={2} className="text-violet-deep" />
+                        <Check size={16} strokeWidth={2} className="text-violet-deep" />
                       ) : null}
                     </Link>
                   </DropdownMenu.Item>
@@ -318,7 +320,7 @@ function SidebarBody({
               <div aria-hidden className="my-3 mx-3 h-px bg-line-soft" />
             ) : null}
             {labelGroups ? (
-              <p className="px-3 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-ink-mute/70">
+              <p className="px-3 pt-1 pb-2 text-meta font-semibold text-ink-mute">
                 {group.label}
               </p>
             ) : null}
@@ -331,7 +333,7 @@ function SidebarBody({
       <div className="p-3 border-t border-line-soft">
         <div className="w-full flex items-center gap-3 px-2.5 py-2 rounded-[10px] hover:bg-ink/[0.04] transition-colors">
           <div
-            className="h-9 w-9 rounded-full flex items-center justify-center text-ink font-bold text-[12px] shrink-0"
+            className="h-9 w-9 rounded-full flex items-center justify-center text-ink font-bold text-nav shrink-0"
             style={{ background: "var(--color-tint-peach)" }}
           >
             {(viewerName || user?.name || "")
@@ -341,8 +343,8 @@ function SidebarBody({
               .map((w) => w[0])
               .join("")}
           </div>
-          <div className="min-w-0 flex-1 leading-tight">
-            <div className="text-[13px] font-semibold text-ink truncate">
+          <div className="min-w-0 flex-1">
+            <div className="text-nav text-ink truncate">
               {viewerName || user?.name}
             </div>
             {/* The role, and only the role. The establishment was named
@@ -363,7 +365,7 @@ function SidebarBody({
                 aria-label="Options du compte"
                 className="h-8 w-8 rounded-full hover:bg-ink/[0.06] flex items-center justify-center text-ink-mute transition-colors"
               >
-                <MoreVertical size={14} strokeWidth={1.8} />
+                <MoreVertical size={16} strokeWidth={2} />
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
@@ -378,9 +380,9 @@ function SidebarBody({
                     an account card is for. */}
                 <DropdownMenu.Item
                   onSelect={handleLogout}
-                  className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                  className="flex items-center gap-2 px-3 h-9 rounded-[var(--radius-sm)] text-nav font-medium text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
                 >
-                  <LogOut size={14} strokeWidth={1.8} className="text-ink-mute" />
+                  <LogOut size={16} strokeWidth={2} className="text-ink-mute" />
                   Se déconnecter
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
@@ -412,7 +414,7 @@ function NavGroup({
             className={cn(
               // `sidebar-item` is the hook host density resizes; the
               // sizes here stay the Lot 2 ones.
-              "sidebar-item relative flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium",
+              "sidebar-item relative flex items-center gap-3 px-3 h-10 rounded-[10px] text-nav font-medium",
               "transition-colors duration-150",
               active
                 ? "text-ink"
@@ -429,7 +431,7 @@ function NavGroup({
             ) : null}
             <Icon
               name={item.icon}
-              size={18}
+              size={20}
               strokeWidth={1.6}
               className={cn(
                 "sidebar-item-icon relative z-10 shrink-0",

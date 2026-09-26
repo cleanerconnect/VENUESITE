@@ -529,6 +529,23 @@ groups and six screens a Prio 02 deployment renders — rather than
 detached. The lot changes which screens exist, and which screens exist
 is exactly what that component draws, so it earns a component of its own.
 
+The design audit of `docs/DESIGN_AUDIT.md` moved the file too, and what
+it moved is stated on `00 Lisez-moi` under « La recette de conception ».
+Three things a designer should know before extending it. The text styles
+now carry the audit's six type steps at the tablet density the Lot 1
+portal runs at, each with its rule in its description, and the type-scale
+specimen on `01 Fondations` shows them under a line saying which density
+is which. `01 Fondations` also carries a frame called « Les règles » — the
+rhythm, the scale, the colour roles, the control specs and the copy
+rules, as sentences to hold a screen against rather than examples to
+copy; the same page is in the running portal at `/styleguide#rules`.
+And on `09`, a booking is no longer a card: the 35 booking cards across
+seven frames are lines inside one bordered container, the 40 hour bands
+are gone, and `09`'s 2 081 text layers are bound to the shared styles
+rather than to hand-written sizes — bound by looking each string up in
+what the portal actually renders, which `tools/verify/_design-measure.mjs`
+now records.
+
 ### 5.1 `09` plays
 
 Press Present on `09` and it starts on Connexion and behaves like the
@@ -902,6 +919,7 @@ open. Read in order, they are the history of the repository:
 | `docs/PHASE5.md` | Completing the venue dashboard: 28 tables to 63, the seam, the app contract in both directions, drinks as a configuration |
 | `docs/PHASE6.md` | The Figma export: variables, components, frames, and §5 — the écarts found by reading the code against the documents, all now closed |
 | `docs/PHASE7.md` | The worked example: one venue, every screen, populated from the seed; §6 — six observations, four of them defects still open here; §9 — the coherence pass, frame by frame |
+| `docs/DESIGN_AUDIT.md` | The design audit of the eight Lot 1 screens, in French: measured at 1440 and 390 with the four tools in `tools/verify/_design-*`, 57 findings with the value measured and the value wanted, before-and-after plates, the four states, the overlay on the event dashboard — and the five things a rule could not settle |
 
 `tools/mock-api.mjs` sits with them rather than with the docs: it is a
 Business Service that answers `LOT1_API_CONTRACT.md` out of the committed

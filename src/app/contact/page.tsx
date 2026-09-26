@@ -21,7 +21,7 @@ export default function ContactPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-[540px] text-center">
           <div className="flex justify-center">
-            <Brand height={56} />
+            <Brand size="lg" />
           </div>
 
           <h1

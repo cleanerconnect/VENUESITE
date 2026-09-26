@@ -258,7 +258,7 @@ export function RestaurantScreen({
   return (
     <>
       {selfTitled ? null : (
-        <header className="mb-6 md:mb-7 flex flex-wrap items-end justify-between gap-3">
+        <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-h1 text-ink">{spec.title}</h1>
             {spec.subtitle ? (

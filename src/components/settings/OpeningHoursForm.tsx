@@ -116,7 +116,7 @@ export function OpeningHoursForm({ initial }: { initial: VenueAvailability }) {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Card variant="surface" size="md">
         <h2 className="text-h3 text-ink mb-1">Horaires d&apos;ouverture</h2>
         <p className="text-meta text-ink-mute mb-5">

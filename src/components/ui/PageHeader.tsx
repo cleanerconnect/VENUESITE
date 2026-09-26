@@ -48,7 +48,7 @@ export function PageHeader({
           {badge}
         </div>
         {subtitle ? (
-          <p className="text-body text-ink-soft mt-1.5 max-w-xl">{subtitle}</p>
+          <p data-prose className="text-body text-ink-soft mt-2 max-w-xl">{subtitle}</p>
         ) : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}

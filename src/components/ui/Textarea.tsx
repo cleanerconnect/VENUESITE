@@ -17,7 +17,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, Props>(function Textarea
 ) {
   const inputId = id ?? useId();
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       {/* Sentence case at field weight, not a small-caps eyebrow: this
           label sits beside the floating labels of the Inputs around it,
           and two ways of naming a field in one form reads as two kinds
@@ -25,7 +25,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, Props>(function Textarea
       {label ? (
         <label
           htmlFor={inputId}
-          className="text-[14px] font-semibold leading-snug text-ink"
+          className="text-body font-semibold text-ink"
         >
           {label}
         </label>
@@ -47,7 +47,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, Props>(function Textarea
         {error ? (
           <span className="text-meta text-danger">{error}</span>
         ) : hint ? (
-          <span className="text-meta text-ink-mute">{hint}</span>
+          <p data-prose className="text-meta text-ink-mute max-w-[62ch]">{hint}</p>
         ) : (
           <span />
         )}

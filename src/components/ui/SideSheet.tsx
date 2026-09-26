@@ -99,7 +99,7 @@ export function SideSheet({
                     <button
                       type="button"
                       aria-label={COPY.action.close}
-                      className="h-9 w-9 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink-mute shrink-0 transition-colors"
+                      className="h-11 w-11 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink-mute shrink-0 transition-colors"
                     >
                       <X size={16} strokeWidth={1.8} />
                     </button>

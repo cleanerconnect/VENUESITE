@@ -166,7 +166,7 @@ export function AssetManager({
         <p className="text-meta text-ink-mute mb-4">{description}</p>
 
         {assets.length === 0 ? (
-          <p className="mb-4 rounded-[var(--radius-sm)] border border-dashed border-line px-4 py-3 text-[14px] text-ink-soft">
+          <p className="mb-4 rounded-[var(--radius-sm)] border border-dashed border-line px-4 py-3 text-body text-ink-soft">
             Aucune photo pour le moment. La première que vous ajoutez devient
             la couverture de votre fiche dans l&apos;application.
           </p>
@@ -181,12 +181,12 @@ export function AssetManager({
                 alt="Photo de couverture"
                 className="aspect-[16/9] w-full object-cover"
               />
-              <span className="absolute left-3 top-3 rounded-full bg-ink px-3 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-canvas">
+              <span className="absolute left-3 top-3 rounded-full bg-ink px-3 py-1 text-meta font-semibold text-canvas">
                 Couverture
               </span>
             </div>
             <figcaption className="mt-2 flex items-center justify-between gap-3">
-              <span className="text-[14px] text-ink-soft">
+              <span className="text-body text-ink-soft">
                 C'est la photo que le client voit en premier.
               </span>
               <Button
@@ -219,11 +219,11 @@ export function AssetManager({
                 alt=""
                 className="aspect-square w-full object-cover"
               />
-              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-ink/80 px-1.5 py-1">
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-ink/80 px-1 py-1">
                 <button
                   type="button"
                   onClick={() => makeCover(asset)}
-                  className="inline-flex min-h-8 items-center gap-1.5 rounded px-1.5 text-[12px] font-semibold text-canvas hover:bg-canvas/15"
+                  className="inline-flex min-h-11 items-center gap-2 rounded px-2 text-meta font-semibold text-canvas hover:bg-canvas/15"
                 >
                   <Star size={14} strokeWidth={2} aria-hidden />
                   Couverture
@@ -246,7 +246,7 @@ export function AssetManager({
             type="button"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
-            className="flex aspect-square flex-col items-center justify-center gap-2 rounded-[var(--radius-sm)] border-2 border-dashed border-line px-3 text-center text-[14px] font-semibold text-ink transition-colors hover:border-ink disabled:opacity-55"
+            className="flex aspect-square flex-col items-center justify-center gap-2 rounded-[var(--radius-sm)] border-2 border-dashed border-line px-3 text-center text-body font-semibold text-ink transition-colors hover:border-ink disabled:opacity-55"
           >
             <ImagePlus size={24} strokeWidth={1.9} aria-hidden />
             {uploading ? "Envoi…" : (addLabel ?? "Ajouter une photo")}
@@ -281,7 +281,7 @@ export function AssetManager({
               key={asset.id}
               value={asset}
               onDragEnd={() => commitOrder(assets)}
-              className="flex items-center gap-3 border border-line rounded-[var(--radius-sm)] p-2.5 bg-surface cursor-grab active:cursor-grabbing"
+              className="flex items-center gap-3 border border-line rounded-[var(--radius-sm)] p-2 bg-surface cursor-grab active:cursor-grabbing"
             >
               <GripVertical size={16} className="text-ink-mute shrink-0" aria-hidden />
               {asset.contentType.startsWith("image/") ? (
@@ -292,7 +292,7 @@ export function AssetManager({
                   className="h-11 w-16 object-cover rounded-[6px] bg-canvas-2 shrink-0"
                 />
               ) : (
-                <span className="h-11 w-16 rounded-[6px] bg-violet-soft text-violet-deep text-[10px] font-bold flex items-center justify-center shrink-0">
+                <span className="h-11 w-16 rounded-[6px] bg-violet-soft text-violet-deep text-meta font-bold flex items-center justify-center shrink-0">
                   {asset.contentType.split("/")[1]?.toUpperCase().slice(0, 4)}
                 </span>
               )}

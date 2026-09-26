@@ -200,7 +200,7 @@ export function InscriptionFlow({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <Brand height={40} />
+        <Brand size="lg" />
         <span className="text-meta text-ink-mute">
           Étape {step} sur {ONBOARDING_LAST_STEP}
         </span>
@@ -212,7 +212,7 @@ export function InscriptionFlow({
         <h1 className="text-h2 text-ink">{current.name}</h1>
         <p className="text-body text-ink-soft mt-2">{HELP[step]}</p>
 
-        <div className="mt-7">
+        <div className="mt-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -300,7 +300,7 @@ export function InscriptionFlow({
                           type="button"
                           onClick={() => setVenueType(option.value)}
                           className={cn(
-                            "h-14 rounded-[var(--radius-md)] border text-[15px] font-semibold transition-colors",
+                            "h-14 rounded-[var(--radius-md)] border text-body font-semibold transition-colors",
                             venueType === option.value
                               ? "border-ink bg-violet-soft text-ink"
                               : "border-line bg-surface text-ink-soft hover:border-ink",
@@ -362,7 +362,7 @@ export function InscriptionFlow({
                       <div className="mx-auto h-12 w-12 rounded-full bg-success-soft flex items-center justify-center">
                         <Check size={22} className="text-success" strokeWidth={2.2} />
                       </div>
-                      <div className="text-[15px] font-semibold text-ink mt-3">
+                      <div className="text-body font-semibold text-ink mt-3">
                         Photo ajoutée
                       </div>
                       <p className="text-meta text-ink-mute mt-1 truncate">{cover.name}</p>
@@ -377,7 +377,7 @@ export function InscriptionFlow({
                             if (file) uploadCover(file);
                           }}
                         />
-                        <span className="h-11 px-5 inline-flex items-center rounded-[var(--radius-sm)] border border-line bg-surface text-[15px] font-semibold text-ink cursor-pointer hover:border-ink transition-colors">
+                        <span className="h-11 px-4 inline-flex items-center rounded-[var(--radius-sm)] border border-line bg-surface text-body font-semibold text-ink cursor-pointer hover:border-ink transition-colors">
                           Remplacer
                         </span>
                       </label>
@@ -387,7 +387,7 @@ export function InscriptionFlow({
                       <div className="mx-auto h-12 w-12 rounded-full bg-violet-soft flex items-center justify-center">
                         <ImagePlus size={22} className="text-violet-deep" />
                       </div>
-                      <div className="text-[15px] font-semibold text-ink mt-3">
+                      <div className="text-body font-semibold text-ink mt-3">
                         Photo de couverture
                       </div>
                       <p className="text-meta text-ink-mute mt-1">
@@ -404,7 +404,7 @@ export function InscriptionFlow({
                             if (file) uploadCover(file);
                           }}
                         />
-                        <span className="h-14 px-7 inline-flex items-center rounded-[var(--radius-md)] bg-ink text-canvas text-[16px] font-semibold cursor-pointer hover:bg-ink-soft transition-colors">
+                        <span className="h-14 px-6 inline-flex items-center rounded-[var(--radius-md)] bg-ink text-canvas text-body font-semibold cursor-pointer hover:bg-ink-soft transition-colors">
                           Choisir une photo
                         </span>
                       </label>
@@ -430,7 +430,7 @@ export function InscriptionFlow({
         </div>
 
         {error ? (
-          <p className="text-meta text-danger mt-5" role="alert">
+          <p className="text-meta text-danger mt-4" role="alert">
             {error}
           </p>
         ) : null}
@@ -517,7 +517,7 @@ export function InscriptionFlow({
 function Progress({ step }: { step: number }) {
   return (
     <div className="mt-6">
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         {ONBOARDING_STEPS.map((s) => (
           <span
             key={s.n}
@@ -530,7 +530,7 @@ function Progress({ step }: { step: number }) {
       </div>
       {/* Every name on a wide screen; the one in hand on a phone, where
           six labels would be six truncations. */}
-      <div className="mt-2 hidden md:flex items-center gap-1.5">
+      <div className="mt-2 hidden md:flex items-center gap-2">
         {ONBOARDING_STEPS.map((s) => (
           <span
             key={s.n}
@@ -595,7 +595,7 @@ function HoursGrid({
           key={day.weekday}
           className="rounded-[var(--radius-md)] border border-line bg-surface p-4 flex flex-wrap items-center gap-3"
         >
-          <div className="w-[104px] shrink-0 text-[15px] font-semibold text-ink">
+          <div className="w-[104px] shrink-0 text-body font-semibold text-ink">
             {WEEKDAY_LABEL[day.weekday]}
           </div>
           <Switch
@@ -661,9 +661,9 @@ function Summary({
   return (
     <div className="rounded-[var(--radius-md)] border border-line bg-canvas-2 divide-y divide-line-soft">
       {rows.map((row) => (
-        <div key={row.label} className="flex items-baseline gap-4 px-5 py-3.5">
+        <div key={row.label} className="flex items-baseline gap-4 px-4 py-3">
           <span className="text-meta text-ink-mute w-[128px] shrink-0">{row.label}</span>
-          <span className="text-[15px] font-semibold text-ink min-w-0">{row.value}</span>
+          <span className="text-body font-semibold text-ink min-w-0">{row.value}</span>
         </div>
       ))}
     </div>

@@ -18,13 +18,13 @@ export function EmptyState({
     <div className="bg-canvas-2 rounded-[var(--radius-xl)] py-14 px-6 text-center flex flex-col items-center gap-4">
       {illustration ?? <DefaultMark />}
       <h3
-        className="font-serif-italic text-[28px] leading-tight text-ink"
+        className="font-serif-italic text-h2 text-ink"
         style={{ fontFamily: "var(--font-serif)", fontWeight: 500 }}
       >
         {title}
       </h3>
       {description ? (
-        <p className="text-body text-ink-soft max-w-sm">{description}</p>
+        <p data-prose className="text-body text-ink-soft max-w-sm">{description}</p>
       ) : null}
       {cta ? (
         cta.href ? (

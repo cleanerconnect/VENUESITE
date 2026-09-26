@@ -104,7 +104,7 @@ export default async function OrganizerLayout({
           <div className="no-print contents">
             <Topbar />
           </div>
-          <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 md:px-8 py-6 md:py-8">
+          <main className="flex-1 max-w-[var(--content-max)] mx-auto w-full px-4 md:px-8 py-6 md:py-8">
             <ValidationBanner
               status={listing?.status}
               reason={listing?.statusReason ?? ""}

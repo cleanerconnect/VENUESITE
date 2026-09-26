@@ -1,8 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Block, ScreenSpec } from "@/lib/dashboard/spec";
-import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { useRole } from "@/lib/auth/role";
 import { CommandProvider, type CommandHandler } from "./commands";
 import { DetailDrawer } from "./DetailDrawer";
@@ -56,10 +55,14 @@ const ChartBlock = dynamic(
 // a spec and not a page, and why the same screen can arrive from the
 // backend at runtime.
 
+// The three grid rhythms a spec can ask for. They were 12, 20 and
+// 24/28 — two of the four values off the spacing scale, and 20 and 24
+// three pixels apart on the same page, which the eye reads as one
+// distance rendered badly rather than as two distances.
 const GAP: Record<"sm" | "md" | "lg", string> = {
   sm: "gap-3",
-  md: "gap-5",
-  lg: "gap-6 md:gap-7",
+  md: "gap-4",
+  lg: "gap-6 md:gap-8",
 };
 
 export function DashboardRenderer({
@@ -91,19 +94,27 @@ export function DashboardRenderer({
         </div>
       ) : null}
 
-      <Stagger
+      {/* No entrance animation, and no stagger.
+          Every block used to fade up from 8px, 40ms apart, 320ms each —
+          about half a second before the last group of the book settled.
+          A screen that a host opens mid-service to decide something in
+          three seconds has to be *there*; an animation that answers no
+          action is a delay with a curve on it. The motion that remains
+          on these screens all answers an action: a sheet opening, a
+          save confirming, a row changing state.
+
+          `space-y-8` rather than the `space-y-7` this was: 28px is not
+          a step of the spacing scale, and the blocks of a screen are
+          groups, so they sit on the group step, 32. */}
+      <div
         className={cn(
           hasMobileLane ? "hidden md:block" : "",
-          "space-y-6 md:space-y-7",
+          "space-y-6 md:space-y-8",
           className,
         )}
       >
-        <BlockList
-          blocks={spec.blocks}
-          surface="desktop"
-          wrap={(child, key) => <StaggerItem key={key}>{child}</StaggerItem>}
-        />
-      </Stagger>
+        <BlockList blocks={spec.blocks} surface="desktop" />
+      </div>
 
       {editable ? <SettingsSaveBar /> : null}
 
@@ -201,20 +212,31 @@ function Split({
   surface: "desktop" | "mobile";
 }) {
   const rail = block.railWidth ?? 380;
+  // The two columns are a desktop arrangement, and they were applied at
+  // every width on any screen whose spec asks for the desktop surface.
+  // At 390 that is a main column and a 319px rail inside 358 pixels:
+  // it fitted only because the gap was 20, and putting the gap back on
+  // the scale at 24 pushed the page three pixels sideways — which is
+  // the rule about nothing scrolling sideways at 390, caught by
+  // `tools/verify/walk.mjs` on Bilans. One column below `md`, two
+  // above, and the template no longer depends on the gap fitting.
+  const template = `minmax(0, 1fr) minmax(${Math.round(rail * 0.84)}px, ${rail}px)`;
   return (
     <div
-      className="grid grid-cols-1 gap-5"
-      style={{
-        gridTemplateColumns:
-          surface === "mobile"
-            ? undefined
-            : `minmax(0, 1fr) minmax(${Math.round(rail * 0.84)}px, ${rail}px)`,
-      }}
+      className={cn(
+        "grid grid-cols-1 gap-6",
+        surface !== "mobile" && "md:[grid-template-columns:var(--split)]",
+      )}
+      style={
+        surface === "mobile"
+          ? undefined
+          : ({ "--split": template } as CSSProperties)
+      }
     >
-      <div className="flex flex-col gap-5 min-w-0">
+      <div className="flex flex-col gap-6 min-w-0">
         <BlockList blocks={block.main} surface={surface} />
       </div>
-      <div className="flex flex-col gap-5 min-w-0">
+      <div className="flex flex-col gap-6 min-w-0">
         <BlockList blocks={block.rail} surface={surface} />
       </div>
     </div>

@@ -41,7 +41,7 @@ export function ScreenError({ reference }: { reference?: string }) {
         <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
           <Link
             href="/restaurant"
-            className="inline-flex h-11 items-center rounded-[var(--radius-sm)] bg-ink px-4 text-[13px] font-semibold text-canvas hover:bg-ink-soft transition-colors"
+            className="inline-flex h-11 items-center rounded-[var(--radius-sm)] bg-ink px-4 text-meta font-semibold text-canvas hover:bg-ink-soft transition-colors"
           >
             Revenir à l'accueil
           </Link>
@@ -51,14 +51,14 @@ export function ScreenError({ reference }: { reference?: string }) {
           {lot === 2 ? (
             <Link
               href="/restaurant/support"
-              className="inline-flex h-11 items-center rounded-[var(--radius-sm)] border border-line bg-surface px-4 text-[13px] font-semibold text-ink hover:border-ink transition-colors"
+              className="inline-flex h-11 items-center rounded-[var(--radius-sm)] border border-line bg-surface px-4 text-meta font-semibold text-ink hover:border-ink transition-colors"
             >
               Contacter le support
             </Link>
           ) : (
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
-              className="inline-flex h-11 items-center rounded-[var(--radius-sm)] border border-line bg-surface px-4 text-[13px] font-semibold text-ink hover:border-ink transition-colors"
+              className="inline-flex h-11 items-center rounded-[var(--radius-sm)] border border-line bg-surface px-4 text-meta font-semibold text-ink hover:border-ink transition-colors"
             >
               Écrire au support
             </a>

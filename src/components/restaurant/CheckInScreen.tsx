@@ -245,10 +245,10 @@ export function CheckInScreen({
           className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-sm)] border border-line bg-canvas-2 p-3"
         >
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-ink">
+            <p className="text-meta font-semibold text-ink">
               {online ? "Synchronisation en attente" : "Hors ligne"}
             </p>
-            <p className="text-meta text-ink-mute mt-0.5">
+            <p className="text-meta text-ink-mute mt-1">
               {queued.length} arrivée(s) enregistrée(s) sur cet appareil.
               {online
                 ? " La synchronisation reprend automatiquement."
@@ -261,8 +261,8 @@ export function CheckInScreen({
         </div>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="space-y-5 min-w-0">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="space-y-6 min-w-0">
           {/* The door's own button. Full width and 56px tall: the largest
               control on the screen, because it is the one that gets
               pressed. */}
@@ -283,7 +283,7 @@ export function CheckInScreen({
             <Button
               size="lg"
               fullWidth
-              iconLeft={<QrCode size={22} strokeWidth={2.2} />}
+              iconLeft={<QrCode size={20} strokeWidth={2} />}
               onClick={() => setCameraOn(true)}
               className="h-14"
             >
@@ -294,7 +294,7 @@ export function CheckInScreen({
           {error ? (
             <p
               role="alert"
-              className="rounded-[var(--radius-sm)] border border-danger/40 bg-danger/[0.04] px-3.5 py-3 text-body text-danger"
+              className="rounded-[var(--radius-sm)] border border-danger/40 bg-danger/[0.04] px-4 py-3 text-body text-danger"
             >
               {error}
             </p>
@@ -303,10 +303,10 @@ export function CheckInScreen({
           <Card variant="surface" size="md">
             <div className="mb-4">
               <h2 className="text-h3 text-ink">Prochaines arrivées</h2>
-              <p className="text-meta text-ink-mute mt-1">
+              <p data-prose className="text-meta text-ink-mute mt-1">
                 {query.trim()
                   ? `Filtré sur « ${query.trim()} ».`
-                  : "Appuyez sur Check-in pour enregistrer une arrivée sans code."}
+                  : "Check-in enregistre une arrivée sans code."}
               </p>
             </div>
 
@@ -324,7 +324,7 @@ export function CheckInScreen({
                 {matches.map((guest) => (
                   <li
                     key={guest.id}
-                    className="flex flex-wrap items-center gap-x-4 gap-y-3 py-3.5 first:pt-0 last:pb-0"
+                    className="flex flex-wrap items-center gap-x-4 gap-y-3 py-3 first:pt-0 last:pb-0"
                   >
                     {/* Time and party size first, at the size a host reads
                         across a counter; the name second, because it is
@@ -342,7 +342,7 @@ export function CheckInScreen({
                           <Pill tone="info">Acompte {guest.depositMad} MAD</Pill>
                         ) : null}
                       </div>
-                      <p className="text-host-detail num mt-0.5">
+                      <p className="text-host-detail num mt-1">
                         {coversIn(configuration, guest.partySize)}
                         {guest.zone ? ` · ${guest.zone}` : ""}
                       </p>
@@ -366,9 +366,9 @@ export function CheckInScreen({
           {/* Below the list, because they are what you reach for when the
               list and the camera both failed you. */}
           <Card variant="surface" size="md">
-            <h2 className="text-h3 text-ink mb-1">Sans le code du client</h2>
-            <p className="text-meta text-ink-mute mb-4">
-              Cherchez le nom dans la liste ci-dessus, ou saisissez le code à la main.
+            <h2 className="text-h3 text-ink mb-1">Sans le code</h2>
+            <p data-prose className="text-meta text-ink-mute mb-4">
+              Cherchez le nom, ou tapez le code.
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
               <Input
@@ -401,15 +401,14 @@ export function CheckInScreen({
 
         <Card variant="surface" size="md" className="h-fit">
           <h2 className="text-h3 text-ink mb-1">Trente dernières minutes</h2>
-          <p className="text-meta text-ink-mute mb-4">
-            Une erreur de scan se voit dans les cinq minutes. Au-delà,
-            l'annulation passe par le carnet.
+          <p data-prose className="text-meta text-ink-mute mb-4">
+            Cinq minutes pour corriger un scan. Ensuite, par le carnet.
           </p>
 
           {recent.length === 0 ? (
             <EmptyState
               title="Aucune arrivée"
-              description="Les clients validés depuis cet écran apparaîtront ici."
+              description="Scannez un code pour enregistrer la première."
             />
           ) : (
             <ul className="space-y-2">

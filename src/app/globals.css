@@ -94,10 +94,30 @@
      inherited silently from Tailwind's default, so the scale is a token
      like every other and `/styleguide#tokens` can render it from here.
 
-     The steps the portal actually uses, in units of this base:
-     0.5 1 1.5 2 2.5 3 3.5 4 5 6 7 8 9 10 12 14 16 20 32.
-     Page rhythm is `space-y-5 md:space-y-7`; card padding is 4/6/7/8. */
+     The rhythm allowed inside a screen, in pixels:
+     4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 — so `gap-1 2 3 4 6 8 12 16`.
+     Half steps (`gap-1.5`, `py-3.5`) are off it and read as noise: six
+     pixels and eight pixels next to each other say "unrelated" twice in
+     two different voices. Anything off the eight needs a reason written
+     where it is used.
+
+     What each distance means, so a gap is read and not just seen:
+       label → its field           8
+       field → field in one group  16
+       group → group               32
+       card → card                 24
+       section → section           48
+       page edge → content         32 at 1440, 16 at 390 */
   --spacing: 4px;
+
+  /* ── The content column ──
+     1180px is what a 1440px window leaves beside the 260px sidebar.
+     Stopping there rather than stretching means the reservation line
+     the owner reads standing up is the same line on a 1440 laptop and
+     on a 2560 monitor: the time on the left and the four decisions on
+     the right stay one glance apart instead of drifting to the edges of
+     whatever screen the restaurant happens to own. */
+  --content-max: 1180px;
 
   /* Shadows — earned, never default */
   --shadow-soft:
@@ -251,13 +271,20 @@ body {
   /* The floor. Meta was 12px, which is below it. */
   font-size: 13px;
   line-height: 1.45;
-  color: var(--host-soft);
 }
 [data-density="host"] .text-eyebrow {
   font-size: 13px;
   letter-spacing: 0.06em;
-  color: var(--host-soft);
 }
+/* No `color` on either.
+   They set `color: var(--host-soft)` — a dark ink — and an attribute
+   selector outranks a utility class, so `.text-meta` painted itself
+   dark even where a component had asked for `text-canvas/70`. On
+   Connexion's ink panel that is ink on ink: the line « LYFE · Maroc »
+   measured 1:1 the moment this screen joined the host density.
+   The retune it was there for already happens below, on
+   `.text-ink-mute` and `.text-ink-soft`, which is where a component
+   that wants grey secondary text asks for it. */
 /* Headings are NOT retuned here. They were — 36/24/18 stepped down to
    30/22/18 — and that made the basique dashboard's headlines smaller
    than the event dashboard's, which is the wrong way round for the one
@@ -289,14 +316,16 @@ body {
   width: 20px;
   height: 20px;
 }
-[data-density="host"] .text-control-sm {
-  font-size: 15px;
-}
-[data-density="host"] .text-control-md {
-  font-size: 15px;
-}
+/* One size for a button, and it is the body size.
+   The three steps were 15 / 15 / 16 here, which put a 15px step in the
+   scale for no reason a reader could name: a button on a host stand is
+   not smaller than the sentence next to it. The three sizes still exist
+   as tokens for Lot 2; under host density they answer 16. */
+[data-density="host"] .text-control-sm,
+[data-density="host"] .text-control-md,
 [data-density="host"] .text-control-lg {
   font-size: 16px;
+  line-height: 1.5;
 }
 
 /* ── Sidebar ──
@@ -319,21 +348,37 @@ body {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+/* The name is a heading — the row's heading — so it is the h3 step
+   rather than a 17px one of its own. 17 and 18 cannot both be defended
+   to a reader, and the larger of the two is the one the hierarchy
+   wants: the name is what a host says out loud. */
 .text-host-name {
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.25;
   font-weight: 600;
 }
+/* The context line is meta. It was 14px, a step that existed only here
+   and only one notch under the body, which reads as an accident rather
+   than as a level. 13px is the floor this density already declares, and
+   it is where secondary text belongs. */
 .text-host-detail {
-  font-size: 14px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.45;
   font-weight: 500;
   color: rgb(10 31 61 / 0.70);
 }
 /* The slot header a paper book would have written across the page. */
+/* The slot band.
+   Kept in capitals with a little tracking, against the rule that calls
+   tracked capitals a tell, for one reason written down rather than
+   assumed: this is the hour written across a page of a paper
+   reservation book, and it is the only element on the screen whose job
+   is to be a landmark rather than to be read. It is a band, not a label
+   above a heading, which is the pattern the rule is aimed at.
+   Its size is the body step — 15px was a step of its own. */
 .text-host-slot {
-  font-size: 15px;
-  line-height: 1;
+  font-size: 16px;
+  line-height: 1.2;
   letter-spacing: 0.04em;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -364,6 +409,22 @@ body {
   letter-spacing: -0.04em;
   font-weight: 800;
 }
+/* ── The chrome's own step ──
+   The sidebar and the phone bar are shared between the two spaces: a
+   partner who holds a venue and an organisation meets one navigation,
+   not two, so it is sized once and it does not move with the density.
+   13px is a step of the scale either way.
+
+   It exists as a class because the same figure was written inline eight
+   times in `Sidebar.tsx` alone — as `text-[13px]`, `text-[13.5px]` and
+   `text-[12px]`, which is three sizes where the design has one, two of
+   them on a half pixel. */
+.text-nav {
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
 .text-mono {
   font-size: 13px;
   line-height: 1.4;
@@ -391,12 +452,18 @@ body {
 }
 
 /* Focus ring — never jagged. Soft violet glow. */
+/* The focus ring.
+   It was violet at 42%, which flattens to 1.8:1 against the canvas —
+   under the 3:1 a non-text indicator owes, and invisible on a tablet
+   held at arm's length in a bright dining room. At full strength the
+   same violet is 4.4:1. And the radius follows the control it is on
+   instead of forcing 6px onto a pill. */
 *:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px var(--color-canvas),
-    0 0 0 4px rgba(134, 91, 166, 0.42);
-  border-radius: 6px;
+    0 0 0 4px var(--color-violet);
+  border-radius: inherit;
 }
 
 /* Subtle scrollbar in dense tables. */
@@ -556,4 +623,37 @@ input[type="time"] {
   margin: 0;
   padding: 0;
   cursor: pointer;
+}
+
+/* Leaflet's own chrome, brought onto the scale.
+ *
+ * The map ships two pieces of type the portal did not write: the
+ * attribution line, at 12px/400/1.40, and the zoom buttons' "+" and
+ * "−", at 22px with a 1.36 line-height. Both were the only steps off
+ * the scale on Ma fiche, and both are one selector away from being on
+ * it. The attribution has to stay legible and has to keep its link —
+ * it is OpenStreetMap's licence, not decoration — so it moves to the
+ * meta step rather than shrinking. */
+.leaflet-container .leaflet-control-attribution {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  font-family: var(--font-sans);
+}
+.leaflet-container .leaflet-control-zoom a {
+  font-size: 22px;
+  line-height: 1.2;
+  font-family: var(--font-sans);
+}
+
+/* Leaflet's zoom buttons, brought to the touch minimum.
+ *
+ * They ship 30px wide and 44 tall, which is a 30px target for a thumb
+ * on a phone — under the 44 × 44 the control rules set, and the only
+ * control on Ma fiche that was. The height was already right; the
+ * width was the browser default for an <a> with a border. */
+.leaflet-container .leaflet-control-zoom a {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
 }

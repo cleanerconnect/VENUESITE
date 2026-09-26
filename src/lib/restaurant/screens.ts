@@ -363,12 +363,15 @@ export function buildDashboardScreen(
   const greetingBlock: Block = {
     id: "greeting",
     type: "greeting",
-    // Both home screens are the same card: the salutation as an eyebrow,
-    // the salutation again as the headline's lead, and the serif italic
-    // clause after it. It is the house gesture on the event Overview and
-    // it is the house gesture here — a partner who holds both should not
-    // meet two different products.
-    eyebrow: data.greeting.salutation,
+    // The card is the house gesture from the event Overview — the
+    // salutation, then the serif italic clause — and a partner who holds
+    // both spaces should not meet two different products.
+    //
+    // What it no longer carries is the eyebrow. It was the salutation a
+    // second time, in tracked capitals, directly above the headline that
+    // opens with the same word: « BONSOIR » over « Bonsoir, Yassine. »
+    // A tracked all-caps label above a heading is the house style of
+    // software that has nothing to say; saying it twice is worse.
     title: `${data.greeting.salutation}, ${data.greeting.firstName}.`,
     emphasis: data.greeting.clause,
     // The store composes one subline for both lots, because the payload
@@ -1098,7 +1101,16 @@ export function buildReservationsScreen(
   const bookBlock: Block = {
     id: "book",
     type: "entity-list",
-    heading: "Carnet du service",
+    // No heading of its own in Lot 1.
+    //
+    // The screen is called Réservations, the bar above it names the day
+    // and the service, and the block underneath *is* the book. « Carnet
+    // du service » on top of that was a heading that answered a
+    // question already answered twice, and it cost a 24px line plus a
+    // row for the sort — about 100px before the first booking on the
+    // one screen where the number of bookings a host can see is the
+    // whole point. The sort moves onto the filters' line.
+    heading: lot1 ? undefined : "Carnet du service",
     // Lot 1 works the book it is given: view, accept, refuse with a
     // reason, check in, mark absent. Creating a booking from the portal
     // is Lot 2, so the button that starts one is not drawn.
@@ -1385,7 +1397,16 @@ export function buildReservationsScreen(
     return {
       slug: "reservations",
       title: "Réservations",
-      subtitle,
+      // No subtitle.
+      //
+      // It read « vendredi 25 septembre · Dîner · 20h00 – 00h30 », and
+      // the bar immediately below says the day, says « Aujourd'hui. »
+      // and offers the services as tabs. The only fact it added was the
+      // service's opening hours, which decide nothing a host does with
+      // the book in front of them — the sittings are on the screen.
+      // Two statements of the same day, one above the other, is the
+      // kind of thing that makes a host stop reading the top of a
+      // screen altogether.
       // Taking a copy of the day away acts on the whole screen, not on
       // anything inside it, so it sits in the header rather than among
       // the controls that change what the screen shows.
@@ -1905,15 +1926,33 @@ export function slotOf(at: string, slotMinutes: number): string {
 }
 
 /**
- * The three decisions Lot 1 buys on a booking, on the row itself.
+ * The decisions Lot 1 buys on a booking, on the row itself.
  *
- * Accepter, refuser and signaler une absence are the whole of what a Lot
- * 1 partner does to a reservation, and all three sat behind a kebab that
- * had to be opened first — one tap too many at a host stand, and nothing
- * at all on a printed frame. They are the same commands the kebab
- * dispatches, drawn inline and filtered by the state the row is in: a
- * booking already seated has no decision left, and check-in replaces
- * accepter once the request has been accepted.
+ * Accepter, refuser, décaler and signaler une absence are the whole of
+ * what a Lot 1 partner does to a reservation, and all of them sat behind
+ * a kebab that had to be opened first — one tap too many at a host
+ * stand, and nothing at all on a printed frame. They are the same
+ * commands the kebab dispatches, drawn inline and filtered by the state
+ * the row is in.
+ *
+ * Two filters, both settled by the design audit rather than by taste.
+ *
+ * **Refuser only answers a request.** It was on the confirmed row too,
+ * on the reasoning that a venue which has to cancel an accepted booking
+ * needs a way to say so. It does — but not there. Refuser beside
+ * Check-in offers a host mid-service the two opposite ends of the same
+ * table, a keystroke apart, and the one that cancels a confirmed guest
+ * is the one that cannot be undone. Cancelling an accepted booking is a
+ * deliberate act, so it is in the sheet, where the guest's name and
+ * phone number are on screen while you do it.
+ *
+ * **Two decisions on a phone, not four.** At 390 a 358px line holds two
+ * 44px targets; four wrap into two rows and take the line from 44px to
+ * 200. `onPhone: "sheet"` marks the two that step off the line — Décaler
+ * on every row, and Absent on a request, which is the one row where the
+ * guest has not been told the table is theirs. What stays is the pair
+ * the state actually poses: Accepter or Refuser on a request, Check-in
+ * or Absent on a confirmed table.
  */
 function reservationActions(reservation: Reservation): CtaAction[] | undefined {
   // Absent used to wait for the table to be due, on the reasoning that
@@ -1951,6 +1990,10 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
       icon: "calendar-clock",
     },
     variant: "ghost",
+    // Moving a table is a negotiation, not a reflex: it opens a sheet
+    // and picks an hour. On a phone it goes in the row's own sheet, one
+    // tap further, so the line keeps the two decisions that are.
+    onPhone: "sheet",
   };
 
   const refuse: CtaAction = {
@@ -1978,13 +2021,15 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
       },
       refuse,
       reschedule,
-      absent,
+      // A request is the one row where the guest has not been told the
+      // table is theirs, so « absent » is not yet a thing that can have
+      // happened. It stays reachable — in the sheet on a phone.
+      { ...absent, onPhone: "sheet" },
     ];
   }
   // Already accepted, so Accepter is Check-in — the next thing that
-  // happens to this table. Refuser stays: a venue that has to cancel an
-  // accepted booking had no way to say so on the row, and the state it
-  // writes is the same refusal with the same reason.
+  // happens to this table. Refuser is *not* here: see the note above
+  // the function. Cancelling a confirmed booking lives in the sheet.
   if (reservation.state === "confirmed") {
     return [
       {
@@ -1997,9 +2042,8 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
         },
         variant: "primary",
       },
-      refuse,
-      reschedule,
       absent,
+      reschedule,
     ];
   }
   // Arrived, completed, refused, cancelled, absent: the time on the row
@@ -2196,22 +2240,115 @@ function reservationDetail(
           },
         ]
       : undefined,
-    actions: [
-      {
-        action: {
-          kind: "command",
-          label: "Marquer comme arrivé",
-          command: "reservation.arrive",
-          payload: { id: reservation.id },
-          icon: "user-check",
-        },
-        allow: ["owner", "admin"],
-      },
-      // A reminder is a message campaign; Prio 02 sends one alert, and it
-      // goes to the venue rather than the guest.
-      ...(lot === 1
-        ? []
-        : ([
+    // The sheet is where a decision that the line does not offer lives,
+    // and under Lot 1 there are two of those.
+    //
+    // **Décaler**, because the line drops it on a phone: two 44px
+    // targets are what 358 pixels hold, and moving a table is a
+    // negotiation rather than a reflex.
+    //
+    // **Refuser** on a booking already accepted, because the line no
+    // longer offers it at any width. Cancelling a confirmed guest is
+    // not the neighbour of Check-in; it is a deliberate act, and here
+    // the guest's name and phone number are on screen while you take
+    // it.
+    //
+    // Both are the same commands the line dispatches, so the verb is
+    // the same word in all three places — line, sheet, dialog.
+    actions:
+      lot === 1
+        ? [
+            ...(reservation.state === "requested" ||
+            reservation.state === "waitlisted"
+              ? [
+                  {
+                    action: {
+                      kind: "command" as const,
+                      label: "Accepter",
+                      command: "reservation.confirm",
+                      payload: { id: reservation.id },
+                      icon: "check" as const,
+                    },
+                    variant: "primary" as const,
+                    allow: ["owner", "admin"],
+                  },
+                ]
+              : reservation.state === "confirmed"
+                ? [
+                    {
+                      action: {
+                        kind: "command" as const,
+                        label: "Marquer comme arrivé",
+                        command: "reservation.arrive",
+                        payload: { id: reservation.id },
+                        icon: "user-check" as const,
+                      },
+                      variant: "primary" as const,
+                      allow: ["owner", "admin"],
+                    },
+                  ]
+                : []),
+            ...(reservation.state === "requested" ||
+            reservation.state === "waitlisted" ||
+            reservation.state === "confirmed"
+              ? [
+                  {
+                    action: {
+                      kind: "command" as const,
+                      label: "Décaler",
+                      command: "reservation.reschedule",
+                      payload: {
+                        id: reservation.id,
+                        name: reservation.guestName,
+                        at: reservation.at,
+                        party: reservation.partySize,
+                      },
+                      icon: "calendar-clock" as const,
+                    },
+                    variant: "secondary" as const,
+                    allow: ["owner", "admin"],
+                  },
+                  {
+                    action: {
+                      kind: "command" as const,
+                      label: "Refuser",
+                      command: "reservation.reject",
+                      payload: {
+                        id: reservation.id,
+                        name: reservation.guestName,
+                      },
+                      icon: "ban" as const,
+                    },
+                    variant: "ghost" as const,
+                    allow: ["owner", "admin"],
+                  },
+                  {
+                    action: {
+                      kind: "command" as const,
+                      label: "Absent",
+                      command: "reservation.noShow",
+                      payload: { id: reservation.id },
+                      icon: "user-x" as const,
+                    },
+                    variant: "ghost" as const,
+                    allow: ["owner", "admin"],
+                  },
+                ]
+              : []),
+          ]
+        : [
+            {
+              action: {
+                kind: "command",
+                label: "Marquer comme arrivé",
+                command: "reservation.arrive",
+                payload: { id: reservation.id },
+                icon: "user-check",
+              },
+              allow: ["owner", "admin"],
+            },
+            // A reminder is a message campaign; Prio 02 sends one alert,
+            // and it goes to the venue rather than the guest.
             {
               action: {
                 kind: "command" as const,
@@ -2221,8 +2358,7 @@ function reservationDetail(
               },
               variant: "secondary" as const,
             },
-          ])),
-    ],
+          ],
   };
 }
 

@@ -14,6 +14,7 @@ import { redirect } from "next/navigation";
 import { resolveSession } from "@/lib/auth/server-session";
 import { getRestaurantRepository } from "@/lib/data";
 import { demoRepository } from "@/lib/data/demo-repository";
+import { PermissionDenied } from "@/components/data/QueryState";
 import { DEMO_STATE_PARAM, parseDemoState } from "@/lib/data/demo-state";
 import { RepositoryError } from "@/lib/data/repository";
 import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
@@ -94,6 +95,13 @@ export default async function RestaurantSectionPage({
   // skeleton the route's own `loading.tsx` would. Same component, so what
   // a reviewer forces is exactly what a slow request shows.
   if (demo === "chargement") return <ScreenSkeleton />;
+  if (demo === "refus")
+    return (
+      <PermissionDenied
+        what="cet écran"
+        requiredRole="un propriétaire ou un gérant"
+      />
+    );
 
   const repo = demoRepository(getRestaurantRepository(), demo);
 

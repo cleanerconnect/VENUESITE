@@ -16,6 +16,14 @@
 //   ?etat=chargement   every query stays pending
 //   ?etat=vide         every list comes back empty
 //   ?etat=erreur       every query fails
+//   ?etat=refus        the screen answers "your role does not open this"
+//
+// `refus` was missing, and its absence was a finding of the design
+// audit rather than an oversight in the product: the four states have
+// to be the same components at the same spacing, and the fourth one
+// could not be photographed next to the other three because nothing
+// could put a screen into it. A role-driven state that only a second
+// account can reach is a state nobody ever looks at.
 //
 // French in the URL because the audience is the same French-speaking
 // partner the rest of the portal addresses, and a debug affordance in a
@@ -27,7 +35,7 @@
 // the portal still named `demo`, and it is named that in identifiers
 // only — nothing renders the word.
 
-export const DEMO_STATES = ["chargement", "vide", "erreur"] as const;
+export const DEMO_STATES = ["chargement", "vide", "erreur", "refus"] as const;
 export type DemoState = (typeof DEMO_STATES)[number];
 
 export const DEMO_STATE_PARAM = "etat";
@@ -36,6 +44,7 @@ export const DEMO_STATE_LABEL: Record<DemoState, string> = {
   chargement: "Chargement",
   vide: "Vide",
   erreur: "Erreur",
+  refus: "Accès refusé",
 };
 
 export function parseDemoState(value: string | null | undefined): DemoState | null {

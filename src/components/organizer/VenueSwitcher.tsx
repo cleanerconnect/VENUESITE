@@ -63,19 +63,19 @@ export function VenueSwitcher({
       <DropdownMenu.Trigger asChild>
         <button
           disabled={busy}
-          className="w-full flex items-center gap-2.5 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow disabled:opacity-60"
+          className="w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow disabled:opacity-60"
           aria-label={`Lieu actif : ${active.shortName}. Changer de lieu.`}
         >
           <Avatar initials={active.initials} />
-          <div className="min-w-0 flex-1 leading-tight">
-            <div className="text-[13px] font-semibold text-ink truncate">
+          <div className="min-w-0 flex-1">
+            <div className="text-nav font-semibold text-ink truncate">
               {active.shortName}
             </div>
             <div className="text-meta text-ink-mute truncate">
               {label(active)}
             </div>
           </div>
-          <ChevronRight size={14} className="text-ink-mute shrink-0" />
+          <ChevronRight size={20} className="text-ink-mute shrink-0" />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
@@ -89,14 +89,14 @@ export function VenueSwitcher({
             <DropdownMenu.Item
               key={v.id}
               onSelect={() => switchTo(v.id)}
-              className="flex items-center gap-2 px-3 h-11 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+              className="flex items-center gap-2 px-3 h-11 rounded-[var(--radius-sm)] text-nav text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
             >
               <div className="flex-1 min-w-0">
                 <div className="font-semibold truncate">{v.shortName}</div>
                 <div className="text-meta text-ink-mute truncate">{label(v)}</div>
               </div>
               {v.id === activeVenueId ? (
-                <Check size={14} strokeWidth={2} className="text-violet-deep shrink-0" />
+                <Check size={20} strokeWidth={2} className="text-violet-deep shrink-0" />
               ) : null}
             </DropdownMenu.Item>
           ))}
@@ -106,9 +106,9 @@ export function VenueSwitcher({
               <DropdownMenu.Item asChild>
                 <Link
                   href={eventSpaceHref}
-                  className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-[13.5px] text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
+                  className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-nav text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
                 >
-                  <ArrowLeftRight size={14} strokeWidth={1.8} className="text-ink-mute" />
+                  <ArrowLeftRight size={20} strokeWidth={2} className="text-ink-mute" />
                   Espace événements
                 </Link>
               </DropdownMenu.Item>
@@ -123,7 +123,7 @@ export function VenueSwitcher({
 function Avatar({ initials }: { initials: string }) {
   return (
     <div
-      className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-[13px] shrink-0"
+      className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-nav shrink-0"
       style={{ background: "var(--color-violet-soft)" }}
     >
       {initials}

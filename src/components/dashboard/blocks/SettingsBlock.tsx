@@ -53,7 +53,10 @@ export function SettingsBlock({ block }: { block: Spec }) {
           <span className="min-w-0">
             <span className="block text-h3 text-ink">{block.heading}</span>
             {block.subheading ? (
-              <span className="text-meta text-ink-mute mt-1 block">
+              <span
+                data-prose={block.subheadingKind !== "data" ? true : undefined}
+                className="text-meta text-ink-mute mt-1 block"
+              >
                 {block.subheading}
               </span>
             ) : null}
@@ -68,7 +71,7 @@ export function SettingsBlock({ block }: { block: Spec }) {
             )}
           />
         </button>
-        {open ? <div className="mt-5">{rows}</div> : null}
+        {open ? <div className="mt-6">{rows}</div> : null}
       </Card>
     );
   }
@@ -79,7 +82,12 @@ export function SettingsBlock({ block }: { block: Spec }) {
         <div className="mb-4">
           <h2 className="text-h3 text-ink">{block.heading}</h2>
           {block.subheading ? (
-            <p className="text-meta text-ink-mute mt-1">{block.subheading}</p>
+            <p
+              data-prose={block.subheadingKind !== "data" ? true : undefined}
+              className="text-meta text-ink-mute mt-1"
+            >
+              {block.subheading}
+            </p>
           ) : null}
         </div>
       ) : null}
@@ -97,7 +105,7 @@ export function SettingsBlock({ block }: { block: Spec }) {
           <div className="min-w-0 flex-1">
             <p className="text-body font-semibold text-ink">{block.banner.title}</p>
             {block.banner.body ? (
-              <p className="text-meta text-ink-mute mt-0.5">{block.banner.body}</p>
+              <p data-prose className="text-meta text-ink-mute mt-1">{block.banner.body}</p>
             ) : null}
           </div>
         </div>
@@ -106,7 +114,7 @@ export function SettingsBlock({ block }: { block: Spec }) {
       {rows}
 
       {block.footerActions?.length ? (
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-6 flex flex-wrap gap-2">
           {block.footerActions.map((cta, i) => (
             <ActionControl key={`${cta.action.label}-${i}`} cta={cta} size="sm" />
           ))}
@@ -126,7 +134,7 @@ export function SettingsBlock({ block }: { block: Spec }) {
  */
 function Rows({ rows }: { rows: SettingRow[] }) {
   return (
-    <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
       {rows.map((row) => (
         <SettingRowView key={row.id} row={row} />
       ))}
@@ -166,12 +174,20 @@ function SettingRowView({ row }: { row: SettingRow }) {
 
   const label = (
     <span className="flex flex-wrap items-center gap-2">
-      <span className={lead ? "text-host-lead text-ink" : "text-[14.5px] font-semibold leading-snug text-ink"}>
+      {/* `text-[14.5px]` — half a pixel, off every step of the scale,
+          and the clearest possible case of a size that is where it
+          landed rather than a size somebody chose. A field's label is
+          body weight 600. */}
+      <span className={lead ? "text-host-lead text-ink" : "text-body font-semibold text-ink"}>
         {row.label}
       </span>
       {row.badge ? <SpecBadge badge={row.badge} /> : null}
+      {/* 13px, sentence case: it was 11px bold capitals with tracking,
+          under the floor and in the house style of generated software.
+          Violet because a staged change is an active state, which is
+          the one job violet has besides the primary action. */}
       {staged ? (
-        <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-mute">
+        <span className="text-meta font-semibold text-violet-deep">
           Modifié
         </span>
       ) : null}
@@ -179,7 +195,7 @@ function SettingRowView({ row }: { row: SettingRow }) {
   );
 
   const hint = row.hint ? (
-    <p className="text-meta text-ink-mute mt-1 max-w-[62ch]">{row.hint}</p>
+    <p data-prose className="text-meta text-ink-mute mt-1 max-w-[62ch]">{row.hint}</p>
   ) : null;
 
   // A switch is its own field: the label reads as a statement and the
@@ -224,7 +240,11 @@ function SettingRowView({ row }: { row: SettingRow }) {
         {label}
         {hint}
       </Title>
-      <div className="mt-1.5">
+      {/* 8, not 6. The label and the field it names are the closest
+          pair on the screen, and the scale's first real step is 8 —
+          `mt-1.5` was 6px, which is off it and three pixels from
+          nothing. Fifteen fields on Disponibilités alone measured it. */}
+      <div className="mt-2">
         <Control
           id={`set-${row.id}`}
           control={row.control}
@@ -288,7 +308,7 @@ function Control({
                 on.has(o.value) ? "border-ink/25" : "border-line",
               )}
             >
-              <span className="text-[14.5px] font-semibold text-ink">{o.label}</span>
+              <span className="text-body font-semibold text-ink">{o.label}</span>
               <Switch
                 checked={on.has(o.value)}
                 ariaLabel={o.label}
@@ -324,7 +344,7 @@ function Control({
             className={cn(FIELD, "num max-w-[12rem]")}
           />
           {control.suffix ? (
-            <span className="text-[14px] text-ink-mute shrink-0">
+            <span className="text-body text-ink-mute shrink-0">
               {control.suffix}
             </span>
           ) : null}

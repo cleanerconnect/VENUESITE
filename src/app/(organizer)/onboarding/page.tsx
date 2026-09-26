@@ -121,7 +121,7 @@ export default function OnboardingPage() {
       {/* Header — wordmark + close + progress bar */}
       <header className="sticky top-0 bg-canvas/95 backdrop-blur-md border-b border-line-soft z-10">
         <div className="max-w-3xl mx-auto px-5 md:px-8 h-14 flex items-center justify-between gap-3">
-          <Brand height={26} />
+          <Brand size="sm" />
           <button
             type="button"
             onClick={exit}

@@ -49,7 +49,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
   const rejected = Boolean(error) || Boolean(invalid);
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <div
         className={cn(
           "relative flex items-center bg-surface border rounded-[var(--radius-sm)]",
@@ -80,7 +80,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
             transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
               "absolute left-3.5 top-1/2 -translate-y-1/2 origin-top-left",
-              "pointer-events-none font-medium text-[14px]",
+              "pointer-events-none font-medium text-body",
               floated && "font-semibold",
             )}
           >
@@ -106,7 +106,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
               rest.onBlur?.(e);
             }}
             className={cn(
-              "w-full h-12 px-3.5 pt-3 bg-transparent text-ink text-[14px] outline-none",
+              "w-full h-12 px-4 pt-3 bg-transparent text-ink text-body outline-none",
               className,
             )}
             aria-invalid={rejected || undefined}
@@ -124,7 +124,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
           {error}
         </span>
       ) : hint ? (
-        <span className="text-meta text-ink-mute">{hint}</span>
+        <p data-prose className="text-meta text-ink-mute max-w-[62ch]">{hint}</p>
       ) : null}
     </div>
   );

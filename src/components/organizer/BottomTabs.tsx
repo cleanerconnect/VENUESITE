@@ -46,49 +46,44 @@ export function BottomTabs() {
       className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-line-soft shadow-[0_-4px_16px_color-mix(in oklab, var(--color-ink) 6%, transparent)] pb-[env(safe-area-inset-bottom)]"
       aria-label="Navigation principale"
     >
-      <ul className="grid grid-cols-5 h-16 relative">
+      {/* As many columns as there are tabs.
+          It was `grid-cols-5` with the tab list filtered by lot: Lot 1
+          registers four, so the four sat in five columns — squeezed
+          into 78px each with an empty column on the right, and the
+          labels ran into one another. */}
+      <ul
+        className="grid h-16 relative"
+        style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+      >
         {tabs.map((t) => {
           const active = t.href
             ? isActive(pathname, t.href, workspace.home)
             : false;
-          const raisedClass =
-            "absolute left-1/2 -translate-x-1/2 -top-3 h-14 w-14 rounded-full bg-violet text-canvas flex items-center justify-center shadow-[0_8px_20px_color-mix(in oklab, var(--color-violet) 42%, transparent)] active:scale-95 transition-transform";
-
-          if (t.raised) {
-            return (
-              <li key={t.label} className="relative">
-                {t.href ? (
-                  <Link href={t.href} aria-label={t.label} className={raisedClass}>
-                    <Icon name={t.icon} size={24} strokeWidth={1.8} />
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    aria-label={t.label}
-                    onClick={() => runTabCommand(t.command)}
-                    className={raisedClass}
-                  >
-                    <Icon name={t.icon} size={24} strokeWidth={1.8} />
-                  </button>
-                )}
-                <span className="absolute left-1/2 -translate-x-1/2 bottom-1.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink-mute">
-                  {t.label}
-                </span>
-              </li>
-            );
-          }
-
+          // The centre tab is no longer raised.
+          //
+          // It was a 56px violet circle floating 12px above the bar, and
+          // the bar's whole contract is that it does not cover the
+          // content — the circle sat on top of the last line of the
+          // book. Its label was pinned under it in 10px tracked
+          // capitals, which is the only place on the phone where a
+          // label was smaller than the floor. It is a tab now, marked
+          // by the violet its role earns, in the row with the others.
           const itemClass = cn(
-            "h-full w-full flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-[0.06em] transition-colors",
-            active ? "text-violet" : "text-ink-mute",
+            "h-full w-full flex flex-col items-center justify-center gap-1 transition-colors",
+            // 13px, sentence case, no tracking: the bar's labels were
+            // 10px bold capitals with 0.06em of tracking — three of the
+            // tells this audit removes, on the navigation a phone user
+            // touches most.
+            "text-meta font-semibold",
+            t.raised || active ? "text-violet" : "text-ink-mute",
           );
           const glyph = (
             <>
               <Icon
                 name={t.icon}
-                size={18}
-                strokeWidth={1.7}
-                className={active ? "text-violet" : "text-ink-mute"}
+                size={20}
+                strokeWidth={2}
+                className={t.raised || active ? "text-violet" : "text-ink-mute"}
               />
               {t.label}
             </>

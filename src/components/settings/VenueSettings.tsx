@@ -102,7 +102,7 @@ export function VenueSettings({
       {active === "menu" ? <MenuListingForm items={menuItems} /> : null}
       {active === "hours" ? <OpeningHoursForm initial={availability} /> : null}
       {active === "media" ? (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <AssetManager
             kind="photo"
             title="Photos"

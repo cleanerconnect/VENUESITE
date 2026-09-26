@@ -1,0 +1,230 @@
+{
+  "reservations": {
+    "chargement": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×1446",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "—",
+      "buttons": 0
+    },
+    "vide": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×44",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "Réservations",
+      "buttons": 17
+    },
+    "erreur": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×408",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Cette page n'a pas pu charger",
+      "buttons": 2
+    },
+    "refus": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×228",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Accès non autorisé",
+      "buttons": 0
+    }
+  },
+  "accueil": {
+    "chargement": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×1446",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "—",
+      "buttons": 0
+    },
+    "vide": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×1142",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "Bonjour, Yassine. Le service est lancé.",
+      "buttons": 4
+    },
+    "erreur": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×408",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Cette page n'a pas pu charger",
+      "buttons": 2
+    },
+    "refus": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×228",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Accès non autorisé",
+      "buttons": 0
+    }
+  },
+  "check-in": {
+    "chargement": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×1446",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "—",
+      "buttons": 0
+    },
+    "vide": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×1282",
+      "padding": "0/0/16/0",
+      "radius": "0px",
+      "heading": "Check-in",
+      "buttons": 2
+    },
+    "erreur": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×408",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Cette page n'a pas pu charger",
+      "buttons": 2
+    },
+    "refus": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×228",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Accès non autorisé",
+      "buttons": 0
+    }
+  },
+  "disponibilites": {
+    "chargement": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×1446",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "—",
+      "buttons": 0
+    },
+    "vide": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×72",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "Disponibilités",
+      "buttons": 5
+    },
+    "erreur": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×408",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Cette page n'a pas pu charger",
+      "buttons": 2
+    },
+    "refus": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×228",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Accès non autorisé",
+      "buttons": 0
+    }
+  },
+  "ma-fiche": {
+    "chargement": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×1446",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "—",
+      "buttons": 0
+    },
+    "vide": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×1818",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "Ma fiche",
+      "buttons": 6
+    },
+    "erreur": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×408",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Cette page n'a pas pu charger",
+      "buttons": 2
+    },
+    "refus": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×228",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Accès non autorisé",
+      "buttons": 0
+    }
+  },
+  "notifications": {
+    "chargement": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×1446",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "—",
+      "buttons": 0
+    },
+    "vide": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×72",
+      "padding": "0/0/0/0",
+      "radius": "0px",
+      "heading": "Notifications",
+      "buttons": 10
+    },
+    "erreur": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×408",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Cette page n'a pas pu charger",
+      "buttons": 2
+    },
+    "refus": {
+      "mainWidth": 390,
+      "mainPadding": "24/16/24/16",
+      "surface": "358×228",
+      "padding": "32/32/32/32",
+      "radius": "28px",
+      "heading": "Accès non autorisé",
+      "buttons": 0
+    }
+  }
+}

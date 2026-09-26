@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ToastProvider } from "@/components/ui/Toast";
 import { StyleguideShell, type SectionDef } from "./Shell";
+import { RulesSection } from "./sections/rules";
 import { TokensSection } from "./sections/tokens";
 import { ControlsSection } from "./sections/controls";
 import { SurfacesSection } from "./sections/surfaces";
@@ -23,6 +24,13 @@ import { activeLot } from "@/lib/lot";
 export const metadata: Metadata = { title: "Styleguide · LYFE" };
 
 const SECTIONS: SectionDef[] = [
+  {
+    id: "rules",
+    title: "Règles",
+    blurb:
+      "Ce qui est permis, et pas seulement ce qui existe. Le rythme, l'échelle, les rôles de couleur, les contrôles et les mots — en phrases qu'on peut opposer à un écran.",
+    content: <RulesSection />,
+  },
   {
     id: "tokens",
     title: "Tokens",

@@ -53,7 +53,7 @@ export function FilterTabs<Id extends string>({
               aria-selected={active}
               onClick={() => onChange(tab.id)}
               className={cn(
-                "relative px-4 py-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors",
+                "relative px-4 py-3 text-control-sm font-semibold whitespace-nowrap transition-colors",
                 active ? "text-ink" : "text-ink-mute hover:text-ink",
               )}
             >
@@ -61,7 +61,7 @@ export function FilterTabs<Id extends string>({
               {typeof tab.count === "number" ? (
                 <span
                   className={cn(
-                    "ml-2 inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[11px] rounded-full num",
+                    "ml-2 inline-flex items-center justify-center h-6 min-w-[24px] px-2 text-meta rounded-full num",
                     active ? "bg-ink text-canvas" : "bg-ink/[0.06] text-ink-soft",
                   )}
                 >

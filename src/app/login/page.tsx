@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Brand } from "@/components/organizer/Brand";
 import { COPY } from "@/lib/copy/fr";
 import { SignInPanel } from "./SignInPanel";
+import { activeLot } from "@/lib/lot";
 
 // The entry point.
 //
@@ -24,37 +25,50 @@ import { SignInPanel } from "./SignInPanel";
 export const metadata: Metadata = { title: "Connexion · LYFE" };
 
 export default function LoginPage() {
+  // The same density as the six screens behind it.
+  //
+  // Connexion and Inscription are two of the eight screens of Lot 1,
+  // and Inscription already declared the host scale while Connexion
+  // did not: the door to a 16px product was a 14px screen with 12px
+  // secondary text, which is under the floor this density sets. The
+  // eight screens now read at one size.
+  const host = activeLot() === 1;
   return (
-    <main className="min-h-screen flex flex-col md:flex-row">
+    <main
+      data-density={host ? "host" : undefined}
+      className="min-h-screen flex flex-col md:flex-row"
+    >
       {/* === Left column — the mark, on the dark panel === */}
       <section className="bg-surface-ink text-canvas flex flex-col justify-between p-8 md:p-12 lg:p-16 md:basis-1/2 md:flex-shrink-0">
         {/* `self-start` so the mark keeps its own width: stretched to the
             flex cross-axis, `objectFit: contain` centres the artwork and
             the logo drifts into the middle of the panel. */}
         <div className="self-start">
-          <Brand height={44} variant="white" />
+          <Brand size="lg" variant="white" />
         </div>
 
         <div className="mt-16 md:mt-0">
-          <div className="text-eyebrow text-canvas/55">{COPY.auth.eyebrow}</div>
+          {/* No eyebrow.
+              « ESPACE PARTENAIRE » in 11px tracked capitals above the
+              headline was two things this audit removes: a label above a
+              heading that the heading does not need, and a size under
+              the 13px floor. The sentence underneath already says whose
+              space this is. */}
           <h1
-            className="mt-4 max-w-[19ch]"
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontWeight: 600,
-              fontSize: "clamp(30px, 3.6vw, 44px)",
-              lineHeight: 1.12,
-              letterSpacing: "-0.02em",
-            }}
+            className="text-h1 max-w-[19ch]"
+            style={{ fontFamily: "var(--font-serif)", fontWeight: 600 }}
           >
             {COPY.auth.hero}
           </h1>
         </div>
 
-        {/* `/45` measured 4,33:1 against the ink panel — axe-core reports
-            it, and WCAG AA asks for 4,5:1 at this size. `/55` is what the
-            eyebrow above already uses. */}
-        <p className="text-meta text-canvas/55 mt-16 md:mt-0">LYFE · Maroc</p>
+        {/* `/55` measured 5,1:1 at 12px and 4,3:1 once this screen
+            joined the host density and the same class became 13px —
+            the ratio moves with the size because the threshold does.
+            `/70` is 6,6:1, and the line is a signature rather than
+            something to read, so there is nothing to lose by making it
+            legible. */}
+        <p className="text-meta text-canvas/70 mt-16 md:mt-0">LYFE · Maroc</p>
       </section>
 
       {/* === Right column — the one form === */}
