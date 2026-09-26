@@ -201,6 +201,11 @@ async function loadContext(
   const ctx: Omit<ScreenContext, "overview"> = {
     period,
     comparison,
+    // The instant the screen is built at, decided here and carried to
+    // the browser with the payload. The builder runs again when React
+    // hydrates, and a builder that asks the clock twice gets two
+    // answers — see `ScreenContext.now`.
+    now: Date.now(),
     configuration: settings.configuration,
     settings,
     // Resolved here rather than in each builder: a builder that read the

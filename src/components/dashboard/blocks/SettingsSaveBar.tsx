@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { COPY } from "@/lib/copy/fr";
+import { SAVE_BAR_CARD, SAVE_BAR_SHELL } from "@/components/forms/SaveBar";
 import { useSettingsDraft } from "@/lib/stores/settings-draft";
 import { useCommandRunner } from "../commands";
 
@@ -52,8 +53,8 @@ export function SettingsSaveBar() {
   };
 
   return (
-    <div className="sticky bottom-0 z-10 -mx-1 px-1 pb-1 pt-6 bg-gradient-to-t from-canvas via-canvas to-transparent">
-      <div className="flex flex-wrap items-center gap-3 rounded-[var(--radius-md)] border border-line bg-surface px-4 py-3">
+    <div className={SAVE_BAR_SHELL}>
+      <div className={SAVE_BAR_CARD}>
         <div
           className="min-w-[180px] flex-1 text-body"
           role="status"
@@ -80,9 +81,7 @@ export function SettingsSaveBar() {
                 transition={{ duration: 0.12 }}
                 className="text-ink-soft"
               >
-                {pending.length === 1
-                  ? "1 modification non enregistrée"
-                  : `${pending.length} modifications non enregistrées`}
+                {COPY.form.unsavedCount(pending.length)}
               </motion.span>
             ) : (
               <motion.span

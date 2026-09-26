@@ -174,11 +174,12 @@ function SettingRowView({ row }: { row: SettingRow }) {
 
   const label = (
     <span className="flex flex-wrap items-center gap-2">
-      {/* `text-[14.5px]` — half a pixel, off every step of the scale,
-          and the clearest possible case of a size that is where it
-          landed rather than a size somebody chose. A field's label is
-          body weight 600. */}
-      <span className={lead ? "text-host-lead text-ink" : "text-body font-semibold text-ink"}>
+      {/* The one field label — `.text-field-label`, 13px at ink 70%,
+          the same on Ma fiche, Connexion and the inscription. It was
+          body weight 600 here and a floating label there, which is two
+          patterns for one job. A lead row keeps its larger heading:
+          that names a group, not a field. */}
+      <span className={lead ? "text-host-lead text-ink" : "text-field-label"}>
         {row.label}
       </span>
       {row.badge ? <SpecBadge badge={row.badge} /> : null}
@@ -258,10 +259,12 @@ function SettingRowView({ row }: { row: SettingRow }) {
   );
 }
 
-// Every field carries its border and its own height. 44px is the host
-// minimum — a target a thumb finds on the pass without aiming.
+// Every field carries its border and its own height. 48px, the one
+// control height in the portal — comfortably over the 44px host
+// minimum, and the same box `Input` draws on Ma fiche so the two screens
+// are the same form.
 const FIELD =
-  "block h-11 w-full rounded-[var(--radius-sm)] border border-line bg-surface px-3.5 " +
+  "block h-12 w-full rounded-[var(--radius-sm)] border border-line bg-surface px-3.5 " +
   "text-body text-ink focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/10 " +
   "transition-colors disabled:opacity-55";
 

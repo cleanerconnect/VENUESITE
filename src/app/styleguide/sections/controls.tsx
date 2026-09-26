@@ -62,7 +62,7 @@ export function ControlsSection() {
         </div>
       </Specimen>
 
-      <Specimen name="Input" note="label flottant, préfixe, suffixe, erreur">
+      <Specimen name="Input" note="label au-dessus, préfixe, suffixe, erreur">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input label="Vide" />
           <Input label="Rempli" defaultValue="Dar Zellij" />
@@ -74,6 +74,9 @@ export function ControlsSection() {
             defaultValue="Salma"
           />
           <Input label="Avec suffixe" suffix="MAD" defaultValue="240" />
+          {/* The case the floating label could not draw: a placeholder
+              and a label at once. It used to hide one of the two. */}
+          <Input label="Avec exemple" placeholder="+212 6…" />
           <Input label="Désactivé" defaultValue="Non modifiable" disabled />
         </div>
       </Specimen>
@@ -184,6 +187,7 @@ export function ControlsSection() {
               <SaveBar
                 state={state}
                 dirty={state !== "idle"}
+                dirtyCount={state !== "idle" ? 3 : 0}
                 message={state === "error" ? "Session expirée. Reconnectez-vous." : null}
                 onSave={() => {}}
                 onReset={() => {}}

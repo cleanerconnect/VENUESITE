@@ -37,7 +37,7 @@ export interface OnboardingDraft {
   venueType: OnboardingVenueType;
   /** « Type de cuisine ». Free text, asked beside the name on step 2. */
   cuisine: string;
-  /** 1–4, the band the app shows as € to €€€€. */
+  /** 1–4; `PRICE_RANGE_LABEL` turns it into the MAD range the app prints. */
   priceRange: number;
   city: string;
   /** « Quartier ». The app prints it before the city. */

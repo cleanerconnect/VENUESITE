@@ -39,6 +39,17 @@ export interface OptimisticForm<T> {
   setAll: (next: T) => void;
   /** True once the value differs from what the server last confirmed. */
   dirty: boolean;
+  /**
+   * How many fields differ from what the server last confirmed.
+   *
+   * The save bar says the number rather than « Modifications non
+   * enregistrées »: a partner who scrolled past a field they changed by
+   * accident needs to know there is one, and « des modifications » does
+   * not tell them whether it is the one they meant or three they did
+   * not. The spec screens' bar has always counted; this is the same
+   * sentence on the forms that do not come from a spec.
+   */
+  dirtyCount: number;
   state: SaveState;
   /** Server-side message when the whole write failed. */
   message: string | null;
@@ -165,11 +176,25 @@ export function useOptimisticForm<T extends object, R>({
     [errors],
   );
 
+  // Counted field by field rather than by comparing the whole object:
+  // the bar names a number of fields, so the number has to be fields.
+  // Over the union of both key sets, so a field the draft dropped
+  // altogether still counts as a difference.
+  const keys = new Set<keyof T>([
+    ...(Object.keys(value as object) as (keyof T)[]),
+    ...(Object.keys(committed.current as object) as (keyof T)[]),
+  ]);
+  const dirtyFields = [...keys].filter(
+    (k) =>
+      JSON.stringify(value[k]) !== JSON.stringify(committed.current[k]),
+  );
+
   return {
     value,
     set,
     setAll,
-    dirty: JSON.stringify(value) !== JSON.stringify(committed.current),
+    dirty: dirtyFields.length > 0,
+    dirtyCount: dirtyFields.length,
     state,
     message,
     errorFor,

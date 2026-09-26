@@ -3,6 +3,7 @@
 import { forwardRef, useId } from "react";
 import type { TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils/cn";
+import { FieldLabel } from "@/components/forms/FieldLabel";
 
 interface Props extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -18,18 +19,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, Props>(function Textarea
   const inputId = id ?? useId();
   return (
     <div className="flex flex-col gap-2">
-      {/* Sentence case at field weight, not a small-caps eyebrow: this
-          label sits beside the floating labels of the Inputs around it,
-          and two ways of naming a field in one form reads as two kinds
-          of field. */}
-      {label ? (
-        <label
-          htmlFor={inputId}
-          className="text-body font-semibold text-ink"
-        >
-          {label}
-        </label>
-      ) : null}
+      {/* The same label as every other field in the portal — see
+          `FieldLabel`. It used to be field-weight body text, written to
+          sit beside the floating labels of the Inputs around it; those
+          no longer float, and both now name a field the one way. */}
+      {label ? <FieldLabel htmlFor={inputId}>{label}</FieldLabel> : null}
       <textarea
         ref={ref}
         id={inputId}

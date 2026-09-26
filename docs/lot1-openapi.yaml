@@ -3082,7 +3082,9 @@ components:
           type: integer
           minimum: 1
           maximum: 4
-          description: Étape 2. Quatre niveaux, de € à €€€€.
+          description: >-
+            Étape 2. Quatre niveaux, nommés par leur fourchette en MAD par
+            personne : moins de 150, 150 à 300, 300 à 500, plus de 500.
         city:
           type: string
           enum:

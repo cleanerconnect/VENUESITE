@@ -147,7 +147,8 @@ export function buildPresenceScreen(input: {
     // What the app's header prints, in its order: the cuisine, then
     // « quartier, ville », then the band. `PRICE_RANGE_LABEL` is keyed
     // 1–4 like the column it comes from, and this read it at
-    // `priceRange - 1` — so a venue at €€€ was previewed as €€.
+    // `priceRange - 1` — so a venue in the 300–500 band previewed as
+    // the 150–300 one.
     subtitle: [
       profile?.cuisine,
       [profile?.district, profile?.city].filter(Boolean).join(", "),

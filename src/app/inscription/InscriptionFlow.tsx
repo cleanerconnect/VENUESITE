@@ -357,7 +357,7 @@ export function InscriptionFlow({
                     autoComplete="organization"
                   />
                   <div>
-                    <div className="text-eyebrow text-ink-mute mb-2">
+                    <div className="text-field-label mb-2">
                       C&apos;est plutôt
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -400,11 +400,11 @@ export function InscriptionFlow({
                     }
                   />
                   <div>
-                    <div className="text-body font-semibold text-ink mb-1">
+                    <div className="text-field-label mb-1">
                       Fourchette de prix
                     </div>
                     <p className="text-meta text-ink-mute mb-3">
-                      Affichée dans l&apos;application, de € à €€€€, et utilisée
+                      Ce qu&apos;un client dépense chez vous, par personne. Utilisée
                       par les filtres de recherche.
                     </p>
                     <PriceBand value={priceRange} onChange={setPriceRange} />
@@ -801,7 +801,7 @@ function HoursGrid({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <span className="text-eyebrow text-ink-mute">Semaine type</span>
+        <span className="text-field-label">Semaine type</span>
         <Button variant="secondary" size="md" onClick={copyToAll}>
           Appliquer lundi à tous les jours
         </Button>

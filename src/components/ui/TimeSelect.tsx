@@ -53,7 +53,7 @@ export function TimeSelect({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={cn(
-        "block h-11 w-full appearance-none rounded-[var(--radius-sm)] border border-line",
+        "block h-12 w-full appearance-none rounded-[var(--radius-sm)] border border-line",
         "bg-surface px-3.5 pr-9 num text-body text-ink transition-colors",
         "focus:border-ink focus:outline-none disabled:opacity-55",
         className,

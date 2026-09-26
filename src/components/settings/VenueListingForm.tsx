@@ -33,8 +33,8 @@ export function VenueListingForm({ initial }: { initial: VenueListingInput }) {
       <Card variant="surface" size="md">
         <h2 className="text-h3 text-ink mb-1">Fourchette de prix</h2>
         <p className="text-meta text-ink-mute mb-5">
-          Affichée dans l&apos;application, de € à €€€€, et utilisée par les
-          filtres de recherche.
+          Ce qu&apos;un client dépense chez vous, par personne. L&apos;application
+          affiche la fourchette telle quelle et s&apos;en sert pour filtrer.
         </p>
         <PriceBand
           value={form.value.priceRange}
@@ -89,6 +89,7 @@ export function VenueListingForm({ initial }: { initial: VenueListingInput }) {
       <SaveBar
         state={form.state}
         dirty={form.dirty}
+        dirtyCount={form.dirtyCount}
         message={form.message}
         onSave={form.save}
         onReset={form.reset}

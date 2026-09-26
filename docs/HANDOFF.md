@@ -137,6 +137,33 @@ to leak in the first place:
 | Boost, and the acquisition channels that name one | Visibilité |
 | Visit counts, no-show risk scores | Liste clients, Performance |
 
+### Le motif de champ
+
+One pattern, everywhere a partner types something — Ma fiche,
+Disponibilités, Notifications, Connexion, l'inscription:
+
+| | |
+|---|---|
+| Le nom du champ | `.text-field-label` — 13px, ink à 70%, au-dessus du champ |
+| L'écart | 8px, le premier pas réel de la gamme |
+| Le champ | 48px de haut, la seule hauteur de contrôle du portail |
+
+`src/components/forms/FieldLabel.tsx` is the one implementation; there
+were four, and one of them floated. A floating label rests *inside* the
+control until the field has content, which means it prints itself over
+whatever the browser draws there on its own — the `mm/dd/yyyy` of a date
+input, the `--:--` of a time one — and `Input` had to suppress its own
+placeholder to avoid doing it to itself. Above the field, nothing can
+overlap anything, and a partner meets the same field on Connexion as on
+Disponibilités.
+
+The save bar is pinned to the bottom of the viewport on every editable
+screen — `SAVE_BAR_SHELL` in `src/components/forms/SaveBar.tsx`, shared
+by the two bars so they cannot drift — and says how many fields are
+waiting rather than that some are. It clears the phone's tab bar at
+`bottom-20`, and its gradient does not swallow clicks: it is
+`pointer-events-none` with the card above it `auto`.
+
 `tools/verify/configuration.mjs` checks the money half outright: Lot 1
 reports on nothing, so a dirham anywhere on the seven screens fails the
 run. It checks the vocabulary the same way, in both directions: not only
@@ -569,18 +596,35 @@ follow.
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
-| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states, and the onboarding's seven steps at both widths, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1`; sections `5 · Ma fiche` and `0 · Inscription` are replayed from `docs/lot1-figma-frames.json` by `tools/figma/capture-frames.mjs` |
+| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states, and the onboarding's seven steps at both widths, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1`; its five editable sections are replayed from `docs/lot1-figma-frames.json`, written by `tools/figma/capture-frames.mjs` and drawn by `tools/figma/replay-page09.js` |
 
-**Sections `5 · Ma fiche` and `0 · Inscription` are not drawn by hand.**
-`tools/figma/capture-frames.mjs` walks the running portal — five tabs of
-Ma fiche, seven steps of the onboarding, at 1440 and at 390 — and writes
-the boxes the browser actually painted, with their measured geometry,
-their fills and their type, to `docs/lot1-figma-frames.json`. A Figma
-plugin script replays that file into the two sections, placing the
-sidebar and the topbar as instances of the components on `02 Composants`
-and binding every text layer to a style on the page's own scale. A frame
-there cannot claim a field the screen does not have, and a field added
-to the screen reaches the frame by re-running one command.
+**The five sections a partner types into are not drawn by hand.**
+`tools/figma/capture-frames.mjs` walks the running portal — Connexion,
+five tabs of Ma fiche and the saved state of Détails, Disponibilités,
+Notifications, and the onboarding's seven steps, at 1440 and at 390,
+36 frames in all — and writes the boxes the browser actually painted,
+with their measured geometry, their fills and their type, to
+`docs/lot1-figma-frames.json`. `tools/figma/replay-page09.js` runs
+inside Figma and draws that file back into the page, moving each
+frame's sidebar and topbar instances across so the sidebar keeps the
+item it shows as active. A frame there cannot claim a field the screen
+does not have, and a field added to the screen reaches the frame by
+re-running one command.
+
+The two halves used to be one half: the capture was in the repository
+and the replay lived in a chat transcript, so the page could be
+re-captured and not re-drawn. Both are here now, and
+`tools/figma/pack-frames.mjs` is how the JSON reaches a sandbox that
+has no `fetch`: 213 000 characters of escaped string literal compress
+to 52 000 of base64, which the replay's own twenty-line decoder undoes.
+
+**« Ma fiche · Horaires · Enregistré » is missing on purpose.** Closing
+a service and pressing Enregistrer writes the closure to the database
+and re-renders the switch back on — the screen says nothing was saved
+while what a guest can book has already changed. A frame of that is a
+frame of a bug, and which side of it the shot lands on is a matter of
+timing: three captures running, the same screen disagreed with itself
+between 1440 and 390. The frame comes back with the fix.
 
 Two rules the file keeps, and a designer extending it should keep too:
 the library on `02 Composants` is the source for components, and `08` is

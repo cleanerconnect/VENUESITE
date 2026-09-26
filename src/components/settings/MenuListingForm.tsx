@@ -170,6 +170,7 @@ function MenuRow({
               <SaveBar
                 state={form.state}
                 dirty={form.dirty}
+                dirtyCount={form.dirtyCount}
                 message={form.message}
                 onSave={form.save}
                 onReset={form.reset}

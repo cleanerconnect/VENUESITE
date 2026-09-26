@@ -254,6 +254,8 @@ export function buildDashboardScreen(
   desk: MoneyDesk,
   configuration: VenueConfiguration,
   lot: Lot = 2,
+  /** One instant for both runs of the builder — see `ScreenContext.now`. */
+  now: number = Date.now(),
 ): ScreenSpec {
   const lot1 = lot === 1;
   const vocabulary = configFor(configuration);
@@ -588,7 +590,12 @@ export function buildDashboardScreen(
     rows: (lot1
       ? data.upcomingReservations
       : data.upcomingReservations
-          .filter((r) => r.state !== "arrived" && Date.parse(r.at) >= Date.now())
+          // `now`, not `Date.now()`: this list is the reason
+          // `ScreenContext.now` exists. The server keeps the bookings
+          // still to come at one instant and the client kept them at
+          // another, so a booking whose hour passed in between left the
+          // list on the second run and every row below it moved up.
+          .filter((r) => r.state !== "arrived" && Date.parse(r.at) >= now)
           .slice(0, 6)
     ).map((r) =>
       reservationRow(
@@ -849,7 +856,7 @@ export function buildDashboardScreen(
 
   // The next four hours, in quarter-hour arrivals. A manager reads a
   // service by when the door opens, not by a daily total.
-  const bandStart = Date.now();
+  const bandStart = now;
   const arrivalsPerQuarter = new Map<string, number>();
   for (const r of data.upcomingReservations) {
     const at = Date.parse(r.at);
@@ -928,7 +935,7 @@ export function buildDashboardScreen(
       // Operational before strategic: which half-hour is about to break
       // comes above how the week is trending.
       nextServiceBand,
-      serviceLoadBlock(data, configuration),
+      serviceLoadBlock(data, configuration, now),
       {
         id: "floor",
         type: "split",
@@ -947,7 +954,7 @@ export function buildDashboardScreen(
       ...(nudgeBlock ? [nudgeBlock] : []),
       nextServiceBand,
       { ...kpiBlock, id: "kpis-mobile", columns: 1, tiles: mobileTiles(kpiBlock) },
-      { ...(serviceLoadBlock(data, configuration) as Block), id: "service-load-mobile" },
+      { ...(serviceLoadBlock(data, configuration, now) as Block), id: "service-load-mobile" },
       arrivalsBlock,
       { ...feedBlock, id: "activity-mobile", entries: data.activity.slice(0, 5).map(activityEntry) },
     ],
@@ -973,9 +980,11 @@ export function buildReservationsScreen(
   book?: DayBook,
   /** Which of the day's services to read, when the partner picked one. */
   serviceId?: string,
+  /** One instant for both runs of the builder — see `ScreenContext.now`. */
+  now: number = Date.now(),
 ): ScreenSpec {
   const lot1 = lot === 1;
-  const today = isoDay(new Date());
+  const today = isoDay(new Date(now));
   const onAnotherDay = Boolean(book && book.date !== today);
   // A day with no service defined — a venue closed on Mondays, or a date
   // past what the dataset holds — still has to render. It gets the
@@ -1440,7 +1449,7 @@ export function buildReservationsScreen(
     slug: "reservations",
     title: "Réservations",
     subtitle,
-    blocks: [dayPicker, kpiBlock, serviceLoadBlock(data, configuration), bookBlock],
+    blocks: [dayPicker, kpiBlock, serviceLoadBlock(data, configuration, now), bookBlock],
     // Phone lane: the book first.
     //
     // Accepting and refusing is one of the three things that has to work
@@ -1469,10 +1478,10 @@ export function buildReservationsScreen(
 function serviceLoadBlock(
   data: RestaurantOverview,
   configuration: VenueConfiguration,
+  now: number = Date.now(),
 ): Block {
   const vocabulary = configFor(configuration);
   const service = data.currentService;
-  const now = Date.now();
   // Covers the room can seat per slot, from the service window itself.
   const perSlotCapacity = Math.max(
     1,
@@ -2461,6 +2470,25 @@ function ratingDeltaPct(average: number, deltaPoints: number): number {
 export interface ScreenContext {
   overview: RestaurantOverview;
   configuration: VenueConfiguration;
+  /**
+   * The instant this screen is built at, decided once by the server.
+   *
+   * The builder runs **twice** — on the server for the first paint, and
+   * again on the client inside `RestaurantScreen`'s `useMemo` when React
+   * hydrates. A builder that reads the clock itself therefore reads two
+   * different instants, and every string it derives from one differs
+   * between the two renders. That is not theoretical: Accueil's
+   * « Prochaines arrivées » keeps the bookings still to come, the seed
+   * puts every booking on a :00 or :30 boundary, and a booking whose
+   * hour passed between the two renders dropped out of the list on the
+   * client — the seventh slid into the sixth slot, every row moved, and
+   * React threw the tree away with `#418`.
+   *
+   * One instant, passed in, and the two runs agree. Optional so the
+   * styleguide and the capture tools can build a screen without one;
+   * `screenNow` is what reads it.
+   */
+  now?: number;
   customers?: Customer[];
   analytics?: VenueAnalytics;
   visibility?: VisibilityMetrics;
@@ -2677,6 +2705,7 @@ export const RESTAURANT_SCREENS: Record<
       ctx.money ?? EMPTY_MONEY,
       ctx.configuration,
       ctx.lot,
+      screenNow(ctx),
     ),
   reservations: (ctx) =>
     buildReservationsScreen(
@@ -2686,6 +2715,7 @@ export const RESTAURANT_SCREENS: Record<
       ctx.lot,
       ctx.dayBook,
       ctx.dayService,
+      screenNow(ctx),
     ),
   calendrier: (ctx) =>
     buildCalendarScreen(ctx.serviceFloor ?? EMPTY_FLOOR, ctx.configuration),
@@ -2828,6 +2858,14 @@ function replyRateOf(data: RestaurantOverview): number {
   if (total === 0) return 100;
   return (data.reviews.filter((r) => r.replied).length / total) * 100;
 }
+
+/**
+ * The instant a builder should use, never `Date.now()` directly.
+ *
+ * See `ScreenContext.now`. A builder that calls the clock is a builder
+ * whose output depends on which of the two runs is asking.
+ */
+export const screenNow = (ctx: ScreenContext): number => ctx.now ?? Date.now();
 
 export function buildScreen(slug: string, ctx: ScreenContext): ScreenSpec | null {
   if (!isRestaurantSlug(slug) || isFormRoute(slug)) return null;

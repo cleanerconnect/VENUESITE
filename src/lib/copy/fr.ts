@@ -87,6 +87,12 @@ export const COPY = {
   form: {
     saved: "Enregistré",
     unsaved: "Modifications non enregistrées",
+    /**
+     * The same sentence on every save bar in the portal, spec-driven or
+     * not: how many fields are waiting, not merely that some are.
+     */
+    unsavedCount: (n: number) =>
+      n === 1 ? "1 modification non enregistrée" : `${n} modifications non enregistrées`,
     savingFailed: "L'enregistrement a échoué. Réessayez.",
     required: "Ce champ est obligatoire.",
     /** Shown when a field is at its cap rather than over it. */
