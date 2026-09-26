@@ -63,7 +63,7 @@ export default async function MaFichePage({ searchParams }: Props) {
   // not in this route's `only` under Lot 1. Asking for them anyway made
   // a basique deployment require three endpoints it draws nothing from.
   const lot2 = lot === 2;
-  const [profile, menu, availability, photos, menuFiles, staff, overview, settings] =
+  const [profile, menuItems, availability, photos, menuFiles, thumbnail, menu, staff, overview, settings] =
     await Promise.all([
       repo.getVenueProfile(venueId),
       lot2 ? repo.listMenuItems(venueId) : [],
@@ -74,6 +74,9 @@ export default async function MaFichePage({ searchParams }: Props) {
       // to be able to keep that file current even though it has no dish
       // editor to keep a carte current with.
       repo.listAssets(venueId, "menu_file"),
+      // The square tile, which Identité owns in both lots.
+      repo.listAssets(venueId, "logo"),
+      repo.getMenu(venueId),
       lot2 ? repo.listStaff(venueId) : [],
       repo.getOverview(venueId),
       repo.getVenueSettings(venueId),
@@ -99,11 +102,11 @@ export default async function MaFichePage({ searchParams }: Props) {
           itself, and now every field the app's restaurant and bar
           detail screens actually draw.
 
-          Identité carries the words — name, accroche, type de cuisine,
-          catégorie, quartier, adresse, contact. Fiche carries the three
-          the app draws as controls: the price band, the ambience and
-          the equipment list. Horaires the opening hours, Photos the
-          carousel, Menu the carte as a file.
+          Identité carries the words — name, accroche, catégorie,
+          quartier, adresse, contact. Détails carries what the app draws
+          as controls: the cuisine and its spécialités, the price band,
+          the ambience and the equipment list. Horaires the opening
+          hours, Photos the carousel, Menu the carte as a file.
 
           « Mots-clés » is the one part of Fiche that stays Lot 2's, and
           the form itself decides that: a tag is a concept a basique
@@ -126,7 +129,6 @@ export default async function MaFichePage({ searchParams }: Props) {
         shortName: profile.shortName,
         tagline: profile.tagline,
         description: profile.description,
-        cuisine: profile.cuisine,
         category: profile.category,
         address: profile.address,
         district: profile.district,
@@ -145,15 +147,19 @@ export default async function MaFichePage({ searchParams }: Props) {
             : "restaurant",
       }}
       listing={{
+        cuisine: profile.cuisine,
+        specialties: profile.specialties,
         priceRange: profile.priceRange,
         tags: profile.tags,
         features: profile.features,
         ambience: profile.ambience,
       }}
-      menuItems={menu}
+      menuItems={menuItems}
+      menu={menu}
       availability={availability}
       photos={photos}
       menuFiles={menuFiles}
+      thumbnail={thumbnail}
       staff={staff}
       />
 

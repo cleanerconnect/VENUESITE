@@ -1631,6 +1631,115 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erreur'
+  /api/business/venues/{venueId}/menu-board:
+    get:
+      tags:
+      - Ma fiche
+      summary: La carte, rubriques et plats
+      operationId: getMenuBoard
+      description: |
+        Ce que lit l'onglet Menu, et ce que dessine l'écran Menu de l'application : les rubriques nommées par l'établissement, dans son ordre, chacune avec ses plats.
+
+        Un plat dont la rubrique a été supprimée revient sous une dernière rubrique sans id plutôt que d'être omis — une ligne qui a cessé d'être affichée est une ligne que personne ne peut retrouver pour la corriger.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueMenu'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+    put:
+      tags:
+      - Ma fiche
+      summary: Enregistrer la carte
+      operationId: saveMenuBoard
+      description: |
+        La carte entière, remplacée : l'éditeur envoie ce qu'il a à l'écran, et ce qu'il n'envoie plus, le partenaire l'a retiré. L'ordre du corps est l'ordre de l'application.
+
+        Ce que cet appel ne touche pas : `signature`, `visible` et les régimes, qui appartiennent à l'éditeur Carte du lot 2. Une ligne conservée les garde ; une ligne créée démarre sans.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuBoardPatch'
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueMenu'
+        '422':
+          description: Une rubrique sans nom, un plat sans nom, une ligne trop longue ou un prix négatif.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
   /api/business/venues/{venueId}/assets:
     get:
       tags:
@@ -1656,6 +1765,7 @@ paths:
           enum:
           - photo
           - menu_file
+          - logo
       responses:
         '200':
           description: Succès.
@@ -2408,8 +2518,25 @@ components:
             La ligne unique des cartes de liste de l'application. Refusée au-delà de 60 caractères plutôt que tronquée : une accroche dont le partenaire ne voit pas la fin est une accroche qu'il n'a pas écrite.
         cuisine:
           type: string
+          enum:
+          - ''
+          - marocaine
+          - japonaise
+          - italienne
+          - indienne
+          - mexicaine
+          - libanaise
+          - francaise
+          - asiatique
+          - mediterraneenne
+          - fusion
           description: |
-            « Type de cuisine » sur l'écran de fiche de l'application, et le sous-titre sous le nom du lieu. Texte libre : une cuisine est une phrase.
+            « Type de cuisine » sur l'écran de fiche de l'application, comme **un des dix ids** sur lesquels la recherche de l'application filtre. Vide tant que le partenaire n'a pas choisi. C'était du texte libre, et la réponse était alors décidée par une recherche de sous-chaîne : « cuisine du terroir » ne tombait sous aucun filtre, sans que rien ne le dise.
+        specialties:
+          type: string
+          maxLength: 80
+          description: |
+            Ce pour quoi on vient, en une ligne et dans les mots du partenaire — « Tajines, pastilla et méchoui du vendredi ». La phrase que `cuisine` portait avant d'être une clé de filtre.
         category:
           type: string
           description: |
@@ -3077,7 +3204,31 @@ components:
           - bar
         cuisine:
           type: string
-          description: Étape 2, à côté du nom. « Type de cuisine » sur l'écran de fiche.
+          enum:
+          - ''
+          - marocaine
+          - japonaise
+          - italienne
+          - indienne
+          - mexicaine
+          - libanaise
+          - francaise
+          - asiatique
+          - mediterraneenne
+          - fusion
+          description: Étape 2, à côté du nom. Un des dix ids sur lesquels l'application filtre.
+        specialties:
+          type: string
+          maxLength: 80
+          description: Étape 2, sous la cuisine. Une ligne dans les mots du partenaire.
+        thumbnailObjectKey:
+          type: string
+          description: |
+            Étape 4. La vignette carrée, déjà recadrée en 1:1 par le navigateur avant l'envoi. Devient l'unique `venue_assets` de `kind='logo'` du lieu à la soumission.
+        thumbnailContentType:
+          type: string
+        thumbnailSizeBytes:
+          type: integer
         priceRange:
           type: integer
           minimum: 1
@@ -3162,11 +3313,97 @@ components:
       - address
       - hours
       - updatedAt
+    MenuLine:
+      type: object
+      description: |
+        Un plat, tel que l'écran Menu de l'application le pose : un nom, une ligne, un prix en dirhams. Pas de photo — une carte de trente photos est un travail que personne ne finit — et pas d'options : « supplément frites » est une affaire de caisse, et ceci est une annonce qu'on lit avant de réserver.
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          maxLength: 80
+        description:
+          type: string
+          maxLength: 80
+          description: Une ligne, pas un paragraphe. L'écran lui en donne une.
+        priceMad:
+          type: number
+          minimum: 0
+      required:
+      - id
+      - name
+      - description
+      - priceMad
+    MenuSection:
+      type: object
+      description: |
+        Une rubrique, nommée par l'établissement. Un riad sert des mezzés, un rooftop « À grignoter », un menu dégustation des services numérotés : la liste fermée de cinq était la carte d'un bistrot français et de personne d'autre.
+      properties:
+        id:
+          type: string
+          maxLength: 24
+          description: Un identifiant unique au sein de l'établissement. Vide pour la rubrique de repli qui recueille les plats orphelins.
+        name:
+          type: string
+          maxLength: 40
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuLine'
+      required:
+      - id
+      - name
+      - items
+    VenueMenu:
+      type: object
+      properties:
+        venueId:
+          type: string
+        sections:
+          type: array
+          maxItems: 12
+          items:
+            $ref: '#/components/schemas/MenuSection'
+      required:
+      - venueId
+      - sections
+    MenuBoardPatch:
+      type: object
+      description: |
+        La carte entière. Ce que l'éditeur n'envoie plus, le partenaire l'a retiré.
+      properties:
+        sections:
+          type: array
+          maxItems: 12
+          items:
+            $ref: '#/components/schemas/MenuSection'
+      required:
+      - sections
     VenueListing:
       type: object
       description: |
-        Ce que l'onglet Fiche de Ma fiche lit et écrit. Un patch partiel : une clé absente est un ensemble laissé tel quel.
+        Ce que l'onglet Détails de Ma fiche lit et écrit. Un patch partiel : une clé absente est un ensemble laissé tel quel.
+
+        La cuisine est ici et non sur `VenueProfile` : c'est une liste fermée sur laquelle l'application filtre, donc la même sorte de chose que la fourchette de prix et non la même sorte de chose qu'un nom.
       properties:
+        cuisine:
+          type: string
+          enum:
+          - ''
+          - marocaine
+          - japonaise
+          - italienne
+          - indienne
+          - mexicaine
+          - libanaise
+          - francaise
+          - asiatique
+          - mediterraneenne
+          - fusion
+        specialties:
+          type: string
+          maxLength: 80
         priceRange:
           type: integer
           minimum: 1

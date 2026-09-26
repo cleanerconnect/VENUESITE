@@ -114,7 +114,16 @@ await page.getByLabel("Nom de l'établissement").fill("Le Petit Riad");
 await page.locator('button:has-text("Un bar ou lounge")').click();
 // « Type de cuisine » and the price band: the two the app's detail
 // screen draws under the venue's name and nothing used to ask for.
-await page.getByLabel("Type de cuisine").fill("Cocktails d'auteur et mezzés");
+//
+// The cuisine is a select of exactly the ten the app's filter row
+// offers. It was a text field, so a partner could write a sentence no
+// filter would ever match and never be told; the sentence has its own
+// line now, under the select.
+const cuisines = await page.getByLabel("Type de cuisine").locator("option").allTextContents();
+check("dix types de cuisine, plus l'invite", cuisines.length === 11, `${cuisines.length}`);
+check("et la liste est celle de l'application", cuisines.includes("Marocaine") && cuisines.includes("Méditerranéenne"));
+await page.getByLabel("Type de cuisine").selectOption("fusion");
+await page.getByLabel("Spécialités").fill("Cocktails d'auteur et mezzés");
 const bands = page.locator('[role="radiogroup"][aria-label="Fourchette de prix"] [role="radio"]');
 check("quatre niveaux de prix", (await bands.count()) === 4, `${await bands.count()}`);
 await bands.nth(2).click();
@@ -154,12 +163,28 @@ await page.waitForTimeout(1500);
 check("étape 4 · Photos", (await heading()) === "Photos");
 await shot("4-photos");
 
-// ── Step 4 · three files, all skippable, and it says so ──
+// ── Step 4 · four files, all skippable, and it says so ──
+// The vignette joined them: the app draws every venue as a square tile
+// in its lists, and a carousel photo is 16:9, so without one the tile
+// was a centre crop of a picture chosen for a different shape.
 const drops = await page.locator('input[type="file"]').count();
-check("couverture, deuxième photo et carte", drops === 3, `${drops} sélecteurs`);
-const pdf = await page
+check("couverture, deuxième photo, vignette et carte", drops === 4, `${drops} sélecteurs`);
+const vignette = await page
   .locator('input[type="file"]')
   .nth(2)
+  .getAttribute("accept");
+check(
+  "la vignette n'accepte que des images",
+  (vignette ?? "").includes("image/png") && !(vignette ?? "").includes("pdf"),
+  vignette ?? "",
+);
+check(
+  "et l'étape dit qu'elle recadre en carré",
+  /recadrée au centre, en carré/.test(await page.innerText("body")),
+);
+const pdf = await page
+  .locator('input[type="file"]')
+  .nth(3)
   .getAttribute("accept");
 check("la carte accepte un PDF", (pdf ?? "").includes("application/pdf"), pdf ?? "");
 const skip = page.locator('button:has-text("Passer cette étape")');
@@ -230,7 +255,11 @@ check(
 );
 // Every new answer has to survive the round trip to the draft and back,
 // or the step that collected it was theatre.
-check("le récapitulatif porte la cuisine", summary.includes("Cocktails d'auteur et mezzés"));
+check("le récapitulatif porte la cuisine", summary.includes("Fusion"));
+check(
+  "et les spécialités telles qu'écrites",
+  summary.includes("Cocktails d'auteur et mezzés"),
+);
 check("le récapitulatif porte le quartier", summary.includes("Médina"));
 // The band names itself in dirhams now, not in euro glyphs: « €€€ »
 // asked the partner to guess what three of them meant, and priced a

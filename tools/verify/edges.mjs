@@ -15,7 +15,7 @@
 
 import { chromiumOrExplain } from "./browser.mjs";
 import { writeFileSync } from "node:fs";
-import { LOT_LABEL, clockLine, requireWrites, signIn as sharedSignIn } from "./lot.mjs";
+import { LOT, LOT_LABEL, clockLine, requireWrites, signIn as sharedSignIn } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -48,7 +48,21 @@ page.on("console", (m) => {
   const from = m.location()?.url ?? "";
   if (EXTERNAL_MAP.test(text) || EXTERNAL_MAP.test(from)) return;
   if (/favicon|preload|Download the React/i.test(text)) return;
+  // « Failed to load resource » with no URL is an unactionable red: it
+  // says a request failed and not which. The response listener below
+  // names it, so this line drops the ones it will report itself.
+  if (/Failed to load resource/i.test(text)) return;
   noise.add(`console @${page.url().replace(BASE, "")}: ${text.slice(0, 130)}`);
+});
+// The URL, which the console message does not carry. A 404 on an asset
+// is a broken image on a partner's fiche, and a 500 is worse; both are
+// worth a line that says what to open.
+page.on("response", (r) => {
+  if (r.status() < 400) return;
+  const url = r.url();
+  if (EXTERNAL_MAP.test(url)) return;
+  if (/favicon|\/_next\/(static|image)/.test(url)) return;
+  noise.add(`http ${r.status()} ${url.replace(BASE, "")} @${page.url().replace(BASE, "")}`);
 });
 
 const check = (label, ok, detail = "") => {
@@ -254,19 +268,34 @@ if (await photosTab.count()) {
   check("Ma fiche a un onglet Photos", false);
 }
 
-// ── 7 bis. The carte, and what it will not take ─────────────
-// The Menu tab is a file and nothing else. Its ceiling is ten, and it
-// says so before the partner picks rather than after the eleventh
-// upload — which is the only moment the number would otherwise appear.
+// ── 7 bis. The carte, which is a list now ───────────────────
+// The tab was an upload and nothing else. The app's Menu screen wants
+// a menu, so the board is the menu and the PDF is what is left under
+// it — optional, and said to be optional.
 const menuTab = page
   .locator('button:has-text("Menu"):visible, [role="tab"]:has-text("Menu"):visible')
   .first();
 if (await menuTab.count()) {
   await menuTab.click();
-  await settle(1200);
+  await settle(1400);
   const shown = await text();
-  check("l'onglet Menu annonce son plafond", /jusqu'à 10 photos/.test(shown));
-  check("et n'offre pas d'éditeur de plats", !/Ajouter un plat|Prix du plat/i.test(shown));
+  check("l'onglet Menu ouvre la carte, pas un téléversement", /Votre carte/.test(shown));
+  // The names are in fields, not in prose: this tab is an editor, and
+  // a board whose headings were text would be a board you cannot
+  // rename. So the assertion reads values, not the rendered page.
+  const typed = await page.locator("main input[type=\"text\"], main input:not([type])").evaluateAll(
+    (nodes) => nodes.map((n) => n.value),
+  );
+  check(
+    "il porte les rubriques du lieu",
+    typed.includes("Entrées") && typed.includes("Plats"),
+    typed.slice(0, 4).join(" · "),
+  );
+  check("et un plat du jeu de données", typed.includes("Pastilla de pigeon"));
+  check("on peut ajouter une rubrique", (await page.locator('button:has-text("Ajouter une rubrique")').count()) > 0);
+  check("et un plat", (await page.locator('button:has-text("Ajouter un plat")').first().count()) > 0);
+  // The file did not go away, it stopped being the whole tab.
+  check("le PDF reste, en pièce jointe facultative", /Facultatif/.test(shown));
   const accept = await page
     .locator('input[type="file"]')
     .first()
@@ -276,11 +305,114 @@ if (await menuTab.count()) {
     (accept ?? "") === "application/pdf,image/jpeg,image/png",
     accept ?? "aucun",
   );
+
+  // A price retyped has to survive the reload, or the board is a form
+  // that looks like it saved.
+  const price = page.locator('input[inputmode="decimal"]').first();
+  if (await price.count()) {
+    const before = await price.inputValue();
+    const after = String(Number(before) + 5);
+    await price.fill(after);
+    await settle(400);
+    const bar = page.locator('button:has-text("Enregistrer"):visible:not([disabled])').first();
+    if (await bar.count()) {
+      await bar.click();
+      await settle(2600);
+      check("un prix modifié est enregistré", /Enregistré/.test(await text()));
+      await go("/restaurant/ma-fiche");
+      await menuTab.click();
+      await settle(1400);
+      const reread = await page.locator('input[inputmode="decimal"]').first().inputValue();
+      check("et tient au rechargement", reread === after, `${reread} · attendu ${after}`);
+      // Put it back.
+      await page.locator('input[inputmode="decimal"]').first().fill(before);
+      await settle(400);
+      const restore = page.locator('button:has-text("Enregistrer"):visible:not([disabled])').first();
+      if (await restore.count()) {
+        await restore.click();
+        await settle(2400);
+      }
+    } else {
+      check("modifier un prix rend Enregistrer actif", false);
+    }
+  } else {
+    check("la carte a un champ de prix", false);
+  }
 } else {
   check("Ma fiche a un onglet Menu", false);
 }
 
-// ── 8. The bar vocabulary ───────────────────────────────────
+// ── 8. A service closed stays closed ────────────────────────
+// The write that changes what a guest can book, and the one place the
+// screen can lie about it. Closing Monday lunch and pressing Enregistrer
+// used to write `enabled = 0` and then draw the switch back on, because
+// the repository returned a set it had read before its own writes had
+// landed. The screen said Ouvert, the booking rules said closed, and
+// which of the fourteen slots actually moved changed from run to run.
+//
+// So this asserts the three moments separately: what the response the
+// form re-renders from says, what a reload says, and that restoring it
+// round-trips the same way. Only the middle one is about the database;
+// the first is about whether a partner can trust the screen in front of
+// them.
+await go("/restaurant/ma-fiche");
+const hoursTab = page
+  .locator('button:has-text("Horaires"):visible, [role="tab"]:has-text("Horaires"):visible')
+  .first();
+if (await hoursTab.count()) {
+  await hoursTab.click();
+  await settle(1200);
+  // The first switch on the screen, whatever day and hour the seed puts
+  // first — named by its own label so the assertion survives a reseed.
+  const firstSwitch = page.locator('[role="switch"][aria-label$="· ouvert"]:visible').first();
+  const label = (await firstSwitch.getAttribute("aria-label")) ?? "";
+  const byLabel = () => page.locator(`[role="switch"][aria-label="${label}"]`).first();
+  const isOpen = async () => (await byLabel().getAttribute("aria-checked")) === "true";
+  const saveHours = async () => {
+    const bar = page.locator('button:has-text("Enregistrer"):visible:not([disabled])').first();
+    if (!(await bar.count())) return false;
+    await bar.click();
+    await settle(2600);
+    return true;
+  };
+
+  check("un service est ouvert au départ", await isOpen(), label);
+  await firstSwitch.click();
+  await settle(400);
+  check("le basculer le montre fermé", !(await isOpen()));
+  const sent = await saveHours();
+  check("et Enregistrer devient actif", sent);
+  if (sent) {
+    // The response, not the reload: this is the assertion the bug failed.
+    check("après l'enregistrement il est toujours fermé", !(await isOpen()), label);
+    check("et l'écran le dit", /Enregistré/.test(await text()));
+    await go("/restaurant/ma-fiche");
+    await hoursTab.click();
+    await settle(1200);
+    check("et il l'est encore après un rechargement", !(await isOpen()), label);
+
+    // Put it back, so the capture and the next tool start from an open
+    // week — and so the restore is itself a round trip through the
+    // same seam.
+    await byLabel().click();
+    await settle(400);
+    await saveHours();
+    check("le rouvrir tient aussi", await isOpen(), label);
+    await go("/restaurant/ma-fiche");
+    await hoursTab.click();
+    await settle(1200);
+    check("et survit au rechargement", await isOpen(), label);
+  }
+} else if (LOT === 2) {
+  // Lot 2's Ma fiche has no Horaires tab: the opening hours are on
+  // Disponibilités there, and this lot's fiche is the listing. A Lot 1
+  // shape asserted in Lot 2 is a defect in the tool, not the screen.
+  console.log("  —    l'onglet Horaires est une forme du lot 1, absente du lot 2");
+} else {
+  check("Ma fiche a un onglet Horaires", false);
+}
+
+// ── 9. The bar vocabulary ───────────────────────────────────
 // Nomad Casa is a lounge in the seed: the same screens have to speak
 // « personnes » where the restaurant says « couverts ».
 // The switcher is a dropdown in the sidebar; setting the cookie it

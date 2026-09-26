@@ -17,6 +17,8 @@ import type {
   DayBook,
   GuestReview,
   MenuItem,
+  MenuSectionName,
+  VenueMenu,
   Reservation,
   RestaurantActivityItem,
   RestaurantOverview,
@@ -26,7 +28,7 @@ import type {
   ServiceKind,
   Zone,
 } from "@/lib/types/restaurant";
-import { isVenueStatus } from "@/lib/types/restaurant";
+import { isCuisineId, isVenueStatus, type CuisineId } from "@/lib/types/restaurant";
 import { StaleWriteError } from "@/lib/data/repository";
 import { asSlotMinutes } from "@/lib/types/venue-operations";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
@@ -62,7 +64,14 @@ export async function venueProfile(venueId: string): Promise<RestaurantProfile |
     subline: `${String(r.kind) === "drinks" ? "Bar" : "Restaurant"} · ${String(r.city)}`,
     // Two different answers, and the app prints both: what the kitchen
     // cooks, then what kind of establishment it is.
-    cuisine: String(r.cuisine ?? "") || String(r.category),
+    //
+    // No fallback to the category any more. The column holds one of ten
+    // ids the app filters on, and a category — « Restaurant
+    // gastronomique, riad » — is not one of them: standing it in here
+    // would put a sentence where a filter looks for `marocaine` and
+    // make an unanswered question look answered.
+    cuisine: isCuisineId(String(r.cuisine ?? "")) ? (String(r.cuisine) as CuisineId) : "",
+    specialties: String(r.specialties ?? ""),
     category: String(r.category ?? ""),
     district: String(r.district ?? ""),
     tagline: String(r.tagline ?? ""),
@@ -397,6 +406,48 @@ async function waitlist(venueId: string): Promise<Reservation[]> {
 
 // ── Menu, reviews, activity, payouts ─────────────────────────
 
+/**
+ * The sections of the card, in the order the venue put them.
+ *
+ * Their names are the venue's — « Mezzés », « À grignoter », « Second
+ * service » — so nothing here translates an id into a label.
+ */
+export async function menuSections(venueId: string): Promise<MenuSectionName[]> {
+  return (await all(
+    "SELECT id, name FROM menu_categories WHERE venue_id = ? ORDER BY position, name",
+    venueId,
+  )).map((r) => ({ id: String(r.id), name: String(r.name) }));
+}
+
+/**
+ * The whole card: sections, then the dishes under each.
+ *
+ * A dish whose section was deleted out from under it would vanish from
+ * this read, so the orphans are gathered into a last section rather
+ * than dropped — a partner can see them and move them, which is not
+ * true of rows that quietly stopped being rendered.
+ */
+export async function venueMenu(venueId: string): Promise<VenueMenu> {
+  const [sections, items] = await Promise.all([
+    menuSections(venueId),
+    menuItems(venueId),
+  ]);
+  const known = new Set(sections.map((s) => s.id));
+  const orphans = items.filter((i) => !known.has(i.category));
+  return {
+    venueId,
+    sections: [
+      ...sections.map((s) => ({
+        ...s,
+        items: items.filter((i) => i.category === s.id),
+      })),
+      ...(orphans.length
+        ? [{ id: "", name: "Sans rubrique", items: orphans }]
+        : []),
+    ],
+  };
+}
+
 /** Also the settings editor's source — the app listing and the form
  *  read the same rows, so what a partner edits is what a diner sees. */
 export async function menuItems(venueId: string): Promise<MenuItem[]> {
@@ -690,6 +741,7 @@ export async function overview(venueId: string, viewerFirstName: string): Promis
     waitlist: queue,
     activity: await activity(venueId),
     topItems: await menuItems(venueId),
+    menuSections: await menuSections(venueId),
     reviews: await reviews(venueId),
     services: list,
     payouts: await payouts(venueId),

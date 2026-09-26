@@ -18,7 +18,7 @@
 
 import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { LOT, LOT_LABEL, clockLine, requireWrites, signIn } from "./lot.mjs";
+import { DEMO_CLOCK, LOT, LOT_LABEL, clockLine, requireWrites, signIn } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -186,9 +186,12 @@ const wantsBar = pass === "2";
 await page
   .locator(`button:has-text("${wantsBar ? "Un bar ou lounge" : "Un restaurant"}")`)
   .click();
-// The two the app's detail screen shows under the venue's name.
-await page.getByLabel("Type de cuisine").fill(
-  wantsBar ? "Cocktails d'auteur et petite restauration" : "Cuisine marocaine de saison",
+// The two the app's detail screen shows under the venue's name. The
+// cuisine is one of the ten the app's filter row offers — a select, not
+// a field — and the sentence goes on the line under it.
+await page.getByLabel("Type de cuisine").selectOption(wantsBar ? "fusion" : "marocaine");
+await page.getByLabel("Spécialités").fill(
+  wantsBar ? "Cocktails d'auteur et petite restauration" : "Tajines de saison et pastilla",
 );
 await page
   .locator('[role="radiogroup"][aria-label="Fourchette de prix"] [role="radio"]')
@@ -291,7 +294,12 @@ check("le récapitulatif porte la ville", summary.includes("Marrakech"));
 check("le récapitulatif porte le type", summary.includes(wantsBar ? "Bar ou lounge" : "Restaurant"));
 check("le récapitulatif compte six jours", /6 jours par semaine/.test(summary));
 check("la photo est au récapitulatif", /1 photo/.test(summary));
-check("le récapitulatif porte la cuisine", /Cuisine|Cocktails/.test(summary));
+check(
+  "le récapitulatif porte la cuisine",
+  summary.includes(wantsBar ? "Fusion" : "Marocaine"),
+  summary.split("\n").find((l) => /Fusion|Marocaine/.test(l)) ?? "",
+);
+check("et les spécialités", /Cocktails d'auteur|Tajines de saison/.test(summary));
 check("le récapitulatif porte le quartier", summary.includes("Guéliz"));
 check("le récapitulatif porte l'ambiance", /Ambiance/.test(summary));
 await shot("etape7");
@@ -307,7 +315,15 @@ check("atterrit sur l'Accueil", page.url().endsWith("/restaurant"), page.url());
 // ── 2. The venue they just made, which has nothing in it ────
 await rendersFine("Accueil du nouvel établissement");
 const landing = await body();
-check("salue le partenaire par son prénom", landing.includes("Amine"), (await heading()).slice(0, 48));
+// Lot 2's phone lane opens on the floor, not on a greeting: a manager
+// who has the app out mid-service wants the room, and the card that
+// says good evening is the first thing that goes. Lot 1's phone lane
+// keeps it, because its Accueil is the greeting and three groups.
+if (LOT === 1 || !phone) {
+  check("salue le partenaire par son prénom", landing.includes("Amine"), (await heading()).slice(0, 48));
+} else {
+  console.log("  —    salue le partenaire par son prénom · absent de la voie téléphone du lot 2");
+}
 check(
   "la barre latérale nomme l'établissement",
   ((await page.textContent(phone ? "body" : "aside").catch(() => "")) ?? "").includes(venueName),
@@ -486,7 +502,13 @@ if (await picker.count()) {
   // The day as the venue counts it, not as UTC does: between 23h and
   // midnight UTC the two are different days in Casablanca, and the
   // screen would be asked for yesterday.
-  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Casablanca" });
+  //
+  // And the *portal's* day, not the container's. The portal runs on
+  // `LYFE_DEMO_CLOCK` — the Thursday of the week at 20h30 — so on any
+  // other weekday the real date is a date the screen does not call
+  // « Aujourd'hui », and this check failed for the calendar rather
+  // than for the screen.
+  const today = DEMO_CLOCK.toLocaleDateString("en-CA", { timeZone: "Africa/Casablanca" });
   await picker.fill(today);
   check(
     "le sélecteur de date ramène à aujourd'hui",
@@ -627,6 +649,10 @@ if (await carnet.count()) {
   await carnet.click();
   await settle(1800);
   check("Ouvrir le carnet mène aux Réservations", page.url().includes("reservations"), page.url());
+} else if (LOT === 2 && phone) {
+  // Same reason: the shortcut lives on the greeting card, and the
+  // greeting card is not in this lot's phone lane.
+  console.log("  —    Ouvrir le carnet · sur la carte d'accueil, absente de la voie téléphone du lot 2");
 } else {
   check("Accueil propose Ouvrir le carnet", false);
 }

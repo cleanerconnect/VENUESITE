@@ -58,12 +58,26 @@ export interface RestaurantProfile {
   /** One-line subhead under the workspace switcher. */
   subline: string;
   /**
-   * « Type de cuisine » on the app's detail screen, and the subtitle
-   * under the venue's name — « Cuisine japonaise traditionnelle moderne
-   * & omakase ». Free text: a cuisine is a sentence, not an enum, and
-   * the app prints it verbatim.
+   * « Type de cuisine » on the app's detail screen, as one of
+   * `CUISINE_IDS`. The app's search filters on this, so it is the id
+   * and not the label: a filter compares `marocaine` and a screen
+   * prints `CUISINE_LABEL` for it.
+   *
+   * Empty on a venue whose partner has not picked yet, which is a state
+   * the filter reads as « not listed under any cuisine » rather than as
+   * a cuisine of its own.
    */
-  cuisine: string;
+  cuisine: CuisineId | "";
+  /**
+   * What this kitchen is actually known for, in the partner's own
+   * words — « Tajines, pastilla et méchoui du vendredi ». One line of
+   * `SPECIALTIES_MAX`, printed under the cuisine on the detail screen.
+   *
+   * The sentence the cuisine field used to hold. Closing that field to
+   * ten ids made the app's filter work and took away the only place a
+   * partner could say what they cook; this is where it went.
+   */
+  specialties: string;
   /**
    * « Catégorie » on the same screen, one line below the cuisine —
    * « Restaurant gastronomique, sushi bar ». What kind of establishment
@@ -213,6 +227,67 @@ export const isVenueAmbience = (value: string): value is VenueAmbience =>
  */
 export const ambienceLabel = (value: string): string =>
   isVenueAmbience(value) ? VENUE_AMBIENCE[value] : value;
+
+/**
+ * The ten cuisines the app filters on.
+ *
+ * This list is not ours: it is the filter row on the app's search
+ * screen, and a venue whose cuisine is not one of these ten cannot be
+ * found by tapping any of them. It was free text here for two phases —
+ * Dar Zellij's read « Cuisine marocaine contemporaine, tajines et
+ * pastilla », which is a good sentence and matched the « Marocaine »
+ * filter only because the backend was doing a substring search on it.
+ * A partner who wrote « Maroc » or « cuisine du terroir » fell off the
+ * app entirely, silently, with a fiche that looked complete.
+ *
+ * So the id is the contract and the sentence moved to `specialties`.
+ * The ids are unaccented on purpose: they travel in a query string.
+ */
+export const CUISINE_IDS = [
+  "marocaine",
+  "japonaise",
+  "italienne",
+  "indienne",
+  "mexicaine",
+  "libanaise",
+  "francaise",
+  "asiatique",
+  "mediterraneenne",
+  "fusion",
+] as const;
+
+export type CuisineId = (typeof CUISINE_IDS)[number];
+
+/** What the app prints, and what the select offers. */
+export const CUISINE_LABEL: Record<CuisineId, string> = {
+  marocaine: "Marocaine",
+  japonaise: "Japonaise",
+  italienne: "Italienne",
+  indienne: "Indienne",
+  mexicaine: "Mexicaine",
+  libanaise: "Libanaise",
+  francaise: "Française",
+  asiatique: "Asiatique",
+  mediterraneenne: "Méditerranéenne",
+  fusion: "Fusion",
+};
+
+export const isCuisineId = (value: string): value is CuisineId =>
+  (CUISINE_IDS as readonly string[]).includes(value);
+
+/**
+ * The label for an id, or nothing.
+ *
+ * Deliberately not lenient the way `ambienceLabel` is. An ambience the
+ * list does not know still reads as something on a screen; a cuisine
+ * the list does not know is a filter the venue is missing from, and
+ * printing it as though it were fine hides that.
+ */
+export const cuisineLabel = (value: string): string =>
+  isCuisineId(value) ? CUISINE_LABEL[value] : "";
+
+/** One line, and the app's detail screen gives it one line. */
+export const SPECIALTIES_MAX = 80;
 
 /** The app's list card has room for one line. */
 export const TAGLINE_MAX = 60;
@@ -409,12 +484,47 @@ export interface Zone {
 
 // ── Menu ─────────────────────────────────────────────────────
 
+/**
+ * The five sections the seed starts a card with.
+ *
+ * Not a closed list any more, and deliberately: a riad serves mezzés,
+ * a rooftop serves « À grignoter », and a tasting menu has courses
+ * with numbers. The venue names its own sections (`MenuSection`), and
+ * these five ids are what a card starts as — which is also what lets
+ * the Carte screen keep an icon per section for the common case.
+ */
 export type MenuCategory =
   | "entree"
   | "plat"
   | "dessert"
   | "boisson"
   | "cocktail";
+
+/** A section's name and id, without its dishes. */
+export interface MenuSectionName {
+  /** A slug, unique within the venue. One of `MenuCategory` to start. */
+  id: string;
+  name: string;
+}
+
+/** One section of the card, named by the venue. */
+export interface MenuSection extends MenuSectionName {
+  items: MenuItem[];
+}
+
+/** The card as the app's Menu screen reads it: sections, then dishes. */
+export interface VenueMenu {
+  venueId: string;
+  sections: MenuSection[];
+}
+
+/** One line under a dish. Not a paragraph: the app gives it one line. */
+export const MENU_ITEM_LINE_MAX = 80;
+
+/** A card with thirty sections is a card nobody scrolls. */
+export const MENU_SECTION_MAX = 12;
+export const MENU_SECTION_NAME_MAX = 40;
+export const MENU_ITEM_NAME_MAX = 80;
 
 /**
  * A dish as the LYFE app displays it. This is a customer-facing listing,
@@ -424,8 +534,10 @@ export type MenuCategory =
 export interface MenuItem {
   id: string;
   name: string;
+  /** One line, `MENU_ITEM_LINE_MAX`. */
   description: string;
-  category: MenuCategory;
+  /** The `MenuSection.id` this dish sits under, within its venue. */
+  category: string;
   priceMad: number;
   /** Highlighted in the app as a house speciality. */
   signature: boolean;
@@ -566,6 +678,8 @@ export interface RestaurantOverview {
   waitlist: Reservation[];
   activity: RestaurantActivityItem[];
   topItems: MenuItem[];
+  /** The names the venue gave its sections, in card order. */
+  menuSections: MenuSectionName[];
   reviews: GuestReview[];
   services: Service[];
   payouts: RestaurantPayout[];

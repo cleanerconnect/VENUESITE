@@ -12,8 +12,12 @@ import { ChipSelect } from "@/components/forms/ChipSelect";
 import { SaveBar } from "@/components/forms/SaveBar";
 import { useOptimisticForm } from "@/lib/forms/useOptimisticForm";
 import { saveMenuItem, type MenuItemInput } from "@/app/actions/venue";
-import { MENU_CATEGORY } from "@/lib/restaurant/vocabulary";
-import { DIETARY_TAG, type DietaryTag } from "@/lib/types/restaurant";
+import { menuCategoryTerm } from "@/lib/restaurant/vocabulary";
+import {
+  DIETARY_TAG,
+  type DietaryTag,
+  type MenuSectionName,
+} from "@/lib/types/restaurant";
 import { formatMAD } from "@/lib/utils/format";
 
 // The card, as a diner sees it before booking.
@@ -26,8 +30,16 @@ const DIETARY_OPTIONS = (Object.keys(DIETARY_TAG) as DietaryTag[]).map((id) => (
   label: DIETARY_TAG[id],
 }));
 
-export function MenuListingForm({ items }: { items: MenuItemInput[] }) {
+export function MenuListingForm({
+  items,
+  sections,
+}: {
+  items: MenuItemInput[];
+  /** The venue's own names for its sections, for the row's subtitle. */
+  sections: MenuSectionName[];
+}) {
   const [openId, setOpenId] = useState<string | null>(null);
+  const names = new Map(sections.map((s) => [s.id, s.name]));
 
   if (items.length === 0) {
     return (
@@ -54,6 +66,7 @@ export function MenuListingForm({ items }: { items: MenuItemInput[] }) {
           <MenuRow
             key={item.id}
             item={item}
+            sectionName={names.get(item.category)}
             open={openId === item.id}
             onToggle={() => setOpenId(openId === item.id ? null : item.id)}
           />
@@ -65,10 +78,12 @@ export function MenuListingForm({ items }: { items: MenuItemInput[] }) {
 
 function MenuRow({
   item,
+  sectionName,
   open,
   onToggle,
 }: {
   item: MenuItemInput;
+  sectionName?: string;
   open: boolean;
   onToggle: () => void;
 }) {
@@ -93,7 +108,7 @@ function MenuRow({
             {!form.value.visible ? <Pill tone="draft">Masqué</Pill> : null}
           </div>
           <div className="text-meta text-ink-mute mt-0.5">
-            {MENU_CATEGORY[form.value.category].label}
+            {menuCategoryTerm(form.value.category, sectionName).label}
           </div>
         </div>
         <span className="num text-[14px] font-semibold text-ink shrink-0">

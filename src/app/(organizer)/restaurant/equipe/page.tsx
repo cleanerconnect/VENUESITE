@@ -54,13 +54,15 @@ export default async function EquipePage({ searchParams }: Props) {
   const venueId = session.venueId;
 
   try {
-  const [profile, menu, availability, photos, menuFiles, staff] =
+  const [profile, menuItems, availability, photos, menuFiles, thumbnail, menu, staff] =
     await Promise.all([
       repo.getVenueProfile(venueId),
       repo.listMenuItems(venueId),
       repo.getAvailability(venueId),
       repo.listAssets(venueId, "photo"),
       repo.listAssets(venueId, "menu_file"),
+      repo.listAssets(venueId, "logo"),
+      repo.getMenu(venueId),
       repo.listStaff(venueId),
     ]);
 
@@ -77,7 +79,6 @@ export default async function EquipePage({ searchParams }: Props) {
         shortName: profile.shortName,
         tagline: profile.tagline,
         description: profile.description,
-        cuisine: profile.cuisine,
         category: profile.category,
         address: profile.address,
         district: profile.district,
@@ -96,15 +97,19 @@ export default async function EquipePage({ searchParams }: Props) {
             : "restaurant",
       }}
       listing={{
+        cuisine: profile.cuisine,
+        specialties: profile.specialties,
         priceRange: profile.priceRange,
         tags: profile.tags,
         features: profile.features,
         ambience: profile.ambience,
       }}
-      menuItems={menu}
+      menuItems={menuItems}
+      menu={menu}
       availability={availability}
       photos={photos}
       menuFiles={menuFiles}
+      thumbnail={thumbnail}
       staff={staff}
     />
   );

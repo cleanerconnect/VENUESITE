@@ -69,8 +69,9 @@ const HOME = {
   "ma-fiche-details": ["5 · Ma fiche", 1],
   "ma-fiche-enregistre": ["5 · Ma fiche", 2],
   "ma-fiche-horaires": ["5 · Ma fiche", 3],
-  "ma-fiche-photos": ["5 · Ma fiche", 4],
-  "ma-fiche-menu": ["5 · Ma fiche", 5],
+  "ma-fiche-horaires-enregistre": ["5 · Ma fiche", 4],
+  "ma-fiche-photos": ["5 · Ma fiche", 5],
+  "ma-fiche-menu": ["5 · Ma fiche", 6],
   "disponibilites": ["6 · Disponibilités", 0],
   "disponibilites-enregistre": ["6 · Disponibilités", 1],
   "notifications": ["7 · Notifications", 0],
@@ -89,8 +90,9 @@ const HOME = {
  * stamp yet. Read once, then the stamps take over — an id here is the
  * id of a frame this script has since deleted.
  *
- * `ma-fiche-horaires@390` is deliberately absent: page 09 never had it.
- * It is created, and `HOME` says where.
+ * `ma-fiche-horaires@390` and both widths of
+ * `ma-fiche-horaires-enregistre` are deliberately absent: page 09 never
+ * had them. They are created, and `HOME` says where.
  */
 const ADOPT = {
   "connexion@1440": "128:12",

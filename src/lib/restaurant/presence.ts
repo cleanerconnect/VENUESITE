@@ -15,7 +15,7 @@ import { COUNT } from "@/lib/dashboard/formats";
 import type { VenueAvailability } from "@/lib/types/business";
 import type { RestaurantProfile, Zone } from "@/lib/types/restaurant";
 import type { VenueConfiguration, VenueSettings } from "@/lib/types/venue-operations";
-import { PRICE_RANGE_LABEL, VENUE_FEATURE } from "@/lib/types/restaurant";
+import { cuisineLabel, PRICE_RANGE_LABEL, VENUE_FEATURE } from "@/lib/types/restaurant";
 import { hasNightlife } from "@/lib/venue/config";
 import { clock } from "./format";
 import { restaurantHref } from "./slugs";
@@ -150,7 +150,10 @@ export function buildPresenceScreen(input: {
     // `priceRange - 1` — so a venue in the 300–500 band previewed as
     // the 150–300 one.
     subtitle: [
-      profile?.cuisine,
+      // The label, not the id: this block is a picture of the app's
+      // header, and the app's header prints « Marocaine ».
+      profile ? cuisineLabel(profile.cuisine) : null,
+      profile?.specialties,
       [profile?.district, profile?.city].filter(Boolean).join(", "),
       profile ? PRICE_RANGE_LABEL[profile.priceRange] : null,
     ]

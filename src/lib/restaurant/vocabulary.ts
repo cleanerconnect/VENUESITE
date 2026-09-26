@@ -85,6 +85,22 @@ export const MENU_CATEGORY: Record<MenuCategory, Term> = {
   cocktail: { label: "Cocktail", tone: "violet", icon: "martini" },
 };
 
+/**
+ * The term for a section, whatever the venue called it.
+ *
+ * The five above are what a card starts as, and they earn an icon.
+ * A venue that renames « Entrées » to « Mezzés », or adds a section
+ * of its own, gets its own name and the generic glyph — which is the
+ * honest answer, rather than filing its mezzés under « Plat » so the
+ * row has a picture.
+ */
+export const menuCategoryTerm = (id: string, name?: string): Term => {
+  const known = (MENU_CATEGORY as Record<string, Term>)[id];
+  if (known && !name) return known;
+  if (known && name) return { ...known, label: name };
+  return { label: name || id, tone: "neutral", icon: "utensils-crossed" };
+};
+
 export const PAYOUT_STATE: Record<PayoutState, Term> = {
   scheduled: { label: "PROGRAMMÉ", tone: "info", icon: "calendar-clock" },
   processing: { label: "EN COURS", tone: "warning", icon: "hourglass" },

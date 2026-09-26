@@ -16,9 +16,12 @@ export interface VenueIdentityPatch {
   /** One line on the app's list cards, 60 characters. */
   tagline: string;
   description: string;
-  /** « Type de cuisine » — what the kitchen cooks. */
-  cuisine: string;
-  /** « Catégorie » — what kind of establishment this is. */
+  /**
+   * « Catégorie » — what kind of establishment this is. The cuisine is
+   * the other half of that question and lives on `VenueListingPatch`
+   * now: it became a closed list the app filters on, which puts it with
+   * the price band and the ambience rather than with the words.
+   */
   category: string;
   address: string;
   /** « Quartier », which the app prints before the city. */
@@ -39,7 +42,7 @@ export async function updateVenueIdentity(
   await run(
     `UPDATE venues SET
        name = ?, short_name = ?, tagline = ?, description = ?,
-       cuisine = ?, category = ?,
+       category = ?,
        address = ?, district = ?, city = ?, latitude = ?, longitude = ?,
        contact_email = ?, contact_phone = ?, website = ?, kind = ?,
        updated_at = ?
@@ -48,7 +51,6 @@ export async function updateVenueIdentity(
     patch.shortName,
     patch.tagline,
     patch.description,
-    patch.cuisine,
     patch.category,
     patch.address,
     patch.district,
@@ -74,6 +76,10 @@ export async function updateVenueIdentity(
 export type VenueTagKind = "tag" | "feature" | "ambience";
 
 export interface VenueListingPatch {
+  /** One of `CUISINE_IDS`, or empty while the partner has not picked. */
+  cuisine: string;
+  /** One line of 80 under it, in the partner's own words. */
+  specialties: string;
   /** 1–4; `PRICE_RANGE_LABEL` turns it into the MAD range the app prints. */
   priceRange: number;
   tags: string[];
@@ -90,7 +96,11 @@ export async function updateVenueListing(
   // the write not landing at all.
   await transaction(async () => {
     await run(
-      "UPDATE venues SET price_range = ?, updated_at = ? WHERE id = ?",
+      `UPDATE venues SET cuisine = ?, specialties = ?, price_range = ?,
+              updated_at = ?
+         WHERE id = ?`,
+      patch.cuisine,
+      patch.specialties,
       patch.priceRange,
       new Date().toISOString(),
       venueId,
@@ -163,6 +173,106 @@ export async function updateMenuItem(venueId: string, patch: MenuItemPatch): Pro
         patch.id,
         tag,
       );
+    }
+  });
+}
+
+// ── The card as a whole ──────────────────────────────────────
+
+export interface MenuBoardPatch {
+  sections: {
+    id: string;
+    name: string;
+    items: {
+      id: string;
+      name: string;
+      description: string;
+      priceMad: number;
+    }[];
+  }[];
+}
+
+/**
+ * Writes the whole card in one transaction.
+ *
+ * Replace rather than diff, for the reason the listing facets give: the
+ * set is small, the editor sends what it has on screen, and a partial
+ * write that left three dishes under a section that no longer exists is
+ * worse than the save not landing.
+ *
+ * What it does **not** touch is `menu_item_dietary`, `signature` and
+ * `visible`. Those belong to the Carte editor, which is a different
+ * screen with different questions; a basique deployment's board is a
+ * name, a line and a price, and it must not silently clear the markers
+ * a Lot 2 partner set one tab over. Rows it keeps keep them; rows it
+ * creates start without.
+ */
+export async function updateMenuBoard(
+  venueId: string,
+  patch: MenuBoardPatch,
+): Promise<void> {
+  await transaction(async () => {
+    await run("DELETE FROM menu_categories WHERE venue_id = ?", venueId);
+
+    const keep = new Set<string>();
+    let sectionAt = 0;
+    let itemAt = 0;
+    for (const section of patch.sections) {
+      await run(
+        `INSERT INTO menu_categories (venue_id, id, name, position)
+         VALUES (?, ?, ?, ?)`,
+        venueId,
+        section.id,
+        section.name,
+        sectionAt,
+      );
+      sectionAt += 1;
+
+      for (const item of section.items) {
+        keep.add(item.id);
+        const { changes } = await run(
+          `UPDATE menu_items SET
+             name = ?, description = ?, category = ?, price_cents = ?,
+             position = ?
+           WHERE id = ? AND venue_id = ?`,
+          item.name,
+          item.description,
+          section.id,
+          Math.round(item.priceMad * 100),
+          itemAt,
+          item.id,
+          venueId,
+        );
+        // A row the editor invented — « Ajouter un plat » gives it an
+        // id client-side so the list can key on it before it exists.
+        if (Number(changes) === 0) {
+          await run(
+            `INSERT INTO menu_items
+               (id, venue_id, name, description, category, price_cents,
+                signature, visible, position)
+             VALUES (?, ?, ?, ?, ?, ?, 0, 1, ?)`,
+            item.id,
+            venueId,
+            item.name,
+            item.description,
+            section.id,
+            Math.round(item.priceMad * 100),
+            itemAt,
+          );
+        }
+        itemAt += 1;
+      }
+    }
+
+    // Whatever the board no longer holds, the partner removed.
+    for (const row of await all(
+      "SELECT id FROM menu_items WHERE venue_id = ?",
+      venueId,
+    )) {
+      const id = String(row.id);
+      if (keep.has(id)) continue;
+      await run("DELETE FROM menu_item_dietary WHERE item_id = ?", id);
+      await run("DELETE FROM menu_items WHERE id = ? AND venue_id = ?", id, venueId);
     }
   });
 }

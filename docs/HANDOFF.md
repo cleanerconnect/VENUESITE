@@ -172,6 +172,54 @@ registers says « couverts » anywhere. The one-directional version passed
 for a release while the advisor's card on a bar's Accueil counted covers
 three lines above the word it was looking for.
 
+### Trois champs pour que l'application ait quelque chose à dessiner
+
+Les écrans de l'application lisent la fiche du portail, et trois de
+leurs blocs n'avaient rien à lire.
+
+**La cuisine est une liste de dix.** L'écran de recherche porte une
+rangée de filtres — Marocaine, Japonaise, Italienne, Indienne,
+Mexicaine, Libanaise, Française, Asiatique, Méditerranéenne, Fusion —
+et un établissement est derrière l'un de ces boutons ou derrière aucun.
+Le champ était du texte libre, et l'appartenance était donc décidée par
+une recherche de sous-chaîne dans le backend : « Cuisine marocaine
+contemporaine, tajines et pastilla » tombait sous « Marocaine » par
+chance, « cuisine du terroir » ne tombait nulle part, et la fiche avait
+l'air complète dans les deux cas. `CUISINE_IDS` est la liste,
+`venues.cuisine` en porte l'id, et la phrase que le partenaire écrivait
+a son propre champ : `specialties`, une ligne de 80 caractères, celle
+que l'écran de fiche imprime sous la cuisine. Le sélecteur et la ligne
+sont un seul composant, `CuisineFields`, parce que Ma fiche · Détails et
+l'étape 2 de l'inscription posent la même question.
+
+**Le menu est une liste, plus le PDF.** L'onglet Menu d'un déploiement
+basique était un téléversement et rien d'autre : un PDF, ou jusqu'à dix
+photos des pages. L'écran Menu de l'application veut un menu — quelque
+chose qu'il peut mettre en page, chercher et chiffrer dans la monnaie du
+client — et recevait un fichier qu'il ne pouvait que proposer d'ouvrir.
+Une photo de carte plastifiée est par ailleurs la chose qu'un
+établissement change en dernier, donc les prix lus par un client avaient
+couramment une saison de retard. `MenuBoardForm` est la carte :
+`menu_categories` porte les rubriques que le lieu nomme lui-même — un
+riad sert des mezzés, un rooftop « À grignoter » — et chaque plat est un
+nom, une ligne de 80 et un prix en dirhams, glissables. Pas de photo :
+une carte de trente photos est un travail que personne ne finit. Pas
+d'options : « supplément frites » est une affaire de caisse. Le PDF
+reste dessous, facultatif, et la charge utile le sert sous `menu_files`
+pendant que `menu` porte la carte.
+
+**La vignette est carrée avant d'être envoyée.** L'application dessine
+chaque lieu dans une tuile carrée ; les seules images que le portail
+savait recevoir étaient les photos du carrousel, en 16:9, donc la tuile
+était un recadrage central d'une photo choisie pour une autre forme, et
+un logo y perdait ses propres bords. `ThumbnailUpload` sur Ma fiche ·
+Identité et une quatrième zone à l'étape 4 de l'inscription recadrent en
+1:1 **dans le navigateur** (`src/lib/assets/square.ts`) : l'objet stocké
+est carré par construction, `thumbnail_url` est une promesse que la
+charge utile peut tenir, et l'aperçu que le partenaire approuve est la
+tuile que le client verra. Un `venue_assets` de `kind='logo'`, un par
+établissement — enregistrer une nouvelle vignette retire l'ancienne.
+
 ### The Lot 2 screens
 
 Calendrier · Liste d'attente · Briefing · Liste clients · Fiche client ·
@@ -305,7 +353,8 @@ the day arrows, the date picker, the chips, the search, accept, refuse,
 check-in and the scanner. `edges.mjs` walks what it does not: a wrong
 password, an address with no account, a session that died with a form
 open, two taps on one button, a network taking 350 ms a request, a 12 MB
-photo, an empty venue, a bar. Both pass at 1440 and at 390.
+photo, a service closed on Horaires and the screen asked three times
+whether it stayed closed, an empty venue, a bar. Both pass at 1440 and at 390.
 
 **`LYFE_DEMO_CLOCK`, and why the plates stopped moving.** A dashboard is
 a picture of a moment. Captured at 03h17 the seed's dinner service is
@@ -600,9 +649,10 @@ follow.
 
 **The five sections a partner types into are not drawn by hand.**
 `tools/figma/capture-frames.mjs` walks the running portal — Connexion,
-five tabs of Ma fiche and the saved state of Détails, Disponibilités,
-Notifications, and the onboarding's seven steps, at 1440 and at 390,
-36 frames in all — and writes the boxes the browser actually painted,
+five tabs of Ma fiche and the saved state of Détails and of Horaires,
+Disponibilités, Notifications, and the onboarding's seven steps, at
+1440 and at 390,
+38 frames in all — and writes the boxes the browser actually painted,
 with their measured geometry, their fills and their type, to
 `docs/lot1-figma-frames.json`. `tools/figma/replay-page09.js` runs
 inside Figma and draws that file back into the page, moving each
@@ -618,13 +668,24 @@ re-captured and not re-drawn. Both are here now, and
 has no `fetch`: 213 000 characters of escaped string literal compress
 to 52 000 of base64, which the replay's own twenty-line decoder undoes.
 
-**« Ma fiche · Horaires · Enregistré » is missing on purpose.** Closing
-a service and pressing Enregistrer writes the closure to the database
-and re-renders the switch back on — the screen says nothing was saved
-while what a guest can book has already changed. A frame of that is a
-frame of a bug, and which side of it the shot lands on is a matter of
-timing: three captures running, the same screen disagreed with itself
-between 1440 and 390. The frame comes back with the fix.
+**« Ma fiche · Horaires · Enregistré » came back with its fix.** For
+three captures the frame was out of the table, because closing a
+service and pressing Enregistrer wrote the closure to the database and
+re-rendered the switch back on: the screen said nothing had been saved
+while what a guest can book had already changed, and which side of that
+the shot landed on was a matter of timing — the same screen disagreed
+with itself between 1440 and 390. The cause was in one seam.
+`MockRestaurantRepository.updateAvailability` fired the store's writes
+without awaiting them and then returned an availability set it had read
+before any of them had landed, so the form re-rendered from a set that
+predated its own save; ten calls in that file had the same shape, and
+all ten are awaited now. `edges.mjs` §8 closes a service, asserts the
+response the form re-renders from still says closed, reloads and
+asserts it again, then reopens it and checks the round trip the other
+way — the middle assertion is about the database and the first is about
+whether a partner can trust the screen in front of them. Reverting the
+`await`s turns that first assertion red, which is the only reason to
+believe the rest of it.
 
 Two rules the file keeps, and a designer extending it should keep too:
 the library on `02 Composants` is the source for components, and `08` is
@@ -1149,8 +1210,9 @@ they exist.
 |---|---|---|---|
 | 0 | ~~Authentication talked to no service; four booking decisions never left the browser; Ma fiche wrote past the driver~~ — **closed.** See `docs/LOT1_API_CONTRACT.md` §5, and `tools/mock-api.mjs` for the double they were verified against | — | — |
 | 1 | ~~Event workspace reads fixtures directly~~ — **done in Phase 4.** What remains is the *write* path: there is no `EventRepository` mutation surface, because there is no event backend to shape one against | Creating an event, promo code or boost persists nothing | Large. The venue side is the worked example to copy |
-| 2 | No add/remove for menu items | A venue with a new dish has to call support | Small |
-| 2b | Menu items and the staff list are the last two writes that still call SQLite directly instead of the repository | Those two screens cannot run against a backend | Small, and the four Ma fiche forms are the worked example |
+| 2 | ~~No add/remove for menu items~~ — **closed.** Ma fiche · Menu is a board: the venue names its rubriques, adds and removes dishes, and drags the order | — | — |
+| 2b | The staff list is the last write that still calls SQLite directly instead of the repository. The Carte editor's per-dish save (`saveMenuItem`) does too; the board beside it (`saveMenuBoard`) goes through the seam | Équipe cannot run against a backend | Small, and the Ma fiche forms are the worked example |
+| 7 | React #418 on Accueil and Réservations, in `edges.mjs`'s throttled-network case. See below | A hydration warning in the console; React regenerates the subtree and the screen stays correct | Unknown until it is diagnosed |
 | 3 | ~~No editor for seating areas~~ — **done in Phase 5.** Zones open and close from Ma fiche, and the write reaches the app immediately | — | — |
 | 4 | ~~No preview of the app listing~~ — **done in Phase 5.** Ma fiche renders the listing from the same values the form edits | — | — |
 | 5 | ~500 French literals inline, almost all one-off headings | A copy change means a code change | Medium, mechanical |
@@ -1160,6 +1222,35 @@ Gap 1 is the one to do first: the venue side is now a complete worked
 example of a repository seam with three drivers, a typed action union and
 a snapshot generator, and the event side needs the same treatment for
 writes.
+
+**Gap 7, written down rather than shrugged off.** `edges.mjs` case 6
+puts a 350 ms delay on every request — « un réseau qui prend son temps »
+— and loads `/restaurant`, then `/restaurant/reservations`. Under that
+delay, one or both throw React #418: the server's HTML and the client's
+first render disagree, React throws away the subtree and draws it again.
+It reproduces in **both lots, at both widths, on both engines**, and
+only there: sixteen throttled loads of Accueil on their own produced
+none, and neither did five of the bar's. Delaying hydration is what
+makes it appear, which points at something read at render time that
+answers differently a second or two later.
+
+What it is not. It is not the activity feed, which did read the clock
+twice and would do exactly this — that is the guest-list fault of
+`ScreenContext.now` — because Lot 1's Accueil draws no feed; `FeedBlock`
+reads `block.now` now regardless, and that hardening is real and is not
+this. It is not the phone lane, which is a CSS breakpoint and not a
+JavaScript one, so both lanes render on both sides. It is not a
+`relative` value format, of which these two screens have none. The
+builders themselves take the instant from `ScreenContext.now`, which is
+decided on the server and carried in the payload.
+
+What it costs today: a line in the console, and a subtree drawn twice.
+Every functional assertion on both screens passes, under the delay and
+without it. What it will cost is a phone on a Moroccan 3G at the door of
+a service, which is the condition the case exists to imitate. The next
+person to pick it up should start with a development build — the
+minified `#418` says only that the two renders differed, and the
+unminified one names the node.
 
 Beyond those, six venue routes are marked **service à brancher** rather
 than partial. Nothing is missing from the portal on them; what is missing

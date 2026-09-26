@@ -12,6 +12,7 @@
 
 import type {
   MenuItem,
+  VenueMenu,
   Reservation,
   RestaurantOverview,
   RestaurantProfile,
@@ -20,7 +21,7 @@ import type {
 } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
-import type { StaffMemberRow } from "@/lib/db/venue-write-store";
+import type { MenuBoardPatch, StaffMemberRow } from "@/lib/db/venue-write-store";
 import type {
   AnalyticsPeriod,
   BusinessAccount,
@@ -81,9 +82,11 @@ export interface VenueProfilePatch {
   /** One line on the app's list cards, 60 characters. */
   tagline: string;
   description: string;
-  /** « Type de cuisine » — what the kitchen cooks. */
-  cuisine: string;
-  /** « Catégorie » — what kind of establishment this is. */
+  /**
+   * « Catégorie » — what kind of establishment this is. The cuisine is
+   * on `VenueListingPatch`: it is a closed list the app filters on, so
+   * it travels with the price band rather than with the words.
+   */
   category: string;
   address: string;
   /** « Quartier », which the app prints before the city. */
@@ -99,6 +102,10 @@ export interface VenueProfilePatch {
 
 /** What the Fiche form writes. Lot 2 — the curated listing. */
 export interface VenueListingPatch {
+  /** One of `CUISINE_IDS`, or empty while the partner has not picked. */
+  cuisine: string;
+  /** One line of `SPECIALTIES_MAX` under it, in the partner's words. */
+  specialties: string;
   /** 1–4; `PRICE_RANGE_LABEL` turns it into the MAD range the app prints. */
   priceRange: number;
   tags: string[];
@@ -146,6 +153,7 @@ export type OnboardingDraftPatch = Partial<
     | "venueName"
     | "venueType"
     | "cuisine"
+    | "specialties"
     | "priceRange"
     | "city"
     | "district"
@@ -161,6 +169,9 @@ export type OnboardingDraftPatch = Partial<
     | "menuObjectKey"
     | "menuContentType"
     | "menuSizeBytes"
+    | "thumbnailObjectKey"
+    | "thumbnailContentType"
+    | "thumbnailSizeBytes"
     | "ambience"
     | "features"
     | "hours"
@@ -318,6 +329,10 @@ export interface RestaurantRepository extends VenueOperationsRepository {
   ): Promise<RestaurantProfile>;
   runAssetAction(venueId: string, action: AssetAction): Promise<VenueAsset[]>;
   listMenuItems(venueId: string): Promise<MenuItem[]>;
+  /** The card as the app's Menu screen reads it: sections, then dishes. */
+  getMenu(venueId: string): Promise<VenueMenu>;
+  /** The whole board, replaced. The editor sends what is on screen. */
+  saveMenu(venueId: string, patch: MenuBoardPatch): Promise<VenueMenu>;
   listStaff(venueId: string): Promise<StaffMemberRow[]>;
   listAssets(venueId: string, kind: AssetKind): Promise<VenueAsset[]>;
 

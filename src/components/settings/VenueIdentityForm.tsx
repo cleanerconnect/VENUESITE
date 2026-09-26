@@ -72,19 +72,17 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
           />
         </div>
 
-        {/* Two questions, and the app asks both: « Type de cuisine »
-            is what the kitchen cooks, « Catégorie » is what kind of
-            place this is. They were one field, so the fiche could only
-            answer one of the two lines the detail screen draws.
+        {/* « Catégorie » is what kind of place this is. Its pair,
+            « Type de cuisine », is on Détails now: it became a closed
+            list of ten the app filters on, which puts it with the price
+            band and the ambience rather than here among the words a
+            partner writes freely.
 
             Restaurant or Bar is a third thing again, and not something
             an owner changes on a Tuesday — it decides the vocabulary of
             the whole portal and is settled when the venue is created.
             The stored value is kept and simply not asked for. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          {text("cuisine", "Type de cuisine", {
-            hint: "Ex. Cuisine marocaine contemporaine, tajines et pastilla",
-          })}
           {text("category", "Catégorie", {
             hint: "Ex. Restaurant gastronomique, riad",
           })}
