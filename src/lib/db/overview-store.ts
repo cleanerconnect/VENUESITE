@@ -60,7 +60,12 @@ export async function venueProfile(venueId: string): Promise<RestaurantProfile |
     initials: String(r.initials),
     city: String(r.city),
     subline: `${String(r.kind) === "drinks" ? "Bar" : "Restaurant"} · ${String(r.city)}`,
-    cuisine: String(r.category),
+    // Two different answers, and the app prints both: what the kitchen
+    // cooks, then what kind of establishment it is.
+    cuisine: String(r.cuisine ?? "") || String(r.category),
+    category: String(r.category ?? ""),
+    district: String(r.district ?? ""),
+    tagline: String(r.tagline ?? ""),
     capacity: Number(r.capacity),
     contactEmail: String(r.contact_email),
     contactPhone: String(r.contact_phone),

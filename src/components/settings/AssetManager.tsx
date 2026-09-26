@@ -36,6 +36,7 @@ export function AssetManager({
   layout = "list",
   addLabel,
   publicBase = "/api/assets/",
+  max,
 }: {
   kind: AssetKind;
   title: string;
@@ -49,6 +50,13 @@ export function AssetManager({
   layout?: "list" | "gallery";
   addLabel?: string;
   publicBase?: string;
+  /**
+   * How many files this surface accepts. The carte is a PDF or a few
+   * photographed pages, never a hundred, and the picker says so before
+   * the partner picks rather than after. The server enforces the same
+   * number — this one is a courtesy.
+   */
+  max?: number;
 }) {
   const { toast } = useToast();
   const [assets, setAssets] = useState(initial);
@@ -57,7 +65,13 @@ export function AssetManager({
   const inputRef = useRef<HTMLInputElement>(null);
   const rule = ASSET_RULES[kind];
 
+  const full = max !== undefined && assets.length >= max;
+
   const upload = async (file: File) => {
+    if (full) {
+      setError(`${max} fichiers au maximum. Retirez-en un pour en ajouter un autre.`);
+      return;
+    }
     // Checked here so the user is told before the bytes leave; the server
     // checks again because this one is a courtesy.
     const problem = validateAsset(kind, file.type, file.size);
@@ -155,6 +169,7 @@ export function AssetManager({
     <span className="text-meta text-ink-mute">
       {rule.contentTypes.map((t) => t.split("/")[1].toUpperCase()).join(", ")} ·
       max {Math.round(rule.maxBytes / (1024 * 1024))} Mo
+      {max !== undefined ? ` · ${assets.length} sur ${max}` : ""}
     </span>
   );
 
@@ -244,7 +259,7 @@ export function AssetManager({
               action and the things it produces read as one surface. */}
           <button
             type="button"
-            disabled={uploading}
+            disabled={uploading || full}
             onClick={() => inputRef.current?.click()}
             className="flex aspect-square flex-col items-center justify-center gap-2 rounded-[var(--radius-sm)] border-2 border-dashed border-line px-3 text-center text-body font-semibold text-ink transition-colors hover:border-ink disabled:opacity-55"
           >
@@ -318,7 +333,7 @@ export function AssetManager({
         {picker}
         <Button
           variant="secondary"
-          disabled={uploading}
+          disabled={uploading || full}
           onClick={() => inputRef.current?.click()}
           iconLeft={<Upload size={16} strokeWidth={1.9} />}
         >

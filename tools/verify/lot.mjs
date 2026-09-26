@@ -9,11 +9,48 @@
 //   node tools/verify/walk.mjs                 # lot 1, the default
 //   LYFE_LOT=2 node tools/verify/walk.mjs      # the full dashboard
 //
+// It also carries the demo clock, for the same reason: every tool
+// imports this file, so installing it here installs it once.
+//
 // Mirrors `src/lib/lot/index.ts`: anything that is not "2" is lot 1.
 
 import { ROUTES } from "../../src/lib/nav/routes.ts";
+import {
+  DEMO_CLOCK_ENV,
+  installDemoClock,
+  toolClock,
+} from "../../src/lib/time/demo-clock-shared.mjs";
 
 export const LOT = process.env.LYFE_LOT?.trim() === "2" ? 2 : 1;
+
+// ── The clock the tools run on ───────────────────────────────
+//
+// Every tool here imports this module, so this is the one place the
+// demo clock has to be installed for all of them. Three of them book a
+// table for « today » and read it back off the dashboard; without this
+// the tool's today and the portal's today are the same day only when
+// the container happens to be awake at the same hour the portal is.
+//
+// The portal has to be started with the same value — the resolved
+// instant, which is what `DEMO_CLOCK` below prints — or the two agree
+// about the seed and disagree about the hour. `docs/HANDOFF.md` § 3 has
+// the command.
+export const DEMO_CLOCK = toolClock();
+installDemoClock(DEMO_CLOCK);
+
+/** One line for a tool's banner, so a log says which clock it ran on. */
+export const clockLine = () =>
+  DEMO_CLOCK
+    ? `${DEMO_CLOCK_ENV}=${DEMO_CLOCK.toISOString()} · ` +
+      DEMO_CLOCK.toLocaleString("fr-FR", {
+        timeZone: process.env.NEXT_PUBLIC_VENUE_TZ ?? "Africa/Casablanca",
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "horloge réelle";
 
 export const LOT_LABEL = LOT === 2 ? "lot 2 · complet" : "lot 1 · contractuel";
 

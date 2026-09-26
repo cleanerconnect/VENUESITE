@@ -51,8 +51,18 @@ CREATE TABLE IF NOT EXISTS venues (
   short_name           TEXT NOT NULL,
   initials             TEXT NOT NULL,
   description          TEXT NOT NULL DEFAULT '',
+  -- One line on the app's list cards, 60 characters. Not the description.
+  tagline              TEXT NOT NULL DEFAULT '',
+  -- « Type de cuisine » on the app's detail screen, and the subtitle
+  -- under the venue's name. Free text: a cuisine is a sentence.
+  cuisine              TEXT NOT NULL DEFAULT '',
+  -- « Catégorie »: what kind of place this is, as opposed to what it
+  -- cooks. « Restaurant gastronomique, sushi bar ».
   category             TEXT NOT NULL DEFAULT '',
   address              TEXT NOT NULL DEFAULT '',
+  -- The quarter. The app's header reads « quartier, ville », in that
+  -- order, so the two are stored side by side.
+  district             TEXT NOT NULL DEFAULT '',
   city                 TEXT NOT NULL,
   latitude             REAL,
   longitude            REAL,
@@ -129,7 +139,12 @@ CREATE TABLE IF NOT EXISTS onboarding_drafts (
   -- 'restaurant' or 'bar' in the partner's words; stored as the venue's
   -- own vocabulary ('restaurant'/'drinks') only when the venue is made.
   venue_type         TEXT NOT NULL DEFAULT 'restaurant',
+  -- Step 2, beside the name: what the place cooks, and its price band.
+  cuisine            TEXT NOT NULL DEFAULT '',
+  price_range        INTEGER NOT NULL DEFAULT 2,
   city               TEXT NOT NULL DEFAULT '',
+  -- Step 3, asked before the city is confirmed on the map.
+  district           TEXT NOT NULL DEFAULT '',
   address            TEXT NOT NULL DEFAULT '',
   latitude           REAL,
   longitude          REAL,
@@ -139,6 +154,20 @@ CREATE TABLE IF NOT EXISTS onboarding_drafts (
   cover_object_key   TEXT NOT NULL DEFAULT '',
   cover_content_type TEXT NOT NULL DEFAULT '',
   cover_size_bytes   INTEGER NOT NULL DEFAULT 0,
+  -- A second photo, also optional. Two make a carousel; one makes a
+  -- header. The app's Photos strip shows four, and the partner adds the
+  -- rest from Ma fiche once the dashboard is open.
+  photo2_object_key   TEXT NOT NULL DEFAULT '',
+  photo2_content_type TEXT NOT NULL DEFAULT '',
+  photo2_size_bytes   INTEGER NOT NULL DEFAULT 0,
+  -- The carte, as one file: a PDF, or a photograph of it.
+  menu_object_key     TEXT NOT NULL DEFAULT '',
+  menu_content_type   TEXT NOT NULL DEFAULT '',
+  menu_size_bytes     INTEGER NOT NULL DEFAULT 0,
+  -- Step 5, the skippable one: the app's chips and switches, as JSON
+  -- arrays of the ids in `src/lib/types/restaurant.ts`.
+  ambience           TEXT NOT NULL DEFAULT '[]',
+  features           TEXT NOT NULL DEFAULT '[]',
   -- The weekly grid, as JSON: [{weekday,closed,opensAt,closesAt}].
   hours              TEXT NOT NULL DEFAULT '[]',
   submitted_venue_id TEXT,

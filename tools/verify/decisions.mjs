@@ -20,7 +20,7 @@
 // it signs a partner up and it decides a booking.
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT_LABEL, dataModeOf, requireWrites } from "./lot.mjs";
+import { LOT_LABEL, clockLine, dataModeOf, requireWrites } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -133,7 +133,7 @@ const requirePending = async () => {
   process.exit(0);
 };
 
-console.log(`\nLes quatre décisions · ${LOT_LABEL} · ${width}×${height}\n`);
+console.log(`\nLes quatre décisions · ${LOT_LABEL} · ${width}×${height} · ${clockLine()}\n`);
 
 // ── 1 · LYFE valide une fiche ────────────────────────────────
 
@@ -163,7 +163,8 @@ await settle(1500);
 
 // Step 3 · the address. The pin goes on by clicking the map, because a
 // sandboxed runner cannot reach Nominatim.
-await page.getByLabel("Adresse").fill("12 rue de la Liberté, Casablanca");
+await page.getByLabel("Quartier").fill("Gauthier");
+await page.getByLabel("Adresse", { exact: true }).fill("12 rue de la Liberté, Casablanca");
 const carte = page.locator(".leaflet-container");
 if (await carte.count()) {
   await carte.click({ position: { x: 140, y: 110 } });
@@ -172,11 +173,17 @@ if (await carte.count()) {
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1500);
 
-// Step 4 · photos, skipped.
+// Step 4 · photos and the carte, skipped.
 await page.locator('button:has-text("Passer cette étape")').click();
 await settle(1500);
 
-// Step 5 · the weekly grid, copied across.
+// Step 5 · ambience and equipment, skipped too. Both steps say out loud
+// that they can be, and a tool that never walks past one is a tool that
+// never checks the promise.
+await page.locator('button:has-text("Passer cette étape")').click();
+await settle(1500);
+
+// Step 6 · the weekly grid, copied across.
 const copyDays = page.locator('button:has-text("Appliquer lundi à tous les jours")');
 if (await copyDays.count()) {
   await copyDays.click();

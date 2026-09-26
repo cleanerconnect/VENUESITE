@@ -13,9 +13,16 @@ import { all, one, run, transaction } from "./store";
 export interface VenueIdentityPatch {
   name: string;
   shortName: string;
+  /** One line on the app's list cards, 60 characters. */
+  tagline: string;
   description: string;
+  /** « Type de cuisine » — what the kitchen cooks. */
+  cuisine: string;
+  /** « Catégorie » — what kind of establishment this is. */
   category: string;
   address: string;
+  /** « Quartier », which the app prints before the city. */
+  district: string;
   city: string;
   latitude: number | null;
   longitude: number | null;
@@ -31,16 +38,20 @@ export async function updateVenueIdentity(
 ): Promise<void> {
   await run(
     `UPDATE venues SET
-       name = ?, short_name = ?, description = ?, category = ?,
-       address = ?, city = ?, latitude = ?, longitude = ?,
+       name = ?, short_name = ?, tagline = ?, description = ?,
+       cuisine = ?, category = ?,
+       address = ?, district = ?, city = ?, latitude = ?, longitude = ?,
        contact_email = ?, contact_phone = ?, website = ?, kind = ?,
        updated_at = ?
      WHERE id = ?`,
     patch.name,
     patch.shortName,
+    patch.tagline,
     patch.description,
+    patch.cuisine,
     patch.category,
     patch.address,
+    patch.district,
     patch.city,
     patch.latitude,
     patch.longitude,

@@ -57,7 +57,31 @@ export interface RestaurantProfile {
   city: string;
   /** One-line subhead under the workspace switcher. */
   subline: string;
+  /**
+   * « Type de cuisine » on the app's detail screen, and the subtitle
+   * under the venue's name — « Cuisine japonaise traditionnelle moderne
+   * & omakase ». Free text: a cuisine is a sentence, not an enum, and
+   * the app prints it verbatim.
+   */
   cuisine: string;
+  /**
+   * « Catégorie » on the same screen, one line below the cuisine —
+   * « Restaurant gastronomique, sushi bar ». What kind of establishment
+   * this is, as opposed to what it cooks.
+   */
+  category: string;
+  /**
+   * The quarter, which is how a Moroccan address is actually given. The
+   * app's header reads « El cenador, Casablanca »: quartier first, then
+   * the city, so the two travel together and the quarter comes first.
+   */
+  district: string;
+  /**
+   * One line on the app's list cards, 60 characters. Not the
+   * description: a card has room for a sentence, and truncating a
+   * paragraph into it is how every card ends in « … ».
+   */
+  tagline: string;
   /** Total seats across every zone. */
   capacity: number;
   contactEmail: string;
@@ -86,27 +110,118 @@ export interface RestaurantProfile {
 }
 
 export type VenueFeature =
-  | "terrasse"
-  | "climatisation"
-  | "acces_pmr"
   | "wifi"
+  | "reservation_recommandee"
+  | "cartes_credit"
+  | "terrasse"
+  | "service_midi_soir"
+  | "musique_mixologie"
   | "parking"
+  | "acces_pmr"
+  | "climatisation"
   | "animaux"
   | "vue"
   | "musique_live"
   | "groupes";
 
 export const VENUE_FEATURE: Record<VenueFeature, string> = {
-  terrasse: "Terrasse",
-  climatisation: "Climatisation",
-  acces_pmr: "Accès PMR",
   wifi: "Wi-Fi",
+  reservation_recommandee: "Réservation recommandée",
+  cartes_credit: "Cartes de crédit acceptées",
+  terrasse: "Terrasse / extérieur",
+  service_midi_soir: "Déjeuner & dîner servis",
+  musique_mixologie: "Ambiance musique & mixologie",
   parking: "Parking",
+  acces_pmr: "Accès PMR",
+  climatisation: "Climatisation",
   animaux: "Animaux acceptés",
   vue: "Vue",
   musique_live: "Musique live",
   groupes: "Groupes acceptés",
 };
+
+/**
+ * The eight the portal asks for, in the order the app draws them.
+ *
+ * The first six are the rows under « Equipements » on the app's
+ * restaurant and bar detail screens, read off the design rather than
+ * invented here. Parking and accès PMR are the two a guest phones to
+ * ask about, so they are asked once in the fiche instead.
+ *
+ * The other five in `VENUE_FEATURE` are older values the seed and the
+ * curated Lot 2 listing still carry; they keep their labels so a row
+ * already in the database renders, and they are not offered here.
+ */
+export const APP_FEATURES: VenueFeature[] = [
+  "wifi",
+  "reservation_recommandee",
+  "cartes_credit",
+  "terrasse",
+  "service_midi_soir",
+  "musique_mixologie",
+  "parking",
+  "acces_pmr",
+];
+
+/**
+ * Ambience, as a closed list.
+ *
+ * Free text gave « Cadre exceptionnel » and « Coucher de soleil » —
+ * true of the room, and useless to the app, which groups and filters on
+ * the string. The app's own screen shows three of these at a time
+ * (« Elégant, minimaliste, moderne »), so the list is the vocabulary
+ * that screen can draw, and five is the ceiling.
+ */
+export type VenueAmbience =
+  | "elegant"
+  | "minimaliste"
+  | "moderne"
+  | "traditionnel"
+  | "romantique"
+  | "familial"
+  | "convivial"
+  | "festif"
+  | "intimiste"
+  | "chaleureux"
+  | "panoramique"
+  | "bord_de_mer";
+
+export const VENUE_AMBIENCE: Record<VenueAmbience, string> = {
+  elegant: "Élégant",
+  minimaliste: "Minimaliste",
+  moderne: "Moderne",
+  traditionnel: "Traditionnel",
+  romantique: "Romantique",
+  familial: "Familial",
+  convivial: "Convivial",
+  festif: "Festif",
+  intimiste: "Intimiste",
+  chaleureux: "Chaleureux",
+  panoramique: "Panoramique",
+  bord_de_mer: "Bord de mer",
+};
+
+export const isVenueAmbience = (value: string): value is VenueAmbience =>
+  value in VENUE_AMBIENCE;
+
+/**
+ * A stored ambience, in words.
+ *
+ * Lenient on purpose: rows written before the list was closed hold free
+ * text, and printing « Cadre exceptionnel » is better than printing
+ * nothing while the partner has not re-picked from the chips.
+ */
+export const ambienceLabel = (value: string): string =>
+  isVenueAmbience(value) ? VENUE_AMBIENCE[value] : value;
+
+/** The app's list card has room for one line. */
+export const TAGLINE_MAX = 60;
+
+/**
+ * A carte is a PDF or a handful of photographed pages — never a
+ * hundred. Ten is what a two-sided menu shot page by page comes to.
+ */
+export const MENU_FILE_MAX = 10;
 
 export const PRICE_RANGE_LABEL: Record<number, string> = {
   1: "€ · économique",

@@ -105,9 +105,17 @@ c'est la porte par laquelle un partenaire entre de lui-même.
 
 ### 2.0 Inscription — `/inscription`
 
-Six étapes : **Vous**, **Votre établissement**, **Adresse**, **Photos**,
-**Horaires**, **C'est prêt**. Une seule route, un brouillon côté
-service, et quatre appels.
+Sept étapes : **Vous**, **Votre établissement**, **Adresse**,
+**Photos**, **Ambiance et équipements**, **Horaires**, **C'est prêt**.
+Une seule route, un brouillon côté service, et quatre appels.
+
+L'étape 5 est nouvelle, et elle est facultative. Elle existe parce que
+l'écran de fiche de l'application dessine un bloc « Equipements » de six
+lignes et une ligne « Ambiance », et que rien ne les demandait : un
+partenaire finissait le parcours et sa fiche s'ouvrait sur six lignes
+vides. Passer l'étape n'écrit rien — une liste d'ambiances vide est le
+compte-rendu honnête d'une question sans réponse, là où une valeur par
+défaut serait une affirmation sur sa salle qu'il n'a pas faite.
 
 | # | Méthode | Chemin | Requête | Réponse |
 |---|---|---|---|---|
@@ -131,12 +139,23 @@ seule erreur de champ du parcours.
   "step": 3,
   "venueName": "Le Petit Riad",
   "venueType": "bar",
+  "cuisine": "Cocktails d'auteur et mezzés",
+  "priceRange": 3,
   "city": "Marrakech",
+  "district": "Médina",
   "address": "45 rue de la Kasbah, Médina",
   "latitude": 31.6295, "longitude": -7.9811,
   "coverObjectKey": "venues/onb_a1b2c3d4/photo/....jpg",
   "coverContentType": "image/jpeg",
   "coverSizeBytes": 184320,
+  "photo2ObjectKey": "",
+  "photo2ContentType": "",
+  "photo2SizeBytes": 0,
+  "menuObjectKey": "venues/onb_a1b2c3d4/menu_file/....pdf",
+  "menuContentType": "application/pdf",
+  "menuSizeBytes": 402118,
+  "ambience": ["elegant", "moderne"],
+  "features": ["wifi", "terrasse", "acces_pmr"],
   "hours": [
     { "weekday": 1, "closed": false, "opensAt": "12:00", "closesAt": "23:00" }
   ],
@@ -156,6 +175,14 @@ pas l'énumération. `step` est l'étape la plus avancée atteinte : c'est
 ce qui fait qu'un onglet fermé ne perd rien, et le portail rouvre le
 parcours là où il s'est arrêté plutôt qu'au début.
 
+**`cuisine` et `priceRange` viennent de l'étape 2**, `district` de
+l'étape 3, `photo2*` et `menu*` de l'étape 4, `ambience` et `features`
+de l'étape 5. Les deux dernières sont des **listes fermées d'ids** —
+celles de `src/lib/types/restaurant.ts`, reprises au § 2.5 — et le
+service doit les valider comme il valide la ville : une valeur hors
+liste se refuse en `400`, parce que c'est sur cette chaîne que
+l'application filtre. `priceRange` est un entier de 1 à 4.
+
 **`city` est une liste fermée de cinq valeurs** — `Casablanca`,
 `Marrakech`, `Rabat`, `Tanger`, `Agadir` — et le service doit la
 valider, pas seulement l'écran : une ville saisie librement, c'est cinq
@@ -171,29 +198,36 @@ créé, jamais un second. Ce que le portail attend qu'il crée, parce que
 c'est ce que le pilote SQLite crée et ce dont les sept écrans ont
 besoin pour s'afficher :
 
-1. l'établissement (`venues`), avec son nom, son type, sa ville et son
-   adresse ;
+1. l'établissement (`venues`), avec son nom, son type, sa cuisine, sa
+   fourchette de prix, son quartier, sa ville et son adresse ;
 2. ses réglages (`venue_settings`) — la configuration `restaurant` ou
    `lounge`, que **tous** les écrans lisent pour leur vocabulaire ;
 3. l'appartenance du propriétaire (`staff`, rôle `owner`) ;
 4. son compte métier (`business_accounts`) ;
 5. les alertes par défaut (`notification_preferences`) ;
 6. une fenêtre réservable par jour ouvert (`availability_slots`), depuis
-   la grille de l'étape 5 ;
+   la grille de l'étape 6 ;
+   et les deux listes de l'étape 5 (`venue_tags`, `kind` `ambience` et
+   `feature`), si elle n'a pas été passée ;
 7. **une définition de service et le service du jour** — sans elles
    l'Accueil du nouvel établissement n'a pas de service en cours, et
    l'écran ne s'affiche pas du tout. C'est le piège de cet endpoint.
 
-La photo de couverture, si l'étape 4 n'a pas été passée, a été
-téléversée sous l'espace du brouillon ; la ligne de média créée à
-l'étape 6 pointe sur la même clé, sans déplacer d'octets.
+Les deux photos et la carte, si l'étape 4 n'a pas été passée, ont été
+téléversées sous l'espace du brouillon ; les lignes de média créées à la
+dernière étape pointent sur les mêmes clés, sans déplacer d'octets. La
+`position` est l'ordre du carrousel dans l'application, et la position 0
+est la couverture — celle que portent les cartes de liste et l'en-tête
+de la fiche.
 
 **Ce qui est obligatoire**, et c'est tout : un nom, une adresse e-mail
 et un mot de passe de huit caractères pour le compte ; le nom, le type,
 la ville et l'adresse pour l'établissement. Le téléphone, le point sur
-la carte, la photo et les horaires ont tous une réponse par défaut —
-les horaires arrivent pré-remplis en semaine type, 12h00–23h00, ce qui
-est déjà valide. L'étape 4 dit à voix haute qu'elle peut être passée.
+la carte, la cuisine, le quartier, les photos, la carte, l'ambiance,
+les équipements et les horaires ont tous une réponse par défaut — les
+horaires arrivent pré-remplis en semaine type, 12h00–23h00, ce qui est
+déjà valide, et la fourchette de prix part à 2. Les étapes 4 et 5
+disent à voix haute qu'elles peuvent être passées.
 
 *Tables écrites (pilote SQLite)* : `partner_accounts`,
 `onboarding_drafts`, puis à l'étape 6 `venues`, `venue_settings`,
@@ -383,24 +417,90 @@ l'hôte.
 
 ### 2.5 Ma fiche — `/restaurant/ma-fiche`
 
+Cinq onglets en Lot 1 : **Identité**, **Fiche**, **Horaires**,
+**Photos**, **Menu**. Ils sont la contrepartie, champ pour champ, de ce
+que l'écran de fiche de l'application dessine.
+
 | # | Méthode | Chemin | Réponse | Rendu en Lot 1 |
 |---|---|---|---|---|
-| 1 | `GET` | `/api/business/venues/{id}` | `RestaurantProfile \| null` | oui (onglet Identité) |
-| 2 | `GET` | `/api/business/venues/{id}/availability` | `VenueAvailability` | oui (onglet Horaires) |
-| 3 | `GET` | `/api/business/venues/{id}/assets?kind=photo` | `VenueAsset[]` | oui (onglet Photos) |
-| 4 | `GET` | `/api/business/overview?venue_id={id}` | `RestaurantOverview` | oui (les zones) |
-| 5 | `GET` | `/api/business/settings?venue_id={id}` | `VenueSettings` | oui |
+| 1 | `GET` | `/api/business/venues/{id}` | `RestaurantProfile \| null` | oui (Identité) |
+| 2 | `GET` | `/api/business/venues/{id}/listing` | `VenueListing` | oui (Fiche) |
+| 3 | `GET` | `/api/business/venues/{id}/availability` | `VenueAvailability` | oui (Horaires) |
+| 4 | `GET` | `/api/business/venues/{id}/assets?kind=photo` | `VenueAsset[]` | oui (Photos) |
+| 5 | `GET` | `/api/business/venues/{id}/assets?kind=menu_file` | `VenueAsset[]` | oui (Menu) |
+| 6 | `GET` | `/api/business/overview?venue_id={id}` | `RestaurantOverview` | oui (les zones) |
+| 7 | `GET` | `/api/business/settings?venue_id={id}` | `VenueSettings` | oui |
+| 8 | `PUT` | `/api/business/venues/{id}` | `RestaurantProfile` | écriture de l'onglet Identité |
+| 9 | `PUT` | `/api/business/venues/{id}/listing` | `VenueListing` | écriture de l'onglet Fiche |
 | — | `GET` | `/api/business/venues/{id}/menu` | `MenuItem[]` | **plus appelé en Lot 1** (§4) |
-| — | `GET` | `/api/business/venues/{id}/assets?kind=menu_file` | `VenueAsset[]` | **plus appelé en Lot 1** (§4) |
 | — | `GET` | `/api/business/venues/{id}/staff` | `StaffMemberRow[]` | **plus appelé en Lot 1** (§4) |
 
-`RestaurantProfile` : `{ id, kind, name, shortName, initials, city,
-subline, cuisine, capacity, contactEmail, contactPhone, website,
-currency, onboardingCompleted, description, address, latitude?,
-longitude?, priceRange, tags[], features[], ambience[] }`. En Lot 1
-l'écran n'expose que le premier bloc — nom, description, catégorie,
-adresse, coordonnées, contact ; `priceRange`, `tags`, `features` et
-`ambience` sont la *fiche curée* du Prio 08.
+`RestaurantProfile` : `{ id, kind, name, shortName, initials, tagline,
+city, district, subline, cuisine, category, capacity, contactEmail,
+contactPhone, website, currency, onboardingCompleted, description,
+address, latitude?, longitude?, priceRange, tags[], features[],
+ambience[] }`.
+
+Cinq champs sont nouveaux, et chacun répond à une ligne de l'écran de
+fiche de l'application (`yEBXM5UoNTQI7MKc9sMB9y`, cadres `827:237` et
+`1904:2016`) :
+
+| Champ | Ce que l'application en fait |
+|---|---|
+| `tagline` | la ligne unique des cartes de liste, **60 caractères**, refusée au-delà |
+| `cuisine` | « Type de cuisine », et le sous-titre sous le nom du lieu |
+| `category` | « Catégorie » — le genre d'établissement, une ligne plus bas |
+| `district` | « El cenador, Casablanca » : le quartier, **avant** la ville |
+| `priceRange` | « Fourchette de prix », quatre niveaux, de € à €€€€ |
+
+`cuisine` et `category` étaient **une seule colonne**, et la fiche ne
+pouvait donc répondre qu'à une des deux lignes que l'écran dessine. La
+migration `005-fiche-app-fields.sql` sépare les deux et recopie
+l'ancienne valeur dans `cuisine`, qui est l'endroit où la réponse du
+partenaire allait.
+
+`VenueListing` — ce qu'écrit l'onglet Fiche :
+
+```json
+{
+  "priceRange": 3,
+  "ambience": ["intimiste", "traditionnel", "elegant"],
+  "features": ["wifi", "reservation_recommandee", "cartes_credit",
+               "terrasse", "service_midi_soir", "acces_pmr"],
+  "tags": ["Marocain", "Riad"]
+}
+```
+
+`ambience` et `features` sont des **listes fermées d'ids**, à valider
+côté service : l'application filtre et groupe sur ces chaînes, et
+« Cadre exceptionnel » est une phrase qu'aucun filtre ne peut atteindre.
+
+*Ambiances* (5 au plus, l'application en affiche 3) : `elegant`,
+`minimaliste`, `moderne`, `traditionnel`, `romantique`, `familial`,
+`convivial`, `festif`, `intimiste`, `chaleureux`, `panoramique`,
+`bord_de_mer`.
+
+*Équipements* — les six que l'écran de l'application liste, plus les
+deux qu'on demande au téléphone : `wifi`, `reservation_recommandee`,
+`cartes_credit`, `terrasse`, `service_midi_soir`, `musique_mixologie`,
+`parking`, `acces_pmr`. Cinq valeurs plus anciennes restent acceptées
+et affichées — `climatisation`, `animaux`, `vue`, `musique_live`,
+`groupes` — mais le formulaire ne les propose plus : une ligne déjà en
+base ne disparaît pas parce que l'écran a changé.
+
+`tags` reste du Prio 08 : un mot-clé est un concept dont un déploiement
+basique n'a aucun écran, et le formulaire ne le demande qu'en Lot 2. Le
+service, lui, porte le champ dans les deux cas.
+
+**Photos** : l'ordre est celui du carrousel dans l'application, et la
+position 0 est la couverture — celle que portent les cartes de liste et
+l'en-tête de la fiche. `PUT /assets/order` est l'écriture.
+
+**Menu** : un PDF, ou jusqu'à **dix** images des pages, dans l'ordre.
+Rien d'autre. Pas d'éditeur de plats : celui-là est l'écran Carte du Lot
+2, et un lieu qui photographie sa carte chaque saison n'est pas un lieu
+qui tiendra quarante lignes de plats à jour. Le service refuse le
+onzième fichier.
 
 `VenueAvailability` :
 
@@ -990,6 +1090,40 @@ toujours. La traduction se fait côté application :
 | `arrived`, `completed` | `completed` |
 | `cancelled`, `rejected` | `cancelled` |
 | `no_show` | `no_show` |
+
+**La charge utile de la fiche est ce que DigiNegoce lira.**
+`GET /api/restaurants` et `GET /api/restaurants/{id}` sont servies par
+`backend/postgres_dashboard.py:restaurant_payload`, et elles portent
+maintenant chaque champ que l'écran de fiche de l'application dessine.
+Les clés, telles quelles :
+
+| Clé | Source | Ce que l'écran en fait |
+|---|---|---|
+| `cuisine` | `venues.cuisine`, à défaut `venues.category` | « Type de cuisine », et le sous-titre sous le nom |
+| `category` | `venues.category` | « Catégorie » |
+| `tagline` | `venues.tagline` | la ligne des cartes de liste, 60 caractères |
+| `district` | `venues.district` | « El cenador, … » — le quartier |
+| `city` | `venues.city` | « …, Casablanca » — la ville, après le quartier |
+| `price_range` | `venues.price_range` | € à €€€€ |
+| `price_level` | idem, en entier 1–4 | le filtre de recherche |
+| `price_range_label` | idem, en phrase | « Environ + 500 MAD par personne » |
+| `photos[]` | `venue_assets` `kind='photo'`, par `position` | le carrousel ; `image` reste la première |
+| `menu[]` | `venue_assets` `kind='menu_file'`, par `position` | ce qu'ouvre la pastille « Menu » — `{ url, content_type }` |
+| `ambience[]` | `venue_tags` `kind='ambience'` | « Ambiance : Élégant, minimaliste, moderne » — `{ id, label }` |
+| `features[]` | `venue_tags` `kind='feature'` | le bloc « Equipements » — `{ id, label }` |
+
+`ambience` et `features` portent **l'id et le libellé**. L'id est ce
+qu'un filtre compare et ce par quoi une icône est choisie ; le libellé
+est ce que la ligne dit. Ne servir que l'id obligerait chaque client à
+réimplémenter la table de traduction ; ne servir que le libellé rendrait
+« Wi-Fi » infiltrable. Les équipements reviennent dans l'ordre où le
+design les dessine, tout ce que le design ne nomme pas suivant dans
+l'ordre du partenaire.
+
+`cuisine` garde son ancien repli sur `category`, et c'est délibéré : un
+établissement qui n'a jamais rempli que l'ancienne colonne continue
+d'afficher quelque chose sous son nom. Aucune clé n'a changé de sens, et
+aucune n'a disparu — `image` est toujours la première photo.
 
 **Une table hors contrat, `app_sessions`**, est créée à la demande par
 ce module : l'application ouvre des sessions invité, et le schéma du

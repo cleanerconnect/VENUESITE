@@ -37,7 +37,12 @@ import {
   validateSlot,
 } from "@/lib/forms/validation";
 import type { VenueAvailability } from "@/lib/types/business";
-import { VENUE_FEATURE } from "@/lib/types/restaurant";
+import {
+  MENU_FILE_MAX,
+  TAGLINE_MAX,
+  VENUE_AMBIENCE,
+  VENUE_FEATURE,
+} from "@/lib/types/restaurant";
 import type {
   DietaryTag,
   MenuCategory,
@@ -84,9 +89,16 @@ const revalidateForms = () => FORM_PATHS.forEach((p) => revalidatePath(p, "page"
 export interface VenueIdentityInput {
   name: string;
   shortName: string;
+  /** One line on the app's list cards, 60 characters. */
+  tagline: string;
   description: string;
+  /** « Type de cuisine » — what the kitchen cooks. */
+  cuisine: string;
+  /** « Catégorie » — what kind of establishment this is. */
   category: string;
   address: string;
+  /** « Quartier », which the app prints before the city. */
+  district: string;
   city: string;
   latitude: string;
   longitude: string;
@@ -117,7 +129,14 @@ export async function saveVenueIdentity(
     {
       name: [required("Le nom"), maxLength(120, "Le nom")],
       shortName: [required("Le nom court"), maxLength(40, "Le nom court")],
+      // 60 because that is what the app's list card fits. A longer one
+      // is not truncated here, it is refused: a tagline the partner
+      // cannot see the end of is a tagline they did not write.
+      tagline: [maxLength(TAGLINE_MAX, "L'accroche")],
       description: [maxLength(2000, "La description")],
+      cuisine: [maxLength(120, "Le type de cuisine")],
+      category: [maxLength(120, "La catégorie")],
+      district: [maxLength(80, "Le quartier")],
       city: [required("La ville")],
       contactEmail: [emailRule],
       contactPhone: [phone],
@@ -135,9 +154,12 @@ export async function saveVenueIdentity(
     getRestaurantRepository().saveVenueProfile(session.venueId, {
       name: input.name.trim(),
       shortName: input.shortName.trim(),
+      tagline: input.tagline.trim(),
       description: input.description.trim(),
+      cuisine: input.cuisine.trim(),
       category: input.category.trim(),
       address: input.address.trim(),
+      district: input.district.trim(),
       city: input.city.trim(),
       latitude: lat,
       longitude: lng,
@@ -205,6 +227,12 @@ export async function saveVenueListing(
       : []),
     ...(input.ambience.length > 5
       ? [{ field: "ambience", message: "5 ambiances au maximum." }]
+      : []),
+    // The chips are a closed list on the screen, so they are a closed
+    // list here: the app groups and filters on this string, and « Cadre
+    // exceptionnel » is a sentence no filter can match.
+    ...(input.ambience.some((a) => !(a in VENUE_AMBIENCE))
+      ? [{ field: "ambience", message: "Ambiance inconnue." }]
       : []),
     ...(input.tags.some((t) => t.length > 30)
       ? [{ field: "tags", message: "Un mot-clé fait 30 caractères au plus." }]
@@ -445,6 +473,17 @@ export async function confirmUpload(input: {
   // The key was minted for this venue; refuse anything else.
   if (!input.objectKey.startsWith(`venues/${venueId}/`)) {
     return failed("Fichier refusé.");
+  }
+  // The carte is a PDF or a handful of photographed pages. The cap is
+  // enforced here rather than only in the picker, because the picker is
+  // one caller of this action and not the only one.
+  if (input.kind === "menu_file") {
+    const held = await getRestaurantRepository().listAssets(venueId, "menu_file");
+    if (held.length >= MENU_FILE_MAX) {
+      return failed(
+        `La carte tient en ${MENU_FILE_MAX} fichiers au maximum. Retirez-en un avant d'en ajouter un autre.`,
+      );
+    }
   }
   return write(() =>
     getRestaurantRepository().runAssetAction(venueId, {

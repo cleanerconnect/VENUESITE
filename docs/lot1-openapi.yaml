@@ -1236,11 +1236,18 @@ paths:
                   type: string
                 shortName:
                   type: string
+                tagline:
+                  type: string
+                  maxLength: 60
                 description:
+                  type: string
+                cuisine:
                   type: string
                 category:
                   type: string
                 address:
+                  type: string
+                district:
                   type: string
                 city:
                   type: string
@@ -1299,15 +1306,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/Erreur'
   /api/business/venues/{venueId}/listing:
+    get:
+      tags:
+      - Ma fiche
+      summary: La partie « annonce » de la fiche
+      operationId: getVenueListing
+      description: |
+        La fourchette de prix et les trois ensembles de puces, tels que la fiche les tient. Lu par l'onglet Fiche de Ma fiche.
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: L'établissement.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueListing'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '403':
+          description: Le jeton est valide et ne porte pas ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
     put:
       tags:
       - Ma fiche
       summary: Enregistrer la partie « annonce » de la fiche
       operationId: saveVenueListing
       description: |
-        Les champs que l'application montre dans une liste : gamme de prix, cuisine, étiquettes, ambiance.
+        Ce qu'écrit l'onglet Fiche, et ce que l'écran de fiche de l'application dessine sous « Cuisine & Détails » et « Equipements » : la fourchette de prix, l'ambiance, les équipements. Les mots-clés ne sont demandés qu'en lot 2.
 
-        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+        `ambience` et `features` sont des listes fermées d'ids, à valider côté service : l'application filtre et groupe sur ces chaînes. Une clé absente du corps est un ensemble que l'appelant ne dessinait pas, et il est laissé tel quel plutôt que vidé.
       parameters:
       - name: venueId
         in: path
@@ -1320,8 +1373,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: '#/components/schemas/VenueListing'
       responses:
         '200':
           description: Succès.
@@ -2349,12 +2401,27 @@ components:
           type: string
         subline:
           type: string
+        tagline:
+          type: string
+          maxLength: 60
+          description: |
+            La ligne unique des cartes de liste de l'application. Refusée au-delà de 60 caractères plutôt que tronquée : une accroche dont le partenaire ne voit pas la fin est une accroche qu'il n'a pas écrite.
         cuisine:
           type: string
+          description: |
+            « Type de cuisine » sur l'écran de fiche de l'application, et le sous-titre sous le nom du lieu. Texte libre : une cuisine est une phrase.
+        category:
+          type: string
+          description: |
+            « Catégorie » — le genre d'établissement, par opposition à ce qu'il cuisine. Une ligne plus bas sur le même écran.
         description:
           type: string
         address:
           type: string
+        district:
+          type: string
+          description: |
+            Le quartier. L'en-tête de l'application lit « quartier, ville », dans cet ordre.
         latitude:
           type:
           - number
@@ -2388,12 +2455,44 @@ components:
             type: string
         features:
           type: array
+          description: |
+            Liste fermée d'ids. Les six que l'écran de l'application liste, plus les deux qu'on demande au téléphone. Cinq valeurs plus anciennes restent acceptées et affichées, mais le formulaire ne les propose plus.
           items:
             type: string
+            enum:
+            - wifi
+            - reservation_recommandee
+            - cartes_credit
+            - terrasse
+            - service_midi_soir
+            - musique_mixologie
+            - parking
+            - acces_pmr
+            - climatisation
+            - animaux
+            - vue
+            - musique_live
+            - groupes
         ambience:
           type: array
+          maxItems: 5
+          description: |
+            Liste fermée d'ids ; l'application en affiche trois. Le texte libre d'avant donnait « Cadre exceptionnel », vrai de la salle et inatteignable par un filtre.
           items:
             type: string
+            enum:
+            - elegant
+            - minimaliste
+            - moderne
+            - traditionnel
+            - romantique
+            - familial
+            - convivial
+            - festif
+            - intimiste
+            - chaleureux
+            - panoramique
+            - bord_de_mer
         status:
           type: string
           enum:
@@ -2967,8 +3066,8 @@ components:
         step:
           type: integer
           minimum: 1
-          maximum: 6
-          description: L'étape la plus avancée atteinte.
+          maximum: 7
+          description: L'étape la plus avancée atteinte. Sept depuis l'ajout de « Ambiance et équipements », entre Photos et Horaires.
         venueName:
           type: string
         venueType:
@@ -2976,6 +3075,14 @@ components:
           enum:
           - restaurant
           - bar
+        cuisine:
+          type: string
+          description: Étape 2, à côté du nom. « Type de cuisine » sur l'écran de fiche.
+        priceRange:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Étape 2. Quatre niveaux, de € à €€€€.
         city:
           type: string
           enum:
@@ -2984,6 +3091,9 @@ components:
           - Rabat
           - Tanger
           - Agadir
+        district:
+          type: string
+          description: Étape 3, avant l'adresse. L'application lit « quartier, ville ».
         address:
           type: string
         latitude:
@@ -3002,6 +3112,31 @@ components:
           type: string
         coverSizeBytes:
           type: integer
+        photo2ObjectKey:
+          type: string
+          description: Étape 4, facultative. Deux photos font un carrousel, une fait un en-tête.
+        photo2ContentType:
+          type: string
+        photo2SizeBytes:
+          type: integer
+        menuObjectKey:
+          type: string
+          description: Étape 4. La carte, en un fichier — un PDF, ou une photo de celle-ci.
+        menuContentType:
+          type: string
+        menuSizeBytes:
+          type: integer
+        ambience:
+          type: array
+          maxItems: 5
+          description: Étape 5, qui peut être passée. Mêmes ids que `RestaurantProfile.ambience`.
+          items:
+            type: string
+        features:
+          type: array
+          description: Étape 5. Mêmes ids que `RestaurantProfile.features`.
+          items:
+            type: string
         hours:
           type: array
           items:
@@ -3025,6 +3160,57 @@ components:
       - address
       - hours
       - updatedAt
+    VenueListing:
+      type: object
+      description: |
+        Ce que l'onglet Fiche de Ma fiche lit et écrit. Un patch partiel : une clé absente est un ensemble laissé tel quel.
+      properties:
+        priceRange:
+          type: integer
+          minimum: 1
+          maximum: 4
+        ambience:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+            enum:
+            - elegant
+            - minimaliste
+            - moderne
+            - traditionnel
+            - romantique
+            - familial
+            - convivial
+            - festif
+            - intimiste
+            - chaleureux
+            - panoramique
+            - bord_de_mer
+        features:
+          type: array
+          items:
+            type: string
+            enum:
+            - wifi
+            - reservation_recommandee
+            - cartes_credit
+            - terrasse
+            - service_midi_soir
+            - musique_mixologie
+            - parking
+            - acces_pmr
+            - climatisation
+            - animaux
+            - vue
+            - musique_live
+            - groupes
+        tags:
+          type: array
+          maxItems: 8
+          description: Lot 2 seulement à l'écran ; le service porte le champ dans les deux cas.
+          items:
+            type: string
     PendingVenue:
       type: object
       properties:

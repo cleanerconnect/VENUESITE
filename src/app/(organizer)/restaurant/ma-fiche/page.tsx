@@ -69,7 +69,11 @@ export default async function MaFichePage({ searchParams }: Props) {
       lot2 ? repo.listMenuItems(venueId) : [],
       repo.getAvailability(venueId),
       repo.listAssets(venueId, "photo"),
-      lot2 ? repo.listAssets(venueId, "menu_file") : [],
+      // Read under Lot 1 too, now that the fiche has a Menu tab: the
+      // app's « Menu » pill opens a file, and a basique deployment has
+      // to be able to keep that file current even though it has no dish
+      // editor to keep a carte current with.
+      repo.listAssets(venueId, "menu_file"),
       lot2 ? repo.listStaff(venueId) : [],
       repo.getOverview(venueId),
       repo.getVenueSettings(venueId),
@@ -92,30 +96,40 @@ export default async function MaFichePage({ searchParams }: Props) {
   return (
     <div className="space-y-8">
       {/* « Création de Venue », Planning V3 sprint Prio 02: the record
-          itself. Identity carries the name, the address and the contact;
-          Horaires carries the opening hours; Photos carries the photos.
-          Fiche — price range, tags, features, ambience — is the listing
-          that Prio 08's advanced dashboard curates, and a tag is one of
-          the concepts a basique deployment must not show at all. */}
+          itself, and now every field the app's restaurant and bar
+          detail screens actually draw.
+
+          Identité carries the words — name, accroche, type de cuisine,
+          catégorie, quartier, adresse, contact. Fiche carries the three
+          the app draws as controls: the price band, the ambience and
+          the equipment list. Horaires the opening hours, Photos the
+          carousel, Menu the carte as a file.
+
+          « Mots-clés » is the one part of Fiche that stays Lot 2's, and
+          the form itself decides that: a tag is a concept a basique
+          deployment has no screen for. */}
       <VenueSettings
       only={
         lot === 1
-          ? ["identity", "hours", "media"]
-          : ["identity", "listing", "media"]
+          ? ["identity", "listing", "hours", "media", "menu_file"]
+          : ["identity", "listing", "media", "menu_file"]
       }
       title="Ma fiche"
       subtitle={
         lot === 1
-          ? "L'établissement tel que l'application le montre : identité, adresse, contact, photos et horaires."
+          ? "L'établissement tel que l'application le montre : identité, cuisine, prix, ambiance, équipements, adresse, photos, carte et horaires."
           : "Tout ce que l'application montre de l'établissement, modifiable ici. Miroir de la fiche, rien de plus."
       }
       role={session.role}
       identity={{
         name: profile.name,
         shortName: profile.shortName,
+        tagline: profile.tagline,
         description: profile.description,
-        category: profile.cuisine,
+        cuisine: profile.cuisine,
+        category: profile.category,
         address: profile.address,
+        district: profile.district,
         city: profile.city,
         latitude: profile.latitude == null ? "" : String(profile.latitude),
         longitude: profile.longitude == null ? "" : String(profile.longitude),
@@ -123,8 +137,8 @@ export default async function MaFichePage({ searchParams }: Props) {
         contactPhone: profile.contactPhone,
         website: profile.website,
         // Establishment type (restaurant / bar) — distinct from
-        // `profile.kind`, which is the cuisine style. It comes off the
-        // session's membership, already resolved.
+        // `profile.kind`, which is the style of cooking. It comes off
+        // the session's membership, already resolved.
         kind:
           session.venues.find((v) => v.id === venueId)?.kind === "drinks"
             ? "drinks"

@@ -125,6 +125,16 @@ export async function verifyPartnerPassword(
 
 // ── Drafts ───────────────────────────────────────────────────
 
+/** A JSON column, or an empty list. A draft never fails to open. */
+function list(value: unknown): string[] {
+  try {
+    const parsed = JSON.parse(String(value ?? "[]"));
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
 function rowToDraft(r: Record<string, unknown>): OnboardingDraft {
   let hours: OnboardingDay[] = [];
   try {
@@ -139,13 +149,24 @@ function rowToDraft(r: Record<string, unknown>): OnboardingDraft {
     step: Number(r.step),
     venueName: String(r.venue_name),
     venueType: String(r.venue_type) as OnboardingVenueType,
+    cuisine: String(r.cuisine ?? ""),
+    priceRange: Number(r.price_range ?? 2),
     city: String(r.city),
+    district: String(r.district ?? ""),
     address: String(r.address),
     latitude: r.latitude == null ? null : Number(r.latitude),
     longitude: r.longitude == null ? null : Number(r.longitude),
     coverObjectKey: String(r.cover_object_key),
     coverContentType: String(r.cover_content_type ?? ""),
     coverSizeBytes: Number(r.cover_size_bytes ?? 0),
+    photo2ObjectKey: String(r.photo2_object_key ?? ""),
+    photo2ContentType: String(r.photo2_content_type ?? ""),
+    photo2SizeBytes: Number(r.photo2_size_bytes ?? 0),
+    menuObjectKey: String(r.menu_object_key ?? ""),
+    menuContentType: String(r.menu_content_type ?? ""),
+    menuSizeBytes: Number(r.menu_size_bytes ?? 0),
+    ambience: list(r.ambience),
+    features: list(r.features),
     hours: hours.length ? hours : defaultHours(),
     submittedVenueId: r.submitted_venue_id ? String(r.submitted_venue_id) : null,
     updatedAt: String(r.updated_at),
@@ -187,13 +208,28 @@ const FIELD: Record<string, string> = {
   step: "step",
   venueName: "venue_name",
   venueType: "venue_type",
+  cuisine: "cuisine",
+  priceRange: "price_range",
   city: "city",
+  district: "district",
   address: "address",
   latitude: "latitude",
   longitude: "longitude",
   coverObjectKey: "cover_object_key",
   coverContentType: "cover_content_type",
   coverSizeBytes: "cover_size_bytes",
+  photo2ObjectKey: "photo2_object_key",
+  photo2ContentType: "photo2_content_type",
+  photo2SizeBytes: "photo2_size_bytes",
+  menuObjectKey: "menu_object_key",
+  menuContentType: "menu_content_type",
+  menuSizeBytes: "menu_size_bytes",
+};
+
+/** The two JSON columns, written as arrays rather than scalars. */
+const JSON_FIELD: Record<string, string> = {
+  ambience: "ambience",
+  features: "features",
 };
 
 /** Saves whatever the step sent, and nothing else. */
@@ -217,6 +253,12 @@ export async function patchDraft(
   if (patch.hours) {
     sets.push("hours = ?");
     args.push(JSON.stringify(patch.hours));
+  }
+  for (const [key, column] of Object.entries(JSON_FIELD)) {
+    const value = (patch as Record<string, unknown>)[key];
+    if (!Array.isArray(value)) continue;
+    sets.push(`${column} = ?`);
+    args.push(JSON.stringify(value));
   }
   if (!sets.length) return current;
 
@@ -274,27 +316,56 @@ export async function createVenueFromDraft(
       // `status` is spelled out rather than left to the column default:
       // a new listing waits for LYFE, and that is a product rule worth
       // reading here instead of in `db/schema.sql`.
+      // Every answer the flow collected, and nothing invented. The
+      // cuisine, the quarter and the price band are what steps 2 and 3
+      // now ask for, and they go straight onto the listing rather than
+      // waiting for the partner to open Ma fiche and type them again.
       `INSERT INTO venues
-         (id, kind, name, short_name, initials, description, category, address, city,
+         (id, kind, name, short_name, initials, tagline, description,
+          cuisine, category, address, district, city,
           latitude, longitude, contact_email, contact_phone, website, currency,
           capacity, price_range, onboarding_completed, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, '', '', ?, ?, ?, ?, ?, ?, '', 'MAD', ?, 2, 1,
+       VALUES (?, ?, ?, ?, ?, '', '', ?, '', ?, ?, ?, ?, ?, ?, ?, '', 'MAD', ?, ?, 1,
                'pending_review', ?, ?)`,
       venueId,
       kind,
       draft.venueName,
       draft.venueName.slice(0, 40),
       initialsOf(draft.venueName),
+      draft.cuisine,
       draft.address,
+      draft.district,
       draft.city,
       draft.latitude,
       draft.longitude,
       account?.email ?? "",
       account?.phone ?? "",
       capacity,
+      draft.priceRange,
       at,
       at,
     );
+
+    // Step 5's two lists, as the rows the app filters on. Skipped means
+    // no rows, which is exactly what an unanswered question should look
+    // like — not a default the partner never chose.
+    for (const [kind_, values] of [
+      ["ambience", draft.ambience],
+      ["feature", draft.features],
+    ] as const) {
+      let position = 0;
+      for (const value of values) {
+        await run(
+          `INSERT INTO venue_tags (venue_id, kind, value, position)
+           VALUES (?, ?, ?, ?)`,
+          venueId,
+          kind_,
+          value,
+          position,
+        );
+        position += 1;
+      }
+    }
     await run(
       `INSERT INTO venue_settings (venue_id, configuration, alert_email, alert_phone, updated_at)
        VALUES (?, ?, ?, ?, ?)`,
@@ -344,20 +415,31 @@ export async function createVenueFromDraft(
       );
     }
 
-    // The cover, if step 4 was not skipped. The file was uploaded under
-    // the draft's namespace and stays there: the row is what makes it
-    // the venue's first photo, and moving bytes to rename a prefix
-    // would be work with no reader.
-    if (draft.coverObjectKey) {
+    // The photos and the carte, if step 4 was not skipped. The files
+    // were uploaded under the draft's namespace and stay there: the row
+    // is what makes them the venue's, and moving bytes to rename a
+    // prefix would be work with no reader.
+    //
+    // Position is the order the app plays the carousel in, and position
+    // 0 is the cover — the one the list card and the app's header use.
+    const files: [string, string, string, number, number][] = [
+      ["photo", draft.coverObjectKey, draft.coverContentType || "image/jpeg", draft.coverSizeBytes, 0],
+      ["photo", draft.photo2ObjectKey, draft.photo2ContentType || "image/jpeg", draft.photo2SizeBytes, 1],
+      ["menu_file", draft.menuObjectKey, draft.menuContentType || "application/pdf", draft.menuSizeBytes, 0],
+    ];
+    for (const [assetKind, objectKey, contentType, sizeBytes, position] of files) {
+      if (!objectKey) continue;
       await run(
         `INSERT INTO venue_assets
            (id, venue_id, kind, object_key, content_type, size_bytes, position, created_at)
-         VALUES (?, ?, 'photo', ?, ?, ?, 0, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         `ast_${randomUUID().slice(0, 12)}`,
         venueId,
-        draft.coverObjectKey,
-        draft.coverContentType || "image/jpeg",
-        draft.coverSizeBytes,
+        assetKind,
+        objectKey,
+        contentType,
+        sizeBytes,
+        position,
         at,
       );
     }
@@ -412,7 +494,7 @@ export async function createVenueFromDraft(
     );
 
     await run(
-      "UPDATE onboarding_drafts SET submitted_venue_id = ?, step = 6, updated_at = ? WHERE id = ?",
+      "UPDATE onboarding_drafts SET submitted_venue_id = ?, step = 7, updated_at = ? WHERE id = ?",
       venueId,
       at,
       id,

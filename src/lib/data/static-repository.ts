@@ -253,7 +253,7 @@ export class StaticRestaurantRepository implements RestaurantRepository {
   // ── Onboarding ──
   //
   // A signup can be walked through on the snapshot — the draft lives in
-  // this process, which is enough to demonstrate the six steps on a
+  // this process, which is enough to demonstrate the seven steps on a
   // clone with no database. The last step is where it stops: making a
   // venue means writing rows, and the snapshot is a committed capture.
   async requestPasswordReset(_email: string) {
@@ -268,13 +268,24 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       step: 2,
       venueName: "",
       venueType: "restaurant",
+      cuisine: "",
+      priceRange: 2,
       city: "",
+      district: "",
       address: "",
       latitude: null,
       longitude: null,
       coverObjectKey: "",
       coverContentType: "",
       coverSizeBytes: 0,
+      photo2ObjectKey: "",
+      photo2ContentType: "",
+      photo2SizeBytes: 0,
+      menuObjectKey: "",
+      menuContentType: "",
+      menuSizeBytes: 0,
+      ambience: [],
+      features: [],
       hours: defaultHours(),
       submittedVenueId: null,
       updatedAt: new Date().toISOString(),
@@ -337,9 +348,12 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       ...current,
       name: patch.name,
       shortName: patch.shortName,
+      tagline: patch.tagline,
       description: patch.description,
-      cuisine: patch.category,
+      cuisine: patch.cuisine,
+      category: patch.category,
       address: patch.address,
+      district: patch.district,
       city: patch.city,
       latitude: patch.latitude ?? undefined,
       longitude: patch.longitude ?? undefined,
@@ -348,8 +362,9 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       website: patch.website,
       // `patch.kind` is the venue's configuration — restaurant or
       // drinks — which the subline reads and `RestaurantProfile.kind`
-      // does not hold: that field is the cuisine. Two different things
-      // that share a name, so the patch's value goes to the subline.
+      // does not hold: that field is the style of cooking. Two
+      // different things that share a name, so the patch's value goes
+      // to the subline.
       subline: `${patch.kind === "drinks" ? "Bar" : "Restaurant"} · ${patch.city}`,
     };
     profileOverlay.set(venueId, next);

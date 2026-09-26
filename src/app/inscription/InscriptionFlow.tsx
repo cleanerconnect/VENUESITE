@@ -1,6 +1,6 @@
 "use client";
 
-// The six steps.
+// The seven steps.
 //
 // One question group per step, because a partner filling this in on a
 // phone between two services abandons a form that asks fourteen things
@@ -12,14 +12,27 @@
 // typed twice to have an account — the five details `Détail Sprint `
 // row 39 names — then the establishment's name, its type, its city and
 // its address, because the app cannot list a place it cannot find.
-// Nothing else: the map pin, the cover photo and the hours all have an
-// answer already, and step 4 says out loud that it can be skipped.
+// Nothing else: the map pin, the photos, the ambience and the hours all
+// have an answer already, and steps 4 and 5 say out loud that they can
+// be skipped.
+//
+// Steps 2 to 5 now also collect what the app's restaurant and bar
+// detail screens actually draw — the cuisine and the price band beside
+// the name, the quarter with the address, a second photo and the carte,
+// and the ambience and equipment lists. They were asked for nowhere,
+// so a partner finished the flow and their listing opened with a blank
+// « Cuisine & Détails » block and six empty equipment rows.
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, ImagePlus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, FileText, ImagePlus } from "lucide-react";
 import { Brand } from "@/components/organizer/Brand";
+import {
+  AmbienceChips,
+  FeatureSwitches,
+  PriceBand,
+} from "@/components/forms/ListingControls";
 import { PinMap } from "@/components/map/PinMap";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -42,19 +55,27 @@ import {
 } from "@/lib/types/onboarding";
 import {
   finishOnboarding,
-  requestCoverUpload,
+  requestDraftUpload,
   saveOnboardingStep,
   signUpPartner,
+  type DraftUploadSlot,
 } from "@/app/actions/onboarding";
+import {
+  PRICE_RANGE_LABEL,
+  VENUE_AMBIENCE,
+  VENUE_FEATURE,
+  type VenueFeature,
+} from "@/lib/types/restaurant";
 
 /** One sentence per step. Any more and nobody reads either. */
 const HELP: Record<number, string> = {
   1: "Vos coordonnées, pour que nous sachions à qui écrire. Rien n'est public.",
-  2: "Le nom que vos clients verront dans l'application, et où vous êtes.",
-  3: "L'adresse sert à vous placer sur la carte. Vous pourrez l'ajuster plus tard.",
-  4: "Une photo donne envie de réserver. Vous pouvez passer cette étape et l'ajouter plus tard.",
-  5: "Les heures pendant lesquelles vous acceptez des réservations. Modifiables à tout moment.",
-  6: "Vérifiez, puis ouvrez votre tableau de bord.",
+  2: "Le nom que vos clients verront dans l'application, ce que vous servez et à quel prix.",
+  3: "Le quartier et l'adresse. L'application les affiche l'un après l'autre, et la carte vous place.",
+  4: "Les photos donnent envie de réserver, la carte évite un appel. Vous pouvez passer cette étape.",
+  5: "Ce que l'application affiche sous votre fiche. Rien n'est obligatoire ici.",
+  6: "Les heures pendant lesquelles vous acceptez des réservations. Modifiables à tout moment.",
+  7: "Vérifiez, puis ouvrez votre tableau de bord.",
 };
 
 export function InscriptionFlow({
@@ -85,7 +106,10 @@ export function InscriptionFlow({
   const [venueType, setVenueType] = useState<OnboardingVenueType>(
     initialDraft?.venueType ?? "restaurant",
   );
+  const [cuisine, setCuisine] = useState(initialDraft?.cuisine ?? "");
+  const [priceRange, setPriceRange] = useState(initialDraft?.priceRange ?? 2);
   const [city, setCity] = useState(initialDraft?.city ?? "");
+  const [district, setDistrict] = useState(initialDraft?.district ?? "");
   const [address, setAddress] = useState(initialDraft?.address ?? "");
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(
     initialDraft?.latitude != null && initialDraft?.longitude != null
@@ -97,6 +121,18 @@ export function InscriptionFlow({
       ? { name: "Photo de couverture", objectKey: initialDraft.coverObjectKey }
       : null,
   );
+  const [photo2, setPhoto2] = useState<{ name: string; objectKey: string } | null>(
+    initialDraft?.photo2ObjectKey
+      ? { name: "Deuxième photo", objectKey: initialDraft.photo2ObjectKey }
+      : null,
+  );
+  const [menuFile, setMenuFile] = useState<{ name: string; objectKey: string } | null>(
+    initialDraft?.menuObjectKey
+      ? { name: "Carte", objectKey: initialDraft.menuObjectKey }
+      : null,
+  );
+  const [ambience, setAmbience] = useState<string[]>(initialDraft?.ambience ?? []);
+  const [features, setFeatures] = useState<string[]>(initialDraft?.features ?? []);
   const [hours, setHours] = useState<OnboardingDay[]>(
     initialDraft?.hours?.length ? initialDraft.hours : defaultHours(),
   );
@@ -159,10 +195,50 @@ export function InscriptionFlow({
     });
   };
 
-  const uploadCover = (file: File) => {
+  /**
+   * One upload path for the three files step 4 can take.
+   *
+   * Ticket, PUT, then the draft. The draft is written last on purpose:
+   * a key recorded against bytes that never landed is a broken image on
+   * the listing, and a file in storage that no row points at is only
+   * wasted space.
+   */
+  const SLOTS: Record<
+    DraftUploadSlot,
+    { patch: (key: string, file: File) => Parameters<typeof saveOnboardingStep>[0];
+      set: (v: { name: string; objectKey: string } | null) => void }
+  > = {
+    cover: {
+      patch: (key, file) => ({
+        coverObjectKey: key,
+        coverContentType: file.type,
+        coverSizeBytes: file.size,
+      }),
+      set: setCover,
+    },
+    photo2: {
+      patch: (key, file) => ({
+        photo2ObjectKey: key,
+        photo2ContentType: file.type,
+        photo2SizeBytes: file.size,
+      }),
+      set: setPhoto2,
+    },
+    menu: {
+      patch: (key, file) => ({
+        menuObjectKey: key,
+        menuContentType: file.type,
+        menuSizeBytes: file.size,
+      }),
+      set: setMenuFile,
+    },
+  };
+
+  const upload = (slot: DraftUploadSlot, file: File) => {
     setError(null);
     start(async () => {
-      const ticket = await requestCoverUpload({
+      const ticket = await requestDraftUpload({
+        slot,
         filename: file.name,
         contentType: file.type,
         sizeBytes: file.size,
@@ -180,17 +256,13 @@ export function InscriptionFlow({
         setError("Le téléversement a échoué. Réessayez.");
         return;
       }
-      const saved = await saveOnboardingStep({
-        coverObjectKey: ticket.objectKey,
-        coverContentType: file.type,
-        coverSizeBytes: file.size,
-      });
+      const saved = await saveOnboardingStep(SLOTS[slot].patch(ticket.objectKey, file));
       if (!saved.ok) {
         setError(saved.message);
         return;
       }
       setDraft(saved.draft);
-      setCover({ name: file.name, objectKey: ticket.objectKey });
+      SLOTS[slot].set({ name: file.name, objectKey: ticket.objectKey });
     });
   };
 
@@ -311,6 +383,32 @@ export function InscriptionFlow({
                       ))}
                     </div>
                   </div>
+                  {/* « Type de cuisine » on the app's detail screen,
+                      and the line under the venue's name. Free text
+                      because a kitchen is a sentence — the app prints
+                      « Cuisine japonaise traditionnelle moderne &
+                      omakase » verbatim — and an enum of forty cuisines
+                      would still be missing this one. */}
+                  <Input
+                    label="Type de cuisine"
+                    value={cuisine}
+                    onChange={(e) => setCuisine(e.target.value)}
+                    hint={
+                      venueType === "bar"
+                        ? "Ex. Cocktails d'auteur et petite restauration"
+                        : "Ex. Cuisine marocaine contemporaine, tajines et pastilla"
+                    }
+                  />
+                  <div>
+                    <div className="text-body font-semibold text-ink mb-1">
+                      Fourchette de prix
+                    </div>
+                    <p className="text-meta text-ink-mute mb-3">
+                      Affichée dans l&apos;application, de € à €€€€, et utilisée
+                      par les filtres de recherche.
+                    </p>
+                    <PriceBand value={priceRange} onChange={setPriceRange} />
+                  </div>
                   {/* A list, not a field: see ONBOARDING_CITIES for why
                       five names beat free text here. */}
                   <Select
@@ -327,6 +425,17 @@ export function InscriptionFlow({
 
               {step === 3 ? (
                 <>
+                  {/* Before the address, because that is the order the
+                      app prints them in: its header reads « El cenador,
+                      Casablanca » — quartier, then ville — and in
+                      Morocco the quarter is how an address is actually
+                      given. */}
+                  <Input
+                    label="Quartier"
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                    hint={city ? `Ex. Gauthier, Médina, Guéliz — le quartier de ${city}.` : "Le quartier, tel qu'on le dit sur place."}
+                  />
                   <Input
                     label="Adresse"
                     value={address}
@@ -356,72 +465,81 @@ export function InscriptionFlow({
               ) : null}
 
               {step === 4 ? (
-                <div className="rounded-[var(--radius-md)] border border-line bg-canvas-2 p-6 text-center">
-                  {cover ? (
-                    <>
-                      <div className="mx-auto h-12 w-12 rounded-full bg-success-soft flex items-center justify-center">
-                        <Check size={22} className="text-success" strokeWidth={2.2} />
-                      </div>
-                      <div className="text-body font-semibold text-ink mt-3">
-                        Photo ajoutée
-                      </div>
-                      <p className="text-meta text-ink-mute mt-1 truncate">{cover.name}</p>
-                      <label className="inline-flex mt-4">
-                        <span className="sr-only">Remplacer la photo</span>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) uploadCover(file);
-                          }}
-                        />
-                        <span className="h-11 px-4 inline-flex items-center rounded-[var(--radius-sm)] border border-line bg-surface text-body font-semibold text-ink cursor-pointer hover:border-ink transition-colors">
-                          Remplacer
-                        </span>
-                      </label>
-                    </>
-                  ) : (
-                    <>
-                      <div className="mx-auto h-12 w-12 rounded-full bg-violet-soft flex items-center justify-center">
-                        <ImagePlus size={22} className="text-violet-deep" />
-                      </div>
-                      <div className="text-body font-semibold text-ink mt-3">
-                        Photo de couverture
-                      </div>
-                      <p className="text-meta text-ink-mute mt-1">
-                        JPEG, PNG ou WebP. 8 Mo au maximum.
-                      </p>
-                      <label className="inline-flex mt-4">
-                        <span className="sr-only">Choisir une photo</span>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) uploadCover(file);
-                          }}
-                        />
-                        <span className="h-14 px-6 inline-flex items-center rounded-[var(--radius-md)] bg-ink text-canvas text-body font-semibold cursor-pointer hover:bg-ink-soft transition-colors">
-                          Choisir une photo
-                        </span>
-                      </label>
-                    </>
-                  )}
+                <div className="flex flex-col gap-4">
+                  {/* Two photos and the carte, in the order the app
+                      uses them: the first photo is the cover on every
+                      list card and the header of the detail screen, the
+                      second is what turns that header into a carousel,
+                      and the carte is behind the « Menu » pill. All
+                      three optional — the step says so, and the button
+                      row lets a partner walk past it. */}
+                  <FileDrop
+                    title="Photo de couverture"
+                    hint="JPEG, PNG ou WebP. 8 Mo au maximum."
+                    accept="image/jpeg,image/png,image/webp"
+                    chosen={cover}
+                    onFile={(file) => upload("cover", file)}
+                    primary
+                  />
+                  <FileDrop
+                    title="Deuxième photo"
+                    hint="Facultative. C'est elle qui fait défiler la fiche dans l'application."
+                    accept="image/jpeg,image/png,image/webp"
+                    chosen={photo2}
+                    onFile={(file) => upload("photo2", file)}
+                  />
+                  <FileDrop
+                    title="Votre carte"
+                    hint="PDF ou photo. 20 Mo au maximum. Elle s'ouvre depuis votre fiche."
+                    accept="application/pdf,image/jpeg,image/png"
+                    icon="document"
+                    chosen={menuFile}
+                    onFile={(file) => upload("menu", file)}
+                  />
                 </div>
               ) : null}
 
-              {step === 5 ? <HoursGrid hours={hours} onChange={setHours} /> : null}
+              {/* Step 5 · what the app draws under « Cuisine & Détails »
+                  and « Equipements ». Skippable, and visibly so: a place
+                  that has not decided whether it is « intimiste » should
+                  not be stopped from opening its dashboard over it. */}
+              {step === 5 ? (
+                <div className="flex flex-col gap-6">
+                  <div>
+                    <div className="text-body font-semibold text-ink mb-1">Ambiance</div>
+                    <p className="text-meta text-ink-mute mb-3">
+                      Comment la salle se ressent. L&apos;application en affiche
+                      trois, sur une ligne.
+                    </p>
+                    <AmbienceChips value={ambience} onChange={setAmbience} />
+                  </div>
+                  <div>
+                    <div className="text-body font-semibold text-ink mb-1">Équipements</div>
+                    <p className="text-meta text-ink-mute mb-3">
+                      Listés dans l&apos;application, un par ligne, avec une
+                      icône. Ce sont les questions qu&apos;on vous pose au
+                      téléphone.
+                    </p>
+                    <FeatureSwitches value={features} onChange={setFeatures} />
+                  </div>
+                </div>
+              ) : null}
 
-              {step === 6 ? (
+              {step === 6 ? <HoursGrid hours={hours} onChange={setHours} /> : null}
+
+              {step === 7 ? (
                 <Summary
                   venueName={venueName}
                   venueType={venueType}
+                  cuisine={cuisine}
+                  priceRange={priceRange}
+                  district={district}
                   city={city}
                   address={address}
-                  hasCover={Boolean(cover)}
+                  photoCount={[cover, photo2].filter(Boolean).length}
+                  hasMenu={Boolean(menuFile)}
+                  ambience={ambience}
+                  features={features}
                   hours={hours}
                 />
               ) : null}
@@ -456,7 +574,7 @@ export function InscriptionFlow({
           {step === 2 ? (
             <Button
               size="lg"
-              onClick={() => advance({ venueName, venueType, city })}
+              onClick={() => advance({ venueName, venueType, cuisine, priceRange, city })}
               disabled={pending || !venueName.trim() || !city.trim()}
             >
               Continuer
@@ -466,7 +584,12 @@ export function InscriptionFlow({
             <Button
               size="lg"
               onClick={() =>
-                advance({ address, latitude: pin?.lat ?? null, longitude: pin?.lng ?? null })
+                advance({
+                  district,
+                  address,
+                  latitude: pin?.lat ?? null,
+                  longitude: pin?.lng ?? null,
+                })
               }
               disabled={pending || !address.trim()}
             >
@@ -486,11 +609,29 @@ export function InscriptionFlow({
             </>
           ) : null}
           {step === 5 ? (
+            <>
+              <Button
+                size="lg"
+                onClick={() => advance({ ambience, features })}
+                disabled={pending}
+              >
+                Continuer
+              </Button>
+              {/* Skipping writes nothing: an empty ambience list is the
+                  honest record of a question nobody answered, and a
+                  default the partner never chose would show up on their
+                  listing as a fact about their room. */}
+              <Button variant="ghost" size="md" onClick={() => advance({})} disabled={pending}>
+                Passer cette étape
+              </Button>
+            </>
+          ) : null}
+          {step === 6 ? (
             <Button size="lg" onClick={() => advance({ hours })} disabled={pending}>
               Continuer
             </Button>
           ) : null}
-          {step === 6 ? (
+          {step === 7 ? (
             <Button
               size="lg"
               iconRight={<ArrowRight size={16} />}
@@ -546,6 +687,82 @@ function Progress({ step }: { step: number }) {
       <div className="mt-2 md:hidden text-meta text-ink font-semibold">
         {ONBOARDING_STEPS.find((s) => s.n === step)?.name}
       </div>
+    </div>
+  );
+}
+
+/**
+ * One file, chosen or not.
+ *
+ * The same panel three times on step 4, because the three files differ
+ * only in what they accept and what they are called — drawing a bespoke
+ * box for each would be three chances for them to drift. `primary` is
+ * the cover: the one file worth a full-height button, since a listing
+ * with no photo at all is the one that does not get booked.
+ */
+function FileDrop({
+  title,
+  hint,
+  accept,
+  chosen,
+  onFile,
+  primary,
+  icon = "image",
+}: {
+  title: string;
+  hint: string;
+  accept: string;
+  chosen: { name: string; objectKey: string } | null;
+  onFile: (file: File) => void;
+  primary?: boolean;
+  icon?: "image" | "document";
+}) {
+  const Icon = icon === "document" ? FileText : ImagePlus;
+  const picker = (label: string, className: string) => (
+    <label className="inline-flex mt-4">
+      <span className="sr-only">{`${label} — ${title}`}</span>
+      <input
+        type="file"
+        accept={accept}
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onFile(file);
+        }}
+      />
+      <span className={className}>{label}</span>
+    </label>
+  );
+
+  return (
+    <div className="rounded-[var(--radius-md)] border border-line bg-canvas-2 p-6 text-center">
+      {chosen ? (
+        <>
+          <div className="mx-auto h-12 w-12 rounded-full bg-success-soft flex items-center justify-center">
+            <Check size={22} className="text-success" strokeWidth={2.2} />
+          </div>
+          <div className="text-body font-semibold text-ink mt-3">{title}</div>
+          <p className="text-meta text-ink-mute mt-1 truncate">{chosen.name}</p>
+          {picker(
+            "Remplacer",
+            "h-11 px-4 inline-flex items-center rounded-[var(--radius-sm)] border border-line bg-surface text-body font-semibold text-ink cursor-pointer hover:border-ink transition-colors",
+          )}
+        </>
+      ) : (
+        <>
+          <div className="mx-auto h-12 w-12 rounded-full bg-violet-soft flex items-center justify-center">
+            <Icon size={22} className="text-violet-deep" />
+          </div>
+          <div className="text-body font-semibold text-ink mt-3">{title}</div>
+          <p className="text-meta text-ink-mute mt-1">{hint}</p>
+          {picker(
+            primary ? "Choisir une photo" : "Choisir un fichier",
+            primary
+              ? "h-14 px-6 inline-flex items-center rounded-[var(--radius-md)] bg-ink text-canvas text-body font-semibold cursor-pointer hover:bg-ink-soft transition-colors"
+              : "h-11 px-4 inline-flex items-center rounded-[var(--radius-sm)] border border-line bg-surface text-body font-semibold text-ink cursor-pointer hover:border-ink transition-colors",
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -631,25 +848,59 @@ function HoursGrid({
 function Summary({
   venueName,
   venueType,
+  cuisine,
+  priceRange,
+  district,
   city,
   address,
-  hasCover,
+  photoCount,
+  hasMenu,
+  ambience,
+  features,
   hours,
 }: {
   venueName: string;
   venueType: OnboardingVenueType;
+  cuisine: string;
+  priceRange: number;
+  district: string;
   city: string;
   address: string;
-  hasCover: boolean;
+  photoCount: number;
+  hasMenu: boolean;
+  ambience: string[];
+  features: string[];
   hours: OnboardingDay[];
 }) {
   const openDays = useMemo(() => hours.filter((h) => !h.closed), [hours]);
+  const names = (ids: string[], labels: Record<string, string>) =>
+    ids.map((id) => labels[id] ?? id).join(", ");
   const rows = [
     { label: "Établissement", value: venueName || "—" },
     { label: "Type", value: ONBOARDING_TYPE_LABEL[venueType] },
+    { label: "Cuisine", value: cuisine || "À compléter plus tard" },
+    { label: "Prix", value: PRICE_RANGE_LABEL[priceRange] ?? "—" },
+    { label: "Quartier", value: district || "—" },
     { label: "Ville", value: city || "—" },
     { label: "Adresse", value: address || "—" },
-    { label: "Photo", value: hasCover ? "Ajoutée" : "À ajouter plus tard" },
+    {
+      label: "Photos",
+      value:
+        photoCount === 0
+          ? "À ajouter plus tard"
+          : `${photoCount} photo${photoCount > 1 ? "s" : ""}`,
+    },
+    { label: "Carte", value: hasMenu ? "Ajoutée" : "À ajouter plus tard" },
+    {
+      label: "Ambiance",
+      value: ambience.length ? names(ambience, VENUE_AMBIENCE) : "Non renseignée",
+    },
+    {
+      label: "Équipements",
+      value: features.length
+        ? names(features, VENUE_FEATURE as Record<VenueFeature, string>)
+        : "Non renseignés",
+    },
     {
       label: "Ouvert",
       value: openDays.length

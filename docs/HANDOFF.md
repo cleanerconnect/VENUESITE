@@ -239,7 +239,7 @@ node tools/verify/events.mjs          # the 19 event + shared routes
 node tools/verify/states.mjs          # ?etat= forceable on every venue route in the lot
 node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
 node tools/verify/audience.mjs        # the minimum group of ten, both configurations
-node tools/verify/inscription.mjs     # the six onboarding steps, the resume, the landing
+node tools/verify/inscription.mjs     # the seven onboarding steps, the resume, the landing
 node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
 node tools/verify/edges.mjs           # the paths taken by accident — see below
 node tools/verify/decisions.mjs       # LYFE's review, Décaler, the search, the grid, the guest
@@ -275,6 +275,44 @@ check-in and the scanner. `edges.mjs` walks what it does not: a wrong
 password, an address with no account, a session that died with a form
 open, two taps on one button, a network taking 350 ms a request, a 12 MB
 photo, an empty venue, a bar. Both pass at 1440 and at 390.
+
+**`LYFE_DEMO_CLOCK`, and why the plates stopped moving.** A dashboard is
+a picture of a moment. Captured at 03h17 the seed's dinner service is
+four hours over, Accueil says « Bonne nuit », the book has eleven
+arrived rows and no decision to take, and the plate says nothing about
+what the screen is for. The same command at 20h30 shows a full service.
+That difference was nobody's choice — it was what time the container
+happened to be awake.
+
+One setting settles it, read by the seed, by the capture tool and by
+the verify tools: unset, all three run on **the Thursday of the current
+week at 20h30 Africa/Casablanca**, which is the middle of a dinner
+service in the middle of a week. The rule is in
+`src/lib/time/demo-clock-shared.mjs`, plain JavaScript so that the
+`.mjs` scripts and the bundled portal import the same file.
+
+The portal is the one thing that does **not** default: unset means the
+real clock, because a deployment is not a demo and a portal quietly
+running an hour off is far worse than an unrepeatable screenshot. So
+the tools resolve the instant and the portal is started with it:
+
+```bash
+CLOCK=$(node -e 'import("./src/lib/time/demo-clock-shared.mjs").then(m=>console.log(m.toolClock().toISOString()))')
+npm run db:reset && npm run db:snapshot
+LYFE_DEMO_CLOCK="$CLOCK" npx next start -p 3210
+```
+
+It shifts the clock rather than freezing it, so « il y a 3 min » still
+counts up, and it is applied in two places for one reason: on the
+server in `src/instrumentation.ts`, and in the browser by a one-line
+script the root layout emits **only when the variable is set**. Without
+the second half the two runtimes disagree about the hour and every
+time-derived string hydrates twice and differently — the fault
+`src/lib/time/zone.ts` exists to prevent, one field over.
+
+Values: `auto` or unset · `off` for the real clock · `jeudi 20:30` for
+another weekday and hour · an exact ISO instant, which is what the
+tools pass on. Every tool prints the clock it ran on in its banner.
 
 **Set `LYFE_LOT` on the server and on the tool, or the run is
 meaningless.** The tools derive their screen list from the route index

@@ -73,13 +73,18 @@ await settle(300);
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1500);
 
-await page.getByLabel("Adresse").fill("8 boulevard d'Anfa, Casablanca");
+await page.getByLabel("Quartier").fill("Gauthier");
+await page.getByLabel("Adresse", { exact: true }).fill("8 boulevard d'Anfa, Casablanca");
 const carte = page.locator(".leaflet-container");
 if (await carte.count()) {
   await carte.click({ position: { x: 140, y: 110 } });
   await settle(500);
 }
 await page.locator('button:has-text("Continuer")').first().click();
+await settle(1500);
+// Photos, then ambience and equipment: both skippable, and this shot
+// is about the review banner, not about the listing.
+await page.locator('button:has-text("Passer cette étape")').click();
 await settle(1500);
 await page.locator('button:has-text("Passer cette étape")').click();
 await settle(1500);

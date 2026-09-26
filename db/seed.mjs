@@ -9,10 +9,12 @@
 //   node db/seed.mjs --sqlite-only # generate the file, touch no Postgres
 
 import { DatabaseSync } from "node:sqlite";
-import { readFileSync, readdirSync, mkdirSync, rmSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, mkdirSync, rmSync, existsSync, writeFileSync } from "node:fs";
+import { deflateSync } from "node:zlib";
 import { dirname, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 import { randomBytes, scryptSync } from "node:crypto";
+import { toolClock } from "../src/lib/time/demo-clock-shared.mjs";
 
 const args = process.argv.slice(2);
 const reset = args.includes("--reset");
@@ -38,7 +40,15 @@ for (const id of readdirSync(resolve("db/migrations")).filter((f) => f.endsWith(
   );
 }
 
-const now = new Date();
+/**
+ * The instant the whole dataset is built around.
+ *
+ * `LYFE_DEMO_CLOCK`, and Thursday 20h30 in Casablanca when it is unset:
+ * every row below is placed relative to `now`, so seeding at 03h17 gave
+ * a demo whose dinner service was four hours over. See
+ * `src/lib/time/demo-clock-shared.mjs`.
+ */
+const now = toolClock() ?? new Date();
 const iso = (d) => d.toISOString();
 const daysAgo = (n) => iso(new Date(now.getTime() - n * 86_400_000));
 const daysAhead = (n) => iso(new Date(now.getTime() + n * 86_400_000));
@@ -139,8 +149,11 @@ insert("venues", {
   initials: "DZ",
   description:
     "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
-  category: "Marocaine contemporaine",
+  tagline: "Marocain contemporain dans un riad de la médina",
+  cuisine: "Cuisine marocaine contemporaine, tajines et pastilla",
+  category: "Restaurant gastronomique, riad",
   address: "12 derb Sidi Ahmed Soussi, Médina",
+  district: "Médina",
   city: "Marrakech",
   latitude: 31.6295,
   longitude: -7.9811,
@@ -170,8 +183,18 @@ insert("business_accounts", {
 // Listing facets — what the app shows as chips and filters on.
 [
   ["tag", ["Marocain", "Riad", "Romantique", "Vue sur la médina", "Groupes"]],
-  ["feature", ["terrasse", "climatisation", "acces_pmr", "wifi", "vue", "musique_live"]],
-  ["ambience", ["Intimiste", "Traditionnel", "Cadre exceptionnel"]],
+  [
+    "feature",
+    [
+      "wifi",
+      "reservation_recommandee",
+      "cartes_credit",
+      "terrasse",
+      "service_midi_soir",
+      "acces_pmr",
+    ],
+  ],
+  ["ambience", ["intimiste", "traditionnel", "elegant"]],
 ].forEach(([kind, values]) =>
   values.forEach((value, i) =>
     insert("venue_tags", { venue_id: VENUE, kind, value, position: i }),
@@ -781,6 +804,156 @@ for (let i = 0; i < 365; i += 1) {
   }),
 );
 
+// ── Photos and the carte ─────────────────────────────────────
+//
+// The app's detail screen leads with a four-photo carousel and a
+// « Menu » pill, and Ma fiche has a tab for each. Seeded with nothing,
+// both render their empty state on every reference capture and the
+// app's payload carries no `photos` array at all — so the one thing the
+// screens are for is the one thing the plate never shows.
+//
+// The files are generated rather than committed: a binary in the
+// repository is a binary somebody has to keep in step with the venue it
+// belongs to, and a flat colour with the venue's name on it says
+// « photo of Dar Zellij, position 2 » more honestly than a stock riad
+// would. They are written where `LocalStorageDriver` looks for them.
+
+const ASSET_DIR = process.env.LYFE_ASSET_DIR ?? resolve(".data/assets");
+
+/** A solid PNG of `w`×`h` in `rgb`, written by hand. No dependency. */
+function png(w, h, rgb) {
+  const chunk = (type, body) => {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(body.length);
+    const payload = Buffer.concat([Buffer.from(type, "ascii"), body]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(payload) >>> 0);
+    return Buffer.concat([len, payload, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0);
+  ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 2; // truecolour
+  // One filter byte per scanline, then w pixels. A vertical gradient, so
+  // four photos of one venue are four different pictures rather than
+  // four identical rectangles.
+  const raw = Buffer.alloc(h * (1 + w * 3));
+  for (let y = 0; y < h; y++) {
+    const row = y * (1 + w * 3);
+    raw[row] = 0;
+    const t = y / (h - 1);
+    for (let x = 0; x < w; x++) {
+      const i = row + 1 + x * 3;
+      for (let c = 0; c < 3; c++) {
+        raw[i + c] = Math.round(rgb[c] * (1 - 0.45 * t) + 18 * 0.45 * t);
+      }
+    }
+  }
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk("IHDR", ihdr),
+    chunk("IDAT", deflateSync(raw, { level: 6 })),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+const CRC_TABLE = (() => {
+  const t = new Int32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c;
+  }
+  return t;
+})();
+function crc32(buf) {
+  let c = -1;
+  for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+  return c ^ -1;
+}
+
+/** A one-page PDF carrying a single line of text. Hand-written, valid. */
+function pdf(title) {
+  const text = `BT /F1 24 Tf 64 700 Td (${title.replace(/[()\\]/g, "")}) Tj ET`;
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+    `<< /Length ${text.length} >>\nstream\n${text}\nendstream`,
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+  ];
+  let out = "%PDF-1.4\n";
+  const offsets = [];
+  objects.forEach((body, i) => {
+    offsets.push(out.length);
+    out += `${i + 1} 0 obj\n${body}\nendobj\n`;
+  });
+  const xref = out.length;
+  out += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  for (const o of offsets) out += `${String(o).padStart(10, "0")} 00000 n \n`;
+  out += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return Buffer.from(out, "latin1");
+}
+
+/** Writes the bytes where the local storage driver will find them. */
+function storeAsset(objectKey, bytes) {
+  const path = resolve(ASSET_DIR, objectKey);
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, bytes);
+  return bytes.length;
+}
+
+/**
+ * The carousel, in order, plus the carte.
+ *
+ * Position is the order the app plays them in and the order Ma fiche
+ * lists them; position 0 is the cover, which is the one the list card
+ * and the app's header use.
+ */
+function seedAssets(venueId, name, palette, menuTitle) {
+  palette.forEach((rgb, i) => {
+    const key = `venues/${venueId}/photo/seed-${i + 1}.png`;
+    const bytes = storeAsset(key, png(1200, 800, rgb));
+    insert("venue_assets", {
+      id: `ast_${venueId}_photo_${i + 1}`,
+      venue_id: venueId,
+      kind: "photo",
+      object_key: key,
+      content_type: "image/png",
+      size_bytes: bytes,
+      position: i,
+      created_at: daysAgo(120 - i),
+    });
+  });
+  const menuKey = `venues/${venueId}/menu_file/carte.pdf`;
+  const menuBytes = storeAsset(menuKey, pdf(menuTitle));
+  insert("venue_assets", {
+    id: `ast_${venueId}_menu_1`,
+    venue_id: venueId,
+    kind: "menu_file",
+    object_key: menuKey,
+    content_type: "application/pdf",
+    size_bytes: menuBytes,
+    position: 0,
+    created_at: daysAgo(30),
+  });
+  return name;
+}
+
+seedAssets(
+  VENUE,
+  "Dar Zellij",
+  [
+    [122, 78, 52],
+    [164, 122, 74],
+    [92, 104, 86],
+    [138, 96, 112],
+  ],
+  "Dar Zellij - Carte",
+);
+
+
 // ── Second venue ─────────────────────────────────────────────
 //
 // A bar, owned by the same person as the restaurant. It exists so three
@@ -802,8 +975,11 @@ insert("venues", {
   initials: "NR",
   description:
     "Bar à cocktails sur les toits, vue sur le port. Ouvert du mercredi au dimanche, DJ le week-end.",
-  category: "Bar à cocktails",
+  tagline: "Cocktails et DJ sur les toits, vue sur le port",
+  cuisine: "Cocktails d'auteur et petite restauration du soir",
+  category: "Bar à cocktails, rooftop",
   address: "18 boulevard d'Anfa, Gauthier",
+  district: "Gauthier",
   city: "Casablanca",
   latitude: 33.5899,
   longitude: -7.6328,
@@ -831,12 +1007,26 @@ insert("business_accounts", {
 
 [
   ["tag", ["Cocktails", "Rooftop", "Vue mer", "DJ", "Afterwork"]],
-  ["feature", ["terrasse", "vue", "musique_live", "climatisation"]],
-  ["ambience", ["Festif", "Coucher de soleil"]],
+  [
+    "feature",
+    ["wifi", "cartes_credit", "terrasse", "musique_mixologie", "parking"],
+  ],
+  ["ambience", ["festif", "moderne", "panoramique"]],
 ].forEach(([kind, values]) =>
   values.forEach((value, i) =>
     insert("venue_tags", { venue_id: VENUE2, kind, value, position: i }),
   ),
+);
+
+seedAssets(
+  VENUE2,
+  "Nomad Rooftop",
+  [
+    [38, 52, 86],
+    [96, 66, 124],
+    [180, 104, 78],
+  ],
+  "Nomad Rooftop - Carte des cocktails",
 );
 
 [

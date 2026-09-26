@@ -75,9 +75,12 @@ export default async function MenuPage({ searchParams }: Props) {
       identity={{
         name: profile.name,
         shortName: profile.shortName,
+        tagline: profile.tagline,
         description: profile.description,
-        category: profile.cuisine,
+        cuisine: profile.cuisine,
+        category: profile.category,
         address: profile.address,
+        district: profile.district,
         city: profile.city,
         latitude: profile.latitude == null ? "" : String(profile.latitude),
         longitude: profile.longitude == null ? "" : String(profile.longitude),
@@ -85,8 +88,8 @@ export default async function MenuPage({ searchParams }: Props) {
         contactPhone: profile.contactPhone,
         website: profile.website,
         // Establishment type (restaurant / bar) — distinct from
-        // `profile.kind`, which is the cuisine style. It comes off the
-        // session's membership, already resolved.
+        // `profile.kind`, which is the style of cooking. It comes off
+        // the session's membership, already resolved.
         kind:
           session.venues.find((v) => v.id === venueId)?.kind === "drinks"
             ? "drinks"

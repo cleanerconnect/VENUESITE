@@ -17,7 +17,7 @@
 
 import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync } from "node:fs";
-import { LOT, LOT_LABEL, requireWrites } from "./lot.mjs";
+import { LOT, LOT_LABEL, clockLine, requireWrites } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -72,7 +72,7 @@ async function shot(name) {
 const heading = async () =>
   ((await page.locator("h1").first().textContent().catch(() => "")) ?? "").trim();
 
-console.log(`\nInscription · ${LOT_LABEL} · ${width}×${height}\n`);
+console.log(`\nInscription · ${LOT_LABEL} · ${width}×${height} · ${clockLine()}\n`);
 
 // ── The door ──
 await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
@@ -112,6 +112,14 @@ await shot("2-etablissement");
 // ── Step 2 · the establishment ──
 await page.getByLabel("Nom de l'établissement").fill("Le Petit Riad");
 await page.locator('button:has-text("Un bar ou lounge")').click();
+// « Type de cuisine » and the price band: the two the app's detail
+// screen draws under the venue's name and nothing used to ask for.
+await page.getByLabel("Type de cuisine").fill("Cocktails d'auteur et mezzés");
+const bands = page.locator('[role="radiogroup"][aria-label="Fourchette de prix"] [role="radio"]');
+check("quatre niveaux de prix", (await bands.count()) === 4, `${await bands.count()}`);
+await bands.nth(2).click();
+await page.waitForTimeout(200);
+check("le niveau choisi est coché", (await bands.nth(2).getAttribute("aria-checked")) === "true");
 // The city is a list of five, not a field: a typed city is five
 // spellings of Marrakech in the database by the end of the month.
 const cities = await page.getByLabel("Ville").locator("option").allTextContents();
@@ -127,8 +135,11 @@ await page.waitForTimeout(1500);
 check("étape 3 · Adresse", (await heading()) === "Adresse");
 await shot("3-adresse");
 
-// ── Step 3 · the address and its pin ──
-await page.getByLabel("Adresse").fill("45 rue de la Kasbah, Médina");
+// ── Step 3 · the quarter, the address and its pin ──
+// The quarter comes first, because that is the order the app prints
+// them in: its header reads « quartier, ville ».
+await page.getByLabel("Quartier").fill("Médina");
+await page.getByLabel("Adresse", { exact: true }).fill("45 rue de la Kasbah, Médina");
 // The map is real Leaflet now. « Trouver sur la carte » geocodes through
 // Nominatim, which a sandboxed runner cannot reach, so the pin is placed
 // the other way the screen allows — a click on the map — which is also
@@ -143,25 +154,65 @@ await page.waitForTimeout(1500);
 check("étape 4 · Photos", (await heading()) === "Photos");
 await shot("4-photos");
 
-// ── Step 4 · skippable, and it says so ──
+// ── Step 4 · three files, all skippable, and it says so ──
+const drops = await page.locator('input[type="file"]').count();
+check("couverture, deuxième photo et carte", drops === 3, `${drops} sélecteurs`);
+const pdf = await page
+  .locator('input[type="file"]')
+  .nth(2)
+  .getAttribute("accept");
+check("la carte accepte un PDF", (pdf ?? "").includes("application/pdf"), pdf ?? "");
 const skip = page.locator('button:has-text("Passer cette étape")');
 check("l'étape photo peut être passée", (await skip.count()) > 0);
 await skip.click();
 await page.waitForTimeout(1500);
-check("étape 5 · Horaires", (await heading()) === "Horaires");
+check("étape 5 · Ambiance et équipements", (await heading()) === "Ambiance et équipements");
+await shot("5-ambiance");
 
-// ── Step 5 · the weekly grid ──
+// ── Step 5 · the two lists the app draws, and it too can be passed ──
+// Scoped to the ambience fieldset: the equipment rows are Radix
+// switches, which are also `button[role="switch"]`, and an unscoped
+// count is the two lists added together.
+const chips = page.locator('fieldset:has(> legend:text-is("Ambiance")) button[role="switch"]');
+check("les ambiances sont une liste fermée", (await chips.count()) === 12, `${await chips.count()} puces`);
+await chips.first().click();
+await page.waitForTimeout(200);
+check("une ambiance se coche", (await chips.first().getAttribute("aria-checked")) === "true");
+const equipment = page.locator('label:has([role="switch"])');
+check("huit équipements", (await equipment.count()) === 8, `${await equipment.count()} lignes`);
+for (const label of [
+  "Wi-Fi",
+  "Réservation recommandée",
+  "Cartes de crédit acceptées",
+  "Terrasse / extérieur",
+  "Déjeuner & dîner servis",
+  "Ambiance musique & mixologie",
+  "Parking",
+  "Accès PMR",
+]) {
+  check(
+    `équipement « ${label} »`,
+    (await page.locator(`label:has-text("${label}")`).count()) > 0,
+  );
+}
+const skip5 = page.locator('button:has-text("Passer cette étape")');
+check("l'étape ambiance peut être passée", (await skip5.count()) > 0);
+await page.locator('button:has-text("Continuer")').first().click();
+await page.waitForTimeout(1500);
+check("étape 6 · Horaires", (await heading()) === "Horaires");
+
+// ── Step 6 · the weekly grid ──
 const rows = await page.locator('[role="switch"]').count();
 check("sept jours", rows === 7, `${rows} interrupteurs`);
 const copy = page.locator('button:has-text("Appliquer lundi à tous les jours")');
 check("raccourci de copie", (await copy.count()) > 0);
 await copy.click();
 await page.waitForTimeout(400);
-await shot("5-horaires");
+await shot("6-horaires");
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1500);
-check("étape 6 · C'est prêt", (await heading()) === "C'est prêt");
-await shot("6-cest-pret");
+check("étape 7 · C'est prêt", (await heading()) === "C'est prêt");
+await shot("7-cest-pret");
 
 // ── The draft outlives the tab ──
 await page.goto(`${BASE}/inscription`, { waitUntil: "domcontentloaded" });
@@ -177,8 +228,14 @@ check(
   "le type est nommé comme sur la question",
   summary.includes("Bar ou lounge"),
 );
+// Every new answer has to survive the round trip to the draft and back,
+// or the step that collected it was theatre.
+check("le récapitulatif porte la cuisine", summary.includes("Cocktails d'auteur et mezzés"));
+check("le récapitulatif porte le quartier", summary.includes("Médina"));
+check("le récapitulatif porte la fourchette de prix", /€€€(?!€)/.test(summary), summary.match(/€+/g)?.join(" ") ?? "");
+check("le récapitulatif porte l'ambiance", summary.includes("Élégant"));
 
-// ── Step 6 · the establishment exists, and it is theirs ──
+// ── Step 7 · the establishment exists, and it is theirs ──
 await page.locator('button:has-text("Ouvrir mon tableau de bord")').click();
 await page.waitForTimeout(3200);
 check("atterrit sur l'Accueil", page.url().endsWith("/restaurant"), page.url());
@@ -186,7 +243,7 @@ const landing = await heading();
 check("salue le nouveau partenaire", landing.includes("Partenaire"), landing);
 const aside = (await page.textContent("aside").catch(() => "")) ?? "";
 check("la barre latérale nomme l'établissement", aside.includes("Le Petit Riad"));
-await shot("7-accueil");
+await shot("8-accueil");
 
 // A new venue has no bookings; the dashboard has to say so rather than
 // break. This is the assertion that would have caught a missing service
@@ -206,7 +263,7 @@ if (noise.length) {
 
 console.log(
   problems.length === 0
-    ? `\nLes six étapes de l'inscription passent · ${LOT_LABEL} · ${width}×${height}.`
+    ? `\nLes sept étapes de l'inscription passent · ${LOT_LABEL} · ${width}×${height}.`
     : `\n${problems.length} failures`,
 );
 process.exit(problems.length === 0 ? 0 : 1);

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { VenueIdentityForm } from "./VenueIdentityForm";
 import { VenueListingForm } from "./VenueListingForm";
 import { MenuListingForm } from "./MenuListingForm";
@@ -20,11 +19,13 @@ import type {
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FilterTabs } from "@/components/ui/FilterTabs";
 import { PermissionDenied } from "@/components/data/QueryState";
+import { MENU_FILE_MAX } from "@/lib/types/restaurant";
 
 type SectionId =
   | "identity"
   | "listing"
   | "menu"
+  | "menu_file"
   | "hours"
   | "media"
   | "staff";
@@ -32,12 +33,21 @@ type SectionId =
 // Ordered the way a partner fills the fiche in: who you are, how you are
 // listed, what you serve, when you are open, what you look like, who else
 // gets in.
+//
+// `menu` and `menu_file` are two different screens for two different
+// jobs. `menu` is Lot 2's dish editor — name, price, dietary markers,
+// visible or not — and it belongs to the Menu route. `menu_file` is the
+// tab a basique deployment gets: the carte as a file, which is what the
+// app's « Menu » pill opens. A venue that photographs its menu every
+// season is not a venue that will keep forty dish rows current, and
+// buying it an editor it will not use is worse than buying it nothing.
 const SECTIONS: { id: SectionId; label: string; minRole: PortalRole[] }[] = [
   { id: "identity", label: "Identité", minRole: ["owner", "manager"] },
   { id: "listing", label: "Fiche", minRole: ["owner", "manager"] },
   { id: "menu", label: "Carte", minRole: ["owner", "manager"] },
   { id: "hours", label: "Horaires", minRole: ["owner", "manager"] },
   { id: "media", label: "Photos", minRole: ["owner", "manager"] },
+  { id: "menu_file", label: "Menu", minRole: ["owner", "manager"] },
   { id: "staff", label: "Équipe", minRole: ["owner", "manager", "staff"] },
 ];
 
@@ -71,7 +81,6 @@ export function VenueSettings({
   menuFiles: VenueAsset[];
   staff: StaffMemberRow[];
 }) {
-  const { lot } = useWorkspaceAccess();
   const visible = SECTIONS.filter(
     (s) => s.minRole.includes(role) && (!only || only.includes(s.id)),
   );
@@ -101,28 +110,30 @@ export function VenueSettings({
       {active === "listing" ? <VenueListingForm initial={listing} /> : null}
       {active === "menu" ? <MenuListingForm items={menuItems} /> : null}
       {active === "hours" ? <OpeningHoursForm initial={availability} /> : null}
+      {/* The app's header is a carousel, so this is a list in an order,
+          not one picture with spares: the first is the cover on every
+          list card, the rest play behind it. */}
       {active === "media" ? (
-        <div className="space-y-6">
-          <AssetManager
-            kind="photo"
-            title="Photos"
-            description="La première est la couverture. Sur les autres, Couverture la met en premier."
-            layout="gallery"
-            addLabel="Ajouter une photo"
-            initial={photos}
-          />
-          {/* The carte is a Lot 2 screen, and its file belongs with it:
-              uploading one under Lot 1 would put a document in the app
-              that the partner has no screen to keep current. */}
-          {lot === 2 ? (
-            <AssetManager
-              kind="menu_file"
-              title="Carte (fichier)"
-              description="PDF ou image. Les clients la consultent depuis votre fiche."
-              initial={menuFiles}
-            />
-          ) : null}
-        </div>
+        <AssetManager
+          kind="photo"
+          title="Photos"
+          description="La première est la couverture, et l'ordre est celui du carrousel dans l'application. Sur les autres, Couverture la met en premier."
+          layout="gallery"
+          addLabel="Ajouter une photo"
+          initial={photos}
+        />
+      ) : null}
+      {/* What the app's « Menu » pill opens. A file, and only a file:
+          the dish editor is Lot 2's Carte, one tab over. */}
+      {active === "menu_file" ? (
+        <AssetManager
+          kind="menu_file"
+          title="Menu"
+          description={`Votre carte, telle quelle : un PDF, ou jusqu'à ${MENU_FILE_MAX} photos de ses pages, dans l'ordre. Les clients l'ouvrent depuis votre fiche.`}
+          addLabel="Ajouter un fichier"
+          max={MENU_FILE_MAX}
+          initial={menuFiles}
+        />
       ) : null}
       {active === "staff" ? (
         <StaffForm initial={staff} canManage={role === "owner"} />

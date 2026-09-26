@@ -9,7 +9,7 @@
 // scrolling is the thing the brief measures.
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { signIn } from "./lot.mjs";
+import { clockLine, signIn } from "./lot.mjs";
 import { mkdirSync } from "node:fs";
 
 const chromium = await chromiumOrExplain();
@@ -88,4 +88,4 @@ for (const [slug, path, needsSession] of SCREENS) {
 }
 
 await browser.close();
-console.log(`\n${DIR} · ${width}×${height}`);
+console.log(`\n${DIR} · ${width}×${height} · ${clockLine()}`);
