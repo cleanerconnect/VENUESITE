@@ -157,7 +157,15 @@ if (await twice.count()) {
   if (await button.count()) {
     // Both clicks land inside the same tick: a form that fires twice
     // writes twice, and the second write is the one that races.
-    await Promise.all([button.click(), button.click().catch(() => {})]);
+    //
+    // `force` because that is what a double tap is. Waiting for the
+    // button to be actionable makes the *tool* lose the race it is
+    // testing: the first click disables the button on submit, the
+    // second then waits thirty seconds for a control that will never be
+    // enabled again, and the run dies with a Playwright stack instead
+    // of a verdict. A forced click dispatches the event and returns.
+    const twoTaps = { force: true, noWaitAfter: true };
+    await Promise.all([button.click(twoTaps), button.click(twoTaps).catch(() => {})]);
     await settle(3000);
     const after = await text();
     check("un double clic n'écrit pas deux fois", !BROKEN.test(after) && !/deux fois|doublon/i.test(after));
@@ -179,7 +187,10 @@ if (await twice.count()) {
 await openPending();
 const accept = page.locator('button:has-text("Accepter"):visible').first();
 if (await accept.count()) {
-  await Promise.all([accept.click(), accept.click().catch(() => {})]);
+  await Promise.all([
+    accept.click({ force: true, noWaitAfter: true }),
+    accept.click({ force: true, noWaitAfter: true }).catch(() => {}),
+  ]);
   await settle(2600);
   const after = await text();
   check("un double clic sur Accepter reste propre", !BROKEN.test(after) && /Confirmée/.test(after));

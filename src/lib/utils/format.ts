@@ -1,7 +1,7 @@
 import { formatDistanceToNowStrict } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import { fr } from "date-fns/locale";
-import { VENUE_TIME_ZONE } from "@/lib/time/zone";
+import { VENUE_TIME_ZONE, venueInstant } from "@/lib/time/zone";
 
 // Single source of truth for MAD formatting, French convention,
 // non-breaking space as thousands separator. e.g. "12 850 MAD".
@@ -12,28 +12,29 @@ export function formatMAD(amount: number, withSuffix = true): string {
 }
 
 export function formatDateFR(iso: string | Date, pattern = "dd/MM/yyyy") {
-  const d = typeof iso === "string" ? new Date(iso) : iso;
-  return formatInTimeZone(d, VENUE_TIME_ZONE, pattern, { locale: fr });
+  return formatInTimeZone(venueInstant(iso), VENUE_TIME_ZONE, pattern, { locale: fr });
 }
 
 export function formatDateTimeFR(iso: string | Date) {
-  const d = typeof iso === "string" ? new Date(iso) : iso;
-  return formatInTimeZone(d, VENUE_TIME_ZONE, "dd MMM · HH'h'mm", { locale: fr });
+  return formatInTimeZone(venueInstant(iso), VENUE_TIME_ZONE, "dd MMM · HH'h'mm", {
+    locale: fr,
+  });
 }
 
-/** "20h30" — the French clock, used wherever a service time is shown. */
-/** "20h30" — the French clock, in the venue's zone, on both runtimes. */
+/**
+ * "20h30" — the French clock, in the venue's zone, on both runtimes.
+ *
+ * Through `venueInstant`, so a stored value that names no zone is read
+ * as the venue's wall clock rather than the runtime's. See `zone.ts`.
+ */
 export function formatTimeFR(iso: string | Date) {
-  return formatInTimeZone(
-    typeof iso === "string" ? new Date(iso) : iso,
-    VENUE_TIME_ZONE,
-    "HH'h'mm",
-    { locale: fr },
-  );
+  return formatInTimeZone(venueInstant(iso), VENUE_TIME_ZONE, "HH'h'mm", {
+    locale: fr,
+  });
 }
 
 export function formatRelativeFR(iso: string | Date) {
-  const d = typeof iso === "string" ? new Date(iso) : iso;
+  const d = venueInstant(iso);
   return `il y a ${formatDistanceToNowStrict(d, { locale: fr })}`;
 }
 

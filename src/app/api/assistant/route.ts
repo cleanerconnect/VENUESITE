@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getAdvisor } from "@/lib/ai";
 import { getRestaurantRepository } from "@/lib/data";
+import { configFor } from "@/lib/venue/config";
 
 // Streaming assistant endpoint.
 //
@@ -31,9 +32,16 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "prompt too long" }, { status: 413 });
   }
 
-  const data = await getRestaurantRepository().getOverview(
-    body?.restaurantId ?? "",
-  );
+  const repo = getRestaurantRepository();
+  const venueId = body?.restaurantId ?? "";
+  // The venue's own vocabulary, so the assistant answers a bar in the
+  // words a bar uses. Read alongside the overview rather than after it:
+  // one round trip, and the answer never starts before both are in.
+  const [data, settings] = await Promise.all([
+    repo.getOverview(venueId),
+    repo.getVenueSettings(venueId),
+  ]);
+  const config = configFor(settings.configuration);
   const advisor = getAdvisor();
   const encoder = new TextEncoder();
 
@@ -43,6 +51,7 @@ export async function POST(request: NextRequest) {
         for await (const chunk of advisor.assistant(
           prompt,
           data,
+          config,
           request.signal,
         )) {
           controller.enqueue(

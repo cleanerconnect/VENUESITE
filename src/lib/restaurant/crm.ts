@@ -15,7 +15,8 @@ import type {
   ScreenSpec,
   SettingRow,
 } from "@/lib/dashboard/spec";
-import type { GuestGraph } from "@/lib/types/venue-operations";
+import type { GuestGraph, VenueConfiguration } from "@/lib/types/venue-operations";
+import { coversFor } from "@/lib/venue/config";
 import { initialsOf } from "./format";
 import type { Lot } from "./slugs";
 import type { Customer, LoyaltyTier } from "@/lib/types/business";
@@ -50,6 +51,7 @@ export function buildCustomersScreen(
   graph: GuestGraph,
   spendByCustomer: Record<string, number>,
   lot: Lot = 2,
+  configuration: VenueConfiguration = "restaurant",
 ): ScreenSpec {
   const lot1 = lot === 1;
   const loyal = customers.filter(
@@ -166,6 +168,7 @@ export function buildCustomersScreen(
             hasSpend ? spendByCustomer[c.id] : undefined,
             thisMonth,
             lot,
+            configuration,
           ),
         ),
         empty: {
@@ -248,6 +251,7 @@ export function customerRow(
   spendMad?: number,
   currentMonth = new Date().getMonth(),
   lot: Lot = 2,
+  configuration: VenueConfiguration = "restaurant",
 ): EntityRow {
   const labels = tagIds.map((id) => tagLabels.get(id) ?? "").filter(Boolean);
   // The tier is set by the loyalty service, a Lot 2 subscription. Lot 1
@@ -314,7 +318,7 @@ export function customerRow(
       .filter(Boolean)
       .join(" "),
     href: `/restaurant/clients/${customer.id}`,
-    detail: customerDetail(customer, reviews, spendMad, lot),
+    detail: customerDetail(customer, reviews, spendMad, lot, configuration),
   };
 }
 
@@ -333,6 +337,7 @@ export function customerDetail(
   reviews: GuestReview[],
   spendMad?: number,
   lot: Lot = 2,
+  configuration: VenueConfiguration = "restaurant",
 ): DetailSpec {
   const theirReviews = reviews.filter((r) => customer.reviewIds.includes(r.id));
   const loyalty = lot === 1 ? null : LOYALTY_TIER[customer.loyaltyTier];
@@ -390,7 +395,7 @@ export function customerDetail(
           },
           ...customer.noShowHistory.slice(0, 3).map((n) => ({
             label: dateFR(n.at),
-            metric: { value: `${n.partySize} couverts` },
+            metric: { value: coversFor(configuration, n.partySize) },
           })),
         ],
       },

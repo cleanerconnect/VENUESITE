@@ -16,4 +16,24 @@
 // `NEXT_PUBLIC_` so that the server and the browser read the same value
 // from the same place.
 
-export const VENUE_TIME_ZONE = process.env.NEXT_PUBLIC_VENUE_TZ ?? "Africa/Casablanca";
+import {
+  DEFAULT_VENUE_TZ,
+  venueInstant as readVenueInstant,
+} from "./zone-shared.mjs";
+
+export const VENUE_TIME_ZONE = process.env.NEXT_PUBLIC_VENUE_TZ ?? DEFAULT_VENUE_TZ;
+
+/**
+ * An instant from a stored value, reading a zoneless one as the venue's.
+ *
+ * The comment above is about *formatting* a known instant. This is the
+ * other half: `2026-09-25T23:30:00` names no zone, and the language says
+ * such a string is local time — so the server read it as Casablanca and
+ * the browser read it as wherever the browser is, and the guest list's
+ * cutoff hydrated an hour apart. Anything already carrying `Z` or an
+ * offset passes through untouched; only what was ambiguous is settled,
+ * and it is settled the same way on both runtimes.
+ */
+export function venueInstant(value: string | Date): Date {
+  return readVenueInstant(value, VENUE_TIME_ZONE);
+}

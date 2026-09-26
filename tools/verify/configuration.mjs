@@ -4,6 +4,11 @@
 //   1. Vie nocturne exists for a lounge and is *absent* for a
 //      restaurant — not greyed, not empty.
 //   2. The vocabulary follows the configuration: couverts / personnes.
+//      Both halves of it. Checking only that a lounge *says* personnes
+//      is what let the advisor's nudge go on counting couverts on a
+//      bar's Accueil for a release: the word was there, three lines
+//      below the wrong one. So the lounge's whole surface is swept for
+//      the restaurant's word, screen by screen.
 //
 // And, while it is here, the rule the specification states twice: spend
 // appears only where a transaction source exists. Nomad Rooftop is
@@ -155,9 +160,57 @@ async function inspect(venueId, label, expectNightlife, expectWord) {
   if (navFail) fails += 1;
 }
 
+/**
+ * The restaurant's word for a booked head, anywhere on a lounge screen.
+ *
+ * `couverture` is a cover photo and `découvert` is an overdraft, so the
+ * match is on the noun with word boundaries and nothing else. Every
+ * screen this lot registers is swept, not just Accueil: the regression
+ * this catches was in a card the advisor writes, and the next one will
+ * be somewhere else.
+ */
+const RESTAURANT_WORD = /(?<![a-zà-ÿ])couverts?(?![a-zà-ÿ])/i;
+
+async function vocabulary() {
+  const switched = await page.request.post(`${BASE}/api/session/venue`, {
+    data: { venueId: "bar_nomad_casa" },
+  });
+  if (!switched.ok()) {
+    console.log(`Vocabulaire du lounge\n  ✗ bascule refusée (${switched.status()})`);
+    fails += 1;
+    return;
+  }
+
+  const offenders = [];
+  // `venuePaths` strips the workspace prefix, so Accueil comes back as
+  // the empty string. It has to be put back: without it the sweep asks
+  // for the marketing home page and reports a clean bar, and Accueil is
+  // the one screen the regression was actually on.
+  for (const path of venuePaths()) {
+    await page.goto(`${BASE}/restaurant${path}`, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(700);
+    const body = (await page.innerText("body").catch(() => "")) ?? "";
+    const line = body.split("\n").find((l) => RESTAURANT_WORD.test(l));
+    if (line) offenders.push([`/restaurant${path}`, line.trim()]);
+  }
+
+  console.log(`Vocabulaire du lounge · ${venuePaths().length} écrans balayés`);
+  if (offenders.length === 0) {
+    console.log("  aucun « couvert » sur un écran de bar ✓");
+    return;
+  }
+  for (const [path, line] of offenders) {
+    console.log(`  ✗ ${path}`);
+    console.log(`      ${line.slice(0, 120)}`);
+  }
+  fails += offenders.length;
+}
+
 await inspect("rst_dar_zellij", "Dar Zellij (restaurant)", false, "couverts");
 console.log();
 await inspect("bar_nomad_casa", "Nomad Rooftop (lounge)", true, "personnes");
+console.log();
+await vocabulary();
 
 console.log(
   fails === 0

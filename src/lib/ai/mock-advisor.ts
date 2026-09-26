@@ -14,9 +14,13 @@ import type {
   ServiceNudge,
 } from "./schemas";
 import { mockResponse, makeStream } from "@/lib/ai/static/assistant";
+import { covers, type VenueConfig } from "@/lib/venue/config";
 
 export class MockAdvisor implements AiAdvisor {
-  async serviceNudge(data: RestaurantOverview): Promise<ServiceNudge | null> {
+  async serviceNudge(
+    data: RestaurantOverview,
+    config: VenueConfig,
+  ): Promise<ServiceNudge | null> {
     const waiting = data.waitlist.reduce((n, r) => n + r.partySize, 0);
     if (waiting === 0) return null;
 
@@ -29,9 +33,13 @@ export class MockAdvisor implements AiAdvisor {
     const recoverable = Math.min(waiting, seatable);
     const value = Math.round(recoverable * data.averageTicket.amountMad);
 
+    // The venue's own words: a lounge reads « 10 personnes en liste
+    // d'attente … sur ce créneau », not ten covers on a service in a
+    // room with no tables to lay. « disponibles » has no feminine form,
+    // so it needs no agreement helper.
     return {
-      headline: `${waiting} couverts en liste d'attente.`,
-      body: `${seatable} couverts encore disponibles sur ce service. Les confirmer récupère ${recoverable} couverts, soit ≈ ${value.toLocaleString("fr-FR")} MAD.`,
+      headline: `${covers(config, waiting)} en liste d'attente.`,
+      body: `${covers(config, seatable)} encore disponibles sur ce ${config.service.one}. Les confirmer récupère ${covers(config, recoverable)}, soit ≈ ${value.toLocaleString("fr-FR")} MAD.`,
       ctaLabel: "Traiter la liste d'attente →",
       target: "reservations",
       confidence: recoverable > 0 ? 0.82 : 0.2,
@@ -74,7 +82,10 @@ export class MockAdvisor implements AiAdvisor {
     };
   }
 
-  async anomalies(data: RestaurantOverview): Promise<ServiceAnomaly> {
+  async anomalies(
+    data: RestaurantOverview,
+    config: VenueConfig,
+  ): Promise<ServiceAnomaly> {
     const anomalies: ServiceAnomaly["anomalies"] = [];
     const service = data.currentService;
 
@@ -83,7 +94,7 @@ export class MockAdvisor implements AiAdvisor {
     if (over.length > 0) {
       anomalies.push({
         kind: "covers",
-        summary: `${over.length} créneau(x) au-dessus de ${perSlot} couverts.`,
+        summary: `${over.length} créneau(x) au-dessus de ${covers(config, perSlot)}.`,
         severity: "warning",
         affected: over.map((s) => s.at),
       });

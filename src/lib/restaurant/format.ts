@@ -8,7 +8,7 @@
 
 import { formatInTimeZone } from "date-fns-tz";
 import { fr } from "date-fns/locale";
-import { VENUE_TIME_ZONE } from "@/lib/time/zone";
+import { VENUE_TIME_ZONE, venueInstant } from "@/lib/time/zone";
 import type { Block, KpiTile } from "@/lib/dashboard/spec";
 import { MAD } from "@/lib/dashboard/formats";
 import { formatValue } from "@/lib/dashboard/value";
@@ -31,7 +31,9 @@ export const clock = (value: string) =>
 
 /** "vendredi 14 mars", from an instant or a bare calendar day. */
 export const dayLabel = (value: string) => {
-  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T12:00:00Z`)
+    : venueInstant(value);
   return Number.isNaN(date.getTime()) ? "—" : formatInTimeZone(date, VENUE_TIME_ZONE, "EEEE d MMMM", { locale: fr });
 };
 
@@ -45,7 +47,9 @@ export const dayLabel = (value: string) => {
  * down with it.
  */
 export const shortDay = (value: string) => {
-  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T12:00:00Z`)
+    : venueInstant(value);
   return Number.isNaN(date.getTime()) ? "—" : formatInTimeZone(date, VENUE_TIME_ZONE, "EEE d MMM", { locale: fr });
 };
 

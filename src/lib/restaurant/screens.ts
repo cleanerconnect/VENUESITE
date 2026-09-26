@@ -2704,6 +2704,7 @@ export const RESTAURANT_SCREENS: Record<
       ctx.guestGraph ?? EMPTY_GRAPH,
       ctx.spendByCustomer ?? {},
       ctx.lot,
+      ctx.configuration,
     ),
   audience: (ctx) =>
     buildAudienceScreen(ctx.audience ?? emptyAudience(ctx.overview.restaurant.id), ctx.configuration),
@@ -2834,7 +2835,7 @@ export function buildScreen(slug: string, ctx: ScreenContext): ScreenSpec | null
   // The dialogs this screen's buttons open, attached to the payload.
   // A button whose command has no form and no handler still says so —
   // there are no buttons that quietly do nothing.
-  return { ...spec, forms: formsFor(spec) };
+  return { ...spec, forms: formsFor(spec, ctx.configuration) };
 }
 
 /**

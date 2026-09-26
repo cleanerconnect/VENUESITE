@@ -26,7 +26,7 @@ import type {
   VenueConfiguration,
 } from "@/lib/types/venue-operations";
 import type { RestaurantProfile } from "@/lib/types/restaurant";
-import { configFor } from "@/lib/venue/config";
+import { configFor, coverAgreement } from "@/lib/venue/config";
 import { RESTAURANT_SETTINGS_PATH, restaurantHref, type Lot } from "./slugs";
 import { COUNT, MAD } from "@/lib/dashboard/formats";
 import { shortDay } from "./format";
@@ -289,7 +289,7 @@ export function buildPerformanceScreen(
       icon: "coins",
       metric: { value: analytics.estimatedRevenueMad, format: MAD, animate: true },
       delta: { value: analytics.revenueDeltaPct, period: "vs période précédente" },
-      hint: "Projeté depuis les couverts servis et le ticket moyen.",
+      hint: `Projeté depuis les ${vocabulary.cover.many} ${coverAgreement(vocabulary, "servi")} et le ticket moyen.`,
     },
     {
       id: "no-show",

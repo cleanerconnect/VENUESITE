@@ -735,7 +735,7 @@ export function buildSettingsScreen(settings: VenueSettings): ScreenSpec {
     type: "settings",
     heading: "Type de configuration",
     subheading:
-      "Le seul réglage qui ajoute des écrans. Lounge active Vie nocturne — guest list, tables avec minimum, promoteurs — et renomme les couverts en personnes.",
+      "Le seul réglage qui ajoute des écrans. Lounge active Vie nocturne — guest list, tables avec minimum, promoteurs — et fait compter la salle en personnes.",
     banner: {
       tone: settings.configuration === "restaurant" ? "neutral" : "violet",
       title:

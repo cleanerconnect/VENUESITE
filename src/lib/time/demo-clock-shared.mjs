@@ -28,10 +28,12 @@
 // that default to Thursday, because it is the tools that need a picture
 // that looks the same tomorrow.
 
+import { DEFAULT_VENUE_TZ, instantFromWallClock } from "./zone-shared.mjs";
+
 export const DEMO_CLOCK_ENV = "LYFE_DEMO_CLOCK";
 
 /** Where a LYFE venue is. Kept in step with `VENUE_TIME_ZONE`. */
-const ZONE = process.env.NEXT_PUBLIC_VENUE_TZ ?? "Africa/Casablanca";
+const ZONE = process.env.NEXT_PUBLIC_VENUE_TZ ?? DEFAULT_VENUE_TZ;
 
 /** Thursday, 20h30 — the middle of a dinner service, mid-week. */
 export const DEMO_CLOCK_DEFAULT = "jeudi 20:30";
@@ -45,44 +47,6 @@ const WEEKDAY = {
   samedi: 6, saturday: 6, sam: 6, sat: 6,
   dimanche: 7, sunday: 7, dim: 7, sun: 7,
 };
-
-/** How far `timeZone` is ahead of UTC at this instant, in milliseconds. */
-function offsetMs(instant, timeZone) {
-  const parts = Object.fromEntries(
-    new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      hour12: false,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    })
-      .formatToParts(instant)
-      .map((p) => [p.type, p.value]),
-  );
-  const asUtc = Date.UTC(
-    Number(parts.year),
-    Number(parts.month) - 1,
-    Number(parts.day),
-    Number(parts.hour) % 24,
-    Number(parts.minute),
-    Number(parts.second),
-  );
-  return asUtc - instant.getTime();
-}
-
-/** The instant whose wall clock in `timeZone` reads these numbers. */
-function fromZoned(y, m, d, hh, mm, timeZone) {
-  const wall = Date.UTC(y, m - 1, d, hh, mm, 0);
-  // Two passes settle the one case a single pass gets wrong: a wall time
-  // on the far side of a DST change, where the offset to subtract is the
-  // offset *after* the shift rather than before it.
-  let ts = wall - offsetMs(new Date(wall), timeZone);
-  ts = wall - offsetMs(new Date(ts), timeZone);
-  return new Date(ts);
-}
 
 /** Today's date and ISO weekday, as `timeZone` reads them. */
 function localToday(instant, timeZone) {
@@ -135,12 +99,13 @@ export function resolveDemoClock(value, { fallback = null, from = new Date() } =
   const today = localToday(from, ZONE);
   const shift = weekday - today.weekday;
   const day = new Date(Date.UTC(today.y, today.m - 1, today.d) + shift * 86_400_000);
-  return fromZoned(
+  return instantFromWallClock(
     day.getUTCFullYear(),
     day.getUTCMonth() + 1,
     day.getUTCDate(),
     Number(match[2]),
     Number(match[3]),
+    0,
     ZONE,
   );
 }

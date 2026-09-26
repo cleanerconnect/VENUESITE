@@ -24,6 +24,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { z } from "zod";
 import type { RestaurantOverview } from "@/lib/types/restaurant";
 import type { AiAdvisor } from "./advisor";
+import type { VenueConfig } from "@/lib/venue/config";
 import {
   NoShowRiskSchema,
   ReviewDigestSchema,
@@ -38,24 +39,34 @@ import {
 const MODEL = "claude-opus-5";
 
 /**
- * Frozen. Every byte here is identical on every request, which is what
- * makes it cacheable — see the note above. Anything that varies per
- * service belongs in the user turn.
+ * Frozen per configuration. Every byte is identical on every request for
+ * a given venue kind, which is what keeps it cacheable — see the note
+ * above; anything that varies per service belongs in the user turn.
+ *
+ * It varies by configuration because it has to: a prompt that tells the
+ * model it is advising « un restaurant » and to quantify in « couverts »
+ * gets back a sentence about covers, and a lounge has none. Two venue
+ * kinds means two cache entries, each still byte-stable.
  */
-const SYSTEM_PROMPT = `Tu es l'assistant d'exploitation de LYFE pour un restaurant.
+const systemPrompt = (config: VenueConfig) =>
+  `Tu es l'assistant d'exploitation de LYFE pour ${
+    config.kind === "drinks" ? "un bar" : "un restaurant"
+  }.
 
-Ton rôle : lire l'état d'un service en cours et dire à l'équipe ce qui
+Ton rôle : lire l'état d'un ${config.service.one} en cours et dire à l'équipe ce qui
 mérite son attention maintenant. Tu parles à un directeur de salle
 pendant le coup de feu, pas à un analyste.
 
 Règles :
 - Chaque affirmation s'appuie sur un chiffre présent dans les données.
   Aucune extrapolation, aucune moyenne du secteur, aucune invention.
-- Quantifie l'effet attendu d'une recommandation (couverts, MAD, minutes).
+- Quantifie l'effet attendu d'une recommandation (${config.cover.many}, MAD, minutes).
 - Une seule recommandation à la fois : celle qui a le plus d'effet.
 - Ton calme et direct. Jamais enthousiaste, jamais désolé.
 - Si les données ne justifient aucune action, dis-le : une confiance
   basse vaut mieux qu'un conseil inventé.
+- Vocabulaire imposé : « ${config.service.one} » pour une séance de la salle,
+  « ${config.cover.one} » pour une place réservée. Aucun synonyme.
 - Français, vouvoiement, montants en MAD.`;
 
 export class ClaudeAdvisor implements AiAdvisor {
@@ -67,13 +78,17 @@ export class ClaudeAdvisor implements AiAdvisor {
     this.client = new Anthropic(apiKey ? { apiKey } : {});
   }
 
-  async serviceNudge(data: RestaurantOverview): Promise<ServiceNudge | null> {
+  async serviceNudge(
+    data: RestaurantOverview,
+    config: VenueConfig,
+  ): Promise<ServiceNudge | null> {
     const result = await this.parse(
+      config,
       ServiceNudgeSchema,
-      `Voici l'état du service. Identifie l'action qui a le plus d'effet
-maintenant, et exprime son gain attendu en couverts et en MAD.
+      `Voici l'état du ${config.service.one}. Identifie l'action qui a le plus d'effet
+maintenant, et exprime son gain attendu en ${config.cover.many} et en MAD.
 
-${serviceContext(data)}`,
+${serviceContext(data, config)}`,
       "high",
     );
 
@@ -83,11 +98,15 @@ ${serviceContext(data)}`,
     return result;
   }
 
-  async noShowRisk(data: RestaurantOverview): Promise<NoShowRisk> {
+  async noShowRisk(
+    data: RestaurantOverview,
+    config: VenueConfig,
+  ): Promise<NoShowRisk> {
     const reservations = [...data.upcomingReservations, ...data.waitlist];
     if (reservations.length === 0) return { scores: [] };
 
     const result = await this.parse(
+      config,
       NoShowRiskSchema,
       `Estime le risque d'absence de chaque réservation à partir de
 l'historique de visites, du canal, de l'acompte et de l'heure.
@@ -96,7 +115,7 @@ Réservations :
 ${reservations
   .map(
     (r) =>
-      `- ${r.id} · ${r.guestName} · ${r.partySize} couverts · ${r.at} · canal ${r.channel} · ${r.visits} visites · acompte ${r.depositMad ?? 0} MAD`,
+      `- ${r.id} · ${r.guestName} · ${r.partySize} ${config.cover.many} · ${r.at} · canal ${r.channel} · ${r.visits} visites · acompte ${r.depositMad ?? 0} MAD`,
   )
   .join("\n")}`,
       // Scoring a short list against explicit features doesn't need the
@@ -107,12 +126,16 @@ ${reservations
     return result ?? { scores: [] };
   }
 
-  async reviewDigest(data: RestaurantOverview): Promise<ReviewDigest> {
+  async reviewDigest(
+    data: RestaurantOverview,
+    config: VenueConfig,
+  ): Promise<ReviewDigest> {
     if (data.reviews.length === 0) {
       return { clusters: [], summary: "" };
     }
 
     const result = await this.parse(
+      config,
       ReviewDigestSchema,
       `Regroupe ces avis par thème récurrent. Cite un extrait verbatim par
 thème pour que l'équipe puisse vérifier.
@@ -126,14 +149,18 @@ ${data.reviews
     return result ?? { clusters: [], summary: "" };
   }
 
-  async anomalies(data: RestaurantOverview): Promise<ServiceAnomaly> {
+  async anomalies(
+    data: RestaurantOverview,
+    config: VenueConfig,
+  ): Promise<ServiceAnomaly> {
     const result = await this.parse(
+      config,
       ServiceAnomalySchema,
       `Repère les écarts qui méritent l'attention du directeur de salle :
 cadence d'annulations, rotation anormalement longue, créneau au-dessus de
 la capacité, plat en rupture qui pèse sur la marge.
 
-${serviceContext(data)}`,
+${serviceContext(data, config)}`,
       "medium",
     );
 
@@ -143,6 +170,7 @@ ${serviceContext(data)}`,
   async *assistant(
     prompt: string,
     data: RestaurantOverview,
+    config: VenueConfig,
     signal?: AbortSignal,
   ): AsyncIterable<string> {
     const stream = this.client.messages.stream(
@@ -154,7 +182,7 @@ ${serviceContext(data)}`,
         system: [
           {
             type: "text",
-            text: SYSTEM_PROMPT,
+            text: systemPrompt(config),
             cache_control: { type: "ephemeral" },
           },
         ],
@@ -163,7 +191,7 @@ ${serviceContext(data)}`,
         messages: [
           {
             role: "user",
-            content: `${serviceContext(data)}\n\nQuestion : ${prompt}`,
+            content: `${serviceContext(data, config)}\n\nQuestion : ${prompt}`,
           },
         ],
       },
@@ -185,6 +213,7 @@ ${serviceContext(data)}`,
    * the top about why the dashboard must survive a bad AI response.
    */
   private async parse<S extends z.ZodType>(
+    config: VenueConfig,
     schema: S,
     userContent: string,
     effort: "low" | "medium" | "high",
@@ -196,7 +225,7 @@ ${serviceContext(data)}`,
         system: [
           {
             type: "text",
-            text: SYSTEM_PROMPT,
+            text: systemPrompt(config),
             cache_control: { type: "ephemeral" },
           },
         ],
@@ -224,13 +253,18 @@ ${serviceContext(data)}`,
  * this goes in the user turn on every call, so every line costs tokens on
  * every request.
  */
-function serviceContext(data: RestaurantOverview): string {
+function serviceContext(data: RestaurantOverview, config: VenueConfig): string {
   const service = data.currentService;
+  const unit = config.cover.many;
+  // « Service » at a restaurant, « Créneau » at a bar — the venue's own
+  // word for a sitting, sentence-cased for the head of the line.
+  const sitting =
+    config.service.one.charAt(0).toUpperCase() + config.service.one.slice(1);
 
-  return `Restaurant : ${data.restaurant.name} (${data.restaurant.city}), ${data.restaurant.capacity} couverts.
-Service : ${service.label}, ${service.opensAt} → ${service.closesAt}, état ${service.state}.
+  return `Établissement : ${data.restaurant.name} (${data.restaurant.city}), ${data.restaurant.capacity} ${unit}.
+${sitting} : ${service.label}, ${service.opensAt} → ${service.closesAt}, état ${service.state}.
 Réservé ${service.bookedCovers} / ${service.capacity} · arrivés ${service.arrivedCovers} · absences ${service.noShowCovers}.
 Recette ${service.revenueMad} MAD.
-Liste d'attente ${data.waitlist.reduce((n, r) => n + r.partySize, 0)} couverts.
+Liste d'attente ${data.waitlist.reduce((n, r) => n + r.partySize, 0)} ${unit}.
 Créneaux : ${service.slotLoad.map((s) => `${s.at.slice(11, 16)}=${s.covers}`).join(" ")}`;
 }
