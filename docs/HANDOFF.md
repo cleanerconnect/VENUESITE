@@ -139,7 +139,11 @@ to leak in the first place:
 
 `tools/verify/configuration.mjs` checks the money half outright: Lot 1
 reports on nothing, so a dirham anywhere on the seven screens fails the
-run.
+run. It checks the vocabulary the same way, in both directions: not only
+that a lounge *says* « personnes » somewhere, but that no screen the lot
+registers says « couverts » anywhere. The one-directional version passed
+for a release while the advisor's card on a bar's Accueil counted covers
+three lines above the word it was looking for.
 
 ### The Lot 2 screens
 
@@ -237,7 +241,7 @@ node tools/verify/walk.mjs            # the venue screens this lot registers (W/
 node tools/verify/payload.mjs         # no JavaScript value reaches the screen — undefined, NaN, [object Object]
 node tools/verify/events.mjs          # the 19 event + shared routes
 node tools/verify/states.mjs          # ?etat= forceable on every venue route in the lot
-node tools/verify/configuration.mjs   # restaurant vs lounge behaves as specified
+node tools/verify/configuration.mjs   # restaurant vs lounge, and no « couverts » on a bar's screens
 node tools/verify/audience.mjs        # the minimum group of ten, both configurations
 node tools/verify/inscription.mjs     # the seven onboarding steps, the resume, the landing
 node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
@@ -313,6 +317,18 @@ time-derived string hydrates twice and differently — the fault
 Values: `auto` or unset · `off` for the real clock · `jeudi 20:30` for
 another weekday and hour · an exact ISO instant, which is what the
 tools pass on. Every tool prints the clock it ran on in its banner.
+
+**A stored time with no zone is the venue's wall clock.** `zone.ts` pins
+the zone a date is *formatted* in; `src/lib/time/zone-shared.mjs` pins
+the zone a zoneless one is *parsed* in, and `venueInstant` is what every
+formatter reads through. The rule matters because the language does not
+have it: `2026-09-25T23:30:00` is local time, so a guest list's cutoff
+stored that way was 22:30 UTC on a server running on Casablanca time and
+23:30 UTC in a browser running on UTC — the same string, an hour apart,
+a thrown hydration on Guest list, and a door team reading the wrong
+cutoff. The seed now writes those three nightlife columns as instants;
+`venueInstant` is what makes a row that does not still render the same on
+both runtimes.
 
 **Set `LYFE_LOT` on the server and on the tool, or the run is
 meaningless.** The tools derive their screen list from the route index

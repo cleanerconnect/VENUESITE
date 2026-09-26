@@ -25,6 +25,7 @@ import {
   type RescheduleTarget,
 } from "./RescheduleSheet";
 import { REJECTION_REASONS } from "@/lib/types/business";
+import { coversFor } from "@/lib/venue/config";
 import { COPY } from "@/lib/copy/fr";
 import { markGuestArrived } from "@/app/actions/checkin";
 import {
@@ -206,7 +207,7 @@ export function RestaurantScreen({
           return;
         }
         withUndo(
-          `${result.admitted} confirmé · ${result.partySize} couverts`,
+          `${result.admitted} confirmé · ${coversFor(context.configuration, result.partySize)}`,
         );
       },
 

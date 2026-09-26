@@ -15,6 +15,7 @@ import { dirname, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 import { randomBytes, scryptSync } from "node:crypto";
 import { toolClock } from "../src/lib/time/demo-clock-shared.mjs";
+import { venueWallClock } from "../src/lib/time/zone-shared.mjs";
 
 const args = process.argv.slice(2);
 const reset = args.includes("--reset");
@@ -81,6 +82,18 @@ const clockAgo = (days, hour, minute = 0) => {
   return iso(d);
 };
 const day = (d) => iso(d).slice(0, 10);
+/**
+ * An instant from a night and a time in the room — `wall("2026-09-25",
+ * "23:30")`.
+ *
+ * A cutoff and a table's hour are wall-clock times at the venue, and
+ * writing them as `2026-09-25T23:30:00` writes no zone at all: the
+ * language then reads such a string in the *runtime's* zone, so the
+ * server said « Clôture à 23h30 » under a browser that said « 00h30 »
+ * and React threw the guest list's hydration away. See
+ * `src/lib/time/zone-shared.mjs`.
+ */
+const wall = (night, time) => iso(venueWallClock(night, time));
 /** Money is stored in centimes; the app works in MAD. */
 const mad = (n) => Math.round(n * 100);
 
@@ -1701,7 +1714,7 @@ function seedOperations(opts) {
   ].forEach(([id, name, night, cap, cutoff, status]) => {
     insert("guest_lists", {
       id: p(id), venue_id: venue, name, night, capacity: cap,
-      cutoff_at: `${night}T${cutoff}:00`, status, created_at: daysAgo(14),
+      cutoff_at: wall(night, cutoff), status, created_at: daysAgo(14),
     });
     [
       ["Gratuit avant 23h", "23:00", 0, "", 0],
@@ -1710,7 +1723,7 @@ function seedOperations(opts) {
     ].forEach(([label, until, price, appliesTo, position], i) =>
       insert("guest_list_bands", {
         id: p(`${id}_b${i}`), guest_list_id: p(id), venue_id: venue,
-        label, until_at: `${night}T${until}:00`,
+        label, until_at: wall(night, until),
         price_cents: mad(price), applies_to: appliesTo, position,
       }),
     );
@@ -1784,7 +1797,7 @@ function seedOperations(opts) {
       id: p(id), venue_id: venue, table_type_id: p(type),
       customer_id: null, promoter_id: id === "tb_2" ? p("pr_1") : null,
       guest_name: guest, guest_phone: phone, party_size: size,
-      night, at: `${night}T23:30:00`,
+      night, at: wall(night, "23:30"),
       minimum_cents: mad(minimum),
       reached_cents: reached === null ? null : mad(reached),
       // The deposits table is empty under Lot 1, so the reference has to go

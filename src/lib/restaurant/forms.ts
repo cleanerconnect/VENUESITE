@@ -9,6 +9,8 @@
 // there is no form component per verb anywhere in the codebase.
 
 import type { FormSpec } from "@/lib/dashboard/spec";
+import type { VenueConfiguration } from "@/lib/types/venue-operations";
+import { configFor } from "@/lib/venue/config";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -618,11 +620,50 @@ export const VENUE_FORMS: Record<string, FormSpec> = {
  * thirty dialogs it never opens is thirty dialogs a backend would have
  * to serialise for nothing.
  */
-export function formsFor(spec: unknown): Record<string, FormSpec> | undefined {
+export function formsFor(
+  spec: unknown,
+  configuration: VenueConfiguration = "restaurant",
+): Record<string, FormSpec> | undefined {
   const serialised = JSON.stringify(spec);
   const used: Record<string, FormSpec> = {};
   for (const [command, form] of Object.entries(VENUE_FORMS)) {
-    if (serialised.includes(`"${command}"`)) used[command] = form;
+    if (serialised.includes(`"${command}"`)) used[command] = speak(form, configuration);
   }
   return Object.keys(used).length > 0 ? used : undefined;
+}
+
+/**
+ * The venue's word for a booked head, in a dialog's own prose.
+ *
+ * The forms above are one static record, and parameterising six hundred
+ * lines of it on the configuration would be six hundred lines of diff to
+ * change two labels. So the substitution happens here, at the one door
+ * every dialog leaves by — which also means a label written tomorrow
+ * with the restaurant's word is corrected without anyone remembering to.
+ *
+ * Word boundaries, and only the noun: « couverture » is a cover photo,
+ * not a cover, and « découvert » is neither. The boundaries are written
+ * as lookarounds rather than `\b`, which is ASCII-only in JavaScript and
+ * therefore sees one between the « é » and the « c » of « découvert ».
+ */
+const COVER_WORD = /(?<![a-zà-ÿ])(couverts|couvert)(?![a-zà-ÿ])/g;
+
+function speak(form: FormSpec, configuration: VenueConfiguration): FormSpec {
+  const config = configFor(configuration);
+  if (config.cover.many === "couverts") return form;
+  const say = (text: string) =>
+    text.replace(COVER_WORD, (m) =>
+      m === "couverts" ? config.cover.many : config.cover.one,
+    );
+  const said = (text: string | undefined) => (text === undefined ? undefined : say(text));
+  return {
+    ...form,
+    title: say(form.title),
+    description: said(form.description),
+    fields: form.fields.map((field) => ({
+      ...field,
+      label: say(field.label),
+      hint: said(field.hint),
+    })),
+  };
 }

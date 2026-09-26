@@ -20,6 +20,8 @@ import { RepositoryError } from "@/lib/data/repository";
 import { ScreenSkeleton } from "@/components/restaurant/ScreenSkeleton";
 import { ScreenError } from "@/components/restaurant/ScreenError";
 import { getAdvisor } from "@/lib/ai";
+import { configFor } from "@/lib/venue/config";
+import type { VenueConfiguration } from "@/lib/types/venue-operations";
 import type { AnalyticsPeriod } from "@/lib/types/business";
 import { ANALYTICS_PERIOD } from "@/lib/types/business";
 import type { RestaurantOverview } from "@/lib/types/restaurant";
@@ -106,12 +108,18 @@ export default async function RestaurantSectionPage({
   const repo = demoRepository(getRestaurantRepository(), demo);
 
   try {
+    // The settings first, alone: both halves below need the venue's
+    // configuration — the screens for their vocabulary, the advisor for
+    // the sentence it writes — and reading it twice in parallel is one
+    // query more than reading it once in front.
+    const settings = await repo.getVenueSettings(session.venueId);
     const [overview, context] = await Promise.all([
-      loadOverview(repo, session.venueId, session.firstName),
+      loadOverview(repo, session.venueId, session.firstName, settings.configuration),
       loadContext(
         repo,
         slug,
         session.venueId,
+        settings,
         period,
         comparison,
         jour,
@@ -179,6 +187,7 @@ async function loadContext(
   repo: ReturnType<typeof getRestaurantRepository>,
   slug: SpecSlug,
   venueId: string,
+  settings: Awaited<ReturnType<typeof repo.getVenueSettings>>,
   period: AnalyticsPeriod,
   comparison: Comparison,
   day: string,
@@ -189,7 +198,6 @@ async function loadContext(
   const lot = activeLot();
   const needs = screenNeeds(slug, lot);
 
-  const settings = await repo.getVenueSettings(venueId);
   const ctx: Omit<ScreenContext, "overview"> = {
     period,
     comparison,
@@ -292,10 +300,14 @@ async function loadOverview(
   repo: ReturnType<typeof getRestaurantRepository>,
   venueId: string,
   viewerFirstName: string,
+  configuration: VenueConfiguration,
 ): Promise<RestaurantOverview> {
   const data = await repo.getOverview(venueId);
   data.greeting.firstName = viewerFirstName || data.greeting.firstName;
-  const nudge = await getAdvisor().serviceNudge(data);
+  // With the venue's vocabulary: the nudge is the first card on Accueil,
+  // and it was the one sentence in the portal that counted couverts at a
+  // bar.
+  const nudge = await getAdvisor().serviceNudge(data, configFor(configuration));
 
   if (!nudge) return { ...data, nudge: undefined };
 
