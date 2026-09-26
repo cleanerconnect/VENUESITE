@@ -22,7 +22,7 @@ import type {
   VisibilityMetrics,
 } from "@/lib/types/business";
 import type {
-  DayBook, MenuItem, Reservation, RestaurantOverview, RestaurantProfile } from "@/lib/types/restaurant";
+  DayBook, MenuItem, MenuSectionName, Reservation, RestaurantOverview, RestaurantProfile } from "@/lib/types/restaurant";
 import type { VenueAsset } from "@/lib/assets/types";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
 import type {
@@ -86,6 +86,8 @@ interface VenueBundle {
   dayBooks: Record<string, DayBook>;
   profile: RestaurantProfile | null;
   menuItems: MenuItem[];
+  /** The venue's own section names. Absent in an older snapshot. */
+  menuSections?: MenuSectionName[];
   availability: VenueAvailability;
   customers: Customer[];
   notifications: PortalNotification[];
@@ -93,6 +95,8 @@ interface VenueBundle {
   staff: StaffMemberRow[];
   photos: VenueAsset[];
   menuFiles: VenueAsset[];
+  /** The square tile. Absent in a snapshot captured before it existed. */
+  thumbnail?: VenueAsset[];
   analytics: Record<string, VenueAnalytics>;
   visibility: Record<string, VisibilityMetrics>;
   operations: OperationsBundle;

@@ -35,8 +35,13 @@ export interface OnboardingDraft {
   step: number;
   venueName: string;
   venueType: OnboardingVenueType;
-  /** « Type de cuisine ». Free text, asked beside the name on step 2. */
+  /**
+   * « Type de cuisine », as one of `CUISINE_IDS`. Asked beside the name
+   * on step 2, and empty until the partner picks.
+   */
   cuisine: string;
+  /** The line under it, in the partner's words. `SPECIALTIES_MAX`. */
+  specialties: string;
   /** 1–4; `PRICE_RANGE_LABEL` turns it into the MAD range the app prints. */
   priceRange: number;
   city: string;
@@ -57,6 +62,10 @@ export interface OnboardingDraft {
   menuObjectKey: string;
   menuContentType: string;
   menuSizeBytes: number;
+  /** The square tile, already cropped 1:1 by the browser. Optional. */
+  thumbnailObjectKey: string;
+  thumbnailContentType: string;
+  thumbnailSizeBytes: number;
   /** Step 5's two lists, as ids from `@/lib/types/restaurant`. */
   ambience: string[];
   features: string[];

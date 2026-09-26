@@ -44,7 +44,7 @@ import type {
 import { DIETARY_TAG, PRICE_RANGE_LABEL } from "@/lib/types/restaurant";
 import {
   ACTIVITY_TYPE,
-  MENU_CATEGORY,
+  menuCategoryTerm,
   channelLabel,
   RESERVATION_STATE,
   SERVICE_KIND,
@@ -727,6 +727,8 @@ export function buildDashboardScreen(
     heading: "Activité du service",
     subheading: "Dix dernières actions, en direct.",
     live: true,
+    // `now`, not the clock in the component: see `FeedBlock.now`.
+    now,
     entries: data.activity.map(activityEntry),
   };
 
@@ -1516,6 +1518,11 @@ function serviceLoadBlock(
 export function buildMenuScreen(data: RestaurantOverview): ScreenSpec {
   const visible = data.topItems.filter((i) => i.visible);
   const signature = data.topItems.filter((i) => i.signature);
+  // The venue's own name for a section, which is the only name it has:
+  // « Entrée » is what the five seeded ids happen to mean, and a riad
+  // that renamed one to « Mezzés » is not serving entrées.
+  const names = new Map(data.menuSections.map((s) => [s.id, s.name]));
+  const sectionName = (id: string) => names.get(id);
 
   return {
     slug: "menu",
@@ -1575,9 +1582,9 @@ export function buildMenuScreen(data: RestaurantOverview): ScreenSpec {
         rows: data.topItems.map((item) => ({
           id: item.id,
           title: item.signature ? `${item.name} ✦` : item.name,
-          icon: MENU_CATEGORY[item.category].icon,
+          icon: menuCategoryTerm(item.category, sectionName(item.category)).icon,
           meta: [
-            MENU_CATEGORY[item.category].label,
+            menuCategoryTerm(item.category, sectionName(item.category)).label,
             item.dietary.map((d) => DIETARY_TAG[d]).join(" · "),
           ]
             .filter(Boolean)

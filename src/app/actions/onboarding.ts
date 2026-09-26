@@ -24,6 +24,8 @@ import { describeAssetError, validateAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
 import { ONBOARDING_LAST_STEP, isOnboardingCity } from "@/lib/types/onboarding";
 import {
+  isCuisineId,
+  SPECIALTIES_MAX,
   VENUE_AMBIENCE,
   VENUE_FEATURE,
 } from "@/lib/types/restaurant";
@@ -161,8 +163,18 @@ export async function saveOnboardingStep(
   if (patch.priceRange !== undefined && ![1, 2, 3, 4].includes(patch.priceRange)) {
     return { ok: false, field: "priceRange", message: "Choisissez une fourchette de prix." };
   }
-  if (patch.cuisine !== undefined && patch.cuisine.length > 120) {
-    return { ok: false, field: "cuisine", message: "120 caractères au maximum." };
+  // Not a length any more: a closed list of ten. Empty is allowed —
+  // the step lets a partner move on without answering — and anything
+  // else has to be one the app's filter row actually offers.
+  if (patch.cuisine !== undefined && patch.cuisine !== "" && !isCuisineId(patch.cuisine)) {
+    return { ok: false, field: "cuisine", message: "Choisissez un type de cuisine." };
+  }
+  if (patch.specialties !== undefined && patch.specialties.length > SPECIALTIES_MAX) {
+    return {
+      ok: false,
+      field: "specialties",
+      message: `${SPECIALTIES_MAX} caractères au maximum.`,
+    };
   }
   if (patch.district !== undefined && patch.district.length > 80) {
     return { ok: false, field: "district", message: "80 caractères au maximum." };
@@ -201,7 +213,7 @@ export async function saveOnboardingStep(
  * lands: a carte may be a PDF and a photo may not, and the ceiling on a
  * carte is 20 Mo against a photo's 8.
  */
-export type DraftUploadSlot = "cover" | "photo2" | "menu";
+export type DraftUploadSlot = "cover" | "photo2" | "menu" | "thumbnail";
 
 export async function requestDraftUpload(input: {
   slot: DraftUploadSlot;
@@ -215,7 +227,8 @@ export async function requestDraftUpload(input: {
   const id = (await cookies()).get(DRAFT_COOKIE)?.value;
   if (!id) return { ok: false, message: "Reprenez l'inscription depuis le début." };
 
-  const kind = input.slot === "menu" ? "menu_file" : "photo";
+  const kind =
+    input.slot === "menu" ? "menu_file" : input.slot === "thumbnail" ? "logo" : "photo";
   const invalid = validateAsset(kind, input.contentType, input.sizeBytes);
   if (invalid) return { ok: false, message: describeAssetError(invalid) };
 

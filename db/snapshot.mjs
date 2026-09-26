@@ -119,6 +119,8 @@ for (const id of venueIds) {
     staff: await write.listStaff(id),
     photos: await assets.listAssets(id, "photo"),
     menuFiles: await assets.listAssets(id, "menu_file"),
+    thumbnail: await assets.listAssets(id, "logo"),
+    menuSections: await overview.menuSections(id),
     analytics: Object.fromEntries(
       await Promise.all(
         PERIODS.map(async (p) => [p, await overview.analytics(id, p)]),

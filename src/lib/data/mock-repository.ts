@@ -21,8 +21,10 @@ import * as onboarding from "@/lib/db/onboarding-store";
 import * as validation from "@/lib/db/validation-store";
 import {
   listStaff as listStaffRows,
+  updateMenuBoard,
   updateVenueIdentity,
   updateVenueListing,
+  type MenuBoardPatch,
 } from "@/lib/db/venue-write-store";
 import {
   deleteAsset,
@@ -35,6 +37,7 @@ import {
   analytics as analyticsFromStore,
   customerBookings,
   menuItems,
+  venueMenu,
   venueProfile,
   overview as overviewFromStore,
   transitionBooking,
@@ -247,6 +250,15 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
   async listMenuItems(venueId: string) {
     return menuItems(venueId);
+  }
+
+  async getMenu(venueId: string) {
+    return venueMenu(venueId);
+  }
+
+  async saveMenu(venueId: string, patch: MenuBoardPatch) {
+    await updateMenuBoard(venueId, patch);
+    return venueMenu(venueId);
   }
   async listStaff(venueId: string) {
     return listStaffRows(venueId);

@@ -150,6 +150,7 @@ function rowToDraft(r: Record<string, unknown>): OnboardingDraft {
     venueName: String(r.venue_name),
     venueType: String(r.venue_type) as OnboardingVenueType,
     cuisine: String(r.cuisine ?? ""),
+    specialties: String(r.specialties ?? ""),
     priceRange: Number(r.price_range ?? 2),
     city: String(r.city),
     district: String(r.district ?? ""),
@@ -165,6 +166,9 @@ function rowToDraft(r: Record<string, unknown>): OnboardingDraft {
     menuObjectKey: String(r.menu_object_key ?? ""),
     menuContentType: String(r.menu_content_type ?? ""),
     menuSizeBytes: Number(r.menu_size_bytes ?? 0),
+    thumbnailObjectKey: String(r.thumbnail_object_key ?? ""),
+    thumbnailContentType: String(r.thumbnail_content_type ?? ""),
+    thumbnailSizeBytes: Number(r.thumbnail_size_bytes ?? 0),
     ambience: list(r.ambience),
     features: list(r.features),
     hours: hours.length ? hours : defaultHours(),
@@ -209,6 +213,7 @@ const FIELD: Record<string, string> = {
   venueName: "venue_name",
   venueType: "venue_type",
   cuisine: "cuisine",
+  specialties: "specialties",
   priceRange: "price_range",
   city: "city",
   district: "district",
@@ -224,6 +229,9 @@ const FIELD: Record<string, string> = {
   menuObjectKey: "menu_object_key",
   menuContentType: "menu_content_type",
   menuSizeBytes: "menu_size_bytes",
+  thumbnailObjectKey: "thumbnail_object_key",
+  thumbnailContentType: "thumbnail_content_type",
+  thumbnailSizeBytes: "thumbnail_size_bytes",
 };
 
 /** The two JSON columns, written as arrays rather than scalars. */
@@ -322,10 +330,10 @@ export async function createVenueFromDraft(
       // waiting for the partner to open Ma fiche and type them again.
       `INSERT INTO venues
          (id, kind, name, short_name, initials, tagline, description,
-          cuisine, category, address, district, city,
+          cuisine, specialties, category, address, district, city,
           latitude, longitude, contact_email, contact_phone, website, currency,
           capacity, price_range, onboarding_completed, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, '', '', ?, '', ?, ?, ?, ?, ?, ?, ?, '', 'MAD', ?, ?, 1,
+       VALUES (?, ?, ?, ?, ?, '', '', ?, ?, '', ?, ?, ?, ?, ?, ?, ?, '', 'MAD', ?, ?, 1,
                'pending_review', ?, ?)`,
       venueId,
       kind,
@@ -333,6 +341,7 @@ export async function createVenueFromDraft(
       draft.venueName.slice(0, 40),
       initialsOf(draft.venueName),
       draft.cuisine,
+      draft.specialties,
       draft.address,
       draft.district,
       draft.city,
@@ -426,6 +435,9 @@ export async function createVenueFromDraft(
       ["photo", draft.coverObjectKey, draft.coverContentType || "image/jpeg", draft.coverSizeBytes, 0],
       ["photo", draft.photo2ObjectKey, draft.photo2ContentType || "image/jpeg", draft.photo2SizeBytes, 1],
       ["menu_file", draft.menuObjectKey, draft.menuContentType || "application/pdf", draft.menuSizeBytes, 0],
+      // The vignette, as the venue's one `logo` row. It is square
+      // already: step 4 crops it in the browser before it is sent.
+      ["logo", draft.thumbnailObjectKey, draft.thumbnailContentType || "image/png", draft.thumbnailSizeBytes, 0],
     ];
     for (const [assetKind, objectKey, contentType, sizeBytes, position] of files) {
       if (!objectKey) continue;

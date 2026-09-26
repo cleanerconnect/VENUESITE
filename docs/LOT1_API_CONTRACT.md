@@ -448,7 +448,8 @@ fiche de l'application (`yEBXM5UoNTQI7MKc9sMB9y`, cadres `827:237` et
 | Champ | Ce que l'application en fait |
 |---|---|
 | `tagline` | la ligne unique des cartes de liste, **60 caractères**, refusée au-delà |
-| `cuisine` | « Type de cuisine », et le sous-titre sous le nom du lieu |
+| `cuisine` | « Type de cuisine » — **un id parmi dix**, celui sur lequel l'application filtre |
+| `specialties` | la ligne sous la cuisine, **80 caractères**, dans les mots du partenaire |
 | `category` | « Catégorie » — le genre d'établissement, une ligne plus bas |
 | `district` | « El cenador, Casablanca » : le quartier, **avant** la ville |
 | `priceRange` | « Fourchette de prix », quatre niveaux, nommés par leur fourchette en MAD par personne — « Moins de 150 MAD · économique » à « Plus de 500 MAD · gastronomique » |
@@ -458,6 +459,28 @@ pouvait donc répondre qu'à une des deux lignes que l'écran dessine. La
 migration `005-fiche-app-fields.sql` sépare les deux et recopie
 l'ancienne valeur dans `cuisine`, qui est l'endroit où la réponse du
 partenaire allait.
+
+**`cuisine` est devenue une liste fermée de dix**, et l'ancienne phrase
+a désormais son propre champ. L'écran de recherche de l'application
+porte une rangée de filtres — Marocaine, Japonaise, Italienne,
+Indienne, Mexicaine, Libanaise, Française, Asiatique, Méditerranéenne,
+Fusion — et un établissement est derrière l'un de ces boutons ou
+derrière aucun. En texte libre, la réponse était décidée par une
+recherche de sous-chaîne : « Cuisine marocaine contemporaine, tajines
+et pastilla » tombait sous « Marocaine » par chance, « cuisine du
+terroir » ne tombait nulle part, et la fiche avait l'air complète dans
+les deux cas. L'id est donc le contrat, et la phrase est passée dans
+`specialties`. Les ids sont sans accent : ils voyagent dans une chaîne
+de requête. La migration `006-cuisine-enum-and-specialties.sql`
+rapproche l'ancien texte d'un id quand le texte le dit, et garde la
+ligne d'origine dans `specialties` dans tous les cas.
+
+**La vignette** n'est pas un champ de `VenueProfile` : c'est un
+`venue_assets` de `kind='logo'`, un par établissement, carré. Le
+portail le recadre en 1:1 **dans le navigateur avant l'envoi**, sur
+Ma fiche · Identité comme à l'étape 4 de l'inscription, donc l'objet
+stocké est carré par construction et rien en aval n'a à deviner quel
+tiers d'une photo 16:9 garder.
 
 `VenueListing` — ce qu'écrit l'onglet Fiche :
 
@@ -1099,7 +1122,10 @@ Les clés, telles quelles :
 
 | Clé | Source | Ce que l'écran en fait |
 |---|---|---|
-| `cuisine` | `venues.cuisine`, à défaut `venues.category` | « Type de cuisine », et le sous-titre sous le nom |
+| `cuisine` | `venues.cuisine` | l'**id** parmi les dix, ce que `?cuisine=` compare |
+| `cuisine_label` | idem, traduit | « Marocaine » — ce que l'écran imprime |
+| `specialties` | `venues.specialties` | la ligne sous la cuisine, 80 caractères |
+| `thumbnail_url` | `venue_assets` `kind='logo'` | la tuile carrée des listes ; `null` si le lieu n'en a pas |
 | `category` | `venues.category` | « Catégorie » |
 | `tagline` | `venues.tagline` | la ligne des cartes de liste, 60 caractères |
 | `district` | `venues.district` | « El cenador, … » — le quartier |
@@ -1108,7 +1134,8 @@ Les clés, telles quelles :
 | `price_level` | idem, en entier 1–4 | le filtre de recherche |
 | `price_range_label` | idem, en phrase | « Plus de 500 MAD par personne » |
 | `photos[]` | `venue_assets` `kind='photo'`, par `position` | le carrousel ; `image` reste la première |
-| `menu[]` | `venue_assets` `kind='menu_file'`, par `position` | ce qu'ouvre la pastille « Menu » — `{ url, content_type }` |
+| `menu[]` | `menu_categories` + `menu_items` | l'écran Menu : `{ id, name, items: [{ id, name, description, price_mad }] }`, dans l'ordre du partenaire |
+| `menu_files[]` | `venue_assets` `kind='menu_file'`, par `position` | la carte en PDF, facultative — `{ url, content_type }` |
 | `ambience[]` | `venue_tags` `kind='ambience'` | « Ambiance : Élégant, minimaliste, moderne » — `{ id, label }` |
 | `features[]` | `venue_tags` `kind='feature'` | le bloc « Equipements » — `{ id, label }` |
 
@@ -1120,10 +1147,25 @@ réimplémenter la table de traduction ; ne servir que le libellé rendrait
 design les dessine, tout ce que le design ne nomme pas suivant dans
 l'ordre du partenaire.
 
-`cuisine` garde son ancien repli sur `category`, et c'est délibéré : un
-établissement qui n'a jamais rempli que l'ancienne colonne continue
-d'afficher quelque chose sous son nom. Aucune clé n'a changé de sens, et
-aucune n'a disparu — `image` est toujours la première photo.
+**`cuisine` a changé de sens et `menu` a changé de forme.** Ce sont les
+deux seules ruptures, et les deux sont nommées ici plutôt que
+découvertes par un client :
+
+- `cuisine` servait une phrase et sert un id. Ce que l'écran imprimait,
+  c'est `cuisine_label` désormais, et la phrase que le partenaire
+  écrivait, c'est `specialties`. Le repli sur `category` a disparu :
+  « Restaurant gastronomique, riad » n'est pas un des dix, et le mettre
+  là revenait à poser une phrase là où un filtre cherche `marocaine`
+  tout en faisant passer une question sans réponse pour répondue.
+  `?cuisine=` accepte l'id **et** le libellé, pour qu'un appelant écrit
+  contre l'ancien champ continue de fonctionner.
+- `menu` servait la liste des fichiers qu'ouvrait la pastille ; il sert
+  la carte elle-même, rubriques et plats. Les fichiers n'ont pas
+  disparu : ils sont sous `menu_files`, et restent facultatifs. Un plat
+  `visible = 0` — le « masqué » de l'éditeur Carte — ne voyage pas.
+
+Aucune autre clé n'a changé de sens, aucune n'a disparu, et `image` est
+toujours la première photo.
 
 **Une table hors contrat, `app_sessions`**, est créée à la demande par
 ce module : l'application ouvre des sessions invité, et le schéma du

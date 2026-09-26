@@ -38,16 +38,22 @@ import {
 } from "@/lib/forms/validation";
 import type { VenueAvailability } from "@/lib/types/business";
 import {
+  isCuisineId,
   MENU_FILE_MAX,
+  MENU_ITEM_LINE_MAX,
+  MENU_ITEM_NAME_MAX,
+  MENU_SECTION_MAX,
+  MENU_SECTION_NAME_MAX,
+  SPECIALTIES_MAX,
   TAGLINE_MAX,
   VENUE_AMBIENCE,
   VENUE_FEATURE,
 } from "@/lib/types/restaurant";
 import type {
   DietaryTag,
-  MenuCategory,
   RestaurantProfile,
   VenueFeature,
+  VenueMenu,
 } from "@/lib/types/restaurant";
 import { COPY } from "@/lib/copy/fr";
 
@@ -92,8 +98,6 @@ export interface VenueIdentityInput {
   /** One line on the app's list cards, 60 characters. */
   tagline: string;
   description: string;
-  /** « Type de cuisine » — what the kitchen cooks. */
-  cuisine: string;
   /** « Catégorie » — what kind of establishment this is. */
   category: string;
   address: string;
@@ -134,7 +138,6 @@ export async function saveVenueIdentity(
       // cannot see the end of is a tagline they did not write.
       tagline: [maxLength(TAGLINE_MAX, "L'accroche")],
       description: [maxLength(2000, "La description")],
-      cuisine: [maxLength(120, "Le type de cuisine")],
       category: [maxLength(120, "La catégorie")],
       district: [maxLength(80, "Le quartier")],
       city: [required("La ville")],
@@ -156,7 +159,6 @@ export async function saveVenueIdentity(
       shortName: input.shortName.trim(),
       tagline: input.tagline.trim(),
       description: input.description.trim(),
-      cuisine: input.cuisine.trim(),
       category: input.category.trim(),
       address: input.address.trim(),
       district: input.district.trim(),
@@ -197,6 +199,10 @@ async function write<T>(run: () => Promise<T>): Promise<WriteResult<T>> {
 // is app-facing: change it in the portal, the listing changes.
 
 export interface VenueListingInput {
+  /** One of `CUISINE_IDS`, or empty while the partner has not picked. */
+  cuisine: string;
+  /** One line of `SPECIALTIES_MAX`, in the partner's own words. */
+  specialties: string;
   priceRange: number;
   tags: string[];
   features: VenueFeature[];
@@ -217,6 +223,21 @@ export async function saveVenueListing(
   }
 
   const errors = [
+    // Empty is allowed — a partner can leave the question for later —
+    // but anything else has to be one of the ten the app filters on.
+    // A free sentence here is a venue missing from every filter row,
+    // which is exactly the silence this field was closed to end.
+    ...(input.cuisine !== "" && !isCuisineId(input.cuisine)
+      ? [{ field: "cuisine", message: "Choisissez un type de cuisine." }]
+      : []),
+    ...(input.specialties.length > SPECIALTIES_MAX
+      ? [
+          {
+            field: "specialties",
+            message: `${SPECIALTIES_MAX} caractères au maximum.`,
+          },
+        ]
+      : []),
     ...(input.priceRange < 1 || input.priceRange > 4
       ? [{ field: "priceRange", message: "Choisissez une gamme de prix." }]
       : []),
@@ -245,6 +266,8 @@ export async function saveVenueListing(
 
   return write(() =>
     getRestaurantRepository().saveVenueListing(session.venueId, {
+      cuisine: input.cuisine,
+      specialties: input.specialties.trim(),
       priceRange: input.priceRange,
       // Trimmed and de-duplicated here rather than in the form: the
       // client is one caller of this action, not the only one.
@@ -273,7 +296,8 @@ export interface MenuItemInput {
   id: string;
   name: string;
   description: string;
-  category: MenuCategory;
+  /** A `MenuSection.id` within this venue. */
+  category: string;
   priceMad: number;
   signature: boolean;
   visible: boolean;
@@ -322,6 +346,104 @@ export async function saveMenuItem(
   revalidatePath(RESTAURANT_PATH, "page");
   revalidateForms();
   return ok(input);
+}
+
+// ── The card as a whole ──────────────────────────────────────
+
+export interface MenuBoardInput {
+  sections: {
+    id: string;
+    name: string;
+    items: { id: string; name: string; description: string; priceMad: number }[];
+  }[];
+}
+
+/**
+ * The board, saved in one go.
+ *
+ * `saveMenuItem` above is the Carte editor's action: one dish, its
+ * dietary markers and whether it is published. This one is the basique
+ * board — sections, names, lines, prices and the order of all of it —
+ * and it writes the whole thing because that is what the screen holds.
+ */
+export async function saveMenuBoard(
+  input: MenuBoardInput,
+): Promise<WriteResult<VenueMenu>> {
+  const unwritable = requireWritableStore();
+  if (unwritable) return failed(unwritable);
+
+  let session;
+  try {
+    session = await requireVenueAccess(await currentVenueId());
+  } catch {
+    return failed(COPY.error.sessionExpired);
+  }
+  if (session.role === "staff") {
+    return failed("Votre rôle ne permet pas de modifier la carte.");
+  }
+
+  const errors: { field: string; message: string }[] = [];
+  if (input.sections.length > MENU_SECTION_MAX) {
+    errors.push({
+      field: "sections",
+      message: `${MENU_SECTION_MAX} rubriques au maximum.`,
+    });
+  }
+  const ids = new Set<string>();
+  for (const section of input.sections) {
+    if (!section.name.trim()) {
+      errors.push({ field: "sections", message: "Chaque rubrique a besoin d'un nom." });
+      break;
+    }
+    if (section.name.length > MENU_SECTION_NAME_MAX) {
+      errors.push({
+        field: "sections",
+        message: `Un nom de rubrique fait ${MENU_SECTION_NAME_MAX} caractères au plus.`,
+      });
+      break;
+    }
+    // Two sections sharing an id would collapse into one on write, and
+    // the dishes of the second would land under the first.
+    if (ids.has(section.id)) {
+      errors.push({ field: "sections", message: "Deux rubriques portent le même nom." });
+      break;
+    }
+    ids.add(section.id);
+  }
+  const lines = input.sections.flatMap((s) => s.items);
+  if (!errors.length) {
+    if (lines.some((i) => !i.name.trim())) {
+      errors.push({ field: "items", message: "Chaque plat a besoin d'un nom." });
+    } else if (lines.some((i) => i.name.length > MENU_ITEM_NAME_MAX)) {
+      errors.push({
+        field: "items",
+        message: `Un nom de plat fait ${MENU_ITEM_NAME_MAX} caractères au plus.`,
+      });
+    } else if (lines.some((i) => i.description.length > MENU_ITEM_LINE_MAX)) {
+      errors.push({
+        field: "items",
+        message: `La ligne d'un plat fait ${MENU_ITEM_LINE_MAX} caractères au plus.`,
+      });
+    } else if (lines.some((i) => !Number.isFinite(i.priceMad) || i.priceMad < 0)) {
+      errors.push({ field: "items", message: "Un prix ne peut pas être négatif." });
+    }
+  }
+  if (errors.length) return invalid(errors);
+
+  return write(() =>
+    getRestaurantRepository().saveMenu(session.venueId, {
+      sections: input.sections.map((section) => ({
+        id: section.id,
+        name: section.name.trim(),
+        items: section.items.map((item) => ({
+          id: item.id,
+          name: item.name.trim(),
+          description: item.description.trim(),
+          priceMad: item.priceMad,
+        })),
+      })),
+    }),
+  );
 }
 
 // ── Availability ─────────────────────────────────────────────
@@ -483,6 +605,19 @@ export async function confirmUpload(input: {
       return failed(
         `La carte tient en ${MENU_FILE_MAX} fichiers au maximum. Retirez-en un avant d'en ajouter un autre.`,
       );
+    }
+  }
+  // A venue has one vignette. Replacing it is the only thing the
+  // surface offers, so the old row goes before the new one lands —
+  // otherwise « Remplacer » quietly accumulates logos and the payload
+  // has to guess which of them is current.
+  if (input.kind === "logo") {
+    const held = await getRestaurantRepository().listAssets(venueId, "logo");
+    for (const old of held) {
+      await getRestaurantRepository().runAssetAction(venueId, {
+        kind: "asset.remove",
+        id: old.id,
+      });
     }
   }
   return write(() =>

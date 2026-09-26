@@ -17,11 +17,16 @@
 // one is a yes-or-no fact about the room, and a chip that is simply
 // absent does not read as « no ».
 
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Switch } from "@/components/ui/Switch";
 import { cn } from "@/lib/utils/cn";
 import {
   APP_FEATURES,
+  CUISINE_IDS,
+  CUISINE_LABEL,
   PRICE_RANGE_LABEL,
+  SPECIALTIES_MAX,
   VENUE_AMBIENCE,
   VENUE_FEATURE,
   type VenueAmbience,
@@ -29,6 +34,78 @@ import {
 } from "@/lib/types/restaurant";
 
 export const PRICE_BANDS = [1, 2, 3, 4];
+
+/**
+ * The cuisine, as the app asks it: one of ten, then a line of your own.
+ *
+ * It was one free-text field. The app's search screen has a filter row
+ * of exactly these ten names, and a venue is behind one of those taps
+ * or behind none — so a partner writing « cuisine du terroir » wrote
+ * themselves off the app, with a fiche that looked complete and a
+ * backend quietly substring-matching its way to an answer.
+ *
+ * Two controls, because closing the field to ten ids would otherwise
+ * take away the only place a partner could say what they actually
+ * cook. The select is the filter; the line under it is the sentence,
+ * and it is the sentence the detail screen prints.
+ *
+ * Here rather than in either form: Ma fiche · Détails and step 2 of the
+ * onboarding both ask this question, and a select on one screen and a
+ * row of chips on the other would be two designs for one question.
+ */
+export function CuisineFields({
+  cuisine,
+  specialties,
+  onCuisine,
+  onSpecialties,
+  bar,
+  cuisineError,
+  specialtiesError,
+}: {
+  cuisine: string;
+  specialties: string;
+  onCuisine: (next: string) => void;
+  onSpecialties: (next: string) => void;
+  /** A rooftop bar's example is not a restaurant's. */
+  bar?: boolean;
+  cuisineError?: string;
+  specialtiesError?: string;
+}) {
+  const left = Math.max(0, SPECIALTIES_MAX - specialties.length);
+  return (
+    <div className="flex flex-col gap-4">
+      <Select
+        label="Type de cuisine"
+        value={cuisine}
+        onChange={onCuisine}
+        error={cuisineError}
+        hint="La liste sur laquelle l'application filtre les recherches."
+        options={[
+          { value: "", label: "Choisissez un type de cuisine" },
+          ...CUISINE_IDS.map((id) => ({ value: id, label: CUISINE_LABEL[id] })),
+        ]}
+      />
+      {/* Counted down rather than truncated, like the accroche: a line
+          the partner cannot see the end of is a line they did not
+          write. `maxLength` stops the typing, the count explains it. */}
+      <Input
+        label="Spécialités"
+        value={specialties}
+        maxLength={SPECIALTIES_MAX}
+        onChange={(e) => onSpecialties(e.target.value)}
+        error={specialtiesError}
+        placeholder={
+          bar
+            ? "Cocktails d'auteur et petite restauration du soir"
+            : "Tajines, pastilla et méchoui du vendredi"
+        }
+        hint={`Ce pour quoi on vient chez vous, en une ligne. ${left} caractère${
+          left > 1 ? "s" : ""
+        } restant${left > 1 ? "s" : ""}.`}
+      />
+    </div>
+  );
+}
 
 /**
  * What the band means for a table of one.

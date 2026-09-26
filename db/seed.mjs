@@ -163,7 +163,11 @@ insert("venues", {
   description:
     "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
   tagline: "Marocain contemporain dans un riad de la médina",
-  cuisine: "Cuisine marocaine contemporaine, tajines et pastilla",
+  // The id the app's filter row compares, and the line the detail
+  // screen prints under it. This used to be one free-text field, which
+  // matched « Marocaine » by substring and by luck.
+  cuisine: "marocaine",
+  specialties: "Tajines, pastilla et méchoui du vendredi",
   category: "Restaurant gastronomique, riad",
   address: "12 derb Sidi Ahmed Soussi, Médina",
   district: "Médina",
@@ -707,6 +711,19 @@ fillBook({
 });
 
 // ── Menu (customer-facing listing) ─────────────────────────
+//
+// The rubriques first: the venue names them, and the ids are the five
+// the card happens to start with. What the app's Menu screen groups by
+// is this list, in this order.
+[
+  ["entree", "Entrées", 0],
+  ["plat", "Plats", 1],
+  ["dessert", "Desserts", 2],
+  ["cocktail", "Cocktails", 3],
+].forEach(([id, name, position]) =>
+  insert("menu_categories", { venue_id: VENUE, id, name, position }),
+);
+
 [
   ["mi_pastilla", "Pastilla de pigeon", "Feuilleté croustillant, amandes et cannelle.", "entree", 180, 1, []],
   ["mi_tajine", "Tajine d'agneau aux pruneaux", "Cuit sept heures, amandes grillées.", "plat", 260, 1, []],
@@ -939,6 +956,22 @@ function seedAssets(venueId, name, palette, menuTitle) {
       created_at: daysAgo(120 - i),
     });
   });
+  // The vignette: one square tile, which the app draws in its lists.
+  // Square here because it is square everywhere — the portal crops to
+  // 1:1 before upload, and a seed that shipped a 3:2 logo would be the
+  // one place in the system where that is not true.
+  const logoKey = `venues/${venueId}/logo/vignette.png`;
+  const logoBytes = storeAsset(logoKey, png(512, 512, palette[0]));
+  insert("venue_assets", {
+    id: `ast_${venueId}_logo_1`,
+    venue_id: venueId,
+    kind: "logo",
+    object_key: logoKey,
+    content_type: "image/png",
+    size_bytes: logoBytes,
+    position: 0,
+    created_at: daysAgo(120),
+  });
   const menuKey = `venues/${venueId}/menu_file/carte.pdf`;
   const menuBytes = storeAsset(menuKey, pdf(menuTitle));
   insert("venue_assets", {
@@ -989,7 +1022,10 @@ insert("venues", {
   description:
     "Bar à cocktails sur les toits, vue sur le port. Ouvert du mercredi au dimanche, DJ le week-end.",
   tagline: "Cocktails et DJ sur les toits, vue sur le port",
-  cuisine: "Cocktails d'auteur et petite restauration du soir",
+  // A rooftop bar is not a kitchen, and « Fusion » is the only one of
+  // the ten it belongs under. The sentence says what it actually is.
+  cuisine: "fusion",
+  specialties: "Cocktails d'auteur et petite restauration du soir",
   category: "Bar à cocktails, rooftop",
   address: "18 boulevard d'Anfa, Gauthier",
   district: "Gauthier",
@@ -1126,6 +1162,16 @@ fillBook({
   absent: nmArrived.absent,
   zones: ["z_n_toit", "z_n_bar"],
 });
+
+// A rooftop bar's card is not a restaurant's: it opens on what you
+// drink, and « À grignoter » is what it calls the food.
+[
+  ["cocktail", "Cocktails", 0],
+  ["boisson", "Sans alcool", 1],
+  ["entree", "À grignoter", 2],
+].forEach(([id, name, position]) =>
+  insert("menu_categories", { venue_id: VENUE2, id, name, position }),
+);
 
 [
   ["mi_n1", "Negroni du Nomad", "Campari infusé au safran, vermouth maison.", "cocktail", 140, 1, 0],
@@ -2278,7 +2324,7 @@ insert("platform_admins", {
 
 const count = (t) => db.prepare(`SELECT COUNT(*) c FROM ${t}`).get().c;
 console.log(`seeded ${dbPath}`);
-for (const t of ["venues","business_accounts","partner_accounts","staff","zones","venue_tags","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_items","menu_item_dietary","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity",
+for (const t of ["venues","business_accounts","partner_accounts","staff","zones","venue_tags","availability_slots","closures","services","service_slot_load","customers","customer_preferences","no_show_records","reservations","reservation_status_history","menu_categories","menu_items","menu_item_dietary","reviews","review_replies","review_tags","notifications","notification_preferences","payouts","analytics_daily","activity",
   "venue_settings","subscriptions","invoices","support_tickets","service_definitions","service_zones","pacing_rules","capacity_overrides","waitlist","waitlist_settings","shift_notes","tags","customer_tags","tag_rules","segments","offers","offer_redemptions","experiences","experience_addons","tickets","deposit_policies","deposits","cancellation_policies","cancellation_log","transactions","guest_lists","guest_list_bands","guest_list_entries","promoters","table_types","table_offers","table_reservations","campaigns","messages_log","suppression_list","survey_config","audience_sources","platform_benchmarks","platform_admins"]) {
   console.log(`  ${t.padEnd(28)} ${count(t)}`);
 }

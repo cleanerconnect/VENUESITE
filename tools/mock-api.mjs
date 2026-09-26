@@ -247,6 +247,7 @@ const ROUTES = [
       venueName: "",
       venueType: "restaurant",
       cuisine: "",
+      specialties: "",
       priceRange: 2,
       city: "",
       district: "",
@@ -262,6 +263,9 @@ const ROUTES = [
       menuObjectKey: "",
       menuContentType: "",
       menuSizeBytes: 0,
+      thumbnailObjectKey: "",
+      thumbnailContentType: "",
+      thumbnailSizeBytes: 0,
       ambience: [],
       features: [],
       hours: WEEK.map((weekday) => ({
@@ -328,7 +332,6 @@ const ROUTES = [
       shortName: body.shortName,
       tagline: body.tagline ?? "",
       description: body.description,
-      cuisine: body.cuisine ?? "",
       category: body.category ?? "",
       address: body.address,
       district: body.district ?? "",
@@ -346,6 +349,10 @@ const ROUTES = [
     const bundle = needVenue(m[1]);
     bundle.profile = {
       ...bundle.profile,
+      // The cuisine moved onto the listing when it became one of ten
+      // ids the app filters on. The double follows the driver.
+      cuisine: body.cuisine ?? "",
+      specialties: body.specialties ?? "",
       priceRange: body.priceRange,
       tags: body.tags,
       features: body.features,
@@ -354,6 +361,28 @@ const ROUTES = [
     return bundle.profile;
   }],
   ["GET", /^\/api\/business\/venues\/([^/]+)\/menu$/, (m) => needVenue(m[1]).menuItems],
+  // The card as sections with dishes, which is what the app's Menu
+  // screen reads and what a basique deployment's Menu tab edits.
+  ["GET", /^\/api\/business\/venues\/([^/]+)\/menu-board$/, (m) =>
+    menuBoard(needVenue(m[1]), m[1])],
+  ["PUT", /^\/api\/business\/venues\/([^/]+)\/menu-board$/, (m, _q, body) => {
+    const bundle = needVenue(m[1]);
+    const held = new Map((bundle.menuItems ?? []).map((i) => [i.id, i]));
+    bundle.menuSections = (body.sections ?? []).map((s) => ({ id: s.id, name: s.name }));
+    // The markers and the published flag belong to the Carte editor,
+    // so a row the board keeps keeps them, exactly as the driver does.
+    bundle.menuItems = (body.sections ?? []).flatMap((section) =>
+      (section.items ?? []).map((item) => ({
+        ...(held.get(item.id) ?? { signature: false, visible: true, dietary: [] }),
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        category: section.id,
+        priceMad: item.priceMad,
+      })),
+    );
+    return menuBoard(bundle, m[1]);
+  }],
   ["GET", /^\/api\/business\/venues\/([^/]+)\/staff$/, (m) => needVenue(m[1]).staff],
   ["GET", /^\/api\/business\/venues\/([^/]+)\/assets$/, (m, q) =>
     assetsOf(needVenue(m[1]), q.kind ?? "photo")],
@@ -578,6 +607,7 @@ function makeVenueFromDraft(draft) {
     city: draft.city,
     subline: `${kind === "drinks" ? "Bar" : "Restaurant"} · ${draft.city}`,
     cuisine: draft.cuisine ?? "",
+    specialties: draft.specialties ?? "",
     category: "",
     district: draft.district ?? "",
     tagline: "",
@@ -665,7 +695,22 @@ function makeVenueFromDraft(draft) {
         },
       ]
     : [];
+  bundle.thumbnail = draft.thumbnailObjectKey
+    ? [
+        {
+          id: `ast_${randomUUID().slice(0, 10)}`,
+          venueId,
+          kind: "logo",
+          objectKey: draft.thumbnailObjectKey,
+          contentType: draft.thumbnailContentType || "image/png",
+          sizeBytes: draft.thumbnailSizeBytes || 0,
+          position: 0,
+          createdAt: isoNow(),
+        },
+      ]
+    : [];
   bundle.menuItems = [];
+  bundle.menuSections = [];
   bundle.staff = [];
   bundle.availability = {
     venueId,
@@ -811,8 +856,30 @@ function slotsFor(bundle, date) {
   return out.sort((a, b) => a.at.localeCompare(b.at));
 }
 
+/** Sections, then the dishes under each — and the orphans last. */
+function menuBoard(bundle, venueId) {
+  const sections = bundle.menuSections ?? [];
+  const items = bundle.menuItems ?? [];
+  const known = new Set(sections.map((s) => s.id));
+  const orphans = items.filter((i) => !known.has(i.category));
+  return {
+    venueId,
+    sections: [
+      ...sections.map((s) => ({
+        ...s,
+        items: items.filter((i) => i.category === s.id),
+      })),
+      ...(orphans.length ? [{ id: "", name: "Sans rubrique", items: orphans }] : []),
+    ],
+  };
+}
+
 function assetsOf(bundle, kind) {
-  return kind === "menu_file" ? bundle.menuFiles : bundle.photos;
+  if (kind === "menu_file") return bundle.menuFiles;
+  // The vignette: one square tile, in its own list so a « Remplacer »
+  // cannot land it in the carousel.
+  if (kind === "logo") return bundle.thumbnail;
+  return bundle.photos;
 }
 
 function applyAssetAction(bundle, action) {
@@ -831,7 +898,7 @@ function applyAssetAction(bundle, action) {
     return list;
   }
   if (action?.kind === "asset.remove") {
-    for (const kind of ["photo", "menu_file"]) {
+    for (const kind of ["photo", "menu_file", "logo"]) {
       const list = assetsOf(bundle, kind);
       const at = list.findIndex((a) => a.id === action.id);
       if (at >= 0) {
@@ -851,6 +918,7 @@ function applyAssetAction(bundle, action) {
       })
       .filter(Boolean);
     if (action.assetKind === "menu_file") bundle.menuFiles = ordered;
+    else if (action.assetKind === "logo") bundle.thumbnail = ordered;
     else bundle.photos = ordered;
     return ordered;
   }

@@ -53,9 +53,14 @@ CREATE TABLE IF NOT EXISTS venues (
   description          TEXT NOT NULL DEFAULT '',
   -- One line on the app's list cards, 60 characters. Not the description.
   tagline              TEXT NOT NULL DEFAULT '',
-  -- « Type de cuisine » on the app's detail screen, and the subtitle
-  -- under the venue's name. Free text: a cuisine is a sentence.
+  -- « Type de cuisine » on the app's detail screen, as one of the ten
+  -- ids in CUISINE_IDS. The app's search filters on it, so it is the
+  -- id and not the label — a filter compares 'marocaine'.
   cuisine              TEXT NOT NULL DEFAULT '',
+  -- What the kitchen is known for, in the partner's words, on one line
+  -- of 80 under the cuisine. This is the sentence `cuisine` used to
+  -- hold before the filter needed an id.
+  specialties          TEXT NOT NULL DEFAULT '',
   -- « Catégorie »: what kind of place this is, as opposed to what it
   -- cooks. « Restaurant gastronomique, sushi bar ».
   category             TEXT NOT NULL DEFAULT '',
@@ -140,7 +145,10 @@ CREATE TABLE IF NOT EXISTS onboarding_drafts (
   -- own vocabulary ('restaurant'/'drinks') only when the venue is made.
   venue_type         TEXT NOT NULL DEFAULT 'restaurant',
   -- Step 2, beside the name: what the place cooks, and its price band.
+  -- The cuisine is a CUISINE_IDS id, the same value `venues.cuisine`
+  -- takes when the venue is made.
   cuisine            TEXT NOT NULL DEFAULT '',
+  specialties        TEXT NOT NULL DEFAULT '',
   price_range        INTEGER NOT NULL DEFAULT 2,
   city               TEXT NOT NULL DEFAULT '',
   -- Step 3, asked before the city is confirmed on the map.
@@ -164,6 +172,11 @@ CREATE TABLE IF NOT EXISTS onboarding_drafts (
   menu_object_key     TEXT NOT NULL DEFAULT '',
   menu_content_type   TEXT NOT NULL DEFAULT '',
   menu_size_bytes     INTEGER NOT NULL DEFAULT 0,
+  -- The square tile, cropped 1:1 in the browser before it is sent.
+  -- Becomes the venue's `logo` asset when the flow is submitted.
+  thumbnail_object_key   TEXT NOT NULL DEFAULT '',
+  thumbnail_content_type TEXT NOT NULL DEFAULT '',
+  thumbnail_size_bytes   INTEGER NOT NULL DEFAULT 0,
   -- Step 5, the skippable one: the app's chips and switches, as JSON
   -- arrays of the ids in `src/lib/types/restaurant.ts`.
   ambience           TEXT NOT NULL DEFAULT '[]',
@@ -409,7 +422,26 @@ CREATE INDEX IF NOT EXISTS idx_no_shows_customer ON no_show_records(customer_id,
 
 -- ── Menu ─────────────────────────────────────────────────────
 
+-- The sections of the card, named by the venue.
+--
+-- A closed list of five — entrée, plat, dessert, boisson, cocktail —
+-- is a French bistro's card and nobody else's. A riad serves mezzés, a
+-- rooftop serves « À grignoter », and a tasting menu has courses with
+-- numbers. So the names belong to the venue, and the id is a slug
+-- scoped to it: the seed still uses the five canonical ones, which is
+-- what lets the Carte screen keep an icon per section.
+CREATE TABLE IF NOT EXISTS menu_categories (
+  venue_id TEXT NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+  id       TEXT NOT NULL,
+  name     TEXT NOT NULL,
+  position INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (venue_id, id)
+);
+CREATE INDEX IF NOT EXISTS idx_menu_categories_venue
+  ON menu_categories(venue_id, position);
+
 -- A dish as the app displays it: no cost, no stock, no covers sold.
+-- `category` is a `menu_categories.id` within the same venue.
 CREATE TABLE IF NOT EXISTS menu_items (
   id          TEXT PRIMARY KEY,
   venue_id    TEXT NOT NULL REFERENCES venues(id) ON DELETE CASCADE,

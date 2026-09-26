@@ -385,6 +385,18 @@ export interface FeedBlock extends BlockBase {
   heading: string;
   subheading?: string;
   live?: boolean;
+  /**
+   * The instant the feed is read against — `ScreenContext.now`.
+   *
+   * A feed says « il y a 3 min » and pulses for a minute, and both of
+   * those are the clock read at render. Read twice — once on the
+   * server, once when React hydrates — they answer differently across
+   * a minute boundary, the pulse appears on one side and not the
+   * other, and the hydration throws. Same fault as the guest list's,
+   * one screen over. Absent means « ask the clock », which is right
+   * for a styleguide sample and wrong for a screen.
+   */
+  now?: number;
   entries: FeedEntry[];
   empty?: { title: string; body?: string; icon?: IconKey };
 }

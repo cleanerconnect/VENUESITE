@@ -508,7 +508,8 @@ async function walkOnboarding(page, width, phone) {
   await next();
 
   await page.getByLabel("Nom de l'établissement").fill("Le Petit Riad");
-  await page.getByLabel("Type de cuisine").fill("Cuisine marocaine de saison, grillades au feu de bois");
+  await page.getByLabel("Type de cuisine").selectOption("marocaine");
+  await page.getByLabel("Spécialités").fill("Grillades au feu de bois et tajines de saison");
   await page
     .locator('[role="radiogroup"][aria-label="Fourchette de prix"] [role="radio"]')
     .nth(2)

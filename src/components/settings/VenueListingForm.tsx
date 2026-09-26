@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { ChipInput } from "@/components/forms/ChipSelect";
 import {
   AmbienceChips,
+  CuisineFields,
   FeatureSwitches,
   PriceBand,
 } from "@/components/forms/ListingControls";
@@ -14,11 +15,15 @@ import { saveVenueListing, type VenueListingInput } from "@/app/actions/venue";
 
 // The listing, as the consumer app renders it.
 //
-// Three of the four labelled lines the app's detail screen draws under
-// « Cuisine & Détails » are here — the price band, the ambience, and the
-// equipment list it shows as icon rows underneath. The other two, the
-// cuisine and the category, are text and live on Identité with the rest
-// of the words.
+// Four of the five labelled lines the app's detail screen draws under
+// « Cuisine & Détails » are here — the cuisine, the price band, the
+// ambience, and the equipment list it shows as icon rows underneath.
+// The fifth, the category, is free text and stays on Identité with the
+// rest of the words.
+//
+// The cuisine came over from Identité when it stopped being a sentence:
+// it is a closed list of ten the app filters on, which is the same kind
+// of thing as the price band and not the same kind of thing as a name.
 //
 // « Mots-clés » is Lot 2's: a tag is a concept a basique deployment has
 // no screen for, and asking for eight of them on a fiche that cannot
@@ -30,6 +35,22 @@ export function VenueListingForm({ initial }: { initial: VenueListingInput }) {
 
   return (
     <div className="space-y-6">
+      <Card variant="surface" size="md">
+        <h2 className="text-h3 text-ink mb-1">Cuisine</h2>
+        <p className="text-meta text-ink-mute mb-5">
+          Le type sur lequel l&apos;application filtre, et la ligne
+          qu&apos;elle affiche en dessous.
+        </p>
+        <CuisineFields
+          cuisine={form.value.cuisine}
+          specialties={form.value.specialties}
+          onCuisine={(cuisine) => form.set("cuisine", cuisine)}
+          onSpecialties={(specialties) => form.set("specialties", specialties)}
+          cuisineError={form.errorFor("cuisine") ?? undefined}
+          specialtiesError={form.errorFor("specialties") ?? undefined}
+        />
+      </Card>
+
       <Card variant="surface" size="md">
         <h2 className="text-h3 text-ink mb-1">Fourchette de prix</h2>
         <p className="text-meta text-ink-mute mb-5">

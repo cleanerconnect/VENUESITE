@@ -1,4 +1,4 @@
-import { formatDistanceToNowStrict } from "date-fns";
+import { formatDistanceStrict, formatDistanceToNowStrict } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import { fr } from "date-fns/locale";
 import { VENUE_TIME_ZONE, venueInstant } from "@/lib/time/zone";
@@ -33,9 +33,22 @@ export function formatTimeFR(iso: string | Date) {
   });
 }
 
-export function formatRelativeFR(iso: string | Date) {
+/**
+ * « il y a 3 min », against a given instant.
+ *
+ * `now` is not optional decoration: a component that renders on the
+ * server and again on hydration and asks the clock each time gets two
+ * answers across a minute boundary, and React refuses the mismatch.
+ * Callers inside a screen pass `ScreenContext.now`; the default is for
+ * the places that have no screen, like the styleguide.
+ */
+export function formatRelativeFR(iso: string | Date, now?: number) {
   const d = venueInstant(iso);
-  return `il y a ${formatDistanceToNowStrict(d, { locale: fr })}`;
+  return `il y a ${
+    now === undefined
+      ? formatDistanceToNowStrict(d, { locale: fr })
+      : formatDistanceStrict(d, new Date(now), { locale: fr })
+  }`;
 }
 
 export function formatPercent(value: number, digits = 1) {

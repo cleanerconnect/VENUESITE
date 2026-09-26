@@ -12,6 +12,16 @@ import { cn } from "@/lib/utils/cn";
 // Activity rail. Entries carry their own glyph, tone and destination, so
 // the feed can absorb a new event type — a table freed, an 86'd dish, a
 // walk-in seated — without a switch statement growing here.
+//
+// Every clock read here comes from `block.now`, never from `Date.now()`.
+// This component ran twice — once on the server, once when React
+// hydrated — and asked the clock both times: an entry 59 seconds old at
+// render was 61 seconds old at hydration, so the pulse was in the
+// server's HTML and not in the client's and the hydration threw React
+// #418. It showed up once in twenty runs of `edges.mjs`, on a throttled
+// network, which is the only condition that reliably puts a minute
+// boundary between the two renders — and on a real phone that
+// condition is Tuesday. Same fault the guest list had, one screen over.
 const FRESH_MS = 60_000;
 
 export function FeedBlock({ block }: { block: Spec }) {
@@ -37,7 +47,7 @@ export function FeedBlock({ block }: { block: Spec }) {
       ) : (
         <ul className="divide-y divide-line-soft">
           {block.entries.map((entry) => (
-            <Entry key={entry.id} entry={entry} />
+            <Entry key={entry.id} entry={entry} now={block.now} />
           ))}
         </ul>
       )}
@@ -45,9 +55,13 @@ export function FeedBlock({ block }: { block: Spec }) {
   );
 }
 
-function Entry({ entry }: { entry: FeedEntry }) {
+function Entry({ entry, now }: { entry: FeedEntry; now?: number }) {
   const color = TONE_COLOR[entry.tone ?? "neutral"];
-  const isFresh = Date.now() - new Date(entry.at).getTime() < FRESH_MS;
+  // `now ?? Date.now()` rather than a required prop: the styleguide
+  // draws this block from a literal, and a sample feed has no screen
+  // instant to inherit. A screen passes one; a sample gets the clock.
+  const at = now ?? Date.now();
+  const isFresh = at - new Date(entry.at).getTime() < FRESH_MS;
 
   const inner = (
     <div
@@ -73,7 +87,7 @@ function Entry({ entry }: { entry: FeedEntry }) {
           <span className="text-ink-soft">{entry.message}</span>
         </div>
         <div className="text-meta text-ink-mute num mt-0.5 flex items-center gap-2">
-          {formatRelativeFR(entry.at)}
+          {formatRelativeFR(entry.at, at)}
           {isFresh ? <span className="live-pulse" aria-hidden /> : null}
         </div>
       </div>

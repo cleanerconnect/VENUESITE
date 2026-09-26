@@ -1,4 +1,5 @@
 import type { PendingVenue } from "@/lib/types/restaurant";
+import { isCuisineId } from "@/lib/types/restaurant";
 import type {
   VenueValidationInput,
   RescheduleBookingInput,
@@ -55,12 +56,15 @@ import type {
 import type { SurveyConfig, VenueSettings } from "@/lib/types/venue-operations";
 import type {
   DayBook,
+  MenuItem,
+  MenuSectionName,
   Reservation,
   RestaurantOverview,
   RestaurantProfile,
 } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
+import type { MenuBoardPatch } from "@/lib/db/venue-write-store";
 import { defaultHours } from "@/lib/types/onboarding";
 import type {
   CheckInResult,
@@ -93,6 +97,9 @@ const profileOverlay = new Map<string, RestaurantProfile>();
 const draftOverlay = new Map<string, OnboardingDraft>();
 const signUps = new Map<string, string>();
 const assetOverlay = new Map<string, VenueAsset[]>();
+/** The card, once the Menu board has been used. Same reasoning. */
+const menuOverlay = new Map<string, MenuItem[]>();
+const sectionOverlay = new Map<string, MenuSectionName[]>();
 const readNotifications = new Set<string>();
 
 export class StaticRestaurantRepository implements RestaurantRepository {
@@ -269,6 +276,7 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       venueName: "",
       venueType: "restaurant",
       cuisine: "",
+      specialties: "",
       priceRange: 2,
       city: "",
       district: "",
@@ -284,6 +292,9 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       menuObjectKey: "",
       menuContentType: "",
       menuSizeBytes: 0,
+      thumbnailObjectKey: "",
+      thumbnailContentType: "",
+      thumbnailSizeBytes: 0,
       ambience: [],
       features: [],
       hours: defaultHours(),
@@ -350,7 +361,6 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       shortName: patch.shortName,
       tagline: patch.tagline,
       description: patch.description,
-      cuisine: patch.cuisine,
       category: patch.category,
       address: patch.address,
       district: patch.district,
@@ -378,6 +388,8 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     }
     const next: RestaurantProfile = {
       ...current,
+      cuisine: isCuisineId(patch.cuisine) ? patch.cuisine : "",
+      specialties: patch.specialties,
       priceRange: patch.priceRange,
       tags: patch.tags,
       features: patch.features as RestaurantProfile["features"],
@@ -391,6 +403,61 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     return clone(this.bundle(venueId).menuItems);
   }
 
+  async getMenu(venueId: string) {
+    const bundle = this.bundle(venueId);
+    const sections = sectionOverlay.get(venueId) ?? bundle.menuSections ?? [];
+    const items = menuOverlay.get(venueId) ?? bundle.menuItems;
+    const known = new Set(sections.map((s) => s.id));
+    const orphans = items.filter((i) => !known.has(i.category));
+    return clone({
+      venueId,
+      sections: [
+        ...sections.map((s) => ({
+          ...s,
+          items: items.filter((i) => i.category === s.id),
+        })),
+        ...(orphans.length
+          ? [{ id: "", name: "Sans rubrique", items: orphans }]
+          : []),
+      ],
+    });
+  }
+
+  /**
+   * The snapshot is a committed capture, so a save here lands in the
+   * same in-memory overlay every other write on this driver uses: the
+   * demo edits, the screen agrees, and nothing claims to have written
+   * to a file that is checked into git.
+   */
+  async saveMenu(venueId: string, patch: MenuBoardPatch) {
+    const bundle = this.bundle(venueId);
+    const held = new Map(
+      (menuOverlay.get(venueId) ?? bundle.menuItems).map((i) => [i.id, i]),
+    );
+    menuOverlay.set(
+      venueId,
+      patch.sections.flatMap((section) =>
+        section.items.map((item) => ({
+          ...(held.get(item.id) ?? {
+            signature: false,
+            visible: true,
+            dietary: [] as MenuItem["dietary"],
+          }),
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          category: section.id,
+          priceMad: item.priceMad,
+        })),
+      ) as MenuItem[],
+    );
+    sectionOverlay.set(
+      venueId,
+      patch.sections.map((s) => ({ id: s.id, name: s.name })),
+    );
+    return this.getMenu(venueId);
+  }
+
   async listStaff(venueId: string) {
     return clone(this.bundle(venueId).staff);
   }
@@ -399,7 +466,12 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     const held = assetOverlay.get(`${venueId}:${kind}`);
     if (held) return clone(held);
     const bundle = this.bundle(venueId);
-    return clone(kind === "photo" ? bundle.photos : bundle.menuFiles);
+    if (kind === "menu_file") return clone(bundle.menuFiles);
+    // The vignette. `?? []` rather than a required key: a snapshot
+    // captured before the column existed still has to serve, and an
+    // absent tile is a venue without one, not a broken read.
+    if (kind === "logo") return clone(bundle.thumbnail ?? []);
+    return clone(bundle.photos);
   }
 
   async runAssetAction(venueId: string, action: AssetAction) {
@@ -424,9 +496,9 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     }
 
     if (action.kind === "asset.remove") {
-      // The snapshot's two kinds are small; finding which one holds the
-      // id beats making the caller say.
-      for (const k of ["photo", "menu_file"] as AssetKind[]) {
+      // The snapshot's three kinds are small; finding which one holds
+      // the id beats making the caller say.
+      for (const k of ["photo", "menu_file", "logo"] as AssetKind[]) {
         const list = await this.listAssets(venueId, k);
         if (list.some((a) => a.id === action.id)) {
           const next = list.filter((a) => a.id !== action.id);

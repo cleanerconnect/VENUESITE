@@ -236,6 +236,85 @@ if (await description.count()) {
   check("Ma fiche a un champ Description", false);
 }
 
+// ── 4 bis. The three fields the app's screens were missing ──
+//
+// A key the portal writes and the payload does not carry is a field
+// nobody notices is absent until a screen is built on it. So each one
+// is asserted on the seeded venue, which is the one with a card.
+{
+  const dz = await fetch(`${API}/api/restaurants/rst_dar_zellij`).then((r) => r.json());
+
+  // The cuisine is an id now, and the filter row compares ids. A
+  // sentence here is the failure this field was closed to end.
+  const TEN = ["marocaine","japonaise","italienne","indienne","mexicaine",
+               "libanaise","francaise","asiatique","mediterraneenne","fusion"];
+  check(
+    "la cuisine est un des dix identifiants de l'application",
+    TEN.includes(dz.cuisine),
+    String(dz.cuisine),
+  );
+  check(
+    "et le libellé l'accompagne",
+    typeof dz.cuisine_label === "string" && dz.cuisine_label.length > 0,
+    String(dz.cuisine_label),
+  );
+  check(
+    "les spécialités arrivent en toutes lettres",
+    typeof dz.specialties === "string" && dz.specialties.length > 0,
+    String(dz.specialties).slice(0, 60),
+  );
+  // The filter, on the id and on the label both.
+  const byId = await fetch(`${API}/api/restaurants?cuisine=${dz.cuisine}`).then((r) => r.json());
+  check(
+    "filtrer par cet identifiant retrouve le lieu",
+    byId.some((r) => r.id === "rst_dar_zellij"),
+    `${byId.length} résultat(s)`,
+  );
+  const byLabel = await fetch(
+    `${API}/api/restaurants?cuisine=${encodeURIComponent(dz.cuisine_label)}`,
+  ).then((r) => r.json());
+  check(
+    "et filtrer par le libellé aussi",
+    byLabel.some((r) => r.id === "rst_dar_zellij"),
+    `${byLabel.length} résultat(s)`,
+  );
+  const byNonsense = await fetch(`${API}/api/restaurants?cuisine=terroir`).then((r) => r.json());
+  check("une cuisine hors des dix ne ramène rien", byNonsense.length === 0, `${byNonsense.length}`);
+
+  // The vignette, square by construction.
+  check(
+    "la vignette carrée est servie",
+    typeof dz.thumbnail_url === "string" && dz.thumbnail_url.includes("/api/assets/"),
+    String(dz.thumbnail_url),
+  );
+
+  // The card, as sections with dishes rather than a file to open.
+  const sections = Array.isArray(dz.menu) ? dz.menu : [];
+  check(
+    "la carte arrive en rubriques",
+    sections.length > 0 && sections.every((s) => Array.isArray(s.items)),
+    sections.map((s) => s.name).join(" · "),
+  );
+  const dishes = sections.flatMap((s) => s.items ?? []);
+  check(
+    "et chaque plat porte un nom, une ligne et un prix",
+    dishes.length > 0 &&
+      dishes.every(
+        (d) =>
+          typeof d.name === "string" &&
+          d.name.length > 0 &&
+          typeof d.description === "string" &&
+          typeof d.price_mad === "number",
+      ),
+    `${dishes.length} plat(s) · ${dishes[0]?.name ?? "—"} ${dishes[0]?.price_mad ?? "—"} MAD`,
+  );
+  check(
+    "le PDF reste servi à part",
+    Array.isArray(dz.menu_files),
+    `${(dz.menu_files ?? []).length} fichier(s)`,
+  );
+}
+
 // ── 5. A guest books it, from the app ───────────────────────
 const guest = await fetch(`${API}/api/auth/guest`, { method: "POST" }).then((r) => r.json());
 check("l'application ouvre une session invité", Boolean(guest.session_token), guest.name);

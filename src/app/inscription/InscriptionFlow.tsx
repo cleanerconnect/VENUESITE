@@ -30,10 +30,12 @@ import { ArrowLeft, ArrowRight, Check, FileText, ImagePlus } from "lucide-react"
 import { Brand } from "@/components/organizer/Brand";
 import {
   AmbienceChips,
+  CuisineFields,
   FeatureSwitches,
   PriceBand,
 } from "@/components/forms/ListingControls";
 import { PinMap } from "@/components/map/PinMap";
+import { cropToSquare } from "@/lib/assets/square";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -61,6 +63,7 @@ import {
   type DraftUploadSlot,
 } from "@/app/actions/onboarding";
 import {
+  cuisineLabel,
   PRICE_RANGE_LABEL,
   VENUE_AMBIENCE,
   VENUE_FEATURE,
@@ -107,6 +110,7 @@ export function InscriptionFlow({
     initialDraft?.venueType ?? "restaurant",
   );
   const [cuisine, setCuisine] = useState(initialDraft?.cuisine ?? "");
+  const [specialties, setSpecialties] = useState(initialDraft?.specialties ?? "");
   const [priceRange, setPriceRange] = useState(initialDraft?.priceRange ?? 2);
   const [city, setCity] = useState(initialDraft?.city ?? "");
   const [district, setDistrict] = useState(initialDraft?.district ?? "");
@@ -129,6 +133,11 @@ export function InscriptionFlow({
   const [menuFile, setMenuFile] = useState<{ name: string; objectKey: string } | null>(
     initialDraft?.menuObjectKey
       ? { name: "Carte", objectKey: initialDraft.menuObjectKey }
+      : null,
+  );
+  const [thumbnail, setThumbnail] = useState<{ name: string; objectKey: string } | null>(
+    initialDraft?.thumbnailObjectKey
+      ? { name: "Vignette", objectKey: initialDraft.thumbnailObjectKey }
       : null,
   );
   const [ambience, setAmbience] = useState<string[]>(initialDraft?.ambience ?? []);
@@ -232,11 +241,31 @@ export function InscriptionFlow({
       }),
       set: setMenuFile,
     },
+    thumbnail: {
+      patch: (key, file) => ({
+        thumbnailObjectKey: key,
+        thumbnailContentType: file.type,
+        thumbnailSizeBytes: file.size,
+      }),
+      set: setThumbnail,
+    },
   };
 
-  const upload = (slot: DraftUploadSlot, file: File) => {
+  const upload = (slot: DraftUploadSlot, picked: File) => {
     setError(null);
     start(async () => {
+      // The vignette is square before it leaves the browser, so what
+      // the partner is shown here is what the app's list tile will
+      // hold. Everything else goes up as chosen.
+      let file = picked;
+      if (slot === "thumbnail") {
+        try {
+          file = await cropToSquare(picked);
+        } catch {
+          setError("Ce fichier n'a pas pu être lu comme une image.");
+          return;
+        }
+      }
       const ticket = await requestDraftUpload({
         slot,
         filename: file.name,
@@ -383,21 +412,18 @@ export function InscriptionFlow({
                       ))}
                     </div>
                   </div>
-                  {/* « Type de cuisine » on the app's detail screen,
-                      and the line under the venue's name. Free text
-                      because a kitchen is a sentence — the app prints
-                      « Cuisine japonaise traditionnelle moderne &
-                      omakase » verbatim — and an enum of forty cuisines
-                      would still be missing this one. */}
-                  <Input
-                    label="Type de cuisine"
-                    value={cuisine}
-                    onChange={(e) => setCuisine(e.target.value)}
-                    hint={
-                      venueType === "bar"
-                        ? "Ex. Cocktails d'auteur et petite restauration"
-                        : "Ex. Cuisine marocaine contemporaine, tajines et pastilla"
-                    }
+                  {/* The app's own filter row, and a line of your own
+                      under it. It was one free-text field here too, on
+                      the reasoning that a kitchen is a sentence — true,
+                      and it left a brand-new venue behind none of the
+                      ten taps a guest actually searches with. The
+                      sentence is the second field now. */}
+                  <CuisineFields
+                    cuisine={cuisine}
+                    specialties={specialties}
+                    onCuisine={setCuisine}
+                    onSpecialties={setSpecialties}
+                    bar={venueType === "bar"}
                   />
                   <div>
                     <div className="text-field-label mb-1">
@@ -488,6 +514,18 @@ export function InscriptionFlow({
                     chosen={photo2}
                     onFile={(file) => upload("photo2", file)}
                   />
+                  {/* The square tile the app draws in its lists. A
+                      carousel photo is 16:9, so without this the tile
+                      was a centre crop of a wide picture chosen for a
+                      different shape — a logo in it lost its own
+                      edges. Cropped 1:1 here, before it is sent. */}
+                  <FileDrop
+                    title="Vignette"
+                    hint="Facultative. Votre logo ou une photo carrée : elle est recadrée au centre, en carré, avant l'envoi."
+                    accept="image/png,image/jpeg,image/webp"
+                    chosen={thumbnail}
+                    onFile={(file) => upload("thumbnail", file)}
+                  />
                   <FileDrop
                     title="Votre carte"
                     hint="PDF ou photo. 20 Mo au maximum. Elle s'ouvre depuis votre fiche."
@@ -532,11 +570,13 @@ export function InscriptionFlow({
                   venueName={venueName}
                   venueType={venueType}
                   cuisine={cuisine}
+                  specialties={specialties}
                   priceRange={priceRange}
                   district={district}
                   city={city}
                   address={address}
                   photoCount={[cover, photo2].filter(Boolean).length}
+                  hasThumbnail={Boolean(thumbnail)}
                   hasMenu={Boolean(menuFile)}
                   ambience={ambience}
                   features={features}
@@ -574,7 +614,9 @@ export function InscriptionFlow({
           {step === 2 ? (
             <Button
               size="lg"
-              onClick={() => advance({ venueName, venueType, cuisine, priceRange, city })}
+              onClick={() =>
+                advance({ venueName, venueType, cuisine, specialties, priceRange, city })
+              }
               disabled={pending || !venueName.trim() || !city.trim()}
             >
               Continuer
@@ -849,11 +891,13 @@ function Summary({
   venueName,
   venueType,
   cuisine,
+  specialties,
   priceRange,
   district,
   city,
   address,
   photoCount,
+  hasThumbnail,
   hasMenu,
   ambience,
   features,
@@ -862,11 +906,13 @@ function Summary({
   venueName: string;
   venueType: OnboardingVenueType;
   cuisine: string;
+  specialties: string;
   priceRange: number;
   district: string;
   city: string;
   address: string;
   photoCount: number;
+  hasThumbnail: boolean;
   hasMenu: boolean;
   ambience: string[];
   features: string[];
@@ -878,7 +924,8 @@ function Summary({
   const rows = [
     { label: "Établissement", value: venueName || "—" },
     { label: "Type", value: ONBOARDING_TYPE_LABEL[venueType] },
-    { label: "Cuisine", value: cuisine || "À compléter plus tard" },
+    { label: "Cuisine", value: cuisineLabel(cuisine) || "À compléter plus tard" },
+    { label: "Spécialités", value: specialties || "À compléter plus tard" },
     { label: "Prix", value: PRICE_RANGE_LABEL[priceRange] ?? "—" },
     { label: "Quartier", value: district || "—" },
     { label: "Ville", value: city || "—" },
@@ -890,6 +937,7 @@ function Summary({
           ? "À ajouter plus tard"
           : `${photoCount} photo${photoCount > 1 ? "s" : ""}`,
     },
+    { label: "Vignette", value: hasThumbnail ? "Ajoutée" : "À ajouter plus tard" },
     { label: "Carte", value: hasMenu ? "Ajoutée" : "À ajouter plus tard" },
     {
       label: "Ambiance",

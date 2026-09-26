@@ -43,10 +43,10 @@ import {
   type VenueListingPatch,
   type VenueProfilePatch,
 } from "./repository";
-import type { MenuItem, Reservation, RestaurantProfile } from "@/lib/types/restaurant";
+import type { MenuItem, Reservation, RestaurantProfile, VenueMenu } from "@/lib/types/restaurant";
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
-import type { StaffMemberRow } from "@/lib/db/venue-write-store";
+import type { MenuBoardPatch, StaffMemberRow } from "@/lib/db/venue-write-store";
 import type {
   ConfigurationAction,
   GrowthAction,
@@ -185,6 +185,21 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     return this.request<MenuItem[]>(
       "GET",
       `/api/business/venues/${venueId}/menu`,
+    );
+  }
+
+  getMenu(venueId: string) {
+    return this.request<VenueMenu>(
+      "GET",
+      `/api/business/venues/${venueId}/menu-board`,
+    );
+  }
+
+  saveMenu(venueId: string, patch: MenuBoardPatch) {
+    return this.request<VenueMenu>(
+      "PUT",
+      `/api/business/venues/${venueId}/menu-board`,
+      patch,
     );
   }
 

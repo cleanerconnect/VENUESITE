@@ -4,18 +4,22 @@ import { useState } from "react";
 import { VenueIdentityForm } from "./VenueIdentityForm";
 import { VenueListingForm } from "./VenueListingForm";
 import { MenuListingForm } from "./MenuListingForm";
+import { MenuBoardForm } from "./MenuBoardForm";
 import { OpeningHoursForm } from "./OpeningHoursForm";
 import { AssetManager } from "./AssetManager";
+import { ThumbnailUpload } from "./ThumbnailUpload";
 import { StaffForm } from "./StaffForm";
 import type { PortalRole } from "@/lib/auth/server-session";
 import type { VenueAsset } from "@/lib/assets/types";
 import type { VenueAvailability } from "@/lib/types/business";
 import type { StaffMemberRow } from "@/lib/db/venue-write-store";
+import type { VenueMenu } from "@/lib/types/restaurant";
 import type {
   MenuItemInput,
   VenueIdentityInput,
   VenueListingInput,
 } from "@/app/actions/venue";
+import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FilterTabs } from "@/components/ui/FilterTabs";
 import { PermissionDenied } from "@/components/data/QueryState";
@@ -56,9 +60,11 @@ export function VenueSettings({
   identity,
   listing,
   menuItems,
+  menu,
   availability,
   photos,
   menuFiles,
+  thumbnail,
   staff,
   only,
   title,
@@ -76,9 +82,13 @@ export function VenueSettings({
   identity: VenueIdentityInput;
   listing: VenueListingInput;
   menuItems: MenuItemInput[];
+  /** The card as sections with dishes — what the Menu tab edits. */
+  menu: VenueMenu;
   availability: VenueAvailability;
   photos: VenueAsset[];
   menuFiles: VenueAsset[];
+  /** The square tile, as a list of nought or one. */
+  thumbnail: VenueAsset[];
   staff: StaffMemberRow[];
 }) {
   const visible = SECTIONS.filter(
@@ -106,9 +116,30 @@ export function VenueSettings({
       />
       ) : null}
 
-      {active === "identity" ? <VenueIdentityForm initial={identity} /> : null}
+      {/* The vignette above the words, because it is the first thing
+          a guest sees of this venue and the form below it is the
+          second. It is an asset, not a field, so it saves on its own
+          and the identity form's bar counts only what the form owns. */}
+      {active === "identity" ? (
+        <div className="space-y-6">
+          <Card variant="surface" size="md">
+            <h2 className="text-h3 text-ink mb-1">Vignette</h2>
+            <p className="text-meta text-ink-mute mb-4">
+              Le carré qui vous représente dans les listes de
+              l&apos;application.
+            </p>
+            <ThumbnailUpload initial={thumbnail} />
+          </Card>
+          <VenueIdentityForm initial={identity} />
+        </div>
+      ) : null}
       {active === "listing" ? <VenueListingForm initial={listing} /> : null}
-      {active === "menu" ? <MenuListingForm items={menuItems} /> : null}
+      {active === "menu" ? (
+        <MenuListingForm
+          items={menuItems}
+          sections={menu.sections.map((s) => ({ id: s.id, name: s.name }))}
+        />
+      ) : null}
       {active === "hours" ? <OpeningHoursForm initial={availability} /> : null}
       {/* The app's header is a carousel, so this is a list in an order,
           not one picture with spares: the first is the cover on every
@@ -123,17 +154,24 @@ export function VenueSettings({
           initial={photos}
         />
       ) : null}
-      {/* What the app's « Menu » pill opens. A file, and only a file:
-          the dish editor is Lot 2's Carte, one tab over. */}
+      {/* What the app's Menu screen draws.
+          It was an upload and nothing else — a PDF, or ten photographs
+          of the pages — which gave the app a file to offer and no menu
+          to lay out, and gave the guest prices from whenever the card
+          was last printed. The board is the menu; the file stays under
+          it, for a venue whose card is a designed object. */}
       {active === "menu_file" ? (
-        <AssetManager
-          kind="menu_file"
-          title="Menu"
-          description={`Votre carte, telle quelle : un PDF, ou jusqu'à ${MENU_FILE_MAX} photos de ses pages, dans l'ordre. Les clients l'ouvrent depuis votre fiche.`}
-          addLabel="Ajouter un fichier"
-          max={MENU_FILE_MAX}
-          initial={menuFiles}
-        />
+        <div className="space-y-6">
+          <MenuBoardForm initial={menu} />
+          <AssetManager
+            kind="menu_file"
+            title="La carte en PDF"
+            description={`Facultatif, et en plus de la liste ci-dessus : un PDF, ou jusqu'à ${MENU_FILE_MAX} photos de ses pages, dans l'ordre. Les clients peuvent l'ouvrir depuis votre fiche.`}
+            addLabel="Ajouter un fichier"
+            max={MENU_FILE_MAX}
+            initial={menuFiles}
+          />
+        </div>
       ) : null}
       {active === "staff" ? (
         <StaffForm initial={staff} canManage={role === "owner"} />
