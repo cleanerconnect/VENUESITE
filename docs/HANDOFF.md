@@ -553,7 +553,18 @@ follow.
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
-| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states — 35 frames, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the 17 PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1` |
+| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states, and the onboarding's seven steps at both widths, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1`; sections `5 · Ma fiche` and `0 · Inscription` are replayed from `docs/lot1-figma-frames.json` by `tools/figma/capture-frames.mjs` |
+
+**Sections `5 · Ma fiche` and `0 · Inscription` are not drawn by hand.**
+`tools/figma/capture-frames.mjs` walks the running portal — five tabs of
+Ma fiche, seven steps of the onboarding, at 1440 and at 390 — and writes
+the boxes the browser actually painted, with their measured geometry,
+their fills and their type, to `docs/lot1-figma-frames.json`. A Figma
+plugin script replays that file into the two sections, placing the
+sidebar and the topbar as instances of the components on `02 Composants`
+and binding every text layer to a style on the page's own scale. A frame
+there cannot claim a field the screen does not have, and a field added
+to the screen reaches the frame by re-running one command.
 
 Two rules the file keeps, and a designer extending it should keep too:
 the library on `02 Composants` is the source for components, and `08` is

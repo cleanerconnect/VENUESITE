@@ -36,6 +36,19 @@ const FRAMES = [
   { key: "ma-fiche-horaires", path: "/restaurant/ma-fiche", name: "Ma fiche · Horaires", session: true, tab: "Horaires" },
   { key: "ma-fiche-photos", path: "/restaurant/ma-fiche", name: "Ma fiche · Photos", session: true, tab: "Photos" },
   { key: "ma-fiche-menu", path: "/restaurant/ma-fiche", name: "Ma fiche · Menu", session: true, tab: "Menu" },
+  // The saved state, which page 09 has always carried beside the form:
+  // a partner needs to know what « it worked » looks like. The edit is
+  // a trailing space on the description, which the action trims — so
+  // the frame shows the same words it showed before, and the bar shows
+  // « Enregistré ».
+  {
+    key: "ma-fiche-enregistre",
+    path: "/restaurant/ma-fiche",
+    name: "Ma fiche · Fiche · Enregistré",
+    session: true,
+    tab: "Fiche",
+    save: true,
+  },
 ];
 
 /** The seven onboarding steps, walked once and shot on each. */
@@ -68,13 +81,35 @@ const RECORD = String(function record(rootSelector, excludeSelectors) {
     ? [...document.querySelectorAll(excludeSelectors.join(","))]
     : [];
 
+  // Colour, through a canvas rather than a regular expression.
+  //
+  // Tailwind v4 writes an opacity modifier as `oklab(… / .4)`, and a
+  // regular expression that only knows `rgb()` reads that as « no
+  // colour ». Every switch that was off came back transparent, which is
+  // a frame that says the venue has no Wi-Fi rather than one that says
+  // the switch is off. The browser already knows how to resolve any
+  // colour syntax it accepts; this asks it.
+  const probe = document.createElement("canvas");
+  probe.width = 1;
+  probe.height = 1;
+  const ink = probe.getContext("2d", { willReadFrequently: true });
+  const seen = new Map();
   const rgb = (value) => {
-    const m = /rgba?\(([^)]+)\)/.exec(value ?? "");
-    if (!m) return null;
-    const p = m[1].split(",").map((n) => parseFloat(n));
-    const a = p.length > 3 ? p[3] : 1;
-    if (a === 0) return null;
-    return { r: p[0] / 255, g: p[1] / 255, b: p[2] / 255, a };
+    if (!value) return null;
+    if (seen.has(value)) return seen.get(value);
+    let out = null;
+    try {
+      ink.clearRect(0, 0, 1, 1);
+      ink.fillStyle = "#000";
+      ink.fillStyle = value;
+      ink.fillRect(0, 0, 1, 1);
+      const [r, g, b, a] = ink.getImageData(0, 0, 1, 1).data;
+      out = a === 0 ? null : { r: r / 255, g: g / 255, b: b / 255, a: a / 255 };
+    } catch {
+      out = null;
+    }
+    seen.set(value, out);
+    return out;
   };
 
   const base = root.getBoundingClientRect();
@@ -172,14 +207,22 @@ const RECORD = String(function record(rootSelector, excludeSelectors) {
           al: cs.textAlign === "start" ? "left" : cs.textAlign,
         });
       } else if (node.nodeType === Node.ELEMENT_NODE) {
+        if (el.tagName === "SELECT") continue;
         const child = walk(node);
         if (child) kids.push(child);
       }
     }
 
-    // An input paints its own value, which is not a child text node.
-    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-      const v = (el.value ?? "").trim() || (el.placeholder ?? "").trim();
+    // A field paints its own value, which is not a child text node. A
+    // `<select>` paints the *label* of the chosen option, and its
+    // options are children the browser does not lay out — so without
+    // this the Ville field came back as an empty box.
+    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") {
+      const chosen =
+        el.tagName === "SELECT"
+          ? (el.selectedOptions?.[0]?.textContent ?? "").trim()
+          : "";
+      const v = chosen || (el.value ?? "").trim() || (el.placeholder ?? "").trim();
       if (v) {
         const pad = parseFloat(cs.paddingLeft) || 0;
         const top = parseFloat(cs.paddingTop) || 0;
@@ -244,11 +287,18 @@ const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
 });
 
-const capture = async (page, selector, exclude = []) =>
-  page.evaluate(
+const capture = async (page, selector, exclude = []) => {
+  // To the bottom first. A sticky Enregistrer bar is measured where it
+  // currently sits, and at the top of a long form that is on top of the
+  // card below it — an overlap the page never actually shows a reader
+  // who has scrolled that far. At the bottom it rests in its own place.
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(400);
+  return page.evaluate(
     ([sel, ex, fn]) => new Function(`return (${fn})`)()(sel, ex),
     [selector, exclude, RECORD],
   );
+};
 
 const frames = [];
 
@@ -273,6 +323,22 @@ for (const width of [1440, 390]) {
     if (frame.tab) {
       await page.locator(`button:text-is("${frame.tab}")`).first().click();
       await page.waitForTimeout(1200);
+    }
+    if (frame.save) {
+      // A chip, not a text field: toggling one is dirty the instant it
+      // is pressed, and the value that comes back is the value that was
+      // sent — where a trailing space in a text field is trimmed by the
+      // action, so the form lands back on « À jour » with nothing saved.
+      await page
+        .locator('fieldset:has(> legend:text-is("Ambiance")) button[role="switch"]')
+        .nth(4)
+        .click();
+      await page.waitForTimeout(300);
+      await page.locator('button:has-text("Enregistrer")').first().click();
+      // « Enregistré » is held for 2.4 s and then fades — `SaveBar` and
+      // `useOptimisticForm` both say so. The frame has to be taken while
+      // it is up.
+      await page.waitForTimeout(800);
     }
     const shot = await capture(page, "main", ["aside"]);
     frames.push({
