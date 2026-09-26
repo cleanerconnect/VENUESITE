@@ -14,7 +14,7 @@
 // reason.
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT_LABEL, signIn } from "./lot.mjs";
+import { LOT_LABEL, clockLine, signIn } from "./lot.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 const chromium = await chromiumOrExplain();
@@ -498,5 +498,5 @@ for (const [slug, path, name] of SCREENS) {
 }
 
 writeFileSync(`${OUT}/measures.json`, JSON.stringify(report, null, 2));
-console.log(`\n${OUT}/measures.json · ${width}×${height} · ${LOT_LABEL}`);
+console.log(`\n${OUT}/measures.json · ${width}×${height} · ${LOT_LABEL} · ${clockLine()}`);
 await browser.close();

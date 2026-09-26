@@ -18,7 +18,7 @@
 
 import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { LOT, LOT_LABEL, requireWrites, signIn } from "./lot.mjs";
+import { LOT, LOT_LABEL, clockLine, requireWrites, signIn } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -118,7 +118,9 @@ const go = async (path) => {
   await settle(1100);
 };
 
-console.log(`\nParcours complet · passe ${pass} · ${LOT_LABEL} · ${width}×${height}\n`);
+console.log(
+  `\nParcours complet · passe ${pass} · ${LOT_LABEL} · ${width}×${height} · ${clockLine()}\n`,
+);
 
 /**
  * An affordance this tool drives that only Lot 1 draws.
@@ -184,6 +186,14 @@ const wantsBar = pass === "2";
 await page
   .locator(`button:has-text("${wantsBar ? "Un bar ou lounge" : "Un restaurant"}")`)
   .click();
+// The two the app's detail screen shows under the venue's name.
+await page.getByLabel("Type de cuisine").fill(
+  wantsBar ? "Cocktails d'auteur et petite restauration" : "Cuisine marocaine de saison",
+);
+await page
+  .locator('[role="radiogroup"][aria-label="Fourchette de prix"] [role="radio"]')
+  .nth(2)
+  .click();
 await page.getByLabel("Ville").selectOption("Marrakech");
 await settle(400);
 await shot("etape2");
@@ -191,7 +201,10 @@ await page.locator('button:has-text("Continuer")').first().click();
 await settle(1600);
 check("étape 3 · Adresse", (await heading()) === "Adresse");
 
-await page.getByLabel("Adresse").fill(address);
+// The quarter comes before the address: the app's header reads
+// « quartier, ville », in that order.
+await page.getByLabel("Quartier").fill("Guéliz");
+await page.getByLabel("Adresse", { exact: true }).fill(address);
 const carte = page.locator(".leaflet-container");
 check("la carte s'affiche", (await carte.count()) > 0);
 if (await carte.count()) {
@@ -224,18 +237,39 @@ const png = Buffer.from(
 );
 const file = `/tmp/couverture-${stamp}.png`;
 writeFileSync(file, png);
+// Three files on this step now — cover, second photo, carte — and the
+// cover is the first of them.
 const chooser = page.locator('input[type="file"]').first();
 if ((await chooser.count()) > 0) {
   await chooser.setInputFiles(file);
   await settle(2600);
-  check("la photo est acceptée", /Photo ajoutée/.test(await body()));
+  check("la photo est acceptée", /Photo de couverture/.test(await body()));
 } else {
   check("un sélecteur de photo existe", false);
 }
 await shot("etape4");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1600);
-check("étape 5 · Horaires", (await heading()) === "Horaires");
+check("étape 5 · Ambiance et équipements", (await heading()) === "Ambiance et équipements");
+
+// Two of the app's ambience chips, and one equipment row. The step can
+// be passed; this pass answers it, so the venue it creates carries both
+// lists and the fiche it opens is not six blank rows.
+const ambience = page.locator(
+  'fieldset:has(> legend:text-is("Ambiance")) button[role="switch"]',
+);
+check("les ambiances sont une liste fermée", (await ambience.count()) === 12, `${await ambience.count()} puces`);
+await ambience.nth(2).click();
+await ambience.nth(6).click();
+await settle(300);
+const equipment = page.locator('label:has([role="switch"])');
+check("huit équipements", (await equipment.count()) === 8, `${await equipment.count()} lignes`);
+await equipment.first().locator('[role="switch"]').click();
+await settle(300);
+await shot("etape5");
+await page.locator('button:has-text("Continuer")').first().click();
+await settle(1600);
+check("étape 6 · Horaires", (await heading()) === "Horaires");
 
 const switches = page.locator('[role="switch"]:visible');
 check("sept jours", (await switches.count()) === 7, `${await switches.count()} interrupteurs`);
@@ -246,18 +280,21 @@ await settle(400);
 await switches.nth(6).click();
 await settle(400);
 check("dimanche fermé", /Fermé/.test(await body()));
-await shot("etape5");
+await shot("etape6");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1800);
-check("étape 6 · C'est prêt", (await heading()) === "C'est prêt");
+check("étape 7 · C'est prêt", (await heading()) === "C'est prêt");
 
 const summary = await body();
 check("le récapitulatif porte le nom", summary.includes(venueName));
 check("le récapitulatif porte la ville", summary.includes("Marrakech"));
 check("le récapitulatif porte le type", summary.includes(wantsBar ? "Bar ou lounge" : "Restaurant"));
 check("le récapitulatif compte six jours", /6 jours par semaine/.test(summary));
-check("la photo est au récapitulatif", /Ajoutée/.test(summary));
-await shot("etape6");
+check("la photo est au récapitulatif", /1 photo/.test(summary));
+check("le récapitulatif porte la cuisine", /Cuisine|Cocktails/.test(summary));
+check("le récapitulatif porte le quartier", summary.includes("Guéliz"));
+check("le récapitulatif porte l'ambiance", /Ambiance/.test(summary));
+await shot("etape7");
 
 // Reopening mid-flow must not lose anything.
 await go("/inscription");
@@ -342,8 +379,8 @@ if (await nameField.count()) {
 }
 await shot("ma-fiche");
 
-// The hours tab, then the photos tab: three tabs over one record.
-for (const tab of ["Horaires", "Photos"]) {
+// Every other tab of the fiche, one record behind all of them.
+for (const tab of ["Fiche", "Horaires", "Photos", "Menu"]) {
   const trigger = page
     .locator(`button:has-text("${tab}"):visible, [role="tab"]:has-text("${tab}"):visible`)
     .first();
@@ -353,6 +390,14 @@ for (const tab of ["Horaires", "Photos"]) {
     await rendersFine(`Ma fiche · ${tab}`);
     if (tab === "Photos") {
       check("la photo de couverture est là", /couverture|Photo|photo/i.test(await body()));
+    }
+    if (tab === "Fiche") {
+      const b = await body();
+      check("la fourchette de prix est là", /Fourchette de prix/.test(b));
+      check("les équipements sont des interrupteurs", /Réservation recommandée/.test(b));
+    }
+    if (tab === "Menu") {
+      check("le Menu n'accepte qu'un fichier", /un PDF, ou jusqu'à 10 photos/.test(await body()));
     }
   } else {
     lot1Only(`Ma fiche a un onglet ${tab}`);

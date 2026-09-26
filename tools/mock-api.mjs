@@ -246,13 +246,24 @@ const ROUTES = [
       step: 2,
       venueName: "",
       venueType: "restaurant",
+      cuisine: "",
+      priceRange: 2,
       city: "",
+      district: "",
       address: "",
       latitude: null,
       longitude: null,
       coverObjectKey: "",
       coverContentType: "",
       coverSizeBytes: 0,
+      photo2ObjectKey: "",
+      photo2ContentType: "",
+      photo2SizeBytes: 0,
+      menuObjectKey: "",
+      menuContentType: "",
+      menuSizeBytes: 0,
+      ambience: [],
+      features: [],
       hours: WEEK.map((weekday) => ({
         weekday,
         closed: false,
@@ -315,9 +326,12 @@ const ROUTES = [
       ...bundle.profile,
       name: body.name,
       shortName: body.shortName,
+      tagline: body.tagline ?? "",
       description: body.description,
-      cuisine: body.category,
+      cuisine: body.cuisine ?? "",
+      category: body.category ?? "",
       address: body.address,
+      district: body.district ?? "",
       city: body.city,
       latitude: body.latitude ?? undefined,
       longitude: body.longitude ?? undefined,
@@ -563,7 +577,10 @@ function makeVenueFromDraft(draft) {
     initials,
     city: draft.city,
     subline: `${kind === "drinks" ? "Bar" : "Restaurant"} · ${draft.city}`,
-    cuisine: "",
+    cuisine: draft.cuisine ?? "",
+    category: "",
+    district: draft.district ?? "",
+    tagline: "",
     capacity: 40,
     // From the account, exactly as the database driver does.
     contactEmail: submitter?.email ?? "",
@@ -581,10 +598,10 @@ function makeVenueFromDraft(draft) {
     address: draft.address,
     latitude: draft.latitude ?? undefined,
     longitude: draft.longitude ?? undefined,
-    priceRange: 2,
+    priceRange: draft.priceRange ?? 2,
     tags: [],
-    features: [],
-    ambience: [],
+    features: draft.features ?? [],
+    ambience: draft.ambience ?? [],
   };
 
   // Built from an existing bundle so every field the types require is
@@ -616,21 +633,38 @@ function makeVenueFromDraft(draft) {
   bundle.dayBooks = {};
   bundle.customers = [];
   bundle.notifications = [];
-  bundle.photos = draft.coverObjectKey
+  // Both photos, in the order the steps collected them: the carousel is
+  // a list, and the double has to hand back a list or the HTTP driver is
+  // the one mode where Ma fiche's Photos tab looks different.
+  bundle.photos = [
+    [draft.coverObjectKey, draft.coverContentType, draft.coverSizeBytes],
+    [draft.photo2ObjectKey, draft.photo2ContentType, draft.photo2SizeBytes],
+  ]
+    .filter(([key]) => key)
+    .map(([objectKey, contentType, sizeBytes], position) => ({
+      id: `ast_${randomUUID().slice(0, 10)}`,
+      venueId,
+      kind: "photo",
+      objectKey,
+      contentType: contentType || "image/jpeg",
+      sizeBytes: sizeBytes || 0,
+      position,
+      createdAt: isoNow(),
+    }));
+  bundle.menuFiles = draft.menuObjectKey
     ? [
         {
           id: `ast_${randomUUID().slice(0, 10)}`,
           venueId,
-          kind: "photo",
-          objectKey: draft.coverObjectKey,
-          contentType: draft.coverContentType || "image/jpeg",
-          sizeBytes: draft.coverSizeBytes || 0,
+          kind: "menu_file",
+          objectKey: draft.menuObjectKey,
+          contentType: draft.menuContentType || "application/pdf",
+          sizeBytes: draft.menuSizeBytes || 0,
           position: 0,
           createdAt: isoNow(),
         },
       ]
     : [];
-  bundle.menuFiles = [];
   bundle.menuItems = [];
   bundle.staff = [];
   bundle.availability = {

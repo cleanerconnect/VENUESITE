@@ -2,9 +2,9 @@
 
 // Onboarding — « Création de Venue », Planning V3 sprint Prio 02.
 //
-// Six steps, and the only state the browser holds is which draft it is
-// filling. Everything else lives on the seam: the account from step 1,
-// the answers after every step. Closing the tab loses nothing, and
+// Seven steps, and the only state the browser holds is which draft it
+// is filling. Everything else lives on the seam: the account from step
+// 1, the answers after every step. Closing the tab loses nothing, and
 // signing back in later reopens the flow where it stopped.
 //
 // The draft id is in an httpOnly cookie because it is a capability —
@@ -23,6 +23,10 @@ import { storageDriver } from "@/lib/assets";
 import { describeAssetError, validateAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
 import { ONBOARDING_LAST_STEP, isOnboardingCity } from "@/lib/types/onboarding";
+import {
+  VENUE_AMBIENCE,
+  VENUE_FEATURE,
+} from "@/lib/types/restaurant";
 import { PRESENCE_COOKIE, USER_COOKIE, VENUE_COOKIE } from "@/lib/auth/server-session";
 
 const DRAFT_COOKIE = "lyfe.inscription";
@@ -131,7 +135,7 @@ export async function signUpPartner(input: {
   }
 }
 
-// ── Steps 2 to 5 ─────────────────────────────────────────────
+// ── Steps 2 to 6 ─────────────────────────────────────────────
 
 export async function saveOnboardingStep(
   patch: OnboardingDraftPatch,
@@ -150,6 +154,30 @@ export async function saveOnboardingStep(
       message: "Choisissez une ville dans la liste.",
     };
   }
+  // The same rule, one field over. Every closed list on a step is
+  // closed here as well, and the two free-text answers are bounded:
+  // this is the only door onto the draft, so it is the only place the
+  // promise those controls make can be kept.
+  if (patch.priceRange !== undefined && ![1, 2, 3, 4].includes(patch.priceRange)) {
+    return { ok: false, field: "priceRange", message: "Choisissez une fourchette de prix." };
+  }
+  if (patch.cuisine !== undefined && patch.cuisine.length > 120) {
+    return { ok: false, field: "cuisine", message: "120 caractères au maximum." };
+  }
+  if (patch.district !== undefined && patch.district.length > 80) {
+    return { ok: false, field: "district", message: "80 caractères au maximum." };
+  }
+  if (patch.ambience !== undefined) {
+    if (patch.ambience.length > 5) {
+      return { ok: false, field: "ambience", message: "5 ambiances au maximum." };
+    }
+    if (patch.ambience.some((a) => !(a in VENUE_AMBIENCE))) {
+      return { ok: false, field: "ambience", message: "Ambiance inconnue." };
+    }
+  }
+  if (patch.features !== undefined && patch.features.some((f) => !(f in VENUE_FEATURE))) {
+    return { ok: false, field: "features", message: "Équipement inconnu." };
+  }
   try {
     const draft = await getRestaurantRepository().saveOnboardingDraft(id, patch);
     return { ok: true, draft };
@@ -162,13 +190,21 @@ export async function saveOnboardingStep(
 }
 
 /**
- * Step 4 · a ticket for the cover photo.
+ * Step 4 · a ticket for one of the three files it can take.
  *
- * Minted against the draft rather than a venue, because there is no
- * venue yet: the file is written under the draft's own namespace and the
- * asset row that points at it is created with the venue at step 6.
+ * Two photos and the carte. Minted against the draft rather than a
+ * venue, because there is no venue yet: the file is written under the
+ * draft's own namespace and the asset rows that point at the files are
+ * created with the venue at the last step.
+ *
+ * `slot` decides the rules the file is held to, not just where it
+ * lands: a carte may be a PDF and a photo may not, and the ceiling on a
+ * carte is 20 Mo against a photo's 8.
  */
-export async function requestCoverUpload(input: {
+export type DraftUploadSlot = "cover" | "photo2" | "menu";
+
+export async function requestDraftUpload(input: {
+  slot: DraftUploadSlot;
   filename: string;
   contentType: string;
   sizeBytes: number;
@@ -179,12 +215,13 @@ export async function requestCoverUpload(input: {
   const id = (await cookies()).get(DRAFT_COOKIE)?.value;
   if (!id) return { ok: false, message: "Reprenez l'inscription depuis le début." };
 
-  const invalid = validateAsset("photo", input.contentType, input.sizeBytes);
+  const kind = input.slot === "menu" ? "menu_file" : "photo";
+  const invalid = validateAsset(kind, input.contentType, input.sizeBytes);
   if (invalid) return { ok: false, message: describeAssetError(invalid) };
 
   const ticket = await storageDriver().createUploadTicket({
     venueId: id,
-    kind: "photo",
+    kind,
     filename: input.filename,
     contentType: input.contentType,
     sizeBytes: input.sizeBytes,
@@ -198,7 +235,7 @@ export async function requestCoverUpload(input: {
   };
 }
 
-// ── Step 6 · C'est prêt ──────────────────────────────────────
+// ── Step 7 · C'est prêt ──────────────────────────────────────
 
 /**
  * Makes the venue, then signs the partner in on it.
@@ -219,8 +256,8 @@ export async function finishOnboarding(): Promise<
     const draft = await repo.getOnboardingDraft(id);
     if (!draft) return { ok: false, message: "Reprenez l'inscription depuis le début." };
     // The three answers the app cannot list a venue without. Everything
-    // else on the six steps is optional, and this is where that promise
-    // is kept or broken.
+    // else on the seven steps is optional, and this is where that
+    // promise is kept or broken.
     if (!draft.venueName.trim() || !draft.city.trim() || !draft.address.trim()) {
       return {
         ok: false,
@@ -233,8 +270,8 @@ export async function finishOnboarding(): Promise<
 
     const options = { path: "/", maxAge: THIRTY_DAYS, sameSite: "lax" as const };
     // Same rules as the sign-in action: signed, httpOnly, secure in
-    // production. A partner who has just finished the six steps is
-    // signed in exactly the way one who typed a password is.
+    // production. A partner who has just finished the flow is signed in
+    // exactly the way one who typed a password is.
     jar.set(PRESENCE_COOKIE, "1", presenceCookie(true));
     jar.set(USER_COOKIE, sign(draft.ownerId), identityCookie(true));
     jar.set(VENUE_COOKIE, sign(venueId), identityCookie(true));

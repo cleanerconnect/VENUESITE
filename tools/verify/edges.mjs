@@ -15,7 +15,7 @@
 
 import { chromiumOrExplain } from "./browser.mjs";
 import { writeFileSync } from "node:fs";
-import { LOT_LABEL, requireWrites, signIn as sharedSignIn } from "./lot.mjs";
+import { LOT_LABEL, clockLine, requireWrites, signIn as sharedSignIn } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -81,7 +81,7 @@ const openPending = async () => {
   }
 };
 
-console.log(`\nCas limites · ${LOT_LABEL} · ${width}×${height}\n`);
+console.log(`\nCas limites · ${LOT_LABEL} · ${width}×${height} · ${clockLine()}\n`);
 
 // ── 1. A mistyped password ──────────────────────────────────
 await signIn("yassine@darzellij.ma", "pasledemo");
@@ -241,6 +241,32 @@ if (await photosTab.count()) {
   }
 } else {
   check("Ma fiche a un onglet Photos", false);
+}
+
+// ── 7 bis. The carte, and what it will not take ─────────────
+// The Menu tab is a file and nothing else. Its ceiling is ten, and it
+// says so before the partner picks rather than after the eleventh
+// upload — which is the only moment the number would otherwise appear.
+const menuTab = page
+  .locator('button:has-text("Menu"):visible, [role="tab"]:has-text("Menu"):visible')
+  .first();
+if (await menuTab.count()) {
+  await menuTab.click();
+  await settle(1200);
+  const shown = await text();
+  check("l'onglet Menu annonce son plafond", /jusqu'à 10 photos/.test(shown));
+  check("et n'offre pas d'éditeur de plats", !/Ajouter un plat|Prix du plat/i.test(shown));
+  const accept = await page
+    .locator('input[type="file"]')
+    .first()
+    .getAttribute("accept");
+  check(
+    "il accepte un PDF et des images, rien d'autre",
+    (accept ?? "") === "application/pdf,image/jpeg,image/png",
+    accept ?? "aucun",
+  );
+} else {
+  check("Ma fiche a un onglet Menu", false);
 }
 
 // ── 8. The bar vocabulary ───────────────────────────────────

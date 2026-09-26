@@ -31,11 +31,17 @@ export interface OnboardingDay {
 export interface OnboardingDraft {
   id: string;
   ownerId: string;
-  /** 1–6, the furthest step reached. */
+  /** 1–7, the furthest step reached. */
   step: number;
   venueName: string;
   venueType: OnboardingVenueType;
+  /** « Type de cuisine ». Free text, asked beside the name on step 2. */
+  cuisine: string;
+  /** 1–4, the band the app shows as € to €€€€. */
+  priceRange: number;
   city: string;
+  /** « Quartier ». The app prints it before the city. */
+  district: string;
   address: string;
   latitude: number | null;
   longitude: number | null;
@@ -43,6 +49,17 @@ export interface OnboardingDraft {
   coverObjectKey: string;
   coverContentType: string;
   coverSizeBytes: number;
+  /** A second photo, also optional: two make a carousel, one a header. */
+  photo2ObjectKey: string;
+  photo2ContentType: string;
+  photo2SizeBytes: number;
+  /** The carte, as one file — a PDF, or a photograph of it. */
+  menuObjectKey: string;
+  menuContentType: string;
+  menuSizeBytes: number;
+  /** Step 5's two lists, as ids from `@/lib/types/restaurant`. */
+  ambience: string[];
+  features: string[];
   hours: OnboardingDay[];
   /** Set once the venue exists. A spent draft cannot make a second one. */
   submittedVenueId: string | null;
@@ -50,22 +67,33 @@ export interface OnboardingDraft {
 }
 
 /**
- * The six steps, and two names each.
+ * The seven steps, and two names each.
  *
  * `name` is the question, and it heads the card. `short` is the label
- * under its segment of the progress bar, where six names share the
+ * under its segment of the progress bar, where seven names share the
  * width and « Votre établissement » becomes « Votre établiss… ».
+ *
+ * Step 5 was added between Photos and Horaires because the app's detail
+ * screen draws an « Equipements » list and an ambience line, and until
+ * now nothing asked for either — a partner finished the flow and their
+ * listing showed six blank rows. It is `optional`, and the flow says so
+ * out loud: a place that has not decided whether it is « intimiste » is
+ * not a place that should be stopped from opening its dashboard.
  */
 export const ONBOARDING_STEPS = [
   { n: 1, name: "Vous", short: "Vous" },
   { n: 2, name: "Votre établissement", short: "Établissement" },
   { n: 3, name: "Adresse", short: "Adresse" },
   { n: 4, name: "Photos", short: "Photos" },
-  { n: 5, name: "Horaires", short: "Horaires" },
-  { n: 6, name: "C'est prêt", short: "C'est prêt" },
+  { n: 5, name: "Ambiance et équipements", short: "Ambiance" },
+  { n: 6, name: "Horaires", short: "Horaires" },
+  { n: 7, name: "C'est prêt", short: "C'est prêt" },
 ] as const;
 
-export const ONBOARDING_LAST_STEP = 6;
+export const ONBOARDING_LAST_STEP = 7;
+
+/** The steps the partner may walk past without answering. */
+export const ONBOARDING_OPTIONAL_STEPS: number[] = [4, 5];
 
 /**
  * The cities LYFE opens in, and a closed list on purpose.

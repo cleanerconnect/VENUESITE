@@ -71,16 +71,23 @@ export interface NoShowInput {
 /**
  * What Ma fiche's Identité form writes.
  *
- * A patch rather than a whole `RestaurantProfile`: the form owns twelve
- * fields, and sending back the fifty the read returns would let a stale
- * tab overwrite a tag list it never showed.
+ * A patch rather than a whole `RestaurantProfile`: the form owns what
+ * it draws, and sending back the fifty fields the read returns would
+ * let a stale tab overwrite a tag list it never showed.
  */
 export interface VenueProfilePatch {
   name: string;
   shortName: string;
+  /** One line on the app's list cards, 60 characters. */
+  tagline: string;
   description: string;
+  /** « Type de cuisine » — what the kitchen cooks. */
+  cuisine: string;
+  /** « Catégorie » — what kind of establishment this is. */
   category: string;
   address: string;
+  /** « Quartier », which the app prints before the city. */
+  district: string;
   city: string;
   latitude: number | null;
   longitude: number | null;
@@ -138,13 +145,24 @@ export type OnboardingDraftPatch = Partial<
     | "step"
     | "venueName"
     | "venueType"
+    | "cuisine"
+    | "priceRange"
     | "city"
+    | "district"
     | "address"
     | "latitude"
     | "longitude"
     | "coverObjectKey"
     | "coverContentType"
     | "coverSizeBytes"
+    | "photo2ObjectKey"
+    | "photo2ContentType"
+    | "photo2SizeBytes"
+    | "menuObjectKey"
+    | "menuContentType"
+    | "menuSizeBytes"
+    | "ambience"
+    | "features"
     | "hours"
   >
 >;

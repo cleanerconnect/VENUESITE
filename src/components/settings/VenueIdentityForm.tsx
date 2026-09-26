@@ -7,6 +7,7 @@ import { PinMap } from "@/components/map/PinMap";
 import { SaveBar } from "@/components/forms/SaveBar";
 import { useOptimisticForm } from "@/lib/forms/useOptimisticForm";
 import { saveVenueIdentity, type VenueIdentityInput } from "@/app/actions/venue";
+import { TAGLINE_MAX } from "@/lib/types/restaurant";
 
 export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) {
   const form = useOptimisticForm({
@@ -45,6 +46,22 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
           })}
         </div>
 
+        {/* The one line the app's list cards have room for. Counted
+            down rather than silently truncated: 60 characters is the
+            card's width, and a partner who runs out should find that
+            out while writing, not when their sentence ends in « … » on
+            somebody's phone. */}
+        <div className="mt-4">
+          {text("tagline", "Accroche", {
+            hint: `Une ligne sur les cartes de l'application. ${Math.max(
+              0,
+              TAGLINE_MAX - form.value.tagline.length,
+            )} caractère${TAGLINE_MAX - form.value.tagline.length > 1 ? "s" : ""} restant${
+              TAGLINE_MAX - form.value.tagline.length > 1 ? "s" : ""
+            }.`,
+          })}
+        </div>
+
         <div className="mt-4">
           <Textarea
             label="Description"
@@ -55,14 +72,22 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
           />
         </div>
 
-        {/* Restaurant or Bar is not something an owner changes on a
-            Tuesday — it decides the vocabulary of the whole portal, and
-            it is settled when the venue is created. Two chips asking the
-            question again on the fiche only invited a mis-tap that
-            renames every screen. The stored value is kept and simply not
-            asked for. */}
-        <div className="mt-4 md:max-w-[50%]">
-          {text("category", "Catégorie", { hint: "Ex. Marocaine contemporaine" })}
+        {/* Two questions, and the app asks both: « Type de cuisine »
+            is what the kitchen cooks, « Catégorie » is what kind of
+            place this is. They were one field, so the fiche could only
+            answer one of the two lines the detail screen draws.
+
+            Restaurant or Bar is a third thing again, and not something
+            an owner changes on a Tuesday — it decides the vocabulary of
+            the whole portal and is settled when the venue is created.
+            The stored value is kept and simply not asked for. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          {text("cuisine", "Type de cuisine", {
+            hint: "Ex. Cuisine marocaine contemporaine, tajines et pastilla",
+          })}
+          {text("category", "Catégorie", {
+            hint: "Ex. Restaurant gastronomique, riad",
+          })}
         </div>
       </Card>
 
@@ -70,6 +95,9 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
         <h2 className="text-h3 text-ink mb-4">Adresse et contact</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {text("address", "Adresse")}
+          {/* Before the city, because that is the order the app prints
+              them in: its header reads « El cenador, Casablanca ». */}
+          {text("district", "Quartier", { hint: "Ex. Médina, Gauthier, Guéliz" })}
           {text("city", "Ville")}
           {text("contactPhone", "Téléphone")}
           {text("contactEmail", "E-mail")}

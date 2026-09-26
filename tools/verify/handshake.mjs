@@ -20,7 +20,7 @@
 // backend on API with the same DATABASE_URL.
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT, LOT_LABEL, requireSharedDatabase } from "./lot.mjs";
+import { LOT, LOT_LABEL, clockLine, requireSharedDatabase } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -92,7 +92,9 @@ const settle = (ms = 900) => page.waitForTimeout(ms);
 const heading = async () => ((await page.locator("h1").first().textContent().catch(() => "")) ?? "").trim();
 const bodyText = async () => (await page.innerText("body").catch(() => "")) ?? "";
 
-console.log(`\nPoignée de main · tableau de bord ↔ application · ${LOT_LABEL}\n`);
+console.log(
+  `\nPoignée de main · tableau de bord ↔ application · ${LOT_LABEL} · ${clockLine()}\n`,
+);
 
 // ── 1. A venue, created by a partner who had no account ─────
 const stamp = Date.now().toString(36);
@@ -114,13 +116,18 @@ await page.getByLabel("Ville").selectOption("Casablanca");
 await settle(400);
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1600);
-await page.getByLabel("Adresse").fill("41 rue Tahar Sebti, Casablanca");
+await page.getByLabel("Quartier").fill("Gauthier");
+await page.getByLabel("Adresse", { exact: true }).fill("41 rue Tahar Sebti, Casablanca");
 const carte = page.locator(".leaflet-container");
 if (await carte.count()) {
   await carte.click({ position: { x: 150, y: 110 } });
   await settle(500);
 }
 await page.locator('button:has-text("Continuer")').first().click();
+await settle(1600);
+// Photos, then ambience and equipment: both steps say they can be
+// passed, and this tool is about the booking, not the listing.
+await page.locator('button:has-text("Passer cette étape")').click();
 await settle(1600);
 await page.locator('button:has-text("Passer cette étape")').click();
 await settle(1600);

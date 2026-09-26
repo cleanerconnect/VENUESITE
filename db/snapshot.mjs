@@ -18,6 +18,15 @@ import { dirname, resolve } from "node:path";
 
 process.env.LYFE_DB_PATH ??= resolve(".data/lyfe.db");
 
+// The same clock the seed was written on. The snapshot captures screen
+// payloads — the greeting, the service in hand, what is « today » — so
+// a capture taken at 03h17 of a dataset built for 20h30 is a static
+// dataset whose Accueil says the service is over.
+const { installDemoClock, toolClock } = await import(
+  "../src/lib/time/demo-clock-shared.mjs"
+);
+installDemoClock(toolClock());
+
 // The store modules are marked `server-only`, which throws outside a
 // React server context. This is a build script, not a client — stub the
 // guard before anything imports it.
