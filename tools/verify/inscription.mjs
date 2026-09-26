@@ -232,7 +232,15 @@ check(
 // or the step that collected it was theatre.
 check("le récapitulatif porte la cuisine", summary.includes("Cocktails d'auteur et mezzés"));
 check("le récapitulatif porte le quartier", summary.includes("Médina"));
-check("le récapitulatif porte la fourchette de prix", /€€€(?!€)/.test(summary), summary.match(/€+/g)?.join(" ") ?? "");
+// The band names itself in dirhams now, not in euro glyphs: « €€€ »
+// asked the partner to guess what three of them meant, and priced a
+// Marrakech riad in a currency nobody at the table uses.
+check(
+  "le récapitulatif porte la fourchette de prix",
+  /300 à 500 MAD/.test(summary),
+  summary.split("\n").find((l) => /MAD/.test(l)) ?? "",
+);
+check("et plus aucun glyphe d'euro", !summary.includes("€"), summary.match(/€+/g)?.join(" ") ?? "aucun");
 check("le récapitulatif porte l'ambiance", summary.includes("Élégant"));
 
 // ── Step 7 · the establishment exists, and it is theirs ──

@@ -58,7 +58,9 @@ export function OpeningHoursForm({ initial }: { initial: VenueAvailability }) {
   const [message, setMessage] = useState<string | null>(null);
 
   const slotOf = (slot: AvailabilitySlot) => drafts[slot.id] ?? slot;
-  const dirty = Object.keys(drafts).length > 0;
+  // One draft per service touched, which is what the bar counts.
+  const dirtyCount = Object.keys(drafts).length;
+  const dirty = dirtyCount > 0;
 
   const edit = (slot: AvailabilitySlot, patch: Partial<AvailabilitySlot>) => {
     const next = { ...slotOf(slot), ...patch };
@@ -147,7 +149,7 @@ export function OpeningHoursForm({ initial }: { initial: VenueAvailability }) {
 
                 <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
                   <label className="block">
-                    <span className="mb-1.5 block text-[14px] font-semibold text-ink">
+                    <span className="text-field-label mb-2 block">
                       Ouverture
                     </span>
                     <TimeSelect
@@ -156,7 +158,7 @@ export function OpeningHoursForm({ initial }: { initial: VenueAvailability }) {
                     />
                   </label>
                   <label className="block">
-                    <span className="mb-1.5 block text-[14px] font-semibold text-ink">
+                    <span className="text-field-label mb-2 block">
                       Fermeture
                     </span>
                     <TimeSelect
@@ -165,7 +167,7 @@ export function OpeningHoursForm({ initial }: { initial: VenueAvailability }) {
                     />
                   </label>
                   <label className="block">
-                    <span className="mb-1.5 block text-[14px] font-semibold text-ink">
+                    <span className="text-field-label mb-2 block">
                       Couverts
                     </span>
                     <input
@@ -173,14 +175,14 @@ export function OpeningHoursForm({ initial }: { initial: VenueAvailability }) {
                       min={0}
                       value={String(draft.capacity)}
                       onChange={(e) => edit(slot, { capacity: Number(e.target.value) })}
-                      className="block h-11 w-full rounded-[var(--radius-sm)] border border-line bg-surface px-3.5 num text-body text-ink transition-colors focus:border-ink focus:outline-none"
+                      className="block h-12 w-full rounded-[var(--radius-sm)] border border-line bg-surface px-3.5 num text-body text-ink transition-colors focus:border-ink focus:outline-none"
                     />
                   </label>
                   {/* On the same line as the window it opens or closes:
                       a switch a row above its own fields reads as if it
                       belonged to the row below. */}
-                  <span className="flex h-11 items-center gap-2.5 sm:justify-end">
-                    <span className="text-[14px] font-semibold text-ink-soft">
+                  <span className="flex h-12 items-center gap-2.5 sm:justify-end">
+                    <span className="text-field-label">
                       {draft.enabled ? "Ouvert" : "Fermé"}
                     </span>
                     <Switch
@@ -207,6 +209,7 @@ export function OpeningHoursForm({ initial }: { initial: VenueAvailability }) {
       <SaveBar
         state={state}
         dirty={dirty}
+        dirtyCount={dirtyCount}
         message={message}
         onSave={() => void save()}
         onReset={() => {
@@ -291,12 +294,13 @@ function ClosuresCard({
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        {/* A native date input draws its own value and its own placeholder
-            inside the border, so a floating label lands on top of
-            `mm/dd/yyyy`. This one names the field above it and leaves the
-            picker the whole box. */}
+        {/* A native date input draws its own value and its own
+            placeholder inside the border, which is the case that made
+            the floating label untenable: it landed on top of
+            `mm/dd/yyyy`. Every field names itself above the box now —
+            this one always did. */}
         <label className="block w-[200px]">
-          <span className="mb-1.5 block text-[14px] font-semibold text-ink">
+          <span className="text-field-label mb-2 block">
             Date
           </span>
           <input
@@ -304,14 +308,14 @@ function ClosuresCard({
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className={cn(
-              "block h-11 w-full rounded-[var(--radius-sm)] border bg-surface px-3.5 num",
+              "block h-12 w-full rounded-[var(--radius-sm)] border bg-surface px-3.5 num",
               "text-body text-ink transition-colors focus:border-ink focus:outline-none",
               error ? "border-danger/60" : "border-line",
             )}
           />
         </label>
         <label className="block min-w-[200px] flex-1">
-          <span className="mb-1.5 block text-[14px] font-semibold text-ink">
+          <span className="text-field-label mb-2 block">
             Motif
           </span>
           <input
@@ -319,7 +323,7 @@ function ClosuresCard({
             value={reason}
             placeholder="Privatisation, congés…"
             onChange={(e) => setReason(e.target.value)}
-            className="block h-11 w-full rounded-[var(--radius-sm)] border border-line bg-surface px-3.5 text-body text-ink transition-colors placeholder:text-ink-mute focus:border-ink focus:outline-none"
+            className="block h-12 w-full rounded-[var(--radius-sm)] border border-line bg-surface px-3.5 text-body text-ink transition-colors placeholder:text-ink-mute focus:border-ink focus:outline-none"
           />
         </label>
         <Button onClick={add} disabled={!date || busy}>

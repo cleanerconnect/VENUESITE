@@ -227,6 +227,28 @@ body {
   line-height: 1.4;
   font-weight: 500;
 }
+/* The one way a form field is named.
+   ─────────────────────────────────────────────────────────────
+   There were four: a floating `motion.label` inside the Input, an
+   eyebrow in Select, a different eyebrow in Field, and field-weight
+   body text in Textarea and the spec blocks. Four ways of naming a
+   field in one form reads as four kinds of field — and the floating one
+   could sit on top of its own value, which is how a date input showed
+   « Ouverture » across « mm/dd/yyyy ».
+   13px so it clears the host-density floor without stepping on the
+   16px value beneath it, and ink at 70% rather than a grey, so
+   secondary text stays in the ink's family. Both densities, one value:
+   a pattern that changes size between lots is two patterns. */
+.text-field-label {
+  font-size: 13px;
+  /* 18px rather than 1.4: a fractional line box turns the 8px gap
+     below it into 8.2, which measures as 9 and reads as a rhythm that
+     is nearly on the scale. Whole pixels, so the gap is the gap. */
+  line-height: 18px;
+  font-weight: 600;
+  color: rgb(10 31 61 / 0.70);
+}
+
 .text-eyebrow {
   font-size: 11px;
   line-height: 1;

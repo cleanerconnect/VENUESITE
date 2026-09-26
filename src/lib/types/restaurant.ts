@@ -99,7 +99,7 @@ export interface RestaurantProfile {
   address: string;
   latitude?: number;
   longitude?: number;
-  /** 1–4, rendered in the app as € to €€€€. */
+  /** 1–4; `PRICE_RANGE_LABEL` turns it into the MAD range the app prints. */
   priceRange: number;
   /** Search and filter facets in the app. */
   tags: string[];
@@ -223,11 +223,25 @@ export const TAGLINE_MAX = 60;
  */
 export const MENU_FILE_MAX = 10;
 
+/**
+ * The band, in the currency the guest will actually pay in.
+ *
+ * It was `€ · économique` through `€€€€ · gastronomique`. Four euro
+ * glyphs price a Marrakech riad in a currency nobody at the table uses,
+ * and « €€€ » asks the partner to guess what three of them mean — the
+ * number is the whole point of the question. The app's own detail
+ * screen prints the range (`price_range_label` in the restaurant
+ * payload, `PRICE_RANGE_HINT` in the FastAPI backend), so this is now
+ * the same sentence the partner will see there.
+ *
+ * Per person; the forms that show the band say so once, above it,
+ * rather than four times inside it.
+ */
 export const PRICE_RANGE_LABEL: Record<number, string> = {
-  1: "€ · économique",
-  2: "€€ · modéré",
-  3: "€€€ · haut de gamme",
-  4: "€€€€ · gastronomique",
+  1: "Moins de 150 MAD · économique",
+  2: "150 à 300 MAD · modéré",
+  3: "300 à 500 MAD · haut de gamme",
+  4: "Plus de 500 MAD · gastronomique",
 };
 
 // ── Service ──────────────────────────────────────────────────

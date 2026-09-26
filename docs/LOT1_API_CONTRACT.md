@@ -451,7 +451,7 @@ fiche de l'application (`yEBXM5UoNTQI7MKc9sMB9y`, cadres `827:237` et
 | `cuisine` | « Type de cuisine », et le sous-titre sous le nom du lieu |
 | `category` | « Catégorie » — le genre d'établissement, une ligne plus bas |
 | `district` | « El cenador, Casablanca » : le quartier, **avant** la ville |
-| `priceRange` | « Fourchette de prix », quatre niveaux, de € à €€€€ |
+| `priceRange` | « Fourchette de prix », quatre niveaux, nommés par leur fourchette en MAD par personne — « Moins de 150 MAD · économique » à « Plus de 500 MAD · gastronomique » |
 
 `cuisine` et `category` étaient **une seule colonne**, et la fiche ne
 pouvait donc répondre qu'à une des deux lignes que l'écran dessine. La
@@ -1104,9 +1104,9 @@ Les clés, telles quelles :
 | `tagline` | `venues.tagline` | la ligne des cartes de liste, 60 caractères |
 | `district` | `venues.district` | « El cenador, … » — le quartier |
 | `city` | `venues.city` | « …, Casablanca » — la ville, après le quartier |
-| `price_range` | `venues.price_range` | € à €€€€ |
+| `price_range` | `venues.price_range` | 1 à 4 |
 | `price_level` | idem, en entier 1–4 | le filtre de recherche |
-| `price_range_label` | idem, en phrase | « Environ + 500 MAD par personne » |
+| `price_range_label` | idem, en phrase | « Plus de 500 MAD par personne » |
 | `photos[]` | `venue_assets` `kind='photo'`, par `position` | le carrousel ; `image` reste la première |
 | `menu[]` | `venue_assets` `kind='menu_file'`, par `position` | ce qu'ouvre la pastille « Menu » — `{ url, content_type }` |
 | `ambience[]` | `venue_tags` `kind='ambience'` | « Ambiance : Élégant, minimaliste, moderne » — `{ id, label }` |

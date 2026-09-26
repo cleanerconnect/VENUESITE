@@ -150,10 +150,10 @@ function ChipLegend({
   max?: number;
 }) {
   return (
-    <legend className="text-eyebrow text-ink-soft mb-2.5 flex items-center gap-2">
+    <legend className="text-field-label mb-2 flex items-center gap-2">
       {label}
       {typeof max === "number" ? (
-        <span className="num font-medium text-ink-mute normal-case tracking-normal">
+        <span className="num font-medium text-ink-mute">
           {count}/{max}
         </span>
       ) : null}

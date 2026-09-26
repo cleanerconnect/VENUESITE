@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useId } from "react";
 import { cn } from "@/lib/utils/cn";
+import { FieldLabel } from "./FieldLabel";
 
 // A labelled control with its error.
 //
@@ -34,11 +35,10 @@ export function Field({
   const describedBy = error ? errorId : hint ? hintId : undefined;
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      <label htmlFor={id} className="text-eyebrow text-ink-mute">
+    <div className={cn("flex flex-col gap-2", className)}>
+      <FieldLabel htmlFor={id} required={required}>
         {label}
-        {required ? <span className="text-danger ml-1">*</span> : null}
-      </label>
+      </FieldLabel>
       {children({ id, "aria-invalid": Boolean(error), "aria-describedby": describedBy })}
       {error ? (
         <p id={errorId} className="text-meta text-danger">

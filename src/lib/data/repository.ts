@@ -99,7 +99,7 @@ export interface VenueProfilePatch {
 
 /** What the Fiche form writes. Lot 2 — the curated listing. */
 export interface VenueListingPatch {
-  /** 1–4, rendered in the app as € to €€€€. */
+  /** 1–4; `PRICE_RANGE_LABEL` turns it into the MAD range the app prints. */
   priceRange: number;
   tags: string[];
   features: string[];

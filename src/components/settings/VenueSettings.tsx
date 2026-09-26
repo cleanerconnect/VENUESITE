@@ -43,7 +43,7 @@ type SectionId =
 // buying it an editor it will not use is worse than buying it nothing.
 const SECTIONS: { id: SectionId; label: string; minRole: PortalRole[] }[] = [
   { id: "identity", label: "Identité", minRole: ["owner", "manager"] },
-  { id: "listing", label: "Fiche", minRole: ["owner", "manager"] },
+  { id: "listing", label: "Détails", minRole: ["owner", "manager"] },
   { id: "menu", label: "Carte", minRole: ["owner", "manager"] },
   { id: "hours", label: "Horaires", minRole: ["owner", "manager"] },
   { id: "media", label: "Photos", minRole: ["owner", "manager"] },

@@ -27,6 +27,7 @@ export const TYPE_UTILITIES = [
   "h3",
   "body",
   "meta",
+  "field-label",
   "eyebrow",
   "nav",
   "mono",

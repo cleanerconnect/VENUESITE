@@ -11,7 +11,7 @@
 //   Ambiance : Elégant, minimaliste, moderne              → AmbienceChips
 //   Equipements : six rows with icons                     → FeatureSwitches
 //
-// The band is four levels because the app prints € to €€€€ and nothing
+// The band is four levels because the app prints four ranges and nothing
 // in between; the ambience is a closed list because the app groups on
 // the string; the equipment is switches rather than chips because each
 // one is a yes-or-no fact about the room, and a chip that is simply
@@ -30,13 +30,15 @@ import {
 
 export const PRICE_BANDS = [1, 2, 3, 4];
 
-/** Roughly what a cover costs, so the band is a fact and not a mood. */
-export const PRICE_BAND_HINT: Record<number, string> = {
-  1: "moins de 150 MAD par personne",
-  2: "150 à 300 MAD",
-  3: "300 à 500 MAD",
-  4: "plus de 500 MAD",
-};
+/**
+ * What the band means for a table of one.
+ *
+ * The range itself moved up into `PRICE_RANGE_LABEL`, where the euro
+ * glyphs used to be — a partner choosing a band is choosing a number of
+ * dirhams, so the number is the label. What is left under it is the
+ * unit, which is the one thing the range on its own does not say.
+ */
+export const PRICE_BAND_HINT = "par personne";
 
 export function PriceBand({
   value,
@@ -72,7 +74,7 @@ export function PriceBand({
               )}
             >
               <span className="text-body font-semibold">{PRICE_RANGE_LABEL[band]}</span>
-              <span className="text-meta text-ink-mute">{PRICE_BAND_HINT[band]}</span>
+              <span className="text-meta text-ink-mute">{PRICE_BAND_HINT}</span>
             </button>
           );
         })}

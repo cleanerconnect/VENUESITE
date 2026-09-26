@@ -2,8 +2,10 @@
 //
 //   BASE=http://localhost:3230 node tools/figma/capture-frames.mjs
 //
-// Page 09 of the Figma file is the seven Lot 1 screens, and it is not
-// drawn by hand: every frame on it is this capture, replayed. The tree
+// Page 09 of the Figma file is the seven Lot 1 screens. The five
+// sections a partner types into — Connexion, Ma fiche, Disponibilités,
+// Notifications and l'inscription — are not drawn by hand: every frame
+// in them is this capture, replayed by `replay-page09.js`. The tree
 // below is the *rendered* one — the boxes the browser actually painted,
 // with their measured geometry, their fills and their type — so a frame
 // in Figma cannot claim a field the screen does not have, and a field
@@ -32,7 +34,7 @@ const OUT = process.env.OUT ?? "docs/lot1-figma-frames.json";
  */
 const FRAMES = [
   { key: "ma-fiche-identite", path: "/restaurant/ma-fiche", name: "Ma fiche", session: true },
-  { key: "ma-fiche-fiche", path: "/restaurant/ma-fiche", name: "Ma fiche · Fiche", session: true, tab: "Fiche" },
+  { key: "ma-fiche-details", path: "/restaurant/ma-fiche", name: "Ma fiche · Détails", session: true, tab: "Détails" },
   { key: "ma-fiche-horaires", path: "/restaurant/ma-fiche", name: "Ma fiche · Horaires", session: true, tab: "Horaires" },
   { key: "ma-fiche-photos", path: "/restaurant/ma-fiche", name: "Ma fiche · Photos", session: true, tab: "Photos" },
   { key: "ma-fiche-menu", path: "/restaurant/ma-fiche", name: "Ma fiche · Menu", session: true, tab: "Menu" },
@@ -44,12 +46,50 @@ const FRAMES = [
   {
     key: "ma-fiche-enregistre",
     path: "/restaurant/ma-fiche",
-    name: "Ma fiche · Fiche · Enregistré",
+    name: "Ma fiche · Détails · Enregistré",
     session: true,
-    tab: "Fiche",
+    tab: "Détails",
     save: true,
   },
+  // « Ma fiche · Horaires · Enregistré » is deliberately not here.
+  //
+  // It cannot be captured truthfully yet. Closing a service and pressing
+  // Enregistrer writes `enabled = 0` to the database and then re-renders
+  // the switch back on, so the screen shows one thing and the booking
+  // rules another; a frame of that state would be a frame of a bug,
+  // taken at whichever side of it the timing landed on. It made the same
+  // screen disagree with itself across the two widths three captures
+  // running. The frame comes back with the fix.
+  // The other two editable screens of the lot. They were drawn by hand
+  // on page 09 from a PNG, which is why a change to the field pattern
+  // reached Ma fiche's frames by re-running one command and reached
+  // theirs by somebody redrawing them. Every field the partner types
+  // into now comes from the portal.
+  { key: "disponibilites", path: "/restaurant/disponibilites", name: "Disponibilités", session: true },
+  {
+    key: "disponibilites-enregistre",
+    path: "/restaurant/disponibilites",
+    name: "Disponibilités · Enregistré",
+    session: true,
+    saveSpec: true,
+  },
+  { key: "notifications", path: "/restaurant/notifications", name: "Notifications", session: true },
+  {
+    key: "notifications-enregistre",
+    path: "/restaurant/notifications",
+    name: "Notifications · Enregistré",
+    session: true,
+    saveSpec: true,
+  },
 ];
+
+/**
+ * Connexion, which has no session and no shell.
+ *
+ * Captured on its own because everything else here is signed in: the
+ * sign-in screen is the one frame whose whole point is not being.
+ */
+const CONNEXION = { key: "connexion", path: "/login", name: "Connexion" };
 
 /** The seven onboarding steps, walked once and shot on each. */
 const ONBOARDING = [
@@ -324,6 +364,15 @@ for (const width of [1440, 390]) {
       await page.locator(`button:text-is("${frame.tab}")`).first().click();
       await page.waitForTimeout(1200);
     }
+    if (frame.saveSpec) {
+      // A spec screen stages its edits in a draft store and the bar
+      // counts them, so one switch is one « modification non
+      // enregistrée » — which is the state this frame is for.
+      await page.locator('button[role="switch"]').first().click();
+      await page.waitForTimeout(400);
+      await page.locator('button:has-text("Enregistrer")').first().click();
+      await page.waitForTimeout(800);
+    }
     if (frame.save) {
       // A chip, not a text field: toggling one is dirty the instant it
       // is pressed, and the value that comes back is the value that was
@@ -346,7 +395,11 @@ for (const width of [1440, 390]) {
       name: `${frame.path} · ${frame.name}${phone ? " · téléphone" : ""}`,
       width,
       chrome: "dashboard",
-      at: phone ? { x: 16, y: 72 } : { x: 292, y: 104 },
+      // Measured, not assumed. Two of these screens give `main` the
+      // full width beside the sidebar and two inset it by 32, so a
+      // single hardcoded origin put one pair of frames 32px past the
+      // right edge of the frame they sit in.
+      at: { x: Math.round(shot.x), y: Math.round(shot.y) },
       root: shot.tree,
       height: Math.max(phone ? 844 : 900, Math.round(shot.h) + (phone ? 88 : 120)),
     });
@@ -366,7 +419,26 @@ for (const width of [1440, 390]) {
     deviceScaleFactor: 1,
     reducedMotion: "reduce",
   });
-  await walkOnboarding(await guest.newPage(), width, phone);
+  const guestPage = await guest.newPage();
+
+  // Connexion, before the onboarding spends the draft.
+  await guestPage.goto(`${BASE}${CONNEXION.path}`, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await guestPage.waitForTimeout(1500);
+  {
+    const shot = await capture(guestPage, "main", []);
+    frames.push({
+      key: `${CONNEXION.key}@${width}`,
+      name: `${CONNEXION.path} · ${CONNEXION.name}${phone ? " · téléphone" : ""}`,
+      width,
+      chrome: "none",
+      at: { x: Math.round(shot.x), y: Math.round(shot.y) },
+      root: shot.tree,
+      height: Math.max(phone ? 844 : 900, Math.round(shot.y + shot.h) + 48),
+    });
+    console.log(`  ${CONNEXION.key.padEnd(22)} ${width}px · ${Math.round(shot.h)}px de contenu`);
+  }
+
+  await walkOnboarding(guestPage, width, phone);
   await guest.close();
 }
 

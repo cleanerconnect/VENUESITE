@@ -380,7 +380,7 @@ if (await nameField.count()) {
 await shot("ma-fiche");
 
 // Every other tab of the fiche, one record behind all of them.
-for (const tab of ["Fiche", "Horaires", "Photos", "Menu"]) {
+for (const tab of ["Détails", "Horaires", "Photos", "Menu"]) {
   const trigger = page
     .locator(`button:has-text("${tab}"):visible, [role="tab"]:has-text("${tab}"):visible`)
     .first();
@@ -391,7 +391,7 @@ for (const tab of ["Fiche", "Horaires", "Photos", "Menu"]) {
     if (tab === "Photos") {
       check("la photo de couverture est là", /couverture|Photo|photo/i.test(await body()));
     }
-    if (tab === "Fiche") {
+    if (tab === "Détails") {
       const b = await body();
       check("la fourchette de prix est là", /Fourchette de prix/.test(b));
       check("les équipements sont des interrupteurs", /Réservation recommandée/.test(b));

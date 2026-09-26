@@ -1,13 +1,26 @@
 "use client";
 
-import { forwardRef, useId, useState } from "react";
+import { forwardRef, useId } from "react";
 import type { InputHTMLAttributes } from "react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils/cn";
+import { FieldLabel } from "@/components/forms/FieldLabel";
 
-// Floating-label input, label animates up on focus / when the field has
-// content. White surface; the focus ring is the violet glow defined once
-// in globals.css under `*:focus-visible`, not a per-component style.
+// A field, named above itself.
+//
+// It used to float: the label rested inside the control and animated up
+// on focus or when the field had content. Two things were wrong with
+// that. It printed one string on top of another wherever the browser
+// draws its own text inside the box — `mm/dd/yyyy` in a date input,
+// `--:--` in a time one — and this component had to suppress its own
+// placeholder to avoid doing it to itself. And it was one of four ways
+// this codebase named a field, so a partner met a different pattern on
+// Ma fiche than on Disponibilités.
+//
+// Now there is one: `FieldLabel` above a 48px control, 8px apart. The
+// placeholder shows unconditionally, because nothing is in its way.
+//
+// White surface; the focus ring is the violet glow defined once in
+// globals.css under `*:focus-visible`, not a per-component style.
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, "prefix"> {
   label: string;
   hint?: string;
@@ -33,86 +46,48 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
     prefix,
     suffix,
     className,
-    value,
-    defaultValue,
-    placeholder,
+    id,
+    required,
     ...rest
   },
   ref,
 ) {
-  const id = useId();
-  const [focused, setFocused] = useState(false);
-  const hasValue = Boolean(
-    (value ?? defaultValue ?? "").toString().length > 0,
-  );
-  const floated = focused || hasValue;
+  const generated = useId();
+  const inputId = id ?? generated;
+  const noteId = `${inputId}-note`;
   const rejected = Boolean(error) || Boolean(invalid);
 
   return (
     <div className="flex flex-col gap-2">
+      <FieldLabel htmlFor={inputId} required={required}>
+        {label}
+      </FieldLabel>
       <div
         className={cn(
-          "relative flex items-center bg-surface border rounded-[var(--radius-sm)]",
+          "relative flex items-center h-12 bg-surface border rounded-[var(--radius-sm)]",
           "transition-colors duration-150",
-          rejected
-            ? "border-danger/60"
-            : focused
-              ? "border-ink"
-              : "border-line",
+          // No focus branch in JavaScript any more: the border follows
+          // the real focus, which is what `:focus-within` is for, and
+          // the component now keeps no state at all.
+          rejected ? "border-danger/60" : "border-line focus-within:border-ink",
         )}
       >
         {prefix ? (
           <span className="pl-3.5 text-ink-mute">{prefix}</span>
         ) : null}
-        <div className="relative flex-1">
-          <motion.label
-            htmlFor={id}
-            initial={false}
-            animate={{
-              y: floated ? -10 : 0,
-              scale: floated ? 0.84 : 1,
-              color: rejected
-                ? "var(--color-danger)"
-                : floated
-                  ? "var(--color-ink)"
-                  : "var(--color-ink-mute)",
-            }}
-            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className={cn(
-              "absolute left-3.5 top-1/2 -translate-y-1/2 origin-top-left",
-              "pointer-events-none font-medium text-body",
-              floated && "font-semibold",
-            )}
-          >
-            {label}
-          </motion.label>
-          <input
-            id={id}
-            ref={ref}
-            value={value}
-            defaultValue={defaultValue}
-            // The label rests *over* the field until it floats, so a
-            // placeholder shown at the same time prints one string on
-            // top of the other — "Code de réservation" across "LYFE-…".
-            // The placeholder is an example of the value, which is only
-            // of use once the label has moved out of its way.
-            placeholder={floated ? placeholder : undefined}
-            onFocus={(e) => {
-              setFocused(true);
-              rest.onFocus?.(e);
-            }}
-            onBlur={(e) => {
-              setFocused(false);
-              rest.onBlur?.(e);
-            }}
-            className={cn(
-              "w-full h-12 px-4 pt-3 bg-transparent text-ink text-body outline-none",
-              className,
-            )}
-            aria-invalid={rejected || undefined}
-            {...rest}
-          />
-        </div>
+        <input
+          id={inputId}
+          ref={ref}
+          required={required}
+          className={cn(
+            "w-full h-full px-4 bg-transparent text-ink text-body outline-none",
+            "placeholder:text-ink-mute",
+            className,
+          )}
+          aria-invalid={rejected || undefined}
+          aria-describedby={hint || error ? noteId : undefined}
+          {...rest}
+        />
         {suffix ? (
           <span className="pr-2 text-meta text-ink-mute shrink-0 flex items-center">
             {suffix}
@@ -120,11 +95,13 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
         ) : null}
       </div>
       {error ? (
-        <span className="text-meta text-danger flex items-center gap-1.5">
+        <span id={noteId} className="text-meta text-danger flex items-center gap-1.5">
           {error}
         </span>
       ) : hint ? (
-        <p data-prose className="text-meta text-ink-mute max-w-[62ch]">{hint}</p>
+        <p id={noteId} data-prose className="text-meta text-ink-mute max-w-[62ch]">
+          {hint}
+        </p>
       ) : null}
     </div>
   );

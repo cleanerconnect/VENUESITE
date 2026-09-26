@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { FieldLabel } from "@/components/forms/FieldLabel";
 
 // Native select wrapped in our brand styling. Radix Select would ship a
 // nicer popover but native is dependable on every Moroccan device and
@@ -27,11 +28,7 @@ export function Select({
   const id = useId();
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      {label ? (
-        <label htmlFor={id} className="text-eyebrow text-ink-soft">
-          {label}
-        </label>
-      ) : null}
+      {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
       <div className="relative">
         <select
           id={id}
