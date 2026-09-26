@@ -51,15 +51,26 @@ const FRAMES = [
     tab: "Détails",
     save: true,
   },
-  // « Ma fiche · Horaires · Enregistré » is deliberately not here.
+  // The same thing for the week, which is the edit that changes what a
+  // guest can book. It was out of this table for three captures: the
+  // repository returned an availability set it had read before its own
+  // writes had landed, so the switch sprang back to Ouvert and the two
+  // widths disagreed about which services were open. With the writes
+  // awaited the frame is a frame of the state and not of the race, and
+  // `edges.mjs` holds that ground.
   //
-  // It cannot be captured truthfully yet. Closing a service and pressing
-  // Enregistrer writes `enabled = 0` to the database and then re-renders
-  // the switch back on, so the screen shows one thing and the booking
-  // rules another; a frame of that state would be a frame of a bug,
-  // taken at whichever side of it the timing landed on. It made the same
-  // screen disagree with itself across the two widths three captures
-  // running. The frame comes back with the fix.
+  // `saveHours` closes a service, shoots the « Enregistré » bar, then
+  // reopens it and saves again — the capture at 390 runs after the one
+  // at 1440 on the same database, and a frame is not worth a week left
+  // half shut behind it.
+  {
+    key: "ma-fiche-horaires-enregistre",
+    path: "/restaurant/ma-fiche",
+    name: "Ma fiche · Horaires · Enregistré",
+    session: true,
+    tab: "Horaires",
+    saveHours: true,
+  },
   // The other two editable screens of the lot. They were drawn by hand
   // on page 09 from a PNG, which is why a change to the field pattern
   // reached Ma fiche's frames by re-running one command and reached
@@ -373,6 +384,15 @@ for (const width of [1440, 390]) {
       await page.locator('button:has-text("Enregistrer")').first().click();
       await page.waitForTimeout(800);
     }
+    if (frame.saveHours) {
+      // A switch, like the spec screens — but this one writes a row the
+      // booking rules read, so the frame is only honest if the response
+      // the form re-renders from is the set that was written.
+      await page.locator('button[role="switch"][aria-label$="· ouvert"]').first().click();
+      await page.waitForTimeout(400);
+      await page.locator('button:has-text("Enregistrer")').first().click();
+      await page.waitForTimeout(1000);
+    }
     if (frame.save) {
       // A chip, not a text field: toggling one is dirty the instant it
       // is pressed, and the value that comes back is the value that was
@@ -404,6 +424,13 @@ for (const width of [1440, 390]) {
       height: Math.max(phone ? 844 : 900, Math.round(shot.h) + (phone ? 88 : 120)),
     });
     console.log(`  ${frame.key.padEnd(22)} ${width}px · ${Math.round(shot.h)}px de contenu`);
+    if (frame.saveHours) {
+      // Reopen it. The shot is taken; the week goes back to the seed.
+      await page.locator('button[role="switch"][aria-label$="· ouvert"]').first().click();
+      await page.waitForTimeout(400);
+      await page.locator('button:has-text("Enregistrer")').first().click();
+      await page.waitForTimeout(1000);
+    }
   }
 
   await context.close();

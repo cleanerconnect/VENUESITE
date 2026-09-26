@@ -305,7 +305,8 @@ the day arrows, the date picker, the chips, the search, accept, refuse,
 check-in and the scanner. `edges.mjs` walks what it does not: a wrong
 password, an address with no account, a session that died with a form
 open, two taps on one button, a network taking 350 ms a request, a 12 MB
-photo, an empty venue, a bar. Both pass at 1440 and at 390.
+photo, a service closed on Horaires and the screen asked three times
+whether it stayed closed, an empty venue, a bar. Both pass at 1440 and at 390.
 
 **`LYFE_DEMO_CLOCK`, and why the plates stopped moving.** A dashboard is
 a picture of a moment. Captured at 03h17 the seed's dinner service is
@@ -600,9 +601,10 @@ follow.
 
 **The five sections a partner types into are not drawn by hand.**
 `tools/figma/capture-frames.mjs` walks the running portal — Connexion,
-five tabs of Ma fiche and the saved state of Détails, Disponibilités,
-Notifications, and the onboarding's seven steps, at 1440 and at 390,
-36 frames in all — and writes the boxes the browser actually painted,
+five tabs of Ma fiche and the saved state of Détails and of Horaires,
+Disponibilités, Notifications, and the onboarding's seven steps, at
+1440 and at 390,
+38 frames in all — and writes the boxes the browser actually painted,
 with their measured geometry, their fills and their type, to
 `docs/lot1-figma-frames.json`. `tools/figma/replay-page09.js` runs
 inside Figma and draws that file back into the page, moving each
@@ -618,13 +620,24 @@ re-captured and not re-drawn. Both are here now, and
 has no `fetch`: 213 000 characters of escaped string literal compress
 to 52 000 of base64, which the replay's own twenty-line decoder undoes.
 
-**« Ma fiche · Horaires · Enregistré » is missing on purpose.** Closing
-a service and pressing Enregistrer writes the closure to the database
-and re-renders the switch back on — the screen says nothing was saved
-while what a guest can book has already changed. A frame of that is a
-frame of a bug, and which side of it the shot lands on is a matter of
-timing: three captures running, the same screen disagreed with itself
-between 1440 and 390. The frame comes back with the fix.
+**« Ma fiche · Horaires · Enregistré » came back with its fix.** For
+three captures the frame was out of the table, because closing a
+service and pressing Enregistrer wrote the closure to the database and
+re-rendered the switch back on: the screen said nothing had been saved
+while what a guest can book had already changed, and which side of that
+the shot landed on was a matter of timing — the same screen disagreed
+with itself between 1440 and 390. The cause was in one seam.
+`MockRestaurantRepository.updateAvailability` fired the store's writes
+without awaiting them and then returned an availability set it had read
+before any of them had landed, so the form re-rendered from a set that
+predated its own save; ten calls in that file had the same shape, and
+all ten are awaited now. `edges.mjs` §8 closes a service, asserts the
+response the form re-renders from still says closed, reloads and
+asserts it again, then reopens it and checks the round trip the other
+way — the middle assertion is about the database and the first is about
+whether a partner can trust the screen in front of them. Reverting the
+`await`s turns that first assertion red, which is the only reason to
+believe the rest of it.
 
 Two rules the file keeps, and a designer extending it should keep too:
 the library on `02 Composants` is the source for components, and `08` is

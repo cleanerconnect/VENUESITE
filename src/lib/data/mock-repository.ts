@@ -104,12 +104,12 @@ export class MockRestaurantRepository implements RestaurantRepository {
     // made accepting a booking a thing that survived until the next
     // reload. The transition is appended to the booking's history the
     // same way a check-in is.
-    transitionBooking(restaurantId, reservationId, "confirmed", "venue");
+    await transitionBooking(restaurantId, reservationId, "confirmed", "venue");
     return this.getOverview(restaurantId);
   }
 
   async cancelReservation({ restaurantId, reservationId }: ReservationRefInput) {
-    transitionBooking(restaurantId, reservationId, "cancelled", "venue");
+    await transitionBooking(restaurantId, reservationId, "cancelled", "venue");
     return this.getOverview(restaurantId);
   }
 
@@ -176,7 +176,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
     // `rejected`, not `cancelled`: the schema keeps them apart, and the
     // coded reason is what makes a refusal aggregable. It is carried into
     // the status history so quality analytics has a column to read.
-    transitionBooking(
+    await transitionBooking(
       input.restaurantId,
       input.reservationId,
       "rejected",
@@ -223,7 +223,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
     // The transition is persisted here, not left to the client's
     // optimistic copy. A check-in that lives only in one browser lets the
     // same code through twice — which is exactly what a QR must not do.
-    transitionBooking(input.restaurantId, match.id, "arrived", "venue");
+    await transitionBooking(input.restaurantId, match.id, "arrived", "venue");
 
     return {
       ok: true,
@@ -237,7 +237,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
   async reportNoShow({ restaurantId, reservationId }: NoShowInput) {
     // Writes per-customer history, not only the booking — that history is
     // what the risk indicator and the no-show rate both read.
-    store.recordNoShow(restaurantId, reservationId);
+    await store.recordNoShow(restaurantId, reservationId);
     return this.getOverview(restaurantId);
   }
 
@@ -346,7 +346,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
   async runAssetAction(venueId: string, action: AssetAction) {
     switch (action.kind) {
       case "asset.record":
-        recordAsset({
+        await recordAsset({
           venueId,
           kind: action.assetKind,
           objectKey: action.objectKey,
@@ -362,7 +362,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
         return listAssetRows(venueId, removed.kind);
       }
       case "asset.reorder":
-        reorderAssets(venueId, action.assetKind, action.orderedIds);
+        await reorderAssets(venueId, action.assetKind, action.orderedIds);
         return listAssetRows(venueId, action.assetKind);
     }
   }
@@ -385,7 +385,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
     const current = await store.availability(venueId);
 
     for (const slot of next.slots) {
-      store.updateSlot(venueId, slot.id, {
+      await store.updateSlot(venueId, slot.id, {
         opensAt: slot.opensAt,
         closesAt: slot.closesAt,
         capacity: slot.capacity,
@@ -399,11 +399,11 @@ export class MockRestaurantRepository implements RestaurantRepository {
     // « Fermer une journée » a button that did nothing through the seam.
     const keep = new Set(next.closures.map((c) => c.id));
     for (const gone of current.closures.filter((c) => !keep.has(c.id))) {
-      store.removeClosure(venueId, gone.id);
+      await store.removeClosure(venueId, gone.id);
     }
     const known = new Set(current.closures.map((c) => c.id));
     for (const added of next.closures.filter((c) => !known.has(c.id))) {
-      store.addClosure(venueId, added.date, added.reason);
+      await store.addClosure(venueId, added.date, added.reason);
     }
 
     return store.availability(venueId);
@@ -433,7 +433,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
   }
 
   async markNotificationRead(venueId: string, id: string) {
-    store.markNotificationRead(venueId, id);
+    await store.markNotificationRead(venueId, id);
   }
 
   async getNotificationPreferences(venueId: string) {
@@ -502,7 +502,7 @@ export class MockRestaurantRepository implements RestaurantRepository {
     return ops.serviceFloor(venueId);
   }
   async runGuestGraphAction(venueId: string, action: GuestGraphAction) {
-    opsWrite.applyGuestGraphAction(venueId, action);
+    await opsWrite.applyGuestGraphAction(venueId, action);
     return ops.guestGraph(venueId);
   }
   async runGrowthAction(venueId: string, action: GrowthAction) {
@@ -529,21 +529,21 @@ export class MockRestaurantRepository implements RestaurantRepository {
     };
   }
   async saveSurveyConfig(venueId: string, config: SurveyConfig) {
-    opsWrite.saveSurveyConfigRow(venueId, config);
+    await opsWrite.saveSurveyConfigRow(venueId, config);
     return ops.surveyConfig(venueId);
   }
   async saveVenueSettings(venueId: string, settings: VenueSettings) {
-    opsWrite.saveVenueSettingsRow(venueId, settings);
+    await opsWrite.saveVenueSettingsRow(venueId, settings);
     return ops.venueSettings(venueId);
   }
   async openSupportTicket(
     venueId: string,
     input: { category: string; subject: string; body: string },
   ) {
-    opsWrite.openSupportTicketRow(venueId, input);
+    await opsWrite.openSupportTicketRow(venueId, input);
     return ops.supportTickets(venueId);
   }
   async setZoneAvailable(venueId: string, zoneId: string, available: boolean) {
-    opsWrite.setZoneAvailable(venueId, zoneId, available);
+    await opsWrite.setZoneAvailable(venueId, zoneId, available);
   }
 }

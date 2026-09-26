@@ -280,7 +280,72 @@ if (await menuTab.count()) {
   check("Ma fiche a un onglet Menu", false);
 }
 
-// ── 8. The bar vocabulary ───────────────────────────────────
+// ── 8. A service closed stays closed ────────────────────────
+// The write that changes what a guest can book, and the one place the
+// screen can lie about it. Closing Monday lunch and pressing Enregistrer
+// used to write `enabled = 0` and then draw the switch back on, because
+// the repository returned a set it had read before its own writes had
+// landed. The screen said Ouvert, the booking rules said closed, and
+// which of the fourteen slots actually moved changed from run to run.
+//
+// So this asserts the three moments separately: what the response the
+// form re-renders from says, what a reload says, and that restoring it
+// round-trips the same way. Only the middle one is about the database;
+// the first is about whether a partner can trust the screen in front of
+// them.
+await go("/restaurant/ma-fiche");
+const hoursTab = page
+  .locator('button:has-text("Horaires"):visible, [role="tab"]:has-text("Horaires"):visible')
+  .first();
+if (await hoursTab.count()) {
+  await hoursTab.click();
+  await settle(1200);
+  // The first switch on the screen, whatever day and hour the seed puts
+  // first — named by its own label so the assertion survives a reseed.
+  const firstSwitch = page.locator('[role="switch"][aria-label$="· ouvert"]:visible').first();
+  const label = (await firstSwitch.getAttribute("aria-label")) ?? "";
+  const byLabel = () => page.locator(`[role="switch"][aria-label="${label}"]`).first();
+  const isOpen = async () => (await byLabel().getAttribute("aria-checked")) === "true";
+  const saveHours = async () => {
+    const bar = page.locator('button:has-text("Enregistrer"):visible:not([disabled])').first();
+    if (!(await bar.count())) return false;
+    await bar.click();
+    await settle(2600);
+    return true;
+  };
+
+  check("un service est ouvert au départ", await isOpen(), label);
+  await firstSwitch.click();
+  await settle(400);
+  check("le basculer le montre fermé", !(await isOpen()));
+  const sent = await saveHours();
+  check("et Enregistrer devient actif", sent);
+  if (sent) {
+    // The response, not the reload: this is the assertion the bug failed.
+    check("après l'enregistrement il est toujours fermé", !(await isOpen()), label);
+    check("et l'écran le dit", /Enregistré/.test(await text()));
+    await go("/restaurant/ma-fiche");
+    await hoursTab.click();
+    await settle(1200);
+    check("et il l'est encore après un rechargement", !(await isOpen()), label);
+
+    // Put it back, so the capture and the next tool start from an open
+    // week — and so the restore is itself a round trip through the
+    // same seam.
+    await byLabel().click();
+    await settle(400);
+    await saveHours();
+    check("le rouvrir tient aussi", await isOpen(), label);
+    await go("/restaurant/ma-fiche");
+    await hoursTab.click();
+    await settle(1200);
+    check("et survit au rechargement", await isOpen(), label);
+  }
+} else {
+  check("Ma fiche a un onglet Horaires", false);
+}
+
+// ── 9. The bar vocabulary ───────────────────────────────────
 // Nomad Casa is a lounge in the seed: the same screens have to speak
 // « personnes » where the restaurant says « couverts ».
 // The switcher is a dropdown in the sidebar; setting the cookie it
