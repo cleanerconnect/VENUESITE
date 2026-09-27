@@ -110,9 +110,15 @@ CREATE TABLE IF NOT EXISTS venue_tags (
 -- a row of its own.
 --
 -- The password is stored salted and hashed (scrypt), which is the
--- minimum for a column of this name even in a demo dataset. The seeded
--- fixture accounts are not here: their credentials live in
--- `src/lib/auth/accounts.ts` and have no production counterpart.
+-- minimum for a column of this name even in a demo dataset.
+--
+-- The fixture accounts *are* here, and that is the point of audit item
+-- E-01: they used to live as literals in `src/lib/auth/accounts.ts`,
+-- which the database directory fell through to whenever this table had
+-- no matching row. `db/demo-accounts.mjs` is the list, `db/seed.mjs`
+-- writes it on a first deploy, and `db/bootstrap.mjs` writes it into a
+-- database that has venues and no accounts — the state a deployment
+-- seeded before that fix is in, and one nobody can sign in to.
 CREATE TABLE IF NOT EXISTS partner_accounts (
   user_id       TEXT PRIMARY KEY,
   full_name     TEXT NOT NULL,

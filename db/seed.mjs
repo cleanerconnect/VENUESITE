@@ -13,7 +13,13 @@ import { readFileSync, readdirSync, mkdirSync, rmSync, existsSync, writeFileSync
 import { deflateSync } from "node:zlib";
 import { dirname, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
-import { randomBytes, scryptSync } from "node:crypto";
+// Hashing lives in `demo-accounts.mjs`, with the list it hashes for.
+import {
+  DEMO_ACCOUNTS,
+  PLATFORM_ADMIN,
+  hashPassword,
+  seedPassword,
+} from "./demo-accounts.mjs";
 import { toolClock } from "../src/lib/time/demo-clock-shared.mjs";
 import { venueWallClock } from "../src/lib/time/zone-shared.mjs";
 
@@ -253,23 +259,15 @@ insert("business_accounts", {
 // `LYFE_SEED_PASSWORD` sets the password for all of them. It defaults
 // to `demo` so the documented walkthrough still works; a deployment
 // that outlives the demo sets it, or deletes these rows.
-const SEED_PASSWORD = process.env.LYFE_SEED_PASSWORD ?? "demo";
-const hashed = (password) => {
-  const salt = randomBytes(16).toString("hex");
-  return `${salt}:${scryptSync(password, salt, 64).toString("hex")}`;
-};
-[
-  ["usr_mido", "Mido Reffas", "mido@jazzablanca.com", "+212 661 00 10 01"],
-  [OWNER, "Yassine Alami", "yassine@darzellij.ma", "+212 661 00 26 00"],
-  ["usr_sofia", "Sofia Bennis", "sofia@nomadrooftop.ma", "+212 661 00 26 01"],
-  ["usr_rachid", "Rachid Amrani", "rachid@darzellij.ma", "+212 661 00 26 02"],
-  ["usr_imane", "Imane Ouali", "imane@darzellij.ma", "+212 661 00 26 03"],
-  ["usr_lyfe_admin", "Nawal Cherkaoui", "validation@lyfe.ma", "+212 661 00 00 01"],
-  ["usr_nouveau", "Nouveau partenaire", "nouveau@lyfe.ma", "+212 661 00 00 02"],
-].forEach(([userId, fullName, email, phone]) =>
+//
+// The list itself is `db/demo-accounts.mjs`, because `db/bootstrap.mjs`
+// writes the same rows into a database this script never reaches: one
+// that already has venues, and therefore no seeding, and — if it was
+// first filled before E-01 was fixed — no accounts either.
+DEMO_ACCOUNTS.forEach(({ userId, fullName, email, phone }) =>
   insert("partner_accounts", {
     user_id: userId, full_name: fullName, email, phone,
-    password_hash: hashed(SEED_PASSWORD), created_at: daysAgo(200),
+    password_hash: hashPassword(seedPassword()), created_at: daysAgo(200),
   }),
 );
 
@@ -2295,9 +2293,9 @@ seedAudience(VENUE2, "cus_naud_", 22, [["Casablanca", 82], ["Rabat", 10], ["Marr
 // LYFE's own reviewer. Not a partner and not scoped to a venue: the one
 // account that can open /admin/validations.
 insert("platform_admins", {
-  user_id: "usr_lyfe_admin",
-  full_name: "Nawal Cherkaoui",
-  email: "validation@lyfe.ma",
+  user_id: PLATFORM_ADMIN.userId,
+  full_name: PLATFORM_ADMIN.fullName,
+  email: PLATFORM_ADMIN.email,
   created_at: daysAgo(400),
 });
 

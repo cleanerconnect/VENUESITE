@@ -14,7 +14,24 @@
 //     Dar Zellij rather than on an empty portal.
 //   · a database with a venue in it — the schema is applied (it is
 //     idempotent, and this is how a schema change reaches production)
-//     and **nothing else is written**. No truncate, ever.
+//     and **nothing else is written**, with one exception below. No
+//     truncate, ever.
+//
+// The exception: a database with venues and an **empty**
+// `partner_accounts` gets the fixture accounts written into it. That
+// state is not hypothetical and it is not recoverable from the outside:
+// a deployment first seeded before audit item E-01 was fixed has venues,
+// so this script has always said « rien à semer » — and E-01 took the
+// literals in `src/lib/auth/accounts.ts` out of the `db` path at the
+// same time, so the credential table stayed empty and *nobody could
+// sign in*, which is what happened to the demo. A credential table with
+// no rows means no door, which is never a state anybody chose.
+//
+// It cannot lock anyone out or overwrite anything: one account in the
+// table is enough for the step to do nothing at all, so a database with
+// a real partner in it is never touched. `LYFE_SKIP_DEMO_ACCOUNTS=1`
+// turns it off for a deployment that genuinely wants venues and no way
+// in.
 //
 // The destructive command stays where a person has to type it:
 // `npm run db:reset` empties every table and re-copies the demo data,
@@ -29,6 +46,12 @@ import { execFileSync } from "node:child_process";
 import { rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { connect } from "./pg.mjs";
+import {
+  DEMO_ACCOUNTS,
+  PLATFORM_ADMIN,
+  hashPassword,
+  seedPassword,
+} from "./demo-accounts.mjs";
 
 // Per process, not a fixed name.
 //
@@ -89,30 +112,85 @@ run("db/migrate.mjs");
 // this one only decides whether generating two thousand lines of seed
 // data is worth the seconds it costs, which on every deploy after the
 // first it is not.
+/**
+ * Writes the fixture accounts, and only into a table that has none.
+ *
+ * `ON CONFLICT DO NOTHING` on both keys rather than a count alone: the
+ * count is read outside this statement, and two builds of the same
+ * commit can run at once. A row that is already there keeps its
+ * password — this never resets a credential.
+ */
+async function writeDemoAccounts(client) {
+  const password = seedPassword();
+  const at = new Date().toISOString();
+  let written = 0;
+  for (const { userId, fullName, email, phone } of DEMO_ACCOUNTS) {
+    const { rowCount } = await client.query(
+      `INSERT INTO partner_accounts
+         (user_id, full_name, email, phone, password_hash, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT DO NOTHING`,
+      [userId, fullName, email, phone, hashPassword(password), at],
+    );
+    written += rowCount ?? 0;
+  }
+  // The reviewer's own row, which is what opens /admin/validations —
+  // the `partner_accounts` row above only gets them through the door.
+  await client.query(
+    `INSERT INTO platform_admins (user_id, full_name, email, created_at)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT DO NOTHING`,
+    [PLATFORM_ADMIN.userId, PLATFORM_ADMIN.fullName, PLATFORM_ADMIN.email, at],
+  );
+  return written;
+}
+
 const client = await connect();
 let venues = 0;
+let accounts = 0;
 try {
   ({
     rows: [{ n: venues }],
   } = await client.query("SELECT COUNT(*)::int AS n FROM venues"));
+  ({
+    rows: [{ n: accounts }],
+  } = await client.query("SELECT COUNT(*)::int AS n FROM partner_accounts"));
+
+  if (venues === 0) {
+    console.log("db:bootstrap — base vide, génération du jeu de démonstration");
+    run("db/seed.mjs", "--reset", "--sqlite-only", SEED_FILE);
+    run("db/push.mjs", "--if-empty", SEED_FILE);
+    // The scratch file has done its job. Leaving it behind would make
+    // the next `next build` in the same container see a SQLite database
+    // and resolve `dataMode()` to `db` on it.
+    try {
+      rmSync(SEED_FILE, { force: true });
+    } catch {
+      // A leftover scratch file is untidy, not fatal.
+    }
+    console.log("db:bootstrap — base prête");
+  } else if (accounts > 0) {
+    console.log(
+      `db:bootstrap — ${venues} établissement(s) et ${accounts} compte(s) en base, rien à semer`,
+    );
+  } else if (process.env.LYFE_SKIP_DEMO_ACCOUNTS) {
+    console.log(
+      `db:bootstrap — ${venues} établissement(s) en base, aucun compte, ` +
+        "et LYFE_SKIP_DEMO_ACCOUNTS est posé : personne ne pourra se connecter",
+    );
+  } else {
+    console.log(
+      `db:bootstrap — ${venues} établissement(s) en base et aucun compte : ` +
+        "écriture des comptes de démonstration",
+    );
+    const written = await writeDemoAccounts(client);
+    console.log(
+      `db:bootstrap — ${written} compte(s) écrit(s), mot de passe ` +
+        (process.env.LYFE_SEED_PASSWORD
+          ? "LYFE_SEED_PASSWORD"
+          : "« demo » (posez LYFE_SEED_PASSWORD pour en changer)"),
+    );
+  }
 } finally {
   await client.end();
 }
-
-if (venues > 0) {
-  console.log(`db:bootstrap — ${venues} établissement(s) en base, rien à semer`);
-  process.exit(0);
-}
-
-console.log("db:bootstrap — base vide, génération du jeu de démonstration");
-run("db/seed.mjs", "--reset", "--sqlite-only", SEED_FILE);
-run("db/push.mjs", "--if-empty", SEED_FILE);
-// The scratch file has done its job. Leaving it behind would make the
-// next `next build` in the same container see a SQLite database and
-// resolve `dataMode()` to `db` on it.
-try {
-  rmSync(SEED_FILE, { force: true });
-} catch {
-  // A leftover scratch file is untidy, not fatal.
-}
-console.log("db:bootstrap — base prête");
