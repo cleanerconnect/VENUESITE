@@ -445,6 +445,38 @@ await go("/restaurant/reservations");
 const barBook = await text();
 check("et son carnet aussi", !/couverts/i.test(barBook), barBook.split("\n").find((l) => /couverts/i.test(l)) ?? "aucun « couverts »");
 
+// ── 9. The navigation the server sends is the one the browser keeps ──
+//
+// Half the sidebar declares `allow`, so it renders only for a role. The
+// role used to be discovered on the client, in an effect, starting from
+// null — which meant the server sent a nav with its middle cut out and
+// the browser grew it back a moment later. Both renders agreed on the
+// first paint, so nothing looked wrong; what went wrong was the timing.
+// On a slow connection the effect lands while React is still hydrating,
+// React finds a tree it did not render, and throws the page away with
+// `#418`. It cost about one pass in three, on Accueil and on
+// Réservations, in both lots, at both widths, on both engines.
+//
+// Counting is the test. The document the server serves and the DOM
+// after hydration have to carry the same number of nav links — not a
+// particular number, which would be a different assertion in each lot,
+// but the same one.
+const servedHtml = await page.request
+  .get(`${BASE}/restaurant`)
+  .then((r) => r.text())
+  .catch(() => "");
+const navStart = servedHtml.indexOf("<nav", servedHtml.indexOf("<aside"));
+const servedNav =
+  navStart < 0 ? "" : servedHtml.slice(navStart, servedHtml.indexOf("</nav>", navStart));
+const servedLinks = (servedNav.match(/<a\s/g) ?? []).length;
+await go("/restaurant");
+const liveLinks = await page.locator("aside").first().locator("nav a").count();
+check(
+  "le serveur envoie la navigation que le navigateur garde",
+  servedLinks > 0 && servedLinks === liveLinks,
+  `${servedLinks} servis · ${liveLinks} après hydratation`,
+);
+
 await browser.close();
 
 if (noise.size) {
