@@ -474,24 +474,69 @@ check(
 
 await go("/restaurant/reservations");
 await rendersFine("Réservations (Dar Zellij)");
+// The whole of `main`, not the first 400 characters of it. At 1440 the
+// date sits inside that slice and at 390 it does not, so the same
+// assertion was reading the day on one width and reading the toolbar
+// on the other — and calling the toolbar unchanged a failure.
 const dayLabel = async () =>
-  ((await page.textContent("main").catch(() => "")) ?? "").slice(0, 400);
+  ((await page.textContent("main").catch(() => "")) ?? "").replace(/\s+/g, " ").trim();
 
 // The day arrows, then the date picker.
+//
+// Waited on the URL, not on a stopwatch. The day a partner is reading
+// lives in `?jour=`, so a click is done when that parameter changes —
+// and a fixed 1400 ms was not always enough at 390 on a box running
+// the portal and the browser at once, which made two of these
+// assertions fail at random and say nothing about the screen.
+const param = (name) => {
+  try {
+    return new URL(page.url()).searchParams.get(name) ?? "";
+  } catch {
+    return "";
+  }
+};
+const waitForParam = async (name, isDone, timeout = 12000) => {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    if (isDone(param(name))) return true;
+    await page.waitForTimeout(150);
+  }
+  return isDone(param(name));
+};
+
+/**
+ * Clicks, then waits for the screen to actually be another day.
+ *
+ * The URL changes the instant the button is pressed — the day lives in
+ * `?jour=` — but the list is a server component, so the content it
+ * names arrives afterwards. Waiting on the URL therefore reads the old
+ * day with the new address, and waiting a fixed 1400 ms reads whichever
+ * of the two the machine happened to be on: both assertions below
+ * failed at random, on one width or the other, and neither failure said
+ * anything about the screen. So: click, then poll the screen until it
+ * is not what it was, with a deadline.
+ */
+const clickToAnotherDay = async (button, before, timeout = 15000) => {
+  await button.click();
+  const deadline = Date.now() + timeout;
+  let now = before;
+  while (Date.now() < deadline) {
+    now = await dayLabel();
+    if (now !== before) return now;
+    await page.waitForTimeout(200);
+  }
+  return now;
+};
+
 const prev = page.locator('button[aria-label*="précédent" i]:visible').first();
 const next = page.locator('button[aria-label*="suivant" i]:visible').first();
 if ((await prev.count()) > 0 && (await next.count()) > 0) {
   const before = await dayLabel();
-  await prev.click();
-  await settle(1400);
-  const back = await dayLabel();
-  check("le jour précédent change l'écran", back !== before);
-  await next.click();
-  await settle(1400);
-  await next.click();
-  await settle(1400);
-  const forward = await dayLabel();
-  check("le jour suivant change l'écran", forward !== back);
+  const back = await clickToAnotherDay(prev, before);
+  check("le jour précédent change l'écran", back !== before, param("jour"));
+  const middle = await clickToAnotherDay(next, back);
+  const forward = await clickToAnotherDay(next, middle);
+  check("le jour suivant change l'écran", forward !== back, param("jour"));
   await rendersFine("Réservations · autre jour");
 } else {
   lot1Only("Réservations a des flèches de jour");
@@ -510,9 +555,14 @@ if (await picker.count()) {
   // than for the screen.
   const today = DEMO_CLOCK.toLocaleDateString("en-CA", { timeZone: "Africa/Casablanca" });
   await picker.fill(today);
+  // Same reasoning as the arrows: the URL says when the navigation
+  // landed, and only then is the screen worth reading.
+  await waitForParam("jour", (v) => v === today || v === "");
+  const landedToday = await waitForText(/Aujourd'hui/i);
   check(
     "le sélecteur de date ramène à aujourd'hui",
-    await waitForText(/Aujourd'hui/i),
+    landedToday,
+    landedToday ? today : `?jour=${param("jour")} attendu ${today} · ${page.url()}`,
   );
 } else {
   check("Réservations a un sélecteur de date", false);
@@ -522,8 +572,10 @@ if (await picker.count()) {
 for (const label of ["Déjeuner", "Dîner"]) {
   const tab = page.locator(`button:has-text("${label}"):visible`).first();
   if (await tab.count()) {
+    const before = param("service");
     await tab.click();
-    await settle(1300);
+    await waitForParam("service", (v) => v !== before);
+    await settle(700);
     await rendersFine(`Réservations · ${label}`);
   }
 }

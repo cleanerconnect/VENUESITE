@@ -192,9 +192,29 @@ export async function signIn(page, base, options = {}) {
   } = options;
 
   await page.goto(`${base}/login`, { waitUntil: "domcontentloaded" });
-  await page.locator('input[type="email"]').first().fill(email);
-  await page.locator('input[type="password"]').first().fill(password);
-  await page.locator('button[type="submit"]').first().click();
+  const emailBox = page.locator('input[type="email"]').first();
+  const passwordBox = page.locator('input[type="password"]').first();
+  const submit = page.locator('button[type="submit"]').first();
+  await emailBox.fill(email);
+  await passwordBox.fill(password);
+
+  // « Se connecter » is disabled until React has both fields, so its
+  // enabling is hydration's own signal — and typing before hydration
+  // fills the DOM without telling React, which leaves the button
+  // disabled forever. A production build hydrates before Playwright can
+  // type; `next dev` compiles the route first and does not, which is
+  // why every tool timed out against a development server with a stack
+  // instead of a sentence. Re-type until the form answers.
+  // Cleared before it is refilled: `fill` with the value already in the
+  // box types nothing, so it dispatches nothing, so React never hears.
+  for (let tries = 0; tries < 40 && (await submit.isDisabled()); tries++) {
+    await emailBox.fill("");
+    await emailBox.fill(email);
+    await passwordBox.fill("");
+    await passwordBox.fill(password);
+    await page.waitForTimeout(500);
+  }
+  await submit.click();
 
   const deadline = Date.now() + timeout;
   let refusal = "";

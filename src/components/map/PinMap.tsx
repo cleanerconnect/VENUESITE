@@ -44,9 +44,9 @@ export function PinMap({
   const holder = useRef<HTMLDivElement | null>(null);
   const map = useRef<LeafletMap | null>(null);
   const pin = useRef<Marker | null>(null);
-  const [status, setStatus] = useState<"idle" | "searching" | "not_found" | "unreachable">(
-    "idle",
-  );
+  const [status, setStatus] = useState<
+    "idle" | "searching" | "not_found" | "unreachable"
+  >("idle");
   const [ready, setReady] = useState(false);
 
   // Kept in a ref so the drag handler never closes over a stale prop.
@@ -62,7 +62,10 @@ export function PinMap({
       if (cancelled || !holder.current || map.current) return;
 
       instance = L.map(holder.current, {
-        center: latitude != null && longitude != null ? [latitude, longitude] : FALLBACK,
+        center:
+          latitude != null && longitude != null
+            ? [latitude, longitude]
+            : FALLBACK,
         zoom: latitude != null && longitude != null ? 16 : 12,
         // A map inside a form should not eat the page's scroll.
         scrollWheelZoom: false,
@@ -99,7 +102,9 @@ export function PinMap({
       });
 
       const marker = L.marker(
-        latitude != null && longitude != null ? [latitude, longitude] : FALLBACK,
+        latitude != null && longitude != null
+          ? [latitude, longitude]
+          : FALLBACK,
         {
           draggable: true,
           icon,
@@ -109,7 +114,8 @@ export function PinMap({
           // serious `aria-command-name` violation, and a screen reader
           // reads « bouton » with nothing after it. `title` becomes the
           // element's title attribute, `alt` its alt text.
-          title: "Emplacement de l'établissement · déplacez le point pour l'ajuster",
+          title:
+            "Emplacement de l'établissement · déplacez le point pour l'ajuster",
           alt: "Emplacement de l'établissement",
         },
       ).addTo(instance);
@@ -120,7 +126,9 @@ export function PinMap({
         notify.current(Number(lat.toFixed(6)), Number(lng.toFixed(6)));
       });
       instance.on("click", (event) => {
-        const { lat, lng } = (event as unknown as { latlng: { lat: number; lng: number } }).latlng;
+        const { lat, lng } = (
+          event as unknown as { latlng: { lat: number; lng: number } }
+        ).latlng;
         marker.setLatLng([lat, lng]);
         marker.setOpacity(1);
         notify.current(Number(lat.toFixed(6)), Number(lng.toFixed(6)));
@@ -150,14 +158,19 @@ export function PinMap({
     }
     pin.current.setLatLng([latitude, longitude]);
     pin.current.setOpacity(1);
-    map.current.setView([latitude, longitude], Math.max(map.current.getZoom(), 16));
+    map.current.setView(
+      [latitude, longitude],
+      Math.max(map.current.getZoom(), 16),
+    );
   }, [latitude, longitude, ready]);
 
   const locate = useCallback(async () => {
     const query = [address, city, "Maroc"].filter(Boolean).join(", ");
     setStatus("searching");
     try {
-      const response = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `/api/geocode?q=${encodeURIComponent(query)}`,
+      );
       const body = (await response.json()) as {
         ok: boolean;
         latitude?: number;
@@ -184,37 +197,59 @@ export function PinMap({
         className="w-full rounded-[var(--radius-md)] border border-line overflow-hidden bg-canvas-2 z-0"
         aria-label="Carte de l'établissement"
       />
-      <div className="flex flex-wrap items-center gap-3">
-        <MapPin size={18} className="text-violet-deep shrink-0" />
-        <div className="min-w-0 flex-1">
-          <div className="text-body font-semibold text-ink">
-            {placed ? "Point placé" : "Placer le point sur la carte"}
+      {/* Three rows on a phone, one on a desktop.
+          At 390 the old single wrapping row put « Trouver sur la carte »
+          on its own line and « Retirer » on the next, with the
+          coordinates squeezed into whatever was left beside the pin.
+          Stacked instead: the map full width, then the line that says
+          where the point is, then the two buttons side by side. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="flex min-w-0 items-start gap-3 sm:flex-1 sm:items-center">
+          <MapPin
+            size={18}
+            className="text-violet-deep shrink-0 mt-0.5 sm:mt-0"
+          />
+          <div className="min-w-0">
+            <div className="text-body font-semibold text-ink">
+              {placed ? "Point placé" : "Placer le point sur la carte"}
+            </div>
+            <p className="text-meta text-ink-mute mt-1">
+              {status === "searching"
+                ? "Recherche de l'adresse…"
+                : status === "not_found"
+                  ? "Adresse introuvable. Déplacez le point à la main."
+                  : status === "unreachable"
+                    ? "Le service de localisation ne répond pas. Déplacez le point à la main."
+                    : placed
+                      ? `${latitude!.toFixed(4)}, ${longitude!.toFixed(4)} · faites glisser le point pour l'ajuster`
+                      : "Facultatif. Sans point, nous plaçons votre établissement sur l'adresse."}
+            </p>
           </div>
-          <p className="text-meta text-ink-mute mt-1">
-            {status === "searching"
-              ? "Recherche de l'adresse…"
-              : status === "not_found"
-                ? "Adresse introuvable. Déplacez le point à la main."
-                : status === "unreachable"
-                  ? "Le service de localisation ne répond pas. Déplacez le point à la main."
-                  : placed
-                    ? `${latitude!.toFixed(4)}, ${longitude!.toFixed(4)} · faites glisser le point pour l'ajuster`
-                    : "Facultatif. Sans point, nous plaçons votre établissement sur l'adresse."}
-          </p>
         </div>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={locate}
-          disabled={status === "searching" || address.trim().length < 4}
-        >
-          Trouver sur la carte
-        </Button>
-        {placed ? (
-          <Button variant="ghost" size="md" onClick={() => onChange(null, null)}>
-            Retirer
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={locate}
+            disabled={status === "searching" || address.trim().length < 4}
+            className="flex-1 sm:flex-none"
+          >
+            Trouver sur la carte
           </Button>
-        ) : null}
+          {/* « Retirer » takes the width of its own word and « Trouver
+              sur la carte » takes the rest: split evenly, the long
+              label wraps onto two lines at 390. */}
+          {placed ? (
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={() => onChange(null, null)}
+              className="shrink-0"
+            >
+              Retirer
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

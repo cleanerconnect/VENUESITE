@@ -645,7 +645,7 @@ follow.
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
-| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states, and the onboarding's seven steps at both widths, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1`; its five editable sections are replayed from `docs/lot1-figma-frames.json`, written by `tools/figma/capture-frames.mjs` and drawn by `tools/figma/replay-page09.js` |
+| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states, and the onboarding's seven steps at both widths, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1`; its five editable sections are replayed from `docs/lot1-figma-frames.json`, written by `tools/figma/capture-frames.mjs`, and the page is laid out by `tools/figma/present-page09.js` |
 
 **The five sections a partner types into are not drawn by hand.**
 `tools/figma/capture-frames.mjs` walks the running portal — Connexion,
@@ -667,6 +667,36 @@ re-captured and not re-drawn. Both are here now, and
 `tools/figma/pack-frames.mjs` is how the JSON reaches a sandbox that
 has no `fetch`: 213 000 characters of escaped string literal compress
 to 52 000 of base64, which the replay's own twenty-line decoder undoes.
+
+**The page is now a handoff, not a contact sheet.**
+`tools/figma/present-page09.js` takes over from `replay-page09.js`,
+which stays as the plain contact-sheet replay: same capture, same
+frames, but it draws the page a developer is meant to read. A cover
+board with the product, the scope in a sentence, the capture date and
+the version. One section per screen in flow order, each opening with a
+« Bloc / En-tête d'écran » that states the route, what the screen is
+for, who uses it, and links to its section of the contract. Every
+desktop frame under a « Shell / Navigateur », every phone frame inside
+a « Shell / Téléphone », both built once on page 02 and instanced.
+States and overlays to the right of the frame they belong to, each
+under an « Annotation » — the one component every caption and note on
+the page comes from, so there is no loose text left in a shelf. Arrows
+between an onboarding step and the next, and between the book's days
+and services. 160px between two frames, 320px between two sections.
+
+Three of the eight screens — Accueil, Réservations, Check-in — are not
+in the capture, and the file's prototype lives on the buttons inside
+them: 49 reactions, and a recreated button is a dead link. So those
+frames are *adopted*: moved into the layout the generator computes,
+never redrawn. The generator reports how many reactions it found and
+how many point at a node that no longer exists; the second number is
+zero, and a run that made it anything else would be a bug.
+
+`tools/figma/present-dry-run.mjs` runs the whole thing against a stub
+sandbox in node before it costs a tool call: every manifest reference
+finds a frame, no frame is laid out on top of another, the gutters are
+the two the brief asks for, no reaction is orphaned, and a second run
+produces the same page rather than two of it.
 
 **« Ma fiche · Horaires · Enregistré » came back with its fix.** For
 three captures the frame was out of the table, because closing a
@@ -1212,7 +1242,7 @@ they exist.
 | 1 | ~~Event workspace reads fixtures directly~~ — **done in Phase 4.** What remains is the *write* path: there is no `EventRepository` mutation surface, because there is no event backend to shape one against | Creating an event, promo code or boost persists nothing | Large. The venue side is the worked example to copy |
 | 2 | ~~No add/remove for menu items~~ — **closed.** Ma fiche · Menu is a board: the venue names its rubriques, adds and removes dishes, and drags the order | — | — |
 | 2b | The staff list is the last write that still calls SQLite directly instead of the repository. The Carte editor's per-dish save (`saveMenuItem`) does too; the board beside it (`saveMenuBoard`) goes through the seam | Équipe cannot run against a backend | Small, and the Ma fiche forms are the worked example |
-| 7 | React #418 on Accueil and Réservations, in `edges.mjs`'s throttled-network case. See below | A hydration warning in the console; React regenerates the subtree and the screen stays correct | Unknown until it is diagnosed |
+| 7 | React #418 on `/restaurant/reservations` under a throttled network. **One of the two causes is closed** — the viewer's role, discovered in an effect that landed mid-hydration. A second one remains, in the route's loading shell. See below | A hydration warning in the console; React regenerates the subtree and the screen stays correct | Half done; the remaining half is described |
 | 3 | ~~No editor for seating areas~~ — **done in Phase 5.** Zones open and close from Ma fiche, and the write reaches the app immediately | — | — |
 | 4 | ~~No preview of the app listing~~ — **done in Phase 5.** Ma fiche renders the listing from the same values the form edits | — | — |
 | 5 | ~500 French literals inline, almost all one-off headings | A copy change means a code change | Medium, mechanical |
@@ -1223,34 +1253,66 @@ example of a repository seam with three drivers, a typed action union and
 a snapshot generator, and the event side needs the same treatment for
 writes.
 
-**Gap 7, written down rather than shrugged off.** `edges.mjs` case 6
-puts a 350 ms delay on every request — « un réseau qui prend son temps »
-— and loads `/restaurant`, then `/restaurant/reservations`. Under that
-delay, one or both throw React #418: the server's HTML and the client's
-first render disagree, React throws away the subtree and draws it again.
-It reproduces in **both lots, at both widths, on both engines**, and
-only there: sixteen throttled loads of Accueil on their own produced
-none, and neither did five of the bar's. Delaying hydration is what
-makes it appear, which points at something read at render time that
-answers differently a second or two later.
+**Gap 7, found and closed.** `edges.mjs` case 6 puts a 350 ms delay on
+every request — « un réseau qui prend son temps » — and loads
+`/restaurant`, then `/restaurant/reservations`. Under that delay, one or
+both used to throw React #418, in **both lots, at both widths, on both
+engines**, about one pass in three, and nowhere else.
 
-What it is not. It is not the activity feed, which did read the clock
-twice and would do exactly this — that is the guest-list fault of
-`ScreenContext.now` — because Lot 1's Accueil draws no feed; `FeedBlock`
-reads `block.now` now regardless, and that hardening is real and is not
-this. It is not the phone lane, which is a CSS breakpoint and not a
-JavaScript one, so both lanes render on both sides. It is not a
-`relative` value format, of which these two screens have none. The
-builders themselves take the instant from `ScreenContext.now`, which is
-decided on the server and carried in the payload.
+It was the sidebar. Half the navigation declares `allow`, so it renders
+only for a role, and the role came from `useRole()` — a hook that reads
+the localStorage session mirror in an effect and starts at `null`. Both
+renders agreed on that null, so the first paint was correct and nothing
+looked wrong. What went wrong was the timing: on a slow connection the
+effect lands while React is still hydrating, the nav grows from nine
+links to thirty in the middle of it, and React throws away a tree it did
+not render.
 
-What it costs today: a line in the console, and a subtree drawn twice.
-Every functional assertion on both screens passes, under the delay and
-without it. What it will cost is a phone on a Moroccan 3G at the door of
-a service, which is the condition the case exists to imitate. The next
-person to pick it up should start with a development build — the
-minified `#418` says only that the two renders differed, and the
-unminified one names the node.
+Two things found it, and neither was guesswork. A development build with
+the browser's clock pushed seven minutes ahead of the server's — a
+stronger condition than the race — produced no mismatch at all, which
+ruled the clock out. Then a production run captured the served document
+and the hydrated DOM of a failing load and diffed them: the server's
+`<nav>` stopped after « Liste clients », the browser's carried on
+through « Tags et segments » and « Audience ».
+
+The fix is at the seam, not at the symptom. The portal layout already
+resolves the viewer's role from the session cookie — it is the value
+`SessionSync` is handed — so it now publishes it on `WorkspaceAccess`,
+and `useRole` starts from it instead of from null. The first client
+render is the render the server sent, and the effect has nothing left to
+change. Outside the portal there is no provider and the seed stays null,
+which is right: the sign-in screen has no viewer.
+
+`edges.mjs` §9 holds that ground, and it is a counting test rather than
+a list of link names, so it says the same thing in both lots: the
+document the server serves and the DOM after hydration have to carry the
+same number of nav links. Before the fix it read « 9 servis · 30 après
+hydratation »; after it, « 30 · 30 ».
+
+**And a second cause, still open.** With the nav settled, `edges.mjs`
+still raises #418 on `/restaurant/reservations` — about one cell of the
+matrix in four rather than one pass in three, and on that route only.
+The same diff instrument, run against a Lot 1 build, shows the server's
+`<main>` holding the route's loading shell — « Chargement… », and a
+header without its search box — where the browser holds the resolved
+screen. That is `app/(organizer)/restaurant/reservations/loading.tsx`
+and the streamed Suspense boundary around it: under a throttle the
+fallback is what React starts hydrating against.
+
+Two things the next person should know before spending an afternoon on
+it. The diff instrument (`hydra3.mjs` in the session scratch, worth
+rewriting into `tools/verify/`) strips `<template>` and `<script>` to
+compare, which is exactly where React parks the streamed replacement —
+so it *over*-reports this particular shape, and the fallback showing up
+on the server side is expected rather than damning. And the throttle in
+`edges.mjs` case 6 uses `route.continue()`, which keeps the stream, so
+the error it reports is the real one and not an artefact of the
+instrument.
+
+What it costs today is unchanged: a line in the console and a subtree
+drawn twice. Every functional assertion on the screen passes, under the
+delay and without it.
 
 Beyond those, six venue routes are marked **service à brancher** rather
 than partial. Nothing is missing from the portal on them; what is missing

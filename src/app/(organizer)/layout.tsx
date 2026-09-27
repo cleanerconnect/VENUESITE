@@ -12,6 +12,7 @@ import { resolveAccount } from "@/lib/auth/accounts";
 import { getRestaurantRepository } from "@/lib/data";
 import { redirect } from "next/navigation";
 import { activeLot } from "@/lib/lot";
+import type { Role } from "@/lib/auth/session";
 
 // Shell, sticky sidebar (desktop), top app bar, mobile bottom tabs.
 // ScannerModal, CheckInSheet and AssistantFAB live here so they're
@@ -52,6 +53,18 @@ export default async function OrganizerLayout({
       ? await getRestaurantRepository().getVenueProfile(session.venueId)
       : null;
 
+  // A venue membership decides the role where there is one; an
+  // event-only account takes its role from the account directory, or it
+  // would land as a scanner and lose most of the nav.
+  const viewerRole: Role =
+    session.venues.length > 0
+      ? session.role === "owner"
+        ? "owner"
+        : session.role === "manager"
+          ? "admin"
+          : "scanner"
+      : (account?.eventRole ?? "scanner");
+
   const access = {
     event: (account?.organizations.length ?? 0) > 0,
     venue: session.venues.length > 0,
@@ -60,6 +73,11 @@ export default async function OrganizerLayout({
     // sidebar, the drawer and the Plus sheet all filter on it, and
     // `process.env` does not exist in any of the three.
     lot: activeLot(),
+    // And the role, for the same reason once more — with the extra one
+    // in `WorkspaceAccess`: half the nav is gated on it, and a hook
+    // that discovers it after the first paint makes the sidebar grow
+    // in the middle of hydration.
+    role: viewerRole,
   };
 
   return (
@@ -68,18 +86,7 @@ export default async function OrganizerLayout({
         userId={session.userId}
         email={session.email}
         organizerId={account?.organizations[0]?.id ?? ""}
-        // A venue membership decides the role where there is one; an
-        // event-only account takes its role from the account directory,
-        // or it would land as a scanner and lose most of the nav.
-        role={
-          session.venues.length > 0
-            ? session.role === "owner"
-              ? "owner"
-              : session.role === "manager"
-                ? "admin"
-                : "scanner"
-            : (account?.eventRole ?? "scanner")
-        }
+        role={viewerRole}
       />
       {/* Lot 1 runs at host density: the same tokens and components, a
           scale built for a stand rather than a desk. See the block in

@@ -13,6 +13,7 @@
 
 import { createContext, useContext } from "react";
 import type { VenueConfiguration } from "@/lib/types/venue-operations";
+import type { Role } from "@/lib/auth/session";
 import { DEFAULT_LOT, type Lot } from "@/lib/lot/shared";
 
 export interface WorkspaceAccess {
@@ -31,6 +32,25 @@ export interface WorkspaceAccess {
    * a link the router will 404 is worse than no link.
    */
   lot: Lot;
+  /**
+   * The signed-in viewer's role, as the server resolved it.
+   *
+   * Published for a sharper reason than the other three. Half the nav
+   * declares `allow`, so a null role renders a nav with the middle cut
+   * out of it — which is what the server used to send, because the
+   * client hook that owns the role reads it in an effect and starts at
+   * null. The two renders agreed on that null and the first paint was
+   * correct, so the bug hid: the effect lands *during* hydration on a
+   * slow connection, React re-renders a sidebar it has not finished
+   * hydrating, and the tree it is matching against was built without a
+   * role. That is the intermittent `#418` on Accueil and Réservations.
+   *
+   * The server knows the role — it is the same value `SessionSync` is
+   * handed below. Giving it to the hook as its starting state makes the
+   * first client render equal the server's, and the effect then has
+   * nothing to change.
+   */
+  role: Role | null;
 }
 
 const Ctx = createContext<WorkspaceAccess>({
@@ -38,6 +58,7 @@ const Ctx = createContext<WorkspaceAccess>({
   venue: true,
   configuration: "restaurant",
   lot: DEFAULT_LOT,
+  role: null,
 });
 
 export function WorkspaceAccessProvider({

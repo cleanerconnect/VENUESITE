@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { readSession, type Role } from "./session";
+import { useWorkspaceAccess } from "./workspace-access";
 import { getUser } from "@/lib/auth/static/users";
 import type { AppUser } from "@/lib/auth/static/users";
 import {
@@ -21,12 +22,27 @@ export function emitSessionChanged() {
 }
 
 export function useRole(): Role | null {
-  // Mount-only; on the server we have no session, so we always return null
-  // and let the SessionGuard's null-render handle the unauthenticated case.
-  const [role, setRole] = useState<Role | null>(null);
+  // Seeded from the server, not from null.
+  //
+  // The localStorage mirror only exists after the browser has run, so
+  // this hook used to start at null in both renders and correct itself
+  // on mount. Agreeing on null is not the same as being right: on a
+  // slow connection the correction lands while React is still
+  // hydrating, and a nav that grows mid-hydration is a tree React
+  // throws away — the intermittent `#418`. The portal layout resolves
+  // the role from the session cookie and publishes it, so the first
+  // client render can be the same render the server sent.
+  //
+  // Outside the portal there is no provider and the seed is null, which
+  // is the old behaviour and the right one: the sign-in screen has no
+  // viewer.
+  const seeded = useWorkspaceAccess().role;
+  const [role, setRole] = useState<Role | null>(seeded);
 
   useEffect(() => {
-    const sync = () => setRole(readSession()?.role ?? null);
+    // The mirror wins once it exists; the server's answer stands until
+    // then, so a browser with no mirror yet does not lose the nav.
+    const sync = () => setRole(readSession()?.role ?? seeded);
     sync();
     window.addEventListener(EVENT, sync);
     window.addEventListener("storage", sync);
@@ -34,7 +50,7 @@ export function useRole(): Role | null {
       window.removeEventListener(EVENT, sync);
       window.removeEventListener("storage", sync);
     };
-  }, []);
+  }, [seeded]);
 
   return role;
 }
