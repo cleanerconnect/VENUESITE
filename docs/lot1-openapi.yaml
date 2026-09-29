@@ -1306,59 +1306,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Erreur'
   /api/business/venues/{venueId}/listing:
-    get:
-      tags:
-      - Ma fiche
-      summary: La partie « annonce » de la fiche
-      operationId: getVenueListing
-      description: |
-        La fourchette de prix et les trois ensembles de puces, tels que la fiche les tient. Lu par l'onglet Fiche de Ma fiche.
-      parameters:
-      - name: venueId
-        in: path
-        required: true
-        schema:
-          type: string
-        description: L'établissement.
-      responses:
-        '200':
-          description: Succès.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VenueListing'
-        '401':
-          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
-            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '403':
-          description: Le jeton est valide et ne porte pas ce périmètre.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '404':
-          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '500':
-          description: Défaillance du service.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
     put:
       tags:
       - Ma fiche
       summary: Enregistrer la partie « annonce » de la fiche
       operationId: saveVenueListing
       description: |
-        Ce qu'écrit l'onglet Fiche, et ce que l'écran de fiche de l'application dessine sous « Cuisine & Détails » et « Equipements » : la fourchette de prix, l'ambiance, les équipements. Les mots-clés ne sont demandés qu'en lot 2.
+        Ce qu'écrit l'onglet Détails, et ce que l'écran de fiche de l'application dessine sous « Cuisine & Détails » et « Equipements » : la fourchette de prix, l'ambiance, les équipements. Les mots-clés ne sont demandés qu'en lot 2.
 
         `ambience` et `features` sont des listes fermées d'ids, à valider côté service : l'application filtre et groupe sur ces chaînes. Une clé absente du corps est un ensemble que l'appelant ne dessinait pas, et il est laissé tel quel plutôt que vidé.
       parameters:

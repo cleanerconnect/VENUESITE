@@ -11,7 +11,7 @@
 7. **Le contrat est devenu exécutable.** `docs/lot1-openapi.yaml` — 27 chemins, 35 opérations, 24 schémas, validé — est **dérivé du code**, pas du markdown, et le markdown a été ramené dessus. Sur 563 appels tracés contre le service double : **aucun 404, aucun 500**. Il en portait deux, en 500, sur la feuille Décaler et sur la recherche du carnet — deux des quatre changements achetés par ce lot, et la passe précédente comptait les 404 sans compter les 500.
 8. **Les deux produits partagent bien une réservation.** Le parcours complet passe : inscription, revue LYFE, mise en ligne, réservation faite dans l'application, décision prise par le partenaire, relecture dans l'application. Il ne passait pas avant : l'application écrivait un canal que le tableau de bord ne connaissait pas, n'envoyait aucun téléphone, et un index unique faisait échouer le **deuxième** client d'un établissement.
 9. **Les chiffres.** Accueil passe de 6 359 ms à 812 ms sur une journée de 2 005 réservations. Pire route : **205 Ko** de script transférés contre un plafond de 300 — 308 Ko avant de sortir `recharts` d'un lot qui ne dessine aucun graphe. axe-core : **0 critique, 0 sérieux** sur les huit écrans, contre 0 et 2 avant.
-10. **Ce que DigiNegoce a en main.** `docs/PARCOURS_INTEGRATION.md` : brancher le front-end sur leur Business Service en moins d'une heure, huit paliers, la requête et la réponse exactes, le test d'acceptation de chaque palier pris dans les outils, et un chiffrage de **21,75 j-h** hypothèse comprise. Rien n'y contredit cet audit.
+10. **Ce que DigiNegoce a en main.** `docs/PARCOURS_INTEGRATION.md` : brancher le front-end sur leur Business Service en moins d'une heure, huit paliers, la requête et la réponse exactes, le test d'acceptation de chaque palier pris dans les outils, et un chiffrage de **22,75 j-h** hypothèse comprise. Rien n'y contredit cet audit.
 
 ---
 
@@ -1092,7 +1092,7 @@ service plutôt que lire la base.
 |---|---|---|
 | L'audit | `docs/AUDIT_LOT1.md` | ce document · 68 constats |
 | Le contrat exécutable | `docs/lot1-openapi.yaml` | 27 chemins, 35 opérations, 24 schémas · `openapi-spec-validator` : **VALID · OpenAPI 3.1** |
-| Le parcours d'intégration | `docs/PARCOURS_INTEGRATION.md` | en français, huit paliers, chiffrage de 21,75 j-h |
+| Le parcours d'intégration | `docs/PARCOURS_INTEGRATION.md` | en français, huit paliers, chiffrage de 22,75 j-h |
 | Le contrat en markdown | `docs/LOT1_API_CONTRACT.md` | ramené sur l'OpenAPI ; § 1 réécrit sur le jeton, § 3.2 nouvelle sur les données personnelles, § 5.1 bis sur la réinitialisation |
 | Les outils de recette | `tools/verify/` | onze contrôles, un enregistreur, sept scripts d'audit à préfixe `_` |
 | Les maquettes | Figma, page `09 · Lot 1` | 43 cadres, les trois écarts connus corrigés |

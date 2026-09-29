@@ -605,17 +605,23 @@ Open **`/styleguide`**. It needs no session and no seeded database —
 every specimen renders from literal props — and it is the fastest way to
 see what exists before reading a line of code.
 
-Seven sections, in this order:
+Eight sections, in this order:
 
 | Section | What it holds |
 |---|---|
+| `Règles` | the seven rules the screens are drawn by — the rhythm, the type scale, the colour, the controls, the layout, the words, and the states, icons and motion together |
 | `Tokens` | colours, typography, radii, shadows, motion — read from the CSS variables, so editing `globals.css` edits this page |
-| `Contrôles` | what you click and what you fill, in every state: empty, filled, in error, disabled |
+| `Contrôles` | what you click and what you fill, in every state: empty, filled, in error, disabled — including `TimeSelect`, the four `ListingControls` of the fiche, and `PinMap` |
 | `Surfaces` | cards, pills, headers, tiles, drawers, empty states and loading skeletons |
 | `Blocs d'écran` | every block the spec engine can paint, rendered from a hand-written spec by the same renderer the app uses |
 | `États` | loading, empty, failed and access-denied — each forceable on any route from its URL |
 | `Vocabulaire` | every domain term with its label, tone and icon, generated from the same tables the app reads |
 | `Écrans` | **the route index** — see §6 |
+
+One specimen reaches the network: `PinMap` pulls OpenStreetMap tiles.
+Behind a proxy that blocks them it draws a blank grid and says so, which
+is the same thing it does for a partner on a bad connection — the rest
+of the page does not depend on it.
 
 It is also the enforcement mechanism for the rule that keeps the
 components portable: `components/ui/` imports nothing from the data
@@ -936,14 +942,14 @@ does not exist cannot be written.
 
 ## 7. The route index
 
-`src/lib/nav/routes.ts` is the one list of what the portal ships — 53
-rows: 31 venue, 16 event, 3 entry, 3 shared. The styleguide's `Écrans`
-section renders it, linked, with roles, status and lot.
+`src/lib/nav/routes.ts` is the one list of what the portal ships — 55
+rows: 31 venue, 16 event, 4 entry, 3 shared, 1 admin. The styleguide's
+`Écrans` section renders it, linked, with roles, status and lot.
 
-**Every row carries a `lot`.** 39 rows are lot 1 — the seventeen venue
-screens of §1 plus the entry flow, the styleguide and the whole event
-workspace, none of which the split touches — and 14 are lot 2, the venue
-screens a Lot 1 deployment does not register. The gate reads this field,
+**Every row carries a `lot`.** 30 rows are lot 1 — the six venue screens
+of §1, the entry flow, the styleguide, the LYFE validation queue and the
+whole event workspace, none of which the split touches — and 25 are lot
+2, the venue screens a Lot 1 deployment does not register. The gate reads this field,
 so the table the styleguide prints and the routes the router serves
 cannot disagree. Three statuses:
 
@@ -1294,10 +1300,12 @@ hydratation »; after it, « 30 · 30 ».
 still raises #418 on `/restaurant/reservations` — about one cell of the
 matrix in four rather than one pass in three, and on that route only.
 The same diff instrument, run against a Lot 1 build, shows the server's
-`<main>` holding the route's loading shell — « Chargement… », and a
-header without its search box — where the browser holds the resolved
-screen. That is `app/(organizer)/restaurant/reservations/loading.tsx`
-and the streamed Suspense boundary around it: under a throttle the
+`<main>` holding the route's loading shell — « Chargement de votre
+espace », and a header without its search box — where the browser holds
+the resolved screen. Réservations has no `loading.tsx` of its own: it is
+one of the four sections `restaurant/[[...section]]` serves, so the
+shell is `src/app/(organizer)/restaurant/loading.tsx` — `ScreenSkeleton`
+— and the streamed Suspense boundary around it. Under a throttle that
 fallback is what React starts hydrating against.
 
 Two things the next person should know before spending an afternoon on

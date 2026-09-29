@@ -289,7 +289,7 @@ contrôles, dont : les quatre décisions sur chaque ligne ouverte, la
 feuille Décaler ne proposant que les créneaux du lieu, le téléphone sur
 la ligne, et le tiroir portant le client.
 
-### Palier 5 — L'établissement tient sa fiche · 4,25 j-h
+### Palier 5 — L'établissement tient sa fiche · 5,25 j-h
 
 | Méthode · chemin | Requête | Prouvé ? | j-h |
 |---|---|---|---|
@@ -302,6 +302,9 @@ la ligne, et le tiroir portant le client.
 | `POST /api/business/services/configuration?venue_id=` | une action `{ kind, … }` | **oui, observé** | 1 |
 | `GET /api/business/venues/{id}/assets?kind=photo` | — | **oui, observé** (14 appels) | 0,5 |
 | `POST /api/business/venues/{id}/assets` | une action | oui, non observé | 0,5 |
+| `PUT /api/business/settings?venue_id=` | `VenueSettings` entier | oui, non observé | 0,25 |
+| `GET /api/business/venues/{id}/menu-board` | — | oui, non observé | 0,25 |
+| `PUT /api/business/venues/{id}/menu-board` | la carte entière | oui, non observé | 0,5 |
 
 **`GET /venues/{id}` est lu sur chaque écran**, pas seulement sur Ma
 fiche : le bandeau de validation est un fait sur l'établissement que
@@ -328,6 +331,18 @@ répond `409` et le portail dit « a changé entre-temps ». Actions du lot
 **Le fichier d'une photo ne passe pas par cet endpoint.** Le portail
 envoie une action ; vous rendez une URL signée ; le navigateur y envoie
 les octets. Aucun octet ne traverse `POST /assets`.
+
+**L'onglet Menu en demande deux, pas un.** `assets?kind=menu_file` est
+la carte en fichier — un PDF, une photo — et `menu-board` est la carte
+en données : des sections nommées, et des plats dedans. Le Lot 1 dessine
+les deux sur le même onglet, et le `PUT` remplace la carte entière parce
+que l'ordre des sections est lui-même une donnée. Servir `menu-board`
+vide est acceptable ; ne pas le servir laisse l'onglet Menu en erreur.
+
+**`PUT /settings` porte l'objet entier**, comme le `GET` le rend : le
+portail lit, modifie un champ, réécrit. C'est l'écriture des réglages
+que Ma fiche et Disponibilités posent — le type d'établissement, qui
+décide du vocabulaire, et les coordonnées qui reçoivent les alertes.
 
 **Test d'acceptation** — `tools/verify/edges.mjs` :
 
@@ -480,13 +495,13 @@ raison :
 | 2 · Les six écrans portent des données | 3 |
 | 3 · Le carnet se promène | 1 |
 | 4 · Le partenaire décide | 2,5 |
-| 5 · L'établissement tient sa fiche | 4,25 |
+| 5 · L'établissement tient sa fiche | 5,25 |
 | 6 · Décaler, chercher | 2 |
 | 7 · L'inscription | 2 |
 | 8 · La revue LYFE, le mot de passe oublié, les notifications | 2 |
-| **Sous-total contrat Lot 1** | **18,25** |
+| **Sous-total contrat Lot 1** | **19,25** |
 | Ce qui reste à spécifier (§3, côté service) | 3,5 |
-| **Total** | **21,75** |
+| **Total** | **22,75** |
 
 **L'hypothèse, à nouveau, parce qu'un chiffre sans hypothèse ne vaut
 rien :** un développeur qui connaît sa pile, les tables déjà en place,
