@@ -6,10 +6,18 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
+import { TimeSelect } from "@/components/ui/TimeSelect";
 import { Switch } from "@/components/ui/Switch";
 import { ChipInput, ChipSelect } from "@/components/forms/ChipSelect";
 import { Field } from "@/components/forms/Field";
+import {
+  AmbienceChips,
+  CuisineFields,
+  FeatureSwitches,
+  PriceBand,
+} from "@/components/forms/ListingControls";
 import { SaveBar } from "@/components/forms/SaveBar";
+import { PinMap } from "@/components/map/PinMap";
 import type { SaveState } from "@/lib/forms/useOptimisticForm";
 import { Row, Specimen } from "../Shell";
 
@@ -29,6 +37,16 @@ export function ControlsSection() {
     "terrasse",
   ]);
   const [on, setOn] = useState(true);
+  const [opensAt, setOpensAt] = useState("19:00");
+  const [oddHour, setOddHour] = useState("19:05");
+  const [cuisine, setCuisine] = useState("marocaine");
+  const [specialties, setSpecialties] = useState("Tanjia, pastilla au pigeon");
+  const [band, setBand] = useState(3);
+  const [ambience, setAmbience] = useState<string[]>(["elegant", "moderne"]);
+  const [features, setFeatures] = useState<string[]>(["terrasse", "wifi"]);
+  const [pin, setPin] = useState<[number | null, number | null]>([
+    31.6258, -7.9891,
+  ]);
 
   return (
     <>
@@ -108,6 +126,24 @@ export function ControlsSection() {
             label="Avec aide"
             hint="Trié par ordre d'affichage dans l'app."
             options={[{ value: "a", label: "Option A" }]}
+          />
+        </div>
+      </Specimen>
+
+      <Specimen
+        name="TimeSelect"
+        note="les quarts d'heure, en français — jamais une saisie d'heure native, qui se dessine dans la langue du navigateur"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TimeSelect
+            ariaLabel="Ouverture du service"
+            value={opensAt}
+            onChange={setOpensAt}
+          />
+          <TimeSelect
+            ariaLabel="Une heure hors de la grille"
+            value={oddHour}
+            onChange={setOddHour}
           />
         </div>
       </Specimen>
@@ -195,6 +231,36 @@ export function ControlsSection() {
             </div>
           ))}
         </div>
+      </Specimen>
+
+      <Specimen
+        name="ListingControls"
+        note="les quatre questions de la fiche — même dessin sur Ma fiche · Détails et à l'étape 2 de l'inscription"
+      >
+        <div className="space-y-6">
+          <CuisineFields
+            cuisine={cuisine}
+            specialties={specialties}
+            onCuisine={setCuisine}
+            onSpecialties={setSpecialties}
+          />
+          <PriceBand value={band} onChange={setBand} />
+          <AmbienceChips value={ambience} onChange={setAmbience} />
+          <FeatureSwitches value={features} onChange={setFeatures} />
+        </div>
+      </Specimen>
+
+      <Specimen
+        name="PinMap"
+        note="Leaflet et des tuiles OpenStreetMap — la punaise se déplace, et le bloc s'empile sous 640px"
+      >
+        <PinMap
+          latitude={pin[0]}
+          longitude={pin[1]}
+          address="Rue Riad Zitoun Jdid"
+          city="Marrakech"
+          onChange={(latitude, longitude) => setPin([latitude, longitude])}
+        />
       </Specimen>
     </>
   );

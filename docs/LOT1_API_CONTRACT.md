@@ -139,7 +139,8 @@ seule erreur de champ du parcours.
   "step": 3,
   "venueName": "Le Petit Riad",
   "venueType": "bar",
-  "cuisine": "Cocktails d'auteur et mezzés",
+  "cuisine": "libanaise",
+  "specialties": "Cocktails d'auteur et mezzés",
   "priceRange": 3,
   "city": "Marrakech",
   "district": "Médina",
@@ -154,6 +155,9 @@ seule erreur de champ du parcours.
   "menuObjectKey": "venues/onb_a1b2c3d4/menu_file/....pdf",
   "menuContentType": "application/pdf",
   "menuSizeBytes": 402118,
+  "thumbnailObjectKey": "venues/onb_a1b2c3d4/logo/....jpg",
+  "thumbnailContentType": "image/jpeg",
+  "thumbnailSizeBytes": 41984,
   "ambience": ["elegant", "moderne"],
   "features": ["wifi", "terrasse", "acces_pmr"],
   "hours": [
@@ -175,9 +179,12 @@ pas l'énumération. `step` est l'étape la plus avancée atteinte : c'est
 ce qui fait qu'un onglet fermé ne perd rien, et le portail rouvre le
 parcours là où il s'est arrêté plutôt qu'au début.
 
-**`cuisine` et `priceRange` viennent de l'étape 2**, `district` de
-l'étape 3, `photo2*` et `menu*` de l'étape 4, `ambience` et `features`
-de l'étape 5. Les deux dernières sont des **listes fermées d'ids** —
+**`cuisine`, `specialties` et `priceRange` viennent de l'étape 2**,
+`district` de l'étape 3, `photo2*`, `menu*` et `thumbnail*` de l'étape 4,
+`ambience` et `features` de l'étape 5. **`cuisine` est un id parmi les
+dix de `CUISINE_IDS`** — c'est la liste sur laquelle l'application filtre
+— et `specialties` est la ligne libre sous le select, 80 caractères, dans
+les mots du partenaire. Les deux dernières sont des **listes fermées d'ids** —
 celles de `src/lib/types/restaurant.ts`, reprises au § 2.5 — et le
 service doit les valider comme il valide la ville : une valeur hors
 liste se refuse en `400`, parce que c'est sur cette chaîne que
@@ -417,21 +424,25 @@ l'hôte.
 
 ### 2.5 Ma fiche — `/restaurant/ma-fiche`
 
-Cinq onglets en Lot 1 : **Identité**, **Fiche**, **Horaires**,
+Cinq onglets en Lot 1 : **Identité**, **Détails**, **Horaires**,
 **Photos**, **Menu**. Ils sont la contrepartie, champ pour champ, de ce
 que l'écran de fiche de l'application dessine.
 
 | # | Méthode | Chemin | Réponse | Rendu en Lot 1 |
 |---|---|---|---|---|
-| 1 | `GET` | `/api/business/venues/{id}` | `RestaurantProfile \| null` | oui (Identité) |
-| 2 | `GET` | `/api/business/venues/{id}/listing` | `VenueListing` | oui (Fiche) |
-| 3 | `GET` | `/api/business/venues/{id}/availability` | `VenueAvailability` | oui (Horaires) |
-| 4 | `GET` | `/api/business/venues/{id}/assets?kind=photo` | `VenueAsset[]` | oui (Photos) |
-| 5 | `GET` | `/api/business/venues/{id}/assets?kind=menu_file` | `VenueAsset[]` | oui (Menu) |
-| 6 | `GET` | `/api/business/overview?venue_id={id}` | `RestaurantOverview` | oui (les zones) |
-| 7 | `GET` | `/api/business/settings?venue_id={id}` | `VenueSettings` | oui |
-| 8 | `PUT` | `/api/business/venues/{id}` | `RestaurantProfile` | écriture de l'onglet Identité |
-| 9 | `PUT` | `/api/business/venues/{id}/listing` | `VenueListing` | écriture de l'onglet Fiche |
+| 1 | `GET` | `/api/business/venues/{id}` | `RestaurantProfile \| null` | oui (Identité **et** Détails) |
+| 2 | `GET` | `/api/business/venues/{id}/availability` | `VenueAvailability` | oui (Horaires) |
+| 3 | `GET` | `/api/business/venues/{id}/assets?kind=photo` | `VenueAsset[]` | oui (Photos) |
+| 4 | `GET` | `/api/business/venues/{id}/assets?kind=menu_file` | `VenueAsset[]` | oui (Menu) |
+| 5 | `GET` | `/api/business/venues/{id}/assets?kind=logo` | `VenueAsset[]` | oui (la vignette, Identité) |
+| 6 | `GET` | `/api/business/venues/{id}/menu-board` | `VenueMenu` | oui (Menu) |
+| 7 | `GET` | `/api/business/overview?venue_id={id}` | `RestaurantOverview` | oui (les zones) |
+| 8 | `GET` | `/api/business/settings?venue_id={id}` | `VenueSettings` | oui |
+| 9 | `PUT` | `/api/business/venues/{id}` | `RestaurantProfile` | écriture de l'onglet Identité |
+| 10 | `PUT` | `/api/business/venues/{id}/listing` | `VenueListing` | écriture de l'onglet Détails |
+| 11 | `PUT` | `/api/business/venues/{id}/menu-board` | `VenueMenu` | écriture de l'onglet Menu (corps : `MenuBoardPatch`) |
+| 12 | `PUT` | `/api/business/settings?venue_id={id}` | `VenueSettings` | écriture des réglages de la fiche |
+| — | `GET` | `/api/business/venues/{id}/listing` | `VenueListing` | **non appelé** : les six champs viennent du profil (ligne 1) |
 | — | `GET` | `/api/business/venues/{id}/menu` | `MenuItem[]` | **plus appelé en Lot 1** (§4) |
 | — | `GET` | `/api/business/venues/{id}/staff` | `StaffMemberRow[]` | **plus appelé en Lot 1** (§4) |
 
@@ -482,7 +493,7 @@ Ma fiche · Identité comme à l'étape 4 de l'inscription, donc l'objet
 stocké est carré par construction et rien en aval n'a à deviner quel
 tiers d'une photo 16:9 garder.
 
-`VenueListing` — ce qu'écrit l'onglet Fiche :
+`VenueListing` — ce qu'écrit l'onglet Détails :
 
 ```json
 {
@@ -497,6 +508,31 @@ tiers d'une photo 16:9 garder.
 `ambience` et `features` sont des **listes fermées d'ids**, à valider
 côté service : l'application filtre et groupe sur ces chaînes, et
 « Cadre exceptionnel » est une phrase qu'aucun filtre ne peut atteindre.
+
+`VenueMenu` — ce que rend et ce qu'écrit l'onglet Menu, à côté du
+fichier de carte :
+
+```json
+{
+  "venueId": "rst_dar_zellij",
+  "sections": [
+    { "id": "entree", "name": "Entrées",
+      "items": [
+        { "id": "itm_1", "name": "Zaalouk", "description": "Aubergines fondantes, cumin",
+          "category": "entree", "priceMad": 60, "signature": false, "visible": true,
+          "dietary": ["vegetarien"] }
+      ] }
+  ]
+}
+```
+
+**Le PUT remplace la carte entière** (`MenuBoardPatch` : la liste des
+sections et leurs plats, telle qu'elle est à l'écran). Un patch par plat
+laisserait deux onglets ouverts en désaccord sur l'ordre des sections,
+qui est une donnée à part entière — c'est l'ordre dans lequel
+l'application dessine la carte. Bornes : `MENU_SECTION_MAX` = 12,
+`MENU_SECTION_NAME_MAX` = 40, `MENU_ITEM_NAME_MAX` = 80,
+`MENU_ITEM_LINE_MAX` = 80 — celles de `src/lib/types/restaurant.ts`.
 
 *Ambiances* (5 au plus, l'application en affiche 3) : `elegant`,
 `minimaliste`, `moderne`, `traditionnel`, `romantique`, `familial`,
