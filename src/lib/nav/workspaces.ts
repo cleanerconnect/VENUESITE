@@ -446,9 +446,25 @@ export const WORKSPACES: Workspace[] = [EVENT_WORKSPACE, RESTAURANT_WORKSPACE];
 export const DEFAULT_WORKSPACE = EVENT_WORKSPACE;
 
 /**
+ * The two screens both products share.
+ *
+ * `/plus` and `/more` are the phone's overflow nav, and both workspaces
+ * link to them from their bottom bar. Their paths carry no product, so
+ * a path-only resolver has to pick one — it picked the event workspace,
+ * and a restaurant partner tapping « Plus » on their phone landed on
+ * the organizer's menu: another company's name on the identity card,
+ * and Bilans, Visibilité, Versements, Codes promo underneath it. One
+ * tap from Accueil, in Lot 1.
+ */
+export const SHARED_PATHS = ["/plus", "/more"];
+
+/**
  * Which workspace owns a path. Longest matching prefix wins so
  * /restaurant/salle resolves to the restaurant even though the event
  * workspace also claims short top-level routes.
+ *
+ * Prefer `workspaceFor` in chrome: on the two shared screens the path
+ * cannot answer this question and the account has to.
  */
 export function resolveWorkspace(pathname: string | null): Workspace {
   if (!pathname) return DEFAULT_WORKSPACE;
@@ -463,6 +479,25 @@ export function resolveWorkspace(pathname: string | null): Workspace {
     }
   }
   return best?.workspace ?? DEFAULT_WORKSPACE;
+}
+
+/**
+ * Which workspace owns a path *for this viewer*.
+ *
+ * Same as `resolveWorkspace` everywhere except the two shared screens,
+ * where the establishment wins when the account holds one: a partner
+ * who holds only venues has no organizer nav to be sent to, and a
+ * partner who holds both is looking at a venue — the layout resolves a
+ * venue session before it renders any of this chrome.
+ */
+export function workspaceFor(
+  pathname: string | null,
+  holdsVenue: boolean,
+): Workspace {
+  if (holdsVenue && pathname && SHARED_PATHS.includes(pathname)) {
+    return RESTAURANT_WORKSPACE;
+  }
+  return resolveWorkspace(pathname);
 }
 
 /** Nav items a given role may see. */

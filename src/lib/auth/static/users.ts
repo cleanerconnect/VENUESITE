@@ -32,8 +32,24 @@ export const USERS: Record<string, AppUser> = {
   },
 };
 
-export const DEFAULT_USER_ID = "usr_mido";
+/**
+ * The fixture person with this id, or null — never somebody else.
+ *
+ * There used to be a `getUser` beside this one that fell back to the
+ * first row, which is fine where a name is decoration and wrong where
+ * it is identity: this table holds two of the seven demo accounts, so
+ * the chrome greeted rachid, imane, sofia and LYFE's own reviewer as
+ * « Mido Reffas ». The session's own name is read first; this is the
+ * fallback behind it.
+ */
+export function knownUser(id: string | undefined): AppUser | null {
+  return (id ? USERS[id] : undefined) ?? null;
+}
 
-export function getUser(id: string | undefined): AppUser {
-  return (id ? USERS[id] : undefined) ?? USERS[DEFAULT_USER_ID];
+/** « Yassine Alami » → « YA ». Two letters, the way the avatar wants. */
+export function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  const letters = parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[1][0];
+  return letters.toUpperCase();
 }

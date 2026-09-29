@@ -51,6 +51,16 @@ export interface WorkspaceAccess {
    * nothing to change.
    */
   role: Role | null;
+  /**
+   * The active establishment, as an identity card.
+   *
+   * Published for the plainest of the four reasons: the phone « Plus »
+   * screen draws an identity card and had no way to name the venue, so
+   * it fell back to the organizer profile and named a festival at a
+   * restaurant partner. The desktop sidebar gets the same facts as
+   * props, from the same layout.
+   */
+  venueEntity: { initials: string; shortName: string; subline: string } | null;
 }
 
 const Ctx = createContext<WorkspaceAccess>({
@@ -59,6 +69,7 @@ const Ctx = createContext<WorkspaceAccess>({
   configuration: "restaurant",
   lot: DEFAULT_LOT,
   role: null,
+  venueEntity: null,
 });
 
 export function WorkspaceAccessProvider({

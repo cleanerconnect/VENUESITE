@@ -19,7 +19,7 @@ import {
   type NavItem,
   type Workspace,
   isActive,
-  resolveWorkspace,
+  workspaceFor,
   visibleGroups,
   visibleItems,
 } from "@/lib/nav/workspaces";
@@ -71,12 +71,12 @@ export function Sidebar({
   // Which product this route belongs to decides the whole sidebar:
   // caption, identity card, nav groups. Nothing below knows the names of
   // any of them.
-  const workspace = resolveWorkspace(pathname);
   // Three filters, in order: the lot decides which screens this
   // deployment registers at all, the establishment's configuration
   // decides which groups exist (Vie nocturne appears only for a lounge),
   // then the role decides which of their items are visible.
-  const { configuration, lot } = useWorkspaceAccess();
+  const { configuration, lot, venue } = useWorkspaceAccess();
+  const workspace = workspaceFor(pathname, venue);
   const groups = visibleGroups(workspace, configuration, lot)
     .map((group) => ({ ...group, items: visibleItems(group.items, role) }))
     .filter((group) => group.items.length > 0);
@@ -104,7 +104,8 @@ export function Sidebar({
 // the left. Triggered by the topbar hamburger.
 export function MobileSidebarDrawer() {
   const pathname = usePathname();
-  const workspace = resolveWorkspace(pathname);
+  const { venue } = useWorkspaceAccess();
+  const workspace = workspaceFor(pathname, venue);
   const open = useMobileNavStore((s) => s.drawerOpen);
   const setOpen = useMobileNavStore((s) => s.setDrawerOpen);
 

@@ -21,11 +21,14 @@ import { readSession, writeSession, type Role } from "@/lib/auth/session";
 export function SessionSync({
   userId,
   email,
+  fullName,
   organizerId,
   role,
 }: {
   userId: string;
   email: string;
+  /** The person's name, as the server session holds it. */
+  fullName: string;
   /** First organisation the account holds, or "" for a venue-only account. */
   organizerId: string;
   role: Role;
@@ -37,16 +40,19 @@ export function SessionSync({
     // reviewer switch role and organisation from the sidebar, and
     // clobbering that on every navigation would make those controls
     // look broken.
-    if (current && current.userId === userId) return;
+    // ... but a mirror written before the name existed is refreshed,
+    // or the chrome keeps naming whoever the fixture table defaults to.
+    if (current && current.userId === userId && current.fullName) return;
 
     writeSession({
       userId,
       organizerId,
       role,
       email,
+      fullName,
       expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 30,
     });
-  }, [userId, email, organizerId, role]);
+  }, [userId, email, fullName, organizerId, role]);
 
   return null;
 }

@@ -477,6 +477,48 @@ check(
   `${servedLinks} servis · ${liveLinks} après hydratation`,
 );
 
+// ── 10. « Plus » appartient au produit du partenaire ──────────
+//
+// `/plus` et `/more` sont les deux écrans que les deux produits
+// partagent, et leur chemin ne dit pas lequel : le résolveur lisait le
+// chemin seul, répondait « espace organisateur », et un restaurateur qui
+// touchait le quatrième onglet de sa barre du bas tombait sur le menu de
+// l'organisateur — le nom d'une autre entreprise sur la carte d'identité,
+// et Bilans, Visibilité, Versements, Codes promo en dessous. À un doigt
+// d'Accueil, en lot 1. La carte, elle, nommait « Mido Reffas » : la table
+// de personnes en tient deux, et le repli prenait la première.
+//
+// Rachid plutôt que Yassine, et dans son propre contexte : Yassine est
+// l'une des deux personnes que la table de fixtures tient, donc son nom
+// s'affichait correctement par accident. Rachid n'y est pas — c'est sur
+// lui que le repli se voyait.
+const plusCtx = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  locale: "fr-FR",
+  timezoneId: "Africa/Casablanca",
+});
+const plusPage = await plusCtx.newPage();
+await sharedSignIn(plusPage, BASE, {
+  email: "rachid@darzellij.ma",
+  password: "demo",
+  venue: "Dar Zellij",
+});
+await plusPage.goto(`${BASE}/plus`, { waitUntil: "domcontentloaded" });
+await plusPage.waitForTimeout(1000);
+const plus = ((await plusPage.innerText("body").catch(() => "")) ?? "").replace(/\s+/g, " ");
+await plusCtx.close();
+
+check(
+  "« Plus » nomme l'établissement du partenaire et la personne connectée",
+  /Dar Zellij/.test(plus) && /Rachid/.test(plus),
+  plus.slice(0, 70),
+);
+check(
+  "et ne nomme ni une autre organisation ni quelqu'un d'autre",
+  !/Jazzablanca|Mido Reffas/.test(plus),
+  /Jazzablanca|Mido Reffas/.test(plus) ? "l'espace organisateur a fui" : "aucune fuite",
+);
+
 await browser.close();
 
 if (noise.size) {

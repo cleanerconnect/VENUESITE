@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { readSession, type Role } from "./session";
 import { useWorkspaceAccess } from "./workspace-access";
-import { getUser } from "@/lib/auth/static/users";
+import { initialsOf, knownUser } from "@/lib/auth/static/users";
 import type { AppUser } from "@/lib/auth/static/users";
 import {
   DEFAULT_PROFILE_ID,
@@ -58,13 +58,25 @@ export function useRole(): Role | null {
 // Active organizer profile, derived from session.organizerId. Returns
 // null until the client-side mount resolves so SSR doesn't render a
 // stale chrome (Sidebar org card) before the real profile is known.
+//
+// Null also when the account holds no organisation at all. The layout
+// writes an empty `organizerId` for a partner who only has
+// establishments, and `??` does not catch an empty string — so the
+// fallback fired and a restaurant partner's phone « Plus » screen
+// announced « Jazzablanca Festival · Casablanca » as their active
+// profile. An account with no organisation has no organizer profile,
+// and every caller already draws nothing rather than guessing.
 export function useProfile(): OrganizerProfile | null {
   const [profile, setProfile] = useState<OrganizerProfile | null>(null);
 
   useEffect(() => {
     const sync = () => {
       const session = readSession();
-      const id = session?.organizerId ?? DEFAULT_PROFILE_ID;
+      const id = session?.organizerId?.trim() ?? DEFAULT_PROFILE_ID;
+      if (!id) {
+        setProfile(null);
+        return;
+      }
       setProfile(getProfile(id) ?? PROFILES[DEFAULT_PROFILE_ID]);
     };
     sync();
@@ -79,16 +91,37 @@ export function useProfile(): OrganizerProfile | null {
   return profile;
 }
 
-// The signed-in person, resolved from session.userId. Null until the
-// client mount resolves, same contract as useProfile — the chrome renders
-// a skeleton rather than someone else's name.
+// The signed-in person. Null until the client mount resolves, same
+// contract as useProfile — the chrome renders a skeleton rather than
+// someone else's name.
+//
+// The session mirror carries the name the server resolved, and it is
+// read first. `lib/auth/static/users` holds two people — Mido and
+// Yassine — and `getUser` used to fall back to the first of them, so
+// the sidebar and the phone's « Plus » screen greeted every other
+// partner as Mido Reffas. A name nobody can supply is null here, and
+// null draws nothing.
 export function useUser(): AppUser | null {
   const [user, setUser] = useState<AppUser | null>(null);
 
   useEffect(() => {
     const sync = () => {
       const session = readSession();
-      setUser(session ? getUser(session.userId) : null);
+      if (!session) {
+        setUser(null);
+        return;
+      }
+      const name = session.fullName?.trim();
+      if (name) {
+        setUser({
+          id: session.userId,
+          name,
+          initials: initialsOf(name),
+          email: session.email,
+        });
+        return;
+      }
+      setUser(knownUser(session.userId));
     };
     sync();
     window.addEventListener(EVENT, sync);
