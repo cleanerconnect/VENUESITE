@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { Icon } from "@/components/dashboard/primitives";
-import { isActive, itemsInLot, resolveWorkspace } from "@/lib/nav/workspaces";
+import { isActive, itemsInLot, workspaceFor } from "@/lib/nav/workspaces";
 import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { useChromeCommand } from "@/lib/nav/chrome-commands";
 import { cn } from "@/lib/utils/cn";
@@ -27,10 +27,13 @@ const FULLSCREEN_ROUTES = [
 
 export function BottomTabs() {
   const pathname = usePathname();
-  const workspace = resolveWorkspace(pathname);
   // A tab bar with a dead tab is worse than a shorter tab bar: under
   // Lot 1 the queue is not registered, so it is not offered.
-  const { lot } = useWorkspaceAccess();
+  const { lot, venue } = useWorkspaceAccess();
+  // `workspaceFor`, not `resolveWorkspace`: on « Plus » the path belongs
+  // to neither product and the account decides, or a partner's bottom
+  // bar turned into the organizer's on the fourth tab.
+  const workspace = workspaceFor(pathname, venue);
   const tabs = itemsInLot(workspace.tabs, lot);
   const runTabCommand = useChromeCommand();
 

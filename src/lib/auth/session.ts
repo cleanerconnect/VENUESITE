@@ -24,6 +24,16 @@ export interface Session {
   organizerId: string;
   role: Role;
   email: string;
+  /**
+   * The signed-in person's name, mirrored from the server session.
+   *
+   * Optional because a mirror written before this field existed is
+   * still a valid session; the chrome falls back to the fixture table
+   * and then to drawing nothing. It is here because the alternative —
+   * looking the name up in a two-row fixture table — named Mido Reffas
+   * at every partner the table does not hold.
+   */
+  fullName?: string;
   expiresAt: number; // ms epoch
 }
 

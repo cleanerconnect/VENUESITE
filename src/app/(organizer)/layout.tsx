@@ -65,9 +65,22 @@ export default async function OrganizerLayout({
           : "scanner"
       : (account?.eventRole ?? "scanner");
 
+  // The active establishment, named the way the sidebar's switcher names
+  // it, so the phone's « Plus » screen and the desktop card say the same
+  // thing about the same venue.
+  const activeVenue = session.venues.find((v) => v.id === session.venueId);
+  const venueEntity = activeVenue
+    ? {
+        initials: activeVenue.initials,
+        shortName: activeVenue.shortName,
+        subline: `${activeVenue.kind === "drinks" ? "Bar" : "Restaurant"} · ${activeVenue.city}`,
+      }
+    : null;
+
   const access = {
     event: (account?.organizations.length ?? 0) > 0,
     venue: session.venues.length > 0,
+    venueEntity,
     configuration,
     // Read once here for the same reason as the configuration: the
     // sidebar, the drawer and the Plus sheet all filter on it, and
@@ -85,6 +98,7 @@ export default async function OrganizerLayout({
       <SessionSync
         userId={session.userId}
         email={session.email}
+        fullName={session.fullName}
         organizerId={account?.organizations[0]?.id ?? ""}
         role={viewerRole}
       />

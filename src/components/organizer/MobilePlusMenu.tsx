@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Icon } from "@/components/dashboard/primitives";
 import type { IconKey } from "@/lib/dashboard/icons";
-import { itemsInLot, resolveWorkspace, visibleItems } from "@/lib/nav/workspaces";
+import { itemsInLot, visibleItems, workspaceFor } from "@/lib/nav/workspaces";
 import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
@@ -67,9 +67,17 @@ export function MobilePlusMenu({
   const profile = useProfile();
   const role = useRole();
   const user = useUser();
-  const { lot } = useWorkspaceAccess();
-  const workspace = resolveWorkspace(pathname);
-  const orgName = workspace.entity?.shortName ?? profile?.shortName ?? "";
+  const { lot, venue, venueEntity } = useWorkspaceAccess();
+  // This screen is one of the two the two products share, so the path
+  // cannot say which nav to draw — the account does. See `workspaceFor`.
+  const workspace = workspaceFor(pathname, venue);
+  // The card above the nav, in the order the facts are trustworthy: the
+  // workspace's own identity if it declares one, then the establishment
+  // the layout resolved, then the organizer profile. A partner who holds
+  // no organisation has no profile at all, and used to get the default
+  // one — a festival's name over a restaurant's nav.
+  const entity = workspace.entity ?? venueEntity ?? profile ?? null;
+  const orgName = entity?.shortName ?? "";
   const closeDrawer = useMobileNavStore((s) => s.setDrawerOpen);
 
   const handleLogout = () => {
@@ -116,22 +124,22 @@ export function MobilePlusMenu({
           profile and role at will — a switch that exists in no signed-in
           product and let a reviewer land in a role they were never
           granted. */}
-      {profile ? (
+      {entity ? (
         <div className="w-full bg-surface border border-line rounded-[var(--radius-lg)] p-4">
           <div className="flex items-center gap-3">
             <div
               className="h-12 w-12 rounded-chip flex items-center justify-center text-violet-deep font-bold text-[14px] shrink-0"
               style={{ background: "var(--color-violet-soft)" }}
             >
-              {profile.initials}
+              {entity.initials}
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-eyebrow text-ink-mute">Profil actif</div>
               <div className="text-[14px] font-semibold text-ink truncate mt-0.5">
-                {profile.shortName}
+                {entity.shortName}
               </div>
               <div className="text-meta text-ink-mute truncate">
-                {profile.subline}
+                {entity.subline}
               </div>
             </div>
           </div>
