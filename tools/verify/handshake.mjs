@@ -49,6 +49,33 @@ await requireSharedDatabase(
   "La poignée de main entre le portail et l'application",
 );
 const API = process.env.API ?? "http://localhost:8099";
+
+// And the app itself has to be answering.
+//
+// `requireSharedDatabase` above asks the *portal* which engine it
+// opened; it cannot ask whether the other product is running. So a
+// portal on Postgres with no app behind it got all the way to the first
+// `fetch` and died on ECONNREFUSED with a Node stack — which reads like
+// the handshake failed, when nothing was ever shaken. Every other tool
+// in this directory says what it needs and exits zero; this one does
+// now too.
+try {
+  const probe = await fetch(`${API}/api/restaurants?limit=1`, {
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!probe.ok) throw new Error(`HTTP ${probe.status}`);
+} catch (error) {
+  console.log(
+    "La poignée de main a besoin de l'API de l'application : " +
+      `rien ne répond sur ${API} (${String(error?.message ?? error).slice(0, 60)}).`,
+  );
+  console.log(
+    "Lancer `cleanerconnect/lyfe` avec le même DATABASE_URL que le " +
+      "portail, puis relancer avec API=… si le port diffère.",
+  );
+  process.exit(0);
+}
+
 const EXTERNAL_MAP = /tile\.openstreetmap\.org|nominatim\.openstreetmap\.org|\/api\/geocode/;
 
 const problems = [];

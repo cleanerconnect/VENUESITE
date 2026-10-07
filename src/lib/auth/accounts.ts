@@ -63,6 +63,16 @@ interface DemoAccount {
  * user id, so the two never disagree about who may open what. Only the
  * event side needs its membership spelled out here, because there is no
  * event backend to hold it yet.
+ *
+ * That is also how this fixture obeys the Lot 1 rule without naming it.
+ * Lot 1 is one account per establishment — no roles, no switcher — and
+ * the fixture cannot grant a second venue because it grants none at
+ * all: `resolveAccount` asks `directory()`, and under Lot 1 that seam
+ * narrows every account to the one establishment it owns, whichever
+ * branch answered. So `LYFE_DEMO_ACCOUNTS=1` on a database that has not
+ * had `009-un-proprietaire-par-etablissement.lot1.sql` yet lands on the
+ * establishment rather than on the chooser, and so does a Business
+ * Service that still answers with two.
  */
 const ACCOUNTS: DemoAccount[] = [
   {
@@ -76,8 +86,12 @@ const ACCOUNTS: DemoAccount[] = [
   {
     // Two venues *and* an organisation — the account that exercises both
     // the workspace switcher and the venue switcher. Lot 2 only: the
-    // Lot 1 seed writes no staff row for him, because a dashboard with
-    // one owner per establishment has nothing to switch.
+    // Lot 1 seed writes no staff row for him, and migration 009 removes
+    // the ones an older database still has, because a dashboard with
+    // one owner per establishment has nothing to switch. Under Lot 1 he
+    // therefore holds an organisation and no venue, and sign-in takes
+    // him to the event dashboard — which is honest: that is all he
+    // holds.
     userId: "usr_yassine",
     email: "yassine@darzellij.ma",
     password: "demo",
@@ -99,6 +113,10 @@ const ACCOUNTS: DemoAccount[] = [
     // choose. Under Lot 2 the seed gives him a second venue and a
     // manager's role, and he becomes the account that has to pick one
     // before the portal can show it anything.
+    //
+    // He is the address in HANDOFF.md, and the one the chooser used to
+    // catch on production: a database seeded before 5 October still
+    // held his manager rows at both establishments.
     userId: "usr_rachid",
     email: "rachid@darzellij.ma",
     password: "demo",
@@ -253,6 +271,12 @@ export function destinationFor(account: ResolvedAccount): {
   return {
     workspace: "venue",
     href: "/restaurant",
+    // One venue, nothing to choose: the chooser is for picking between
+    // establishments, and there is no such thing as picking between
+    // one. Under Lot 1 this is always false — `directory()` narrows an
+    // account to the establishment it owns, because the lot ships no
+    // switcher to change your mind with afterwards — and the venue is
+    // written to the cookie below rather than left to a default.
     needsVenueChoice: account.venues.length > 1,
   };
 }

@@ -27,6 +27,28 @@
 // existing database to alter. A contributor with an old `.data/lyfe.db`
 // reseeds rather than migrates.
 //
+// ── Migrations that belong to one lot ────────────────────────────────
+//
+// A file named `….lot1.sql` applies only where the lot in force is 1,
+// and `….lot2.sql` only where it is 2. The lot is read the same way
+// everything else reads it — `LYFE_LOT`, anything but `2` meaning 1 —
+// so the rule cannot drift from `src/lib/lot`.
+//
+// A migration the lot does not want is **skipped without being
+// stamped**, which is the whole point: a deployment running Lot 2 today
+// and flipped to Lot 1 next week gets it on the next build, not never.
+// The cost of that choice is its mirror image — a Lot 1 deployment
+// flipped to Lot 2 keeps whatever the Lot 1 migration did, because a
+// ledger entry is a fact about the database and not about the flag.
+// `009` below is the only one of these so far, and reversing it is
+// `npm run db:reset` on a local database or a reseed on a remote one.
+//
+// A data migration is also the one kind `schema.sql` does *not*
+// describe, so the fresh-database branch could not simply stamp it —
+// except that on a fresh database `db/seed.mjs` has already written the
+// result, lot by lot. Stamping stays correct; the applicable ones are
+// stamped and the rest are left for the lot that wants them.
+//
 // It runs as *one transaction holding one advisory lock*, because on
 // Vercel this is a build step and two builds can start within the same
 // second. `CREATE TABLE IF NOT EXISTS` is idempotent but not
@@ -43,9 +65,26 @@ import { connect, schemaTables, SCHEMA_LOCK } from "./pg.mjs";
 
 const schema = readFileSync(resolve("db/schema.sql"), "utf8");
 const compat = readFileSync(resolve("db/postgres-compat.sql"), "utf8");
-const migrations = readdirSync(resolve("db/migrations"))
+/**
+ * The lot in force, by the same rule as `src/lib/lot`: anything that is
+ * not exactly `2` is Lot 1, a misspelt value included.
+ */
+const LOT = process.env.LYFE_LOT?.trim() === "2" ? 2 : 1;
+
+/** The lot a filename claims, or null for one that belongs to both. */
+const lotOf = (id) => {
+  const found = /\.lot([12])\.sql$/.exec(id);
+  return found ? Number(found[1]) : null;
+};
+
+/** Whether this deployment's lot wants this migration at all. */
+const applies = (id) => (lotOf(id) ?? LOT) === LOT;
+
+const all = readdirSync(resolve("db/migrations"))
   .filter((f) => f.endsWith(".sql"))
   .sort();
+const migrations = all.filter(applies);
+const held = all.filter((id) => !applies(id));
 
 const client = await connect();
 try {
@@ -79,7 +118,7 @@ try {
   if (!existed) {
     for (const id of migrations) if (!applied.has(id)) await stamp(id);
     console.log(
-      `base neuve — ${migrations.length} migration(s) déjà décrite(s) par le schéma, marquée(s) comme appliquée(s)`,
+      `base neuve — ${migrations.length} migration(s) déjà décrite(s) par le schéma ou par la semence, marquée(s) comme appliquée(s)`,
     );
   } else {
     const pending = migrations.filter((id) => !applied.has(id));
@@ -106,6 +145,21 @@ try {
       console.log(`migration appliquée · ${id}`);
     }
     if (pending.length === 0) console.log("aucune migration en attente");
+  }
+
+  // Said out loud rather than passed over in silence: a migration left
+  // unstamped is one the next build will reconsider, and an operator
+  // reading this log should know the ledger is deliberately incomplete.
+  //
+  // Only the ones still absent from the ledger. A database that already
+  // ran this migration under the other lot has it, and saying it is
+  // waiting would be a lie about what is in the base.
+  const waiting = held.filter((id) => !applied.has(id));
+  if (waiting.length) {
+    console.log(
+      `lot ${LOT} — ${waiting.length} migration(s) réservée(s) à l'autre ` +
+        `lot, ni appliquée(s) ni inscrite(s) au registre : ${waiting.join(", ")}`,
+    );
   }
 
   await client.query("COMMIT");
