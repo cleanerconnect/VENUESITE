@@ -15,7 +15,15 @@
 
 import { chromiumOrExplain } from "./browser.mjs";
 import { writeFileSync } from "node:fs";
-import { LOT, LOT_LABEL, clockLine, requireWrites, signIn as sharedSignIn } from "./lot.mjs";
+import {
+  LOT,
+  LOT_LABEL,
+  OWNER_EMAIL,
+  clockLine,
+  ownerOf,
+  requireWrites,
+  signIn as sharedSignIn,
+} from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -80,7 +88,7 @@ const BROKEN = /Cette page n'a pas pu charger|Application error|Internal Server 
 // login screen asks which one — and because a fixed sleep was long
 // enough on SQLite and not on Postgres, which made « le bon mot de
 // passe ouvre le portail » fail on one engine only. See `lot.mjs`.
-const signIn = async (email = "yassine@darzellij.ma", password = "demo") =>
+const signIn = async (email = OWNER_EMAIL, password = "demo") =>
   sharedSignIn(page, BASE, { email, password, venue: "Dar Zellij" });
 
 /** The pending request may be at dinner while the screen opens on
@@ -98,7 +106,7 @@ const openPending = async () => {
 console.log(`\nCas limites · ${LOT_LABEL} · ${width}×${height} · ${clockLine()}\n`);
 
 // ── 1. A mistyped password ──────────────────────────────────
-await signIn("yassine@darzellij.ma", "pasledemo");
+await signIn(OWNER_EMAIL, "pasledemo");
 const refused = await text();
 check("un mauvais mot de passe est refusé", page.url().includes("/login"), page.url());
 check(
@@ -415,14 +423,14 @@ if (await hoursTab.count()) {
 // ── 9. The bar vocabulary ───────────────────────────────────
 // Nomad Casa is a lounge in the seed: the same screens have to speak
 // « personnes » where the restaurant says « couverts ».
-// The switcher is a dropdown in the sidebar; setting the cookie it
-// writes is the same thing without six clicks, and the assertion is
-// about the vocabulary, not about the menu.
-// The venue cookie is signed since the audit — an unsigned value is
-// ignored, which is the whole point of signing it. So the switch goes
-// through the route the switcher itself calls; `context.request` shares
-// this context's cookie jar, so the signed cookie lands where the page
-// will read it.
+//
+// Under Lot 2 one account holds both establishments, and the way in is
+// the cookie the switcher writes — signed since the audit, so the
+// switch goes through the route the switcher itself calls rather than
+// through a hand-made cookie. Under Lot 1 there is no switcher and no
+// account holding two venues: the way in is the other owner's
+// sign-in. `ownerOf` knows which, in both lots.
+await sharedSignIn(page, BASE, { email: ownerOf("bar_nomad_casa") });
 await context.request.post(`${BASE}/api/session/venue`, {
   data: { venueId: "bar_nomad_casa" },
 });

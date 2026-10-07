@@ -27,11 +27,21 @@ export function VenueSwitcher({
   venues,
   activeVenueId,
   eventSpaceHref,
+  switchable = true,
 }: {
   venues: SwitchableVenue[];
   activeVenueId: string;
   /** Set when the account also holds the event space. */
   eventSpaceHref?: string;
+  /**
+   * Whether the card opens.
+   *
+   * False in Lot 1, where an account holds exactly one establishment
+   * and holds it as its owner — the scope agreed on 5 October. A menu
+   * with one item, ticked, is a control that asks a question with one
+   * answer; the card then states the venue and nothing more.
+   */
+  switchable?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -53,11 +63,32 @@ export function VenueSwitcher({
     if (res.ok) router.refresh();
   };
 
-  // Always a menu, even for one venue. The event sidebar's identity card
-  // always carries its chevron and always opens — it is the one control
-  // that moves you between spaces — and this is the same card. With a
-  // single venue the menu names it, ticked, and offers the other space
-  // when the account holds it.
+  const identity = (
+    <>
+      <Avatar initials={active.initials} />
+      <div className="min-w-0 flex-1">
+        <div className="text-nav font-semibold text-ink truncate">
+          {active.shortName}
+        </div>
+        <div className="text-meta text-ink-mute truncate">{label(active)}</div>
+      </div>
+    </>
+  );
+
+  // One establishment, one account, no door out: the card is a label.
+  if (!switchable) {
+    return (
+      <div className="w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] p-3">
+        {identity}
+      </div>
+    );
+  }
+
+  // Otherwise always a menu, even for one venue. The event sidebar's
+  // identity card always carries its chevron and always opens — it is
+  // the one control that moves you between spaces — and this is the
+  // same card. With a single venue the menu names it, ticked, and
+  // offers the other space when the account holds it.
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -66,15 +97,7 @@ export function VenueSwitcher({
           className="w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow disabled:opacity-60"
           aria-label={`Lieu actif : ${active.shortName}. Changer de lieu.`}
         >
-          <Avatar initials={active.initials} />
-          <div className="min-w-0 flex-1">
-            <div className="text-nav font-semibold text-ink truncate">
-              {active.shortName}
-            </div>
-            <div className="text-meta text-ink-mute truncate">
-              {label(active)}
-            </div>
-          </div>
+          {identity}
           <ChevronRight size={20} className="text-ink-mute shrink-0" />
         </button>
       </DropdownMenu.Trigger>

@@ -20,14 +20,14 @@
 // in rendered text is a failure, wherever it comes from.
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { venueScreens, LOT_LABEL } from "./lot.mjs";
+import { venueScreens, LOT_LABEL, OWNER_EMAIL } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const width = Number(process.env.W ?? 1440);
 const height = Number(process.env.H ?? 1000);
-const EMAIL = process.env.EMAIL ?? "yassine@darzellij.ma";
+const EMAIL = process.env.EMAIL ?? OWNER_EMAIL;
 const VENUE = process.env.VENUE ?? "rst_dar_zellij";
 
 // `null` only on its own line: « null » inside a sentence is French for

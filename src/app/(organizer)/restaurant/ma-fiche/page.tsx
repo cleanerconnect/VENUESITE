@@ -112,6 +112,10 @@ export default async function MaFichePage({ searchParams }: Props) {
           the form itself decides that: a tag is a concept a basique
           deployment has no screen for. */}
       <VenueSettings
+      // Fériés et privatisations : Lot 2's, since 5 October. The app
+      // does not read a closed day, so collecting one here would tell a
+      // partner the kitchen is shut on a date the app still sells.
+      closures={lot === 2}
       only={
         lot === 1
           ? ["identity", "listing", "hours", "media", "menu_file"]

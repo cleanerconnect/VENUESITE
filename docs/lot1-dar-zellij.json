@@ -1,10 +1,10 @@
 {
-  "base": "http://localhost:3230",
-  "venue": "",
-  "account": "yassine@darzellij.ma",
+  "base": "http://localhost:3280",
+  "venue": "rst_dar_zellij",
+  "account": "rachid@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-09-24T19:30:07.041Z",
+  "capturedAt": "2026-10-08T19:30:09.538Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
@@ -14,10 +14,10 @@
       "dependsOn": null,
       "roles": null,
       "workspace": "venue",
-      "title": "Bonsoir, Yassine. Le service est lancé.",
+      "title": "Bonsoir, Rachid. Le service est lancé.",
       "eyebrow": null,
       "subtitle": "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées.",
-      "venue": "YA",
+      "venue": "DZ",
       "blocks": [
         {
           "kind": "list",
@@ -28,28 +28,23 @@
             "Check-in",
             "Accepter",
             "Refuser",
-            "Décaler",
             "Absent",
             "Accepter",
             "Refuser",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "21 tables installéesAfficher"
@@ -109,8 +104,8 @@
               "actions": [
                 "Accepter",
                 "Refuser",
-                "Décaler",
-                "Absent"
+                "Absent",
+                "Accepter"
               ],
               "lead": {
                 "time": "21h30",
@@ -128,8 +123,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "20h30",
@@ -147,8 +142,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "21h00",
@@ -166,8 +161,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "21h00",
@@ -185,8 +180,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "22h00",
@@ -206,28 +201,23 @@
             "Check-in",
             "Accepter",
             "Refuser",
-            "Décaler",
             "Absent",
             "Accepter",
             "Refuser",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "21 tables installéesAfficher"
@@ -287,8 +277,8 @@
               "actions": [
                 "Accepter",
                 "Refuser",
-                "Décaler",
-                "Absent"
+                "Absent",
+                "Accepter"
               ],
               "lead": {
                 "time": "21h30",
@@ -306,8 +296,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "20h30",
@@ -325,8 +315,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "21h00",
@@ -344,8 +334,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "21h00",
@@ -363,8 +353,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "22h00",
@@ -388,7 +378,7 @@
       "title": "Réservations",
       "eyebrow": null,
       "subtitle": null,
-      "venue": "YA",
+      "venue": "DZ",
       "blocks": [
         {
           "kind": "list",
@@ -399,28 +389,23 @@
             "Dîner",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Accepter",
             "Refuser",
-            "Décaler",
             "Absent",
             "Accepter",
             "Refuser",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent"
           ],
@@ -443,7 +428,7 @@
             }
           ],
           "texts": [
-            "jeudi 24 septembre",
+            "jeudi 8 octobre",
             "Aujourd'hui.",
             "Choisir une date",
             "Déjeuner",
@@ -491,12 +476,6 @@
             "Hind Tazi",
             "Confirmée",
             "+212 660 15 62 40 · Grande salle · Téléphone",
-            "20h00",
-            "·",
-            "4 couverts",
-            "Hakim Sbaï",
-            "Arrivé",
-            "+212 612758220 · Terrasse · LYFE",
             "20h00",
             "·",
             "2 couverts",
@@ -557,12 +536,18 @@
             "Table Koutoubia",
             "Arrivé",
             "+212 612482398 · Grande salle · site",
+            "20h00",
+            "·",
+            "4 couverts",
+            "Hakim Sbaï",
+            "Arrivé",
+            "+212 612758220 · Terrasse · LYFE",
             "20h30",
             "·",
-            "5 couverts",
-            "Mehdi Bouzoubaa",
+            "4 couverts",
+            "Rachid Benjelloun",
             "Arrivé",
-            "+212 610965377 · Patio · LYFE"
+            "+212 610137911 · Patio · Téléphone"
           ],
           "items": [
             {
@@ -574,8 +559,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "20h30",
@@ -593,8 +578,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "21h00",
@@ -612,8 +597,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "21h00",
@@ -631,8 +616,8 @@
               "actions": [
                 "Accepter",
                 "Refuser",
-                "Décaler",
-                "Absent"
+                "Absent",
+                "Accepter"
               ],
               "lead": {
                 "time": "21h30",
@@ -650,28 +635,14 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "22h00",
                 "party": "5 couverts"
               },
               "state": "Confirmée",
-              "note": null
-            },
-            {
-              "title": "Hakim Sbaï",
-              "meta": "+212 612758220 · Terrasse · LYFE",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h00",
-                "party": "4 couverts"
-              },
-              "state": "Arrivé",
               "note": null
             },
             {
@@ -815,36 +786,22 @@
               "note": null
             },
             {
-              "title": "Mehdi Bouzoubaa",
-              "meta": "+212 610965377 · Patio · LYFE",
+              "title": "Hakim Sbaï",
+              "meta": "+212 612758220 · Terrasse · LYFE",
               "initials": null,
               "trailing": null,
               "pills": [],
               "actions": [],
               "lead": {
-                "time": "20h30",
-                "party": "5 couverts"
+                "time": "20h00",
+                "party": "4 couverts"
               },
               "state": "Arrivé",
               "note": null
             },
             {
-              "title": "Réda Amrani",
-              "meta": "+212 612068665 · Grande salle · LYFE",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h30",
-                "party": "3 couverts"
-              },
-              "state": "Arrivé",
-              "note": null
-            },
-            {
-              "title": "Groupe Atlas",
-              "meta": "+212 611241199 · Grande salle · Téléphone",
+              "title": "Rachid Benjelloun",
+              "meta": "+212 610137911 · Patio · Téléphone",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -852,34 +809,6 @@
               "lead": {
                 "time": "20h30",
                 "party": "4 couverts"
-              },
-              "state": "Arrivé",
-              "note": null
-            },
-            {
-              "title": "Adil Berrechid",
-              "meta": "+212 612620309 · Patio · LYFE",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h30",
-                "party": "4 couverts"
-              },
-              "state": "Arrivé",
-              "note": null
-            },
-            {
-              "title": "Laila Zniber",
-              "meta": "+212 612344487 · Terrasse · Téléphone",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h30",
-                "party": "2 couverts"
               },
               "state": "Arrivé",
               "note": null
@@ -887,20 +816,6 @@
             {
               "title": "Groupe Ziyad",
               "meta": "+212 610413733 · Grande salle · LYFE",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h30",
-                "party": "6 couverts"
-              },
-              "state": "Arrivé",
-              "note": null
-            },
-            {
-              "title": "Famille Tazi",
-              "meta": "+212 611792843 · Patio · Téléphone",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -927,6 +842,34 @@
               "note": null
             },
             {
+              "title": "Mehdi Bouzoubaa",
+              "meta": "+212 610965377 · Patio · LYFE",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "5 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
+              "title": "Groupe Atlas",
+              "meta": "+212 611241199 · Grande salle · Téléphone",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "4 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
               "title": "Nawal Rifai",
               "meta": "+212 611517021 · Terrasse · LYFE",
               "initials": null,
@@ -941,8 +884,50 @@
               "note": null
             },
             {
-              "title": "Rachid Benjelloun",
-              "meta": "+212 610137911 · Patio · Téléphone",
+              "title": "Famille Tazi",
+              "meta": "+212 611792843 · Patio · Téléphone",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "6 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
+              "title": "Réda Amrani",
+              "meta": "+212 612068665 · Grande salle · LYFE",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "3 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
+              "title": "Laila Zniber",
+              "meta": "+212 612344487 · Terrasse · Téléphone",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "2 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
+              "title": "Adil Berrechid",
+              "meta": "+212 612620309 · Patio · LYFE",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -965,28 +950,23 @@
             "Dîner",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent",
             "Accepter",
             "Refuser",
-            "Décaler",
             "Absent",
             "Accepter",
             "Refuser",
             "Check-in",
             "Absent",
-            "Décaler",
             "Check-in",
             "Absent"
           ],
@@ -1009,7 +989,7 @@
             }
           ],
           "texts": [
-            "jeudi 24 septembre",
+            "jeudi 8 octobre",
             "Aujourd'hui.",
             "Choisir une date",
             "Déjeuner",
@@ -1057,12 +1037,6 @@
             "Hind Tazi",
             "Confirmée",
             "+212 660 15 62 40 · Grande salle · Téléphone",
-            "20h00",
-            "·",
-            "4 couverts",
-            "Hakim Sbaï",
-            "Arrivé",
-            "+212 612758220 · Terrasse · LYFE",
             "20h00",
             "·",
             "2 couverts",
@@ -1123,12 +1097,18 @@
             "Table Koutoubia",
             "Arrivé",
             "+212 612482398 · Grande salle · site",
+            "20h00",
+            "·",
+            "4 couverts",
+            "Hakim Sbaï",
+            "Arrivé",
+            "+212 612758220 · Terrasse · LYFE",
             "20h30",
             "·",
-            "5 couverts",
-            "Mehdi Bouzoubaa",
+            "4 couverts",
+            "Rachid Benjelloun",
             "Arrivé",
-            "+212 610965377 · Patio · LYFE"
+            "+212 610137911 · Patio · Téléphone"
           ],
           "items": [
             {
@@ -1140,8 +1120,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "20h30",
@@ -1159,8 +1139,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "21h00",
@@ -1178,8 +1158,8 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "21h00",
@@ -1197,8 +1177,8 @@
               "actions": [
                 "Accepter",
                 "Refuser",
-                "Décaler",
-                "Absent"
+                "Absent",
+                "Accepter"
               ],
               "lead": {
                 "time": "21h30",
@@ -1216,28 +1196,14 @@
               "actions": [
                 "Check-in",
                 "Absent",
-                "Décaler",
-                "Check-in"
+                "Check-in",
+                "Absent"
               ],
               "lead": {
                 "time": "22h00",
                 "party": "5 couverts"
               },
               "state": "Confirmée",
-              "note": null
-            },
-            {
-              "title": "Hakim Sbaï",
-              "meta": "+212 612758220 · Terrasse · LYFE",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h00",
-                "party": "4 couverts"
-              },
-              "state": "Arrivé",
               "note": null
             },
             {
@@ -1381,36 +1347,22 @@
               "note": null
             },
             {
-              "title": "Mehdi Bouzoubaa",
-              "meta": "+212 610965377 · Patio · LYFE",
+              "title": "Hakim Sbaï",
+              "meta": "+212 612758220 · Terrasse · LYFE",
               "initials": null,
               "trailing": null,
               "pills": [],
               "actions": [],
               "lead": {
-                "time": "20h30",
-                "party": "5 couverts"
+                "time": "20h00",
+                "party": "4 couverts"
               },
               "state": "Arrivé",
               "note": null
             },
             {
-              "title": "Réda Amrani",
-              "meta": "+212 612068665 · Grande salle · LYFE",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h30",
-                "party": "3 couverts"
-              },
-              "state": "Arrivé",
-              "note": null
-            },
-            {
-              "title": "Groupe Atlas",
-              "meta": "+212 611241199 · Grande salle · Téléphone",
+              "title": "Rachid Benjelloun",
+              "meta": "+212 610137911 · Patio · Téléphone",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -1418,34 +1370,6 @@
               "lead": {
                 "time": "20h30",
                 "party": "4 couverts"
-              },
-              "state": "Arrivé",
-              "note": null
-            },
-            {
-              "title": "Adil Berrechid",
-              "meta": "+212 612620309 · Patio · LYFE",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h30",
-                "party": "4 couverts"
-              },
-              "state": "Arrivé",
-              "note": null
-            },
-            {
-              "title": "Laila Zniber",
-              "meta": "+212 612344487 · Terrasse · Téléphone",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h30",
-                "party": "2 couverts"
               },
               "state": "Arrivé",
               "note": null
@@ -1453,20 +1377,6 @@
             {
               "title": "Groupe Ziyad",
               "meta": "+212 610413733 · Grande salle · LYFE",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": {
-                "time": "20h30",
-                "party": "6 couverts"
-              },
-              "state": "Arrivé",
-              "note": null
-            },
-            {
-              "title": "Famille Tazi",
-              "meta": "+212 611792843 · Patio · Téléphone",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -1493,6 +1403,34 @@
               "note": null
             },
             {
+              "title": "Mehdi Bouzoubaa",
+              "meta": "+212 610965377 · Patio · LYFE",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "5 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
+              "title": "Groupe Atlas",
+              "meta": "+212 611241199 · Grande salle · Téléphone",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "4 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
               "title": "Nawal Rifai",
               "meta": "+212 611517021 · Terrasse · LYFE",
               "initials": null,
@@ -1507,8 +1445,50 @@
               "note": null
             },
             {
-              "title": "Rachid Benjelloun",
-              "meta": "+212 610137911 · Patio · Téléphone",
+              "title": "Famille Tazi",
+              "meta": "+212 611792843 · Patio · Téléphone",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "6 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
+              "title": "Réda Amrani",
+              "meta": "+212 612068665 · Grande salle · LYFE",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "3 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
+              "title": "Laila Zniber",
+              "meta": "+212 612344487 · Terrasse · Téléphone",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [],
+              "lead": {
+                "time": "20h30",
+                "party": "2 couverts"
+              },
+              "state": "Arrivé",
+              "note": null
+            },
+            {
+              "title": "Adil Berrechid",
+              "meta": "+212 612620309 · Patio · LYFE",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -1556,7 +1536,6 @@
           ],
           "buttons": [
             "Marquer comme arrivé",
-            "Décaler",
             "Refuser",
             "Absent"
           ],
@@ -1605,7 +1584,7 @@
       "title": "Check-in",
       "eyebrow": null,
       "subtitle": "Dar Zellij · 5 arrivées encore attendues",
-      "venue": "YA",
+      "venue": "DZ",
       "blocks": [
         {
           "kind": "prose",
@@ -1697,18 +1676,20 @@
       "title": "Ma fiche",
       "eyebrow": null,
       "subtitle": "L'établissement tel que l'application le montre : identité, cuisine, prix, ambiance, équipements, adresse, photos, carte et horaires.",
-      "venue": "YA",
+      "venue": "DZ",
       "blocks": [
         {
           "kind": "settings",
-          "heading": "Identité",
-          "subheading": "Ce que les clients voient dans l'application.",
+          "heading": "Vignette",
+          "subheading": "Le carré qui vous représente dans les listes de l'application.",
           "actions": [
             "Identité",
-            "Fiche",
+            "Détails",
             "Horaires",
             "Photos",
             "Menu",
+            "Remplacer",
+            "Retirer",
             "+",
             "−",
             "Trouver sur la carte",
@@ -1719,10 +1700,14 @@
           "texts": [
             "Ma fiche",
             "L'établissement tel que l'application le montre : identité, cuisine, prix, ambiance, équipements, adresse, photos, carte et horaires.",
-            "Fiche",
+            "Détails",
             "Horaires",
             "Photos",
             "Menu",
+            "Vignette",
+            "Le carré qui vous représente dans les listes de l'application.",
+            "Votre logo, ou une photo carrée. L'application l'affiche dans un carré : la vôtre est recadrée au centre avant l'envoi, et l'aperçu ci-contre est le résultat.",
+            "PNG, SVG+XML, WEBP · max 2 Mo",
             "Identité",
             "Ce que les clients voient dans l'application.",
             "Nom du lieu",
@@ -1732,8 +1717,6 @@
             "Une ligne sur les cartes de l'application. 13 caractères restants.",
             "Description",
             "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
-            "Type de cuisine",
-            "Ex. Cuisine marocaine contemporaine, tajines et pastilla",
             "Catégorie",
             "Ex. Restaurant gastronomique, riad",
             "Adresse et contact",
@@ -1758,6 +1741,11 @@
           ],
           "fields": [
             {
+              "label": "PNG, SVG+XML, WEBP · max 2 Mo",
+              "value": "",
+              "type": "file"
+            },
+            {
               "label": "Nom du lieu",
               "value": "Dar Zellij",
               "type": "text"
@@ -1776,11 +1764,6 @@
               "label": "Description",
               "value": "Cuisine marocaine contemporaine dans un riad du XIXe siècle. Patio, grande salle et terrasse sur les toits.",
               "type": "textarea"
-            },
-            {
-              "label": "Type de cuisine",
-              "value": "Cuisine marocaine contemporaine, tajines et pastilla",
-              "type": "text"
             },
             {
               "label": "Catégorie",
@@ -1833,17 +1816,16 @@
       "title": "Disponibilités",
       "eyebrow": null,
       "subtitle": "Ce que l'application peut proposer",
-      "venue": "YA",
+      "venue": "DZ",
       "blocks": [
         {
-          "kind": "list",
+          "kind": "settings",
           "heading": "Services",
           "subheading": "Coupé : visible, mais plus réservable.",
           "actions": [
             "Ajouter un service",
             "Retirer ce service",
-            "Retirer ce service",
-            "Fermer une journée"
+            "Retirer ce service"
           ],
           "facets": [],
           "texts": [
@@ -1968,17 +1950,116 @@
             "01h45",
             "02h00"
           ],
-          "items": [
+          "fields": [
             {
-              "title": "mar. 6 oct.",
-              "meta": "Privatisation",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [],
-              "lead": null,
-              "state": null,
-              "note": null
+              "label": "Ouverture",
+              "value": "12h00",
+              "type": "select-one"
+            },
+            {
+              "label": "Fermeture",
+              "value": "15h00",
+              "type": "select-one"
+            },
+            {
+              "label": "Dernière réservation acceptée",
+              "value": "14h30",
+              "type": "select-one"
+            },
+            {
+              "label": "couverts",
+              "value": "72",
+              "type": "number"
+            },
+            {
+              "label": "Ouverture",
+              "value": "19h00",
+              "type": "select-one"
+            },
+            {
+              "label": "Fermeture",
+              "value": "23h30",
+              "type": "select-one"
+            },
+            {
+              "label": "Dernière réservation acceptée",
+              "value": "22h30",
+              "type": "select-one"
+            },
+            {
+              "label": "couverts",
+              "value": "120",
+              "type": "number"
+            }
+          ],
+          "toggles": [
+            {
+              "label": "Accepter les réservations en ligneCoupé : visible, mais plus réservabl",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "Service ouvert à la réservation",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "LunMarMerJeuVenSamDim",
+              "on": true
+            },
+            {
+              "label": "Service ouvert à la réservation",
+              "on": true
             }
           ]
         },
@@ -2010,7 +2091,7 @@
       "title": "Notifications",
       "eyebrow": null,
       "subtitle": "Ce dont vous êtes prévenu, et comment",
-      "venue": "YA",
+      "venue": "DZ",
       "blocks": [
         {
           "kind": "settings",
@@ -2137,8 +2218,8 @@
             "LYFE · Maroc",
             "Connectez-vous",
             "L'accès à votre établissement sur LYFE.",
-            "Adresse e-mail",
-            "Mot de passe",
+            "*",
+            "*",
             "Se souvenir de moi",
             "Mot de passe oublié ?",
             "Se connecter",
@@ -2146,12 +2227,12 @@
           ],
           "fields": [
             {
-              "label": "Adresse e-mail",
+              "label": "Adresse e-mail *",
               "value": "",
               "type": "email"
             },
             {
-              "label": "Mot de passe",
+              "label": "Mot de passe *",
               "value": "",
               "type": "password"
             },

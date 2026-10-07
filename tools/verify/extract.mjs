@@ -28,7 +28,7 @@
 import { chromiumOrExplain } from "./browser.mjs";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { ROUTES } from "../../src/lib/nav/routes.ts";
-import { LOT, LOT_LABEL, inLot } from "./lot.mjs";
+import { LOT, LOT_LABEL, OWNER_EMAIL, inLot } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -52,7 +52,7 @@ const DEFAULT_OUT =
 const OUT = process.env.OUT ?? DEFAULT_OUT;
 const VENUE = process.env.VENUE ?? "";
 const SHOTS = process.env.SHOTS ?? "";
-const ACCOUNT = process.env.ACCOUNT ?? "yassine@darzellij.ma";
+const ACCOUNT = process.env.ACCOUNT ?? OWNER_EMAIL;
 const ONLY = process.env.ONLY ?? "";
 
 // ── Page-side extractors ───────────────────────────────────────────────

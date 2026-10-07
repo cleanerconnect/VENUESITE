@@ -1,13 +1,13 @@
-// The two new surfaces, captured for page 09.
+// The two surfaces no route renders, captured for page 09.
 //
 //   BASE=… SHOTS=docs/lot1-reference node tools/verify/shots-lot1-changes.mjs
 //   BASE=… W=390 H=844 SHOTS=docs/lot1-reference node … (the phone pair)
 //
 // `extract.mjs` records what a *route* renders, and neither of these is
-// a route: the validation banner only exists on an establishment that is
-// still under review, and the Décaler sheet only exists while a host is
-// deciding. So they are driven here, by the same steps a partner and a
-// host take.
+// a route: the validation banner only exists on an establishment that
+// is still under review, and the review queue only opens for LYFE's own
+// account. So they are driven here, by the same steps a partner and a
+// reviewer take.
 
 import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync } from "node:fs";
@@ -107,25 +107,9 @@ await signIn("validation@lyfe.ma");
 await go("/admin/validations");
 await shot("validation-file");
 
-// ── The Décaler sheet ────────────────────────────────────────
-
-await context.clearCookies();
-await signIn("yassine@darzellij.ma");
-await go("/restaurant/reservations");
-const chip = page.locator('button:has-text("À confirmer"):visible').first();
-if (await chip.count()) {
-  await chip.click();
-  await settle(1200);
-}
-const decaler = page.locator('button:has-text("Décaler"):visible').first();
-if (await decaler.count()) {
-  await decaler.click();
-  await settle(2000);
-  // The sheet, not the page behind it: a full-page shot of a dialog is a
-  // picture of the dim layer.
-  await shot("decaler-feuille", false);
-} else {
-  console.log("  (aucune demande à décaler — feuille non capturée)");
-}
+// The Décaler sheet was captured here too, by opening a request and
+// pressing it. Lot 1 has no such button since 5 October — moving a
+// table is Lot 2's — so there is no sheet to photograph and no frame
+// for it on page 09.
 
 await browser.close();

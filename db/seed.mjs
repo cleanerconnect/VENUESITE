@@ -144,7 +144,23 @@ const LOT2_ONLY = new Set([
 ]);
 
 const VENUE = "rst_dar_zellij";
-const OWNER = "usr_yassine";
+
+// Who holds an establishment, and how many people that is.
+//
+// Lot 2 is a staffed venue: an owner, a manager, two of the floor, and
+// one account — Yassine's — that holds both establishments, because the
+// switcher and the role gates are part of what Lot 2 delivers.
+//
+// Lot 1 is one account per establishment, and it owns it. The scope
+// agreed with DigiNegoce on 5 October is authentication, venue creation
+// and booking management; roles are none of the three, and an account
+// holding two establishments is a chooser between them at sign-in. So
+// Dar Zellij is Rachid's and Nomad is Sofia's, each alone, each owner —
+// `rachid@darzellij.ma` opens the portal on Dar Zellij and on nothing
+// else. The other four people stay in the fixtures and in the Lot 2
+// seed; what Lot 1 drops is the staff rows that let them in.
+const OWNER = LOT === 1 ? "usr_rachid" : "usr_yassine";
+const OWNER2 = LOT === 1 ? "usr_sofia" : "usr_yassine";
 
 const skipped = new Map();
 const insert = (table, row) => {
@@ -225,12 +241,14 @@ insert("business_accounts", {
 );
 
 // ── Staff ────────────────────────────────────────────────────
-[
+(LOT === 1
+  ? [["stf_1", OWNER, "Rachid Amrani", "rachid@darzellij.ma", "owner", 2]]
+  : [
   ["stf_1", OWNER, "Yassine Alami", "yassine@darzellij.ma", "owner", 2],
   ["stf_2", "usr_rachid", "Rachid Amrani", "rachid@darzellij.ma", "manager", 5],
   ["stf_3", "usr_imane", "Imane Ouali", "imane@darzellij.ma", "staff", 40],
   ["stf_4", "usr_karim", "Karim Sefrioui", "karim@darzellij.ma", "staff", 1440],
-].forEach(([id, user, name, email, role, mins]) =>
+]).forEach(([id, user, name, email, role, mins]) =>
   insert("staff", {
     id, venue_id: VENUE, user_id: user, full_name: name, email,
     role, last_active: minutesAgo(mins), pending: 0, created_at: daysAgo(200),
@@ -1044,7 +1062,7 @@ insert("venues", {
 insert("business_accounts", {
   business_id: "biz_nomad",
   venue_id: VENUE2,
-  owner_id: OWNER,
+  owner_id: OWNER2,
   subscription_tier: "annual",
   features_enabled: JSON.stringify([
     "bookings", "availability", "analytics", "reviews", "team",
@@ -1076,13 +1094,15 @@ seedAssets(
   "Nomad Rooftop - Carte des cocktails",
 );
 
-[
+(LOT === 1
+  ? [["stf_n1", OWNER2, "Sofia Bennis", "sofia@nomadrooftop.ma", "owner", 18]]
+  : [
   ["stf_n1", OWNER, "Yassine Alami", "yassine@darzellij.ma", "owner", 2],
   ["stf_n2", "usr_sofia", "Sofia Bennis", "sofia@nomadrooftop.ma", "manager", 18],
   // Rachid manages both venues and holds no event organisation, which
   // makes his the account that lands on the venue chooser at login.
   ["stf_n3", "usr_rachid", "Rachid Amrani", "rachid@darzellij.ma", "manager", 30],
-].forEach(([id, user, name, email, role, mins]) =>
+]).forEach(([id, user, name, email, role, mins]) =>
   insert("staff", {
     id, venue_id: VENUE2, user_id: user, full_name: name, email,
     role, last_active: minutesAgo(mins), pending: 0, created_at: daysAgo(150),

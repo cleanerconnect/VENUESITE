@@ -517,10 +517,25 @@ const waitForParam = async (name, isDone, timeout = 12000) => {
  * is not what it was, with a deadline.
  */
 const clickToAnotherDay = async (button, before, timeout = 15000) => {
-  await button.click();
+  // Pressed again if nothing moved, not just waited on.
+  //
+  // A day arrow re-renders the screen it sits on, and a press that
+  // lands while that render is in flight is swallowed: the button the
+  // browser hands the event to is about to be replaced. It is visible
+  // in a four-click probe on any build — press, press, press, press,
+  // and one of the four does nothing — so an assertion that clicks
+  // once and then waits fifteen seconds is testing which half of the
+  // render it caught. Re-pressing while the screen is still the one we
+  // started on is safe: the press that works is the one that changes
+  // it, and the loop stops there.
   const deadline = Date.now() + timeout;
   let now = before;
+  let lastClick = 0;
   while (Date.now() < deadline) {
+    if (Date.now() - lastClick > 2500) {
+      await button.click().catch(() => {});
+      lastClick = Date.now();
+    }
     now = await dayLabel();
     if (now !== before) return now;
     await page.waitForTimeout(200);

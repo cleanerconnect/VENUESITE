@@ -17,7 +17,14 @@
 //   node tools/verify/configuration.mjs
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT, LOT_LABEL, venuePaths } from "./lot.mjs";
+import {
+  LOT,
+  LOT_LABEL,
+  OWNER_EMAIL,
+  ownerOf,
+  signIn,
+  venuePaths,
+} from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -49,22 +56,34 @@ const browser = await chromium.launch({
 });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
-await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
-await page.fill('input[type="email"]', "yassine@darzellij.ma");
-await page.fill('input[type="password"]', "demo");
-await page.click('button[type="submit"]');
-await page.waitForTimeout(2000);
+await signIn(page, BASE, { email: OWNER_EMAIL });
 
 let fails = 0;
+
+/**
+ * Put this establishment on screen, whoever holds it.
+ *
+ * Lot 2 is one account over two venues and a switcher between them;
+ * Lot 1 is one owner account per venue and no switcher at all, so the
+ * way in is the other owner's sign-in. The `POST` is still made in both
+ * lots: under Lot 2 it is the switch, and under Lot 1 it confirms that
+ * the account that just signed in holds the venue it landed on.
+ */
+async function openVenue(venueId) {
+  const who = ownerOf(venueId);
+  await signIn(page, BASE, { email: who });
+  const switched = await page.request.post(`${BASE}/api/session/venue`, {
+    data: { venueId },
+  });
+  return switched;
+}
 
 async function inspect(venueId, label, expectNightlife, expectWord) {
   // A refused switch is the failure this check exists to catch, and it
   // is silent unless asserted: the page then renders the *other* venue
   // perfectly well, and every assertion below quietly measures the
   // wrong establishment.
-  const switched = await page.request.post(`${BASE}/api/session/venue`, {
-    data: { venueId },
-  });
+  const switched = await openVenue(venueId);
   if (!switched.ok()) {
     console.log(`${label}\n  ✗ bascule refusée (${switched.status()})`);
     fails += 1;
@@ -172,9 +191,7 @@ async function inspect(venueId, label, expectNightlife, expectWord) {
 const RESTAURANT_WORD = /(?<![a-zà-ÿ])couverts?(?![a-zà-ÿ])/i;
 
 async function vocabulary() {
-  const switched = await page.request.post(`${BASE}/api/session/venue`, {
-    data: { venueId: "bar_nomad_casa" },
-  });
+  const switched = await openVenue("bar_nomad_casa");
   if (!switched.ok()) {
     console.log(`Vocabulaire du lounge\n  ✗ bascule refusée (${switched.status()})`);
     fails += 1;

@@ -10,7 +10,11 @@
 // out: it is the one edit that changes what a guest can book right now,
 // so a stale write is refused rather than merged.
 
-import { asSlotMinutes, SLOT_MINUTES } from "@/lib/types/venue-operations";
+import {
+  asSlotMinutes,
+  LOT1_SLOT_MINUTES,
+  SLOT_MINUTES,
+} from "@/lib/types/venue-operations";
 import type { Block, ScreenSpec, SettingRow } from "@/lib/dashboard/spec";
 import { COUNT, MAD, PERCENT } from "@/lib/dashboard/formats";
 import type {
@@ -93,7 +97,7 @@ export function buildAvailabilityScreen(
   };
 
   const serviceCards: Block[] = config.services.map((service) =>
-    serviceCard(service, configuration),
+    serviceCard(service, configuration, lot),
   );
 
   const services: Block = {
@@ -329,11 +333,30 @@ export function buildAvailabilityScreen(
         },
       ];
 
+  // What Lot 1 keeps, and why the rest went.
+  //
+  // DigiNegoce, 5 October: « Quid des Réglages avancés et Règles de
+  // réservation ? A quoi sert cette information ? Comment doit-elle
+  // être exploitée ? — non prioritaire », and for the closures « il n'y
+  // a rien qui permet d'afficher ce détail au niveau de l'appli — non
+  // prioritaire ». Both are true of the app as it stands: nothing
+  // downstream reads a pacing rule or a closed day, so a dashboard that
+  // collected them would be collecting them for itself.
+  //
+  // So Lot 1 is the switch and the services: whether the venue takes
+  // online bookings at all, and the windows it takes them in. The
+  // blocks are still built — Lot 2 renders every one of them — and the
+  // endpoints behind them are still written; what Prio 02 buys is this
+  // screen with two blocks on it.
+  const lot1 = lot === 1;
+
   return {
     slug: "disponibilites",
     title: "Disponibilités",
     subtitle: "Ce que l'application peut proposer",
-    blocks: [master, services, rules, advanced, closures, ...calendarLink],
+    blocks: lot1
+      ? [master, services]
+      : [master, services, rules, advanced, closures, ...calendarLink],
   };
 }
 
@@ -354,6 +377,7 @@ const WEEKDAY_OPTIONS = WEEKDAY_SHORT.map((label, i) => ({
 function serviceCard(
   service: ServiceDefinition,
   configuration: VenueConfiguration,
+  lot: Lot = 2,
 ): Block {
   const vocabulary = configFor(configuration);
   const id = (field: string) => `svc-${service.id}-${field}`;
@@ -373,7 +397,13 @@ function serviceCard(
     // both served a service definition without it — and this line read
     // « créneaux de undefined minutes » on the screen. A backend that
     // omits it gets the schema's default instead.
-    subheading: `${weekdayLabel(service.weekdays)} · ${clock(service.startsAt)} – ${clock(service.endsAt)} · créneaux de ${asSlotMinutes(service.slotMinutes) === 60 ? "1 heure" : `${asSlotMinutes(service.slotMinutes)} minutes`}`,
+    subheading: `${weekdayLabel(service.weekdays)} · ${clock(service.startsAt)} – ${clock(service.endsAt)} · créneaux de ${
+      lot === 1
+        ? `${LOT1_SLOT_MINUTES} minutes`
+        : asSlotMinutes(service.slotMinutes) === 60
+          ? "1 heure"
+          : `${asSlotMinutes(service.slotMinutes)} minutes`
+    }`,
     subheadingKind: "data",
     rows: [
       {
@@ -404,23 +434,35 @@ function serviceCard(
         control: { kind: "time", value: service.lastBookingAt },
         ...write("lastBookingAt"),
       },
-      {
-        // The grid, above capacity, because it is the choice that
-        // changes what every other number on the card means: a capacity
-        // of 72 is 72 per half hour or 72 per hour depending on it.
-        id: id("slotMinutes"),
-        label: "Créneaux de",
-        hint: "Les heures proposées, et les groupes du carnet.",
-        control: {
-          kind: "select",
-          value: String(asSlotMinutes(service.slotMinutes)),
-          options: SLOT_MINUTES.map((m) => ({
-            value: String(m),
-            label: m === 60 ? "1 heure" : `${m} minutes`,
-          })),
-        },
-        ...write("slotMinutes"),
-      },
+      // The grid — 15, 30 or 60 minutes — is Lot 2's. « Les créneaux de
+      // disponibilités sont gérés aujourd'hui sur la base de 30 minutes
+      // uniquement » (DigiNegoce, 5 October): the app offers half hours,
+      // so a dashboard that lets a venue choose an hour would be
+      // offering a grid nothing downstream reads. The card states the
+      // half hour in its subheading instead, as a fact rather than a
+      // field. Changing it is a change to plan, not a setting to ship.
+      ...(lot === 1
+        ? []
+        : [
+            {
+              // The grid, above capacity, because it is the choice that
+              // changes what every other number on the card means: a
+              // capacity of 72 is 72 per half hour or 72 per hour
+              // depending on it.
+              id: id("slotMinutes"),
+              label: "Créneaux de",
+              hint: "Les heures proposées, et les groupes du carnet.",
+              control: {
+                kind: "select" as const,
+                value: String(asSlotMinutes(service.slotMinutes)),
+                options: SLOT_MINUTES.map((m) => ({
+                  value: String(m),
+                  label: m === 60 ? "1 heure" : `${m} minutes`,
+                })),
+              },
+              ...write("slotMinutes"),
+            },
+          ]),
       {
         id: id("capacityCovers"),
         label: "Capacité",

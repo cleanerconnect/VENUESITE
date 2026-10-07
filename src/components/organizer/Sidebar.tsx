@@ -256,6 +256,10 @@ function SidebarBody({
                 ? WORKSPACES[0].home
                 : undefined
             }
+            // Lot 1 is one owner account per establishment — the scope
+            // agreed on 5 October — so there is nothing to switch to
+            // and nothing to switch with.
+            switchable={workspaces.lot === 2}
           />
         ) : (
           <DropdownMenu.Root>
@@ -351,14 +355,21 @@ function SidebarBody({
             {/* The role, and only the role. The establishment was named
                 twice — here and in the card at the top of the same
                 column — and the event sidebar's footer says "Owner" on
-                its own. */}
-            <div className="text-meta text-ink-mute truncate">
-              {viewerRole
-                ? PORTAL_ROLE_LABEL[viewerRole] ?? viewerRole
-                : role
-                  ? ROLE_LABEL[role]
-                  : null}
-            </div>
+                its own.
+
+                Not in Lot 1: one account per establishment, and it owns
+                it. « Propriétaire » under the only name that can appear
+                there is a label for a distinction the sprint does not
+                make. */}
+            {workspaces.lot === 1 && workspace.id === "restaurant" ? null : (
+              <div className="text-meta text-ink-mute truncate">
+                {viewerRole
+                  ? PORTAL_ROLE_LABEL[viewerRole] ?? viewerRole
+                  : role
+                    ? ROLE_LABEL[role]
+                    : null}
+              </div>
+            )}
           </div>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>

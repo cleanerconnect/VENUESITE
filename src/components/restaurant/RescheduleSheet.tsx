@@ -12,6 +12,14 @@ import { cn } from "@/lib/utils/cn";
 // Décaler. A small sheet, and the point of it is what it does *not*
 // offer.
 //
+// Lot 2's since 5 October: the Prio 02 booking screen accepts, refuses,
+// checks in and reports an absence, and moving a table « ne figurait
+// pas dans le périmètre initial et n'est pas prioritaire
+// fonctionnellement parlant » (DigiNegoce). No Lot 1 screen raises this
+// sheet — `reservationActions` stops offering the command — and the
+// whole path below it, down to `PUT /bookings/{id}/reschedule`, is left
+// standing for the sprint that buys it.
+//
 // The host picks a day and then a time, and the times are the venue's
 // own: read from its service definitions, cut on the grid that service
 // seats on, and empty on a day the venue is closed. There is no free

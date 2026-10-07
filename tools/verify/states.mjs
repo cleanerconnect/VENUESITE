@@ -13,7 +13,7 @@
 //   node tools/verify/states.mjs
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT, LOT_LABEL, venuePaths } from "./lot.mjs";
+import { LOT, LOT_LABEL, OWNER_EMAIL, venuePaths } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -29,7 +29,7 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
 await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
-await page.fill('input[type="email"]', "yassine@darzellij.ma");
+await page.fill('input[type="email"]', OWNER_EMAIL);
 await page.fill('input[type="password"]', "demo");
 await page.click('button[type="submit"]');
 await page.waitForTimeout(2000);
