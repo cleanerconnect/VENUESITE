@@ -70,6 +70,36 @@ export function venuePaths() {
   return venueScreens().map(([path]) => path);
 }
 
+// ── Who the tools sign in as ─────────────────────────────────
+//
+// One account per establishment in Lot 1 — the scope agreed on
+// 5 October — and that account owns it: `rachid@darzellij.ma` for Dar
+// Zellij, `sofia@nomadrooftop.ma` for Nomad, each landing on their own
+// venue with nothing to choose. Lot 2 keeps Yassine, who holds both and
+// switches between them, because the switcher is part of what Lot 2
+// delivers.
+//
+// Here rather than in each tool for the reason the clock is here: a
+// dozen tools sign in, and an address typed into each of them is a
+// dozen places to miss when the seed changes.
+
+const VENUE_OWNER = {
+  rst_dar_zellij:
+    LOT === 1 ? "rachid@darzellij.ma" : "yassine@darzellij.ma",
+  bar_nomad_casa:
+    LOT === 1 ? "sofia@nomadrooftop.ma" : "yassine@darzellij.ma",
+};
+
+/** The account that holds this establishment under the lot being run. */
+export const ownerOf = (venueId = "rst_dar_zellij") =>
+  VENUE_OWNER[venueId] ?? VENUE_OWNER.rst_dar_zellij;
+
+/** The default account: the one that holds the restaurant. */
+export const OWNER_EMAIL = ownerOf("rst_dar_zellij");
+
+/** Whether this lot's accounts can hold more than one establishment. */
+export const SWITCHES_VENUES = LOT === 2;
+
 // ── The driver under test ────────────────────────────────────
 //
 // Five of these tools write: they sign a partner up, decide a booking,
@@ -185,7 +215,7 @@ export async function requireSharedDatabase(base, what) {
  */
 export async function signIn(page, base, options = {}) {
   const {
-    email = "yassine@darzellij.ma",
+    email = OWNER_EMAIL,
     password = "demo",
     venue = null,
     timeout = 25000,

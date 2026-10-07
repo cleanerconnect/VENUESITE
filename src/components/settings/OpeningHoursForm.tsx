@@ -50,7 +50,24 @@ function byWeekday(slots: AvailabilitySlot[]): [number, AvailabilitySlot[]][] {
 // Open or closed is a switch. It used to be a green pill reading OUVERT,
 // which says where the day stands and gives no sign that pressing it
 // changes anything.
-export function OpeningHoursForm({ initial }: { initial: VenueAvailability }) {
+export function OpeningHoursForm({
+  initial,
+  closures = true,
+}: {
+  initial: VenueAvailability;
+  /**
+   * Whether the closed-days card is drawn.
+   *
+   * Off in Lot 1. DigiNegoce, 5 October: « Pour le jour de fermeture :
+   * aujourd'hui, il n'y a rien qui permet d'afficher ce détail au
+   * niveau de l'appli — non prioritaire. » A day a partner takes out of
+   * the book here would still be bookable in the app, which is worse
+   * than not offering the field: the venue would believe it is closed.
+   * A service closed on Disponibilités is the honest way to say it
+   * until the app reads closures.
+   */
+  closures?: boolean;
+}) {
   const { toast } = useToast();
   const [availability, setAvailability] = useState(initial);
   const [drafts, setDrafts] = useState<Record<string, AvailabilitySlot>>({});
@@ -201,10 +218,12 @@ export function OpeningHoursForm({ initial }: { initial: VenueAvailability }) {
         </div>
       </Card>
 
-      <ClosuresCard
-        availability={availability}
-        onChanged={(next) => setAvailability(next)}
-      />
+      {closures ? (
+        <ClosuresCard
+          availability={availability}
+          onChanged={(next) => setAvailability(next)}
+        />
+      ) : null}
 
       <SaveBar
         state={state}

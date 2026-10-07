@@ -1,0 +1,1492 @@
+{
+  "base": "http://localhost:3280",
+  "venue": "",
+  "account": "rachid@darzellij.ma",
+  "depth": "outline",
+  "lot": 1,
+  "capturedAt": "2026-10-08T19:30:07.124Z",
+  "screens": {
+    "/restaurant": {
+      "label": "Accueil",
+      "purpose": "Ce qui se passe aujourd'hui : chiffres du jour, file d'attente à traiter, bande des quatre prochaines heures.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Bonsoir, Rachid. Le service est lancé."
+        },
+        {
+          "level": "h2",
+          "text": "À traiter"
+        },
+        {
+          "level": "h2",
+          "text": "Prochaines arrivées"
+        },
+        {
+          "level": "h2",
+          "text": "Arrivés"
+        },
+        {
+          "level": "h1",
+          "text": "Bonsoir, Rachid. Le service est lancé."
+        },
+        {
+          "level": "h2",
+          "text": "À traiter"
+        },
+        {
+          "level": "h2",
+          "text": "Prochaines arrivées"
+        },
+        {
+          "level": "h2",
+          "text": "Arrivés"
+        }
+      ],
+      "subtitle": "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Ouvrir le carnet",
+        "Check-in",
+        "Accepter",
+        "Refuser",
+        "Absent",
+        "21 tables installéesAfficher"
+      ],
+      "tables": []
+    },
+    "/restaurant/reservations": {
+      "label": "Réservations",
+      "purpose": "Le carnet d'une journée : accepter, refuser avec motif, modifier, marquer arrivé, absent, annuler.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Réservations"
+        }
+      ],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [
+        "26",
+        "1",
+        "4",
+        "21"
+      ],
+      "buttons": [
+        "Imprimer",
+        "Déjeuner",
+        "Dîner",
+        "Tous26",
+        "À confirmer1",
+        "Confirmées4",
+        "Arrivés21",
+        "Check-in",
+        "Absent",
+        "Accepter",
+        "Refuser"
+      ],
+      "tables": []
+    },
+    "/restaurant/check-in": {
+      "label": "Check-in",
+      "purpose": "Valider une arrivée : caméra, code saisi, recherche par nom, annulation dans les cinq minutes.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Check-in"
+        },
+        {
+          "level": "h2",
+          "text": "Prochaines arrivées"
+        },
+        {
+          "level": "h2",
+          "text": "Sans le code"
+        },
+        {
+          "level": "h2",
+          "text": "Trente dernières minutes"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune arrivée"
+        }
+      ],
+      "subtitle": "Dar Zellij · 5 arrivées encore attendues",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Scanner le code",
+        "Check-in",
+        "Valider"
+      ],
+      "tables": []
+    },
+    "/restaurant/ma-fiche": {
+      "label": "Ma fiche",
+      "purpose": "Ce que l'application montre de l'établissement : identité, fiche, photos. Enregistré pour de vrai.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Ma fiche"
+        },
+        {
+          "level": "h2",
+          "text": "Vignette"
+        },
+        {
+          "level": "h2",
+          "text": "Identité"
+        },
+        {
+          "level": "h2",
+          "text": "Adresse et contact"
+        }
+      ],
+      "subtitle": "L'établissement tel que l'application le montre : identité, cuisine, prix, ambiance, équipements, adresse, photos, carte et horaires.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Identité",
+        "Détails",
+        "Horaires",
+        "Photos",
+        "Menu",
+        "Remplacer",
+        "Retirer",
+        "+",
+        "−",
+        "Trouver sur la carte",
+        "Enregistrer"
+      ],
+      "tables": []
+    },
+    "/restaurant/disponibilites": {
+      "label": "Disponibilités",
+      "purpose": "Ce qui décide de ce que l'application propose : services, cadence, fenêtre de réservation, jours exceptionnels.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Disponibilités"
+        },
+        {
+          "level": "h2",
+          "text": "Services"
+        },
+        {
+          "level": "h2",
+          "text": "Déjeuner"
+        },
+        {
+          "level": "h2",
+          "text": "Dîner"
+        }
+      ],
+      "subtitle": "Ce que l'application peut proposer",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Ajouter un service",
+        "Retirer ce service",
+        "Enregistrer"
+      ],
+      "tables": []
+    },
+    "/restaurant/notifications": {
+      "label": "Notifications",
+      "purpose": "Les alertes de l'équipe et les messages aux clients, avec leur canal, leur moment et leur journal de délivrance.",
+      "status": "service",
+      "gap": null,
+      "dependsOn": "Les canaux, les horaires et les gabarits s'enregistrent. L'expédition attend le compte Twilio ou Infobip de LYFE.",
+      "roles": "Propriétaire, Gérant",
+      "workspace": "venue",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Notifications"
+        },
+        {
+          "level": "h2",
+          "text": "Alertes"
+        },
+        {
+          "level": "h2",
+          "text": "Qui les reçoit"
+        }
+      ],
+      "subtitle": "Ce dont vous êtes prévenu, et comment",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Enregistrer"
+      ],
+      "tables": []
+    },
+    "/styleguide": {
+      "label": "Styleguide",
+      "purpose": "Chaque composant dans chacun de ses états, plus cet index. Aucune session requise.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "shared",
+      "headings": [
+        {
+          "level": "h2",
+          "text": "Règles"
+        },
+        {
+          "level": "h2",
+          "text": "Tokens"
+        },
+        {
+          "level": "h2",
+          "text": "Contrôles"
+        },
+        {
+          "level": "h2",
+          "text": "Surfaces"
+        },
+        {
+          "level": "h1",
+          "text": "Versements"
+        },
+        {
+          "level": "h1",
+          "text": "Jazzablanca 2026"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune réservation pour ce service"
+        },
+        {
+          "level": "h2",
+          "text": "Blocs d'écran"
+        },
+        {
+          "level": "h1",
+          "text": "Bonsoir Yassine, Le service est complet."
+        },
+        {
+          "level": "h2",
+          "text": "Service en cours"
+        },
+        {
+          "level": "h2",
+          "text": "Carnet du service"
+        },
+        {
+          "level": "h2",
+          "text": "Charge du service"
+        },
+        {
+          "level": "h2",
+          "text": "Activité"
+        },
+        {
+          "level": "h2",
+          "text": "Versements"
+        },
+        {
+          "level": "h2",
+          "text": "Recette de la semaine"
+        },
+        {
+          "level": "h2",
+          "text": "Charge par jour"
+        },
+        {
+          "level": "h2",
+          "text": "La liste en ligne"
+        },
+        {
+          "level": "h2",
+          "text": "À la porte"
+        },
+        {
+          "level": "h2",
+          "text": "Colonne principale"
+        },
+        {
+          "level": "h2",
+          "text": "Couverts"
+        },
+        {
+          "level": "h2",
+          "text": "États"
+        },
+        {
+          "level": "h3",
+          "text": "Aucune réservation pour ce service"
+        },
+        {
+          "level": "h2",
+          "text": "Accès non autorisé"
+        },
+        {
+          "level": "h2",
+          "text": "Vocabulaire"
+        }
+      ],
+      "subtitle": "L'argent de vos billets, sur votre compte.",
+      "tiles": [
+        {
+          "label": "Couverts ce soir",
+          "value": "128"
+        },
+        {
+          "label": "Note moyenne",
+          "value": "5"
+        },
+        {
+          "label": "Absences",
+          "value": "6"
+        },
+        {
+          "label": "Encaissé ce service",
+          "value": "63 400 MAD"
+        },
+        {
+          "label": "Couverts arrivés",
+          "value": "86"
+        },
+        {
+          "label": "Couverts disponibles",
+          "value": "16"
+        },
+        {
+          "label": "Couverts aujourd'hui",
+          "value": "128"
+        },
+        {
+          "label": "Ticket moyen",
+          "value": "486 MAD"
+        },
+        {
+          "label": "Prochain versement",
+          "value": "184 300 MAD"
+        }
+      ],
+      "pills": [
+        "rooftop",
+        "brunch",
+        "un",
+        "deux",
+        "live",
+        "pending",
+        "draft",
+        "past",
+        "rejected",
+        "info",
+        "violet",
+        "success",
+        "warning",
+        "danger",
+        "neutral",
+        "En vente"
+      ],
+      "buttons": [
+        "primary",
+        "secondary",
+        "destructive",
+        "ghost",
+        "ink",
+        "Petit",
+        "Moyen",
+        "Grand",
+        "Icône à gauche",
+        "Icône à droite",
+        "Désactivé",
+        "Supprimer",
+        "Pleine largeur",
+        "Terrasse"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Ce qui est séparé",
+            "Par combien"
+          ],
+          "rows": [
+            [
+              "Libellé → son champ",
+              "8"
+            ],
+            [
+              "Champ → champ dans un groupe",
+              "16"
+            ],
+            [
+              "Groupe → groupe",
+              "32"
+            ],
+            [
+              "Carte → carte",
+              "24"
+            ],
+            [
+              "Section → section",
+              "48"
+            ],
+            [
+              "Bord de page → contenu",
+              "32 à 1440 · 16 à 390"
+            ]
+          ]
+        },
+        {
+          "head": [
+            "À quoi ça sert",
+            "taille / graisse / interligne"
+          ],
+          "rows": [
+            [
+              "Titre d'écran, salutation",
+              "36 / 700 / 1,1"
+            ],
+            [
+              "Titre d'un groupe de cartes",
+              "24 / 700 / 1,25"
+            ],
+            [
+              "Heure et couverts d'une ligne",
+              "22 / 700 / 1,1 · num"
+            ],
+            [
+              "Titre de carte",
+              "18 / 700 / 1,3"
+            ],
+            [
+              "Nom sur une ligne, libellé d'un champ",
+              "18 / 600 / 1,3"
+            ],
+            [
+              "Texte courant, libellé de bouton",
+              "16 / 500–600 / 1,5"
+            ]
+          ]
+        }
+      ]
+    },
+    "/dashboard": {
+      "label": "Vue d'ensemble",
+      "purpose": "L'état de l'organisation : événement en cours, ventes du jour, prochain versement, activité.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h3",
+          "text": "Aujourd'hui"
+        },
+        {
+          "level": "h2",
+          "text": "Prochains événements"
+        },
+        {
+          "level": "h3",
+          "text": "Robbie Williams, Soirée d'ouverture"
+        },
+        {
+          "level": "h3",
+          "text": "Rilès, Pass Semaine"
+        },
+        {
+          "level": "h3",
+          "text": "Jorja Smith, Week-End 2"
+        },
+        {
+          "level": "h1",
+          "text": "Bonsoir, Rachid. La 19e édition se prépare bien."
+        },
+        {
+          "level": "h2",
+          "text": "Jazzablanca 2026, Anfa Park"
+        },
+        {
+          "level": "h2",
+          "text": "Événements à venir"
+        },
+        {
+          "level": "h2",
+          "text": "Activité récente"
+        }
+      ],
+      "subtitle": "Phase 2 active sur 4 pass. 3 demandes de remboursement en attente.",
+      "tiles": [
+        {
+          "label": "Billets vendus aujourd'hui",
+          "value": "861"
+        },
+        {
+          "label": "Revenu cette semaine",
+          "value": "412 800"
+        },
+        {
+          "label": "Prochain versement",
+          "value": "184 500"
+        },
+        {
+          "label": "Événements à venir",
+          "value": "2"
+        }
+      ],
+      "pills": [
+        "3",
+        "2",
+        "1",
+        "+22.4 %",
+        "EN VENTE",
+        "EN MODÉRATION",
+        "Confiance moyenne · ±4 %",
+        "dans 0 jour",
+        "Boost actif"
+      ],
+      "buttons": [
+        "Lancer le boost",
+        "Voir le segment",
+        "Voir le tunnel",
+        "Lancer le boost →",
+        "Ignorer"
+      ],
+      "tables": []
+    },
+    "/events": {
+      "label": "Mes événements",
+      "purpose": "Tous les événements, filtrés par état du cycle de vie.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Mes événements"
+        },
+        {
+          "level": "h2",
+          "text": "Récents bilans"
+        },
+        {
+          "level": "h3",
+          "text": "Diana Krall, Jazzablanca 2024"
+        },
+        {
+          "level": "h3",
+          "text": "Jazzablanca, édition 2025"
+        },
+        {
+          "level": "h3",
+          "text": "Pré-vente fidèles 2024, Jazzablanca"
+        },
+        {
+          "level": "h3",
+          "text": "Diana Krall, Jazzablanca 2024"
+        },
+        {
+          "level": "h3",
+          "text": "Jazzablanca, édition 2025"
+        },
+        {
+          "level": "h3",
+          "text": "Pré-vente fidèles 2024, Jazzablanca"
+        },
+        {
+          "level": "h3",
+          "text": "Lounge Latino, brouillon"
+        },
+        {
+          "level": "h3",
+          "text": "After-party VIP, Anfa Beach Club"
+        },
+        {
+          "level": "h3",
+          "text": "Jorja Smith, Week-End 2"
+        },
+        {
+          "level": "h3",
+          "text": "Rilès, Pass Semaine"
+        },
+        {
+          "level": "h3",
+          "text": "Robbie Williams, Soirée d'ouverture"
+        },
+        {
+          "level": "h3",
+          "text": "Brunch Jazz Anfa, annulé"
+        },
+        {
+          "level": "h3",
+          "text": "Diana Krall, Jazzablanca 2024"
+        },
+        {
+          "level": "h3",
+          "text": "Jazzablanca, édition 2025"
+        },
+        {
+          "level": "h3",
+          "text": "Pré-vente fidèles 2024, Jazzablanca"
+        }
+      ],
+      "subtitle": "Ce que vous organisez, passés, en cours, à venir.",
+      "tiles": [],
+      "pills": [
+        "9",
+        "2",
+        "0",
+        "1",
+        "3",
+        "BROUILLON",
+        "REFUSÉ",
+        "EN MODÉRATION",
+        "EN VENTE",
+        "Boost",
+        "ANNULÉ",
+        "TERMINÉ",
+        "VERSÉ",
+        "Boost actif"
+      ],
+      "buttons": [
+        "Créer un événement",
+        "PDF",
+        "Tous9",
+        "En vente2",
+        "En cours0",
+        "En modération1",
+        "Brouillons1",
+        "Bilans3",
+        "Passés1",
+        "Versés2",
+        "Annulés1",
+        "Refusés1",
+        "Voir",
+        "Modifier"
+      ],
+      "tables": []
+    },
+    "/events/new": {
+      "label": "Créer un événement",
+      "purpose": "Assistant en cinq étapes : info, média, tarifs, remboursement, vérification.",
+      "status": "partial",
+      "gap": "La soumission affiche une confirmation ; rien n'est persisté.",
+      "dependsOn": null,
+      "roles": "Propriétaire, Administrateur",
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h2",
+          "text": "Décrivez votre événement."
+        }
+      ],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "buttons": [
+        "1InfosInfos",
+        "2TarifsTarifs",
+        "3RemboursementsRefunds",
+        "4MédiasMédias",
+        "5RécapitulatifRécap",
+        "×",
+        "Retour",
+        "Continuer"
+      ],
+      "tables": []
+    },
+    "/events/evt_jzb_robbie": {
+      "label": "Détail d'un événement",
+      "purpose": "Ventes, analyses, participants, invitations, remboursements, régie, promotion, bilan.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Robbie Williams, Soirée d'ouverture"
+        },
+        {
+          "level": "h3",
+          "text": "Détail par tarif"
+        },
+        {
+          "level": "h3",
+          "text": "Chiffre d'affaires"
+        }
+      ],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [
+        "EN VENTE",
+        "CONCERT",
+        "ALL",
+        "8420",
+        "1 active"
+      ],
+      "buttons": [
+        "Ventes",
+        "Analyses",
+        "Participants8420",
+        "Invitations",
+        "Remboursements",
+        "Régie",
+        "Promouvoir",
+        "Exporter CSV"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Tarif",
+            "Prix",
+            "Vendu",
+            "Restant",
+            "Revenu",
+            "Conv."
+          ],
+          "rows": [
+            [
+              "Pass Jour · Early Bird",
+              "380 MAD",
+              "1500",
+              "0",
+              "570 000 MAD",
+              "0.8 %"
+            ],
+            [
+              "Pass Jour · General",
+              "590 MAD",
+              "5400",
+              "3100",
+              "3 186 000 MAD",
+              "2.9 %"
+            ],
+            [
+              "Carré Or",
+              "1 200 MAD",
+              "1520",
+              "480",
+              "1 824 000 MAD",
+              "0.8 %"
+            ]
+          ]
+        }
+      ]
+    },
+    "/events/evt_jzb_robbie/edit": {
+      "label": "Édition d'un événement",
+      "purpose": "Corriger un événement, notamment après un refus de modération.",
+      "status": "partial",
+      "gap": "Comme la création : la soumission n'est pas persistée.",
+      "dependsOn": null,
+      "roles": "Propriétaire, Administrateur",
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Robbie Williams, Soirée d'ouverture"
+        }
+      ],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Annuler",
+        "Enregistrer"
+      ],
+      "tables": []
+    },
+    "/bilans": {
+      "label": "Bilans",
+      "purpose": "Les rapports post-événement, prêts à partager ou imprimer.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Bilans"
+        },
+        {
+          "level": "h3",
+          "text": "Diana Krall, Jazzablanca 2024"
+        },
+        {
+          "level": "h3",
+          "text": "Jazzablanca, édition 2025"
+        },
+        {
+          "level": "h3",
+          "text": "Pré-vente fidèles 2024, Jazzablanca"
+        }
+      ],
+      "subtitle": "Vos rapports post-événement, prêts à partager.",
+      "tiles": [],
+      "pills": [
+        "Édition clôturée"
+      ],
+      "buttons": [
+        "PDF"
+      ],
+      "tables": []
+    },
+    "/audiences": {
+      "label": "Audiences",
+      "purpose": "Qui achète : segments, cohortes, géographie, comparaison au marché.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/audiences/details": {
+      "label": "Audiences · détail",
+      "purpose": "La version complète des panneaux que le mobile résume.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/visibilite": {
+      "label": "Visibilité",
+      "purpose": "Campagnes de mise en avant, budget, ROAS.",
+      "status": "partial",
+      "gap": "Lancer un boost ouvre l'assistant mais ne crée pas de campagne.",
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Visibilité"
+        },
+        {
+          "level": "h2",
+          "text": "Campagnes actives"
+        },
+        {
+          "level": "h2",
+          "text": "Audiences sauvegardées"
+        },
+        {
+          "level": "h2",
+          "text": "Historique des campagnes"
+        }
+      ],
+      "subtitle": "Vos campagnes de mise en avant et vos partenaires affiliés. Le ROAS est la métrique qui compte.",
+      "tiles": [],
+      "pills": [
+        "EN COURS",
+        "TERMINÉ"
+      ],
+      "buttons": [
+        "Lancer un boost",
+        "+ Nouvelle audience",
+        "Exporter CSV"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Campagne",
+            "Format",
+            "Audience",
+            "Restant",
+            "Dépensé",
+            "Billets",
+            "ROAS",
+            "Statut",
+            ""
+          ],
+          "rows": [
+            [
+              "Splash de bienvenue, Robbie WilliamsRobbie Williams, Soirée d'ouverture",
+              "Splash de bienvenue",
+              "18 400",
+              "1 jour",
+              "8 000 MAD",
+              "312",
+              "11,4×",
+              "EN COURS",
+              ""
+            ],
+            [
+              "Carte mise en avant, RilèsRilès, Pass Semaine",
+              "Carte mise en avant",
+              "6 240",
+              "4 jours",
+              "1 800 MAD",
+              "38",
+              "2,1×",
+              "EN COURS",
+              ""
+            ],
+            [
+              "Notification ciblée, Jorja SmithJorja Smith, Week-End 2",
+              "Notification ciblée",
+              "14 000",
+              "—",
+              "6 200 MAD",
+              "184",
+              "7,8×",
+              "TERMINÉ",
+              ""
+            ]
+          ]
+        },
+        {
+          "head": [
+            "Campagne",
+            "Événement",
+            "Terminée",
+            "Dépense",
+            "Billets",
+            "ROAS"
+          ],
+          "rows": [
+            [
+              "Notification ciblée, Jorja Smith",
+              "Jorja Smith, Week-End 2",
+              "24/04/2026",
+              "6 200 MAD",
+              "184",
+              "7,8×"
+            ],
+            [
+              "En tête de liste, Pré-vente fidèles",
+              "Jazzablanca 2026, Pré-vente",
+              "30/04/2025",
+              "8 200 MAD",
+              "248",
+              "6,4×"
+            ],
+            [
+              "Splash de bienvenue, Early Bird",
+              "Jazzablanca 2026, Early Bird",
+              "13/09/2022",
+              "13 500 MAD",
+              "612",
+              "9,2×"
+            ],
+            [
+              "Pop-up géolocalisé Anfa",
+              "Diana Krall, Jazzablanca 2024",
+              "26/04/1980",
+              "4 800 MAD",
+              "96",
+              "4,1×"
+            ]
+          ]
+        }
+      ]
+    },
+    "/promo-codes": {
+      "label": "Codes promo",
+      "purpose": "Réductions ciblées et suivi des utilisations.",
+      "status": "partial",
+      "gap": "La création affiche le code sans le persister.",
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Codes promo"
+        }
+      ],
+      "subtitle": "Réductions ciblées, partenariats, et tracking de redemptions.",
+      "tiles": [],
+      "pills": [
+        "6",
+        "5",
+        "0",
+        "1",
+        "−15 %",
+        "Actif",
+        "−10 %",
+        "−50 %",
+        "Comp",
+        "−20 %",
+        "Épuisé"
+      ],
+      "buttons": [
+        "Tous6",
+        "Actifs5",
+        "Expirés0",
+        "Épuisés1",
+        "Créer un code",
+        "ETUDIANTS_CASA",
+        "INFLUENCER_SOUKAINA",
+        "ROYALAIRMAROC25",
+        "VIP_PARTNERS",
+        "PRESSE2026",
+        "EARLYJAZZ"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Code",
+            "Réduction",
+            "Périmètre",
+            "Validité",
+            "Redemptions",
+            "Revenu",
+            "Statut",
+            ""
+          ],
+          "rows": [
+            [
+              "ETUDIANTS_CASA−15 % · Robbie Williams · Tous tarifs",
+              "−15 %1 max / user",
+              "Robbie Williams · Tous tarifs",
+              "10/04/2026→ 01/07/2026",
+              "89 / 500",
+              "47 300 MAD",
+              "Actif",
+              ""
+            ],
+            [
+              "INFLUENCER_SOUKAINA−10 % · Carré Or",
+              "−10 %1 max / user",
+              "Carré Or",
+              "28/03/2026→ 24/06/2026",
+              "23 / 50",
+              "138 000 MAD",
+              "Actif",
+              ""
+            ],
+            [
+              "ROYALAIRMAROC25−15 % · Pass 10 jours · Carré Or",
+              "−15 %2 max / user",
+              "Pass 10 jours · Carré Or",
+              "16/03/2026→ 01/06/2026",
+              "47 / 200",
+              "423 000 MAD",
+              "Actif",
+              ""
+            ],
+            [
+              "VIP_PARTNERS−50 % · Carré Or · Internes",
+              "−50 %1 max / user",
+              "Carré Or · Internes",
+              "06/03/2026→ 01/07/2026",
+              "12 / 30",
+              "36 000 MAD",
+              "Actif",
+              ""
+            ],
+            [
+              "PRESSE2026Comp · Pass Jour · General · Comp presse",
+              "Comp1 max / user",
+              "Pass Jour · General · Comp presse",
+              "24/02/2026→ 15/05/2026",
+              "67 / 80",
+              "—",
+              "Actif",
+              ""
+            ],
+            [
+              "EARLYJAZZ−20 % · Tous les événements · Phase 1",
+              "−20 %Illimité par user",
+              "Tous les événements · Phase 1",
+              "26/12/2025→ 24/02/2026",
+              "1247 / 1500",
+              "1 205 400 MAD",
+              "Épuisé",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "/scanner": {
+      "label": "Scanner",
+      "purpose": "Contrôle des billets à l'entrée, plein écran sombre, pensé pour une main.",
+      "status": "partial",
+      "gap": "La caméra n'est pas branchée ; les scans sont simulés.",
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [
+        "Live"
+      ],
+      "buttons": [
+        "Valider",
+        "Standard",
+        "Express",
+        "Sortie",
+        "Statistiques"
+      ],
+      "tables": []
+    },
+    "/settlements": {
+      "label": "Versements",
+      "purpose": "Prochain versement, historique, factures, dépenses de boost.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Versements"
+        },
+        {
+          "level": "h2",
+          "text": "Dépenses boost"
+        },
+        {
+          "level": "h2",
+          "text": "Historique des versements"
+        },
+        {
+          "level": "h2",
+          "text": "Factures de commission LYFE"
+        }
+      ],
+      "subtitle": "L'argent de vos billets, sur votre compte. J+3 après la fin de chaque événement.",
+      "tiles": [],
+      "pills": [
+        "dans 0 jour",
+        "PROGRAMMÉ",
+        "DÉDUIT",
+        "VERSÉ"
+      ],
+      "buttons": [
+        "Pré-relevé",
+        "Exporter CSV",
+        "Synthèse annuelle"
+      ],
+      "tables": [
+        {
+          "head": [
+            "Date",
+            "Montant",
+            "Référence",
+            "Billets",
+            "Statut",
+            "Relevé"
+          ],
+          "rows": [
+            [
+              "28/03/2026",
+              "1 240 000 MAD",
+              "LYFE-PAY-2026-03-29-001",
+              "3280",
+              "VERSÉ",
+              "PDF"
+            ],
+            [
+              "26/02/2026",
+              "728 400 MAD",
+              "LYFE-PAY-2026-02-26-001",
+              "1880",
+              "VERSÉ",
+              "PDF"
+            ],
+            [
+              "19/07/2025",
+              "4 320 000 MAD",
+              "LYFE-PAY-2024-07-15-001",
+              "9000",
+              "VERSÉ",
+              "PDF"
+            ]
+          ]
+        }
+      ]
+    },
+    "/activity": {
+      "label": "Activité",
+      "purpose": "Le flux complet, promu en écran sur mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Activité récente"
+        }
+      ],
+      "subtitle": "Tout ce qui se passe sur vos événements, en temps réel.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/team": {
+      "label": "Équipe",
+      "purpose": "Qui a accès, à quel rôle, et le journal d'audit.",
+      "status": "partial",
+      "gap": "Les invitations vivent dans l'état local, pas dans un backend.",
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Équipe"
+        },
+        {
+          "level": "h2",
+          "text": "Membres actifs"
+        },
+        {
+          "level": "h2",
+          "text": "Invitations en attente"
+        },
+        {
+          "level": "h2",
+          "text": "Journal d'audit"
+        }
+      ],
+      "subtitle": "Qui peut accéder à votre espace organisateur.",
+      "tiles": [],
+      "pills": [
+        "PROPRIÉTAIRE",
+        "ADMINISTRATEUR",
+        "SCANNER"
+      ],
+      "buttons": [
+        "Inviter un membre",
+        "Renvoyer",
+        "Annuler"
+      ],
+      "tables": []
+    },
+    "/settings": {
+      "label": "Réglages",
+      "purpose": "Profil de l'organisation, versements, préférences.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Réglages"
+        },
+        {
+          "level": "h2",
+          "text": "Profil organisateur"
+        }
+      ],
+      "subtitle": "Profil, coordonnées de versement, préférences.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Profil",
+        "Coordonnées de versement",
+        "Notifications",
+        "Préférences de boost",
+        "Langue",
+        "API",
+        "Zone dangereuse",
+        "Enregistrer"
+      ],
+      "tables": []
+    },
+    "/onboarding": {
+      "label": "Onboarding",
+      "purpose": "Quatre étapes : bienvenue, profil, banque, équipe.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "event",
+      "headings": [],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/plus": {
+      "label": "Plus",
+      "purpose": "Le menu de débordement du mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "shared",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Plus"
+        }
+      ],
+      "subtitle": "Tous vos outils LYFE, en un endroit.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Se déconnecter"
+      ],
+      "tables": []
+    },
+    "/more": {
+      "label": "Plus (compte)",
+      "purpose": "Équipe, réglages et déconnexion sur mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "shared",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Plus"
+        }
+      ],
+      "subtitle": "Équipe, réglages, et déconnexion.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Se déconnecter"
+      ],
+      "tables": []
+    },
+    "/login": {
+      "label": "Connexion",
+      "purpose": "Le seul point d'entrée. Résout le compte vers son espace ; propose de choisir le lieu quand il y en a plusieurs.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Gérez les réservations de votre établissement, de la demande à l'arrivée en salle."
+        },
+        {
+          "level": "h2",
+          "text": "Connectez-vous"
+        }
+      ],
+      "subtitle": "LYFE · Maroc",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Mot de passe oublié ?",
+        "Se connecter"
+      ],
+      "tables": []
+    },
+    "/splash": {
+      "label": "Splash",
+      "purpose": "Écran de lancement de l'application mobile.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "headings": [],
+      "subtitle": "",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    },
+    "/inscription": {
+      "label": "Inscription",
+      "purpose": "« Création de Venue » : six étapes pour inscrire un établissement — vous, l'établissement, l'adresse, une photo, les horaires, un récapitulatif. Le brouillon est enregistré à chaque étape, donc fermer l'onglet ne perd rien.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Vous"
+        }
+      ],
+      "subtitle": "Vos coordonnées, pour que nous sachions à qui écrire. Rien n'est public.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [
+        "Continuer"
+      ],
+      "tables": []
+    },
+    "/contact": {
+      "label": "Nous contacter",
+      "purpose": "Formulaire public pour un partenaire sans accès.",
+      "status": "built",
+      "gap": null,
+      "dependsOn": null,
+      "roles": null,
+      "workspace": "entry",
+      "headings": [
+        {
+          "level": "h1",
+          "text": "Parlons de votre événement."
+        }
+      ],
+      "subtitle": "LYFE est en accès anticipé pour les organisateurs marocains. Écrivez-nous, un membre de l'équipe vous répondra sous 24 heures.",
+      "tiles": [],
+      "pills": [],
+      "buttons": [],
+      "tables": []
+    }
+  },
+  "nav": {
+    "groups": []
+  }
+}

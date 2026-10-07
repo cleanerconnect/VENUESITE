@@ -54,8 +54,8 @@ passe complète de vérification, et le double y répond sans un seul
 `404` **et sans un seul `500`**. C'est la cible, et les deux comptes
 importent : l'audit a trouvé deux `500` que la passe précédente n'avait
 pas vus parce qu'elle ne comptait que les `404` — la liste de créneaux
-de Décaler et la recherche du carnet, deux des quatre choses que ce lot
-achète. Comptez les deux.
+et la recherche du carnet. (La première servait Décaler, sorti du lot
+le 5 octobre ; la leçon tient.) Comptez les deux.
 
 ### 1.3 Votre service, à la place du double
 
@@ -137,22 +137,30 @@ POST /api/business/auth/session
 Authorization: Bearer <jeton de service>
 Content-Type: application/json
 
-{ "email": "yassine@darzellij.ma", "password": "…" }
+{ "email": "rachid@darzellij.ma", "password": "…" }
 ```
 
 **Réponse :**
 
 ```json
 {
-  "userId": "usr_yassine",
-  "fullName": "Yassine Alami",
-  "email": "yassine@darzellij.ma",
+  "userId": "usr_rachid",
+  "fullName": "Rachid Amrani",
+  "email": "rachid@darzellij.ma",
   "venues": [
     { "id": "rst_dar_zellij", "name": "Dar Zellij", "shortName": "Dar Zellij",
       "initials": "DZ", "city": "Marrakech", "kind": "restaurant", "role": "owner" }
   ]
 }
 ```
+
+**Un établissement, et `owner`.** Depuis le 5 octobre, le lot 1 est un
+compte par établissement, propriétaire du sien : pas de rôles, pas de
+sélecteur d'établissement, et la connexion ouvre le tableau de bord
+sans demander lequel. Le champ `role` reste dans la réponse — le
+sélecteur et « Équipe et rôles » reviennent au lot 2 — mais servir deux
+établissements à un compte en octobre, c'est faire apparaître un écran
+de choix que le périmètre ne prévoit pas.
 
 **Une adresse inconnue et un mot de passe faux répondent le même
 `401`.** Deux réponses différentes feraient de ce formulaire l'annuaire
@@ -191,9 +199,13 @@ affiche. Cela retire environ un tiers du travail de ce palier.
 
 **Deux champs qui ne sont pas optionnels :**
 
-- `currentService.slotMinutes` — `15`, `30` ou `60`. Sans lui,
-  Réservations ne sait pas sur quelle grille regrouper la journée.
-  Omis, le portail retombe sur 30 ; c'est un défaut, pas un contrat.
+- `currentService.slotMinutes` — **`30` en lot 1**, et obligatoire.
+  L'application ne propose que des demi-heures (« gérés aujourd'hui sur
+  la base de 30 minutes uniquement », DigiNegoce, 5 octobre), donc
+  Réservations groupe la journée sur la demi-heure quelle que soit la
+  valeur reçue et Disponibilités l'annonce au lieu de la demander.
+  Servez 30. Omis, le portail retombe sur 30 ; c'est un défaut, pas un
+  contrat, et `15` ou `60` n'auront d'effet qu'au lot 2.
 - `upcomingReservations[].channel` — **en minuscules** : `lyfe`,
   `phone`, `whatsapp`, `walk_in`, `partner`, `instagram`. `LYFE` n'est
   pas une valeur. C'est exactement l'erreur que l'application faisait
@@ -284,10 +296,12 @@ le fabrique jamais.**
 LYFE_LOT=1 BASE=http://localhost:3210 node tools/verify/decisions.mjs
 ```
 
-Attendu : `Les quatre changements tiennent · lot 1`. Trente-quatre
-contrôles, dont : les quatre décisions sur chaque ligne ouverte, la
-feuille Décaler ne proposant que les créneaux du lieu, le téléphone sur
-la ligne, et le tiroir portant le client.
+Attendu : `Le carnet tient son périmètre · lot 1`. Une trentaine de
+contrôles, dont : les quatre décisions sur chaque ligne ouverte et
+aucune cinquième, Refuser qui n'apparaît que sur une demande, le
+téléphone sur la ligne, le tiroir portant le client — et la moitié de
+l'outil qui vérifie des **absences**, parce qu'un périmètre qui se
+réduit se vérifie comme un périmètre qui s'étend.
 
 ### Palier 5 — L'établissement tient sa fiche · 5,25 j-h
 
@@ -328,6 +342,22 @@ répond `409` et le portail dit « a changé entre-temps ». Actions du lot
 1 : `service.create`, `service.edit`, `service.remove`, `service.set`,
 `pacing.set`.
 
+**Deux choses que ce palier ne demande plus depuis le 5 octobre.** Les
+huit règles de cadence — « Règles de réservation » et « Réglages
+avancés » — ont quitté l'écran : le portail n'envoie plus que
+`pacing.set` sur `onlineBookingOpen`, l'interrupteur de réservation en
+ligne. Et `service.set` n'envoie plus `slotMinutes` : la grille est la
+demi-heure, annoncée dans l'en-tête de la carte du service. Les champs
+restent dans la charge utile et l'action porte toujours l'objet
+complet, donc un service qui les stocke et les rend n'a rien à changer
+— et rien à écrire côté écran avant le lot 2.
+
+**`closures` est vide, et le restera en lot 1.** Le tableau fait partie
+de `VenueAvailability` et le `PUT` doit le rendre tel qu'il le reçoit,
+mais aucun écran ne le remplit : l'application ne lit pas encore une
+journée fermée, et un partenaire qui croirait sa journée protégée
+serait plus mal servi que par un champ absent.
+
 **Le fichier d'une photo ne passe pas par cet endpoint.** Le portail
 envoie une action ; vous rendez une URL signée ; le navigateur y envoie
 les octets. Aucun octet ne traverse `POST /assets`.
@@ -355,27 +385,25 @@ provoque par accident : un mot de passe faux, une session morte avec un
 formulaire ouvert, un double clic sur Enregistrer, une photo quatre fois
 trop lourde, un établissement vide, et le vocabulaire d'un lounge.
 
-### Palier 6 — Décaler, chercher · 2 j-h
+### Palier 6 — Chercher dans le carnet · 0,5 j-h
 
 | Méthode · chemin | Réponse | Prouvé ? | j-h |
 |---|---|---|---|
-| `GET /api/business/venues/{id}/slots?date=` | `BookableSlot[]` | oui, non observé | 1 |
-| `PUT /api/business/bookings/{id}/reschedule` | `RestaurantOverview` | oui, non observé | 0,5 |
 | `GET /api/business/venues/{id}/bookings/search?q=` | `Reservation[]` | oui, non observé | 0,5 |
 
-Contractuel, et la ligne le dit : `Détail Sprint `, ligne 46,
-`SP-Prio 02` — « le restaurateur ne reçoit pas de mail pour accepter ou
-refuser la reservation **ou inviter l'utilisateur à choisir un autre
-créneau** ».
+**Ce palier en portait trois, et deux sont sorties le 5 octobre.**
+`GET /venues/{id}/slots` et `PUT /bookings/{id}/reschedule` servaient la
+feuille Décaler, et déplacer une table « ne figurait pas dans le
+périmètre initial et n'est pas prioritaire fonctionnellement parlant »
+(DigiNegoce). Ce sont **1,5 j-h de moins** à écrire en octobre. Le
+portail garde la feuille et les deux méthodes du pilote, éteintes : le
+sprint qui achète Décaler trouvera les trois règles — un `at` pris dans
+les créneaux rendus, un état qui ne change pas, un client prévenu par
+le même appel — dans `src/lib/types/business.ts`.
 
-**`slots` découpe sur `slotMinutes` du service**, et un service qui
-franchit minuit rend des créneaux du lendemain : « Nuit », 21h00 →
-02h00, rend `00:00` et `01:00` du jour suivant. Vérifié.
-
-**`reschedule` doit vérifier que `at` est l'un des créneaux que `slots`
-a rendus pour ce jour.** Le portail le vérifie avant d'appeler ; faites-le
-aussi. L'état ne change pas — une demande décalée reste une demande.
-`409` si elle a déjà bougé, ou si elle est arrivée, close ou refusée.
+Ce qui reste est la recherche, et elle n'a rien à voir avec Décaler :
+un hôte au comptoir cherche une réservation que la journée affichée ne
+montre pas.
 
 **La recherche a trois entrées**, parce que ce sont les trois choses
 qu'un hôte a en main : un **nom** (insensible à la casse, n'importe où
@@ -384,7 +412,7 @@ dedans), un **téléphone** comparé **chiffres seuls** — ce qui fait que
 façon dont un client relit son numéro — et une **date** (`2026-09-25` ou
 `25/09`). Moins de deux caractères : tableau vide.
 
-**Test d'acceptation** : `decisions.mjs`, contrôles 12 à 22.
+**Test d'acceptation** : `decisions.mjs`, section 2.
 
 ### Palier 7 — L'inscription d'un partenaire · 2 j-h
 
@@ -411,7 +439,7 @@ affiche un bandeau qui le dit au partenaire.
 LYFE_LOT=1 BASE=http://localhost:3210 node tools/verify/inscription.mjs
 ```
 
-Attendu : `Les six étapes de l'inscription passent`. L'outil refuse un
+Attendu : `Les sept étapes de l'inscription passent`. L'outil refuse un
 mot de passe de moins de huit caractères, refuse deux saisies de mot de
 passe qui diffèrent, et va jusqu'au tableau de bord de l'établissement
 créé.
@@ -496,12 +524,24 @@ raison :
 | 3 · Le carnet se promène | 1 |
 | 4 · Le partenaire décide | 2,5 |
 | 5 · L'établissement tient sa fiche | 5,25 |
-| 6 · Décaler, chercher | 2 |
+| 6 · Chercher dans le carnet | 0,5 |
 | 7 · L'inscription | 2 |
 | 8 · La revue LYFE, le mot de passe oublié, les notifications | 2 |
-| **Sous-total contrat Lot 1** | **19,25** |
+| **Sous-total contrat Lot 1** | **17,75** |
 | Ce qui reste à spécifier (§3, côté service) | 3,5 |
-| **Total** | **22,75** |
+| **Total** | **21,25** |
+
+**Ce que le 5 octobre a retiré, en journées.** Le palier 6 en portait
+2 et en porte 0,5 : `GET /venues/{id}/slots` et
+`PUT /bookings/{id}/reschedule` sont sortis avec Décaler, soit **1,5
+j-h**. Les quatre autres retraits — règles de réservation, réglages
+avancés, jours de fermeture, grille des créneaux — ne retirent aucune
+ligne de ce tableau : les champs restent dans `PacingRules`,
+`VenueAvailability` et `ServiceDefinition`, et un service qui les
+stocke et les rend est exactement le service qu'il fallait écrire. Ce
+qui change est ce que le portail **écrit**, pas ce que le service doit
+pouvoir répondre. Le jour où le lot 2 rallume ces écrans, il n'y a rien
+à construire côté service.
 
 **L'hypothèse, à nouveau, parce qu'un chiffre sans hypothèse ne vaut
 rien :** un développeur qui connaît sa pile, les tables déjà en place,

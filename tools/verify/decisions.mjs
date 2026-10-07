@@ -1,26 +1,52 @@
-// The four Lot 1 changes, in a real browser.
+// What a Lot 1 booking screen does, and what it no longer does.
 //
 //   BASE=http://localhost:3210 node tools/verify/decisions.mjs
 //
-// One tool for the four things the brief added, because each of them is
-// a claim only a browser can settle:
+// One tool for four claims only a browser can settle:
 //
 //   1  a venue created by /inscription is pending, its dashboard works,
 //      and it says so — and /admin/validations is LYFE's alone;
 //   2  the decisions a state poses are on the line and the rest are in
-//      the sheet — Refuser only ever answers a request, and a phone
-//      line carries two of them, not four — the sheet offers the
-//      venue's own slots and nothing else, and the chrome's search
-//      finds a booking by name, by the last four digits of the phone
-//      and by date, grouped by day;
-//   3  Disponibilités offers 15 / 30 / 60 and the book groups by it;
+//      the sheet — Refuser only ever answers a request, a phone line
+//      carries two of them and not four, and the chrome's search finds
+//      a booking by name, by the last four digits of the phone and by
+//      date, grouped by day;
+//   3  the scope agreed on 5 October, by its absences: no Décaler
+//      anywhere, no slot-length control, no booking rules, no advanced
+//      settings, no closed days — and the book grouped on the half hour
+//      the app actually offers;
 //   4  the row carries the phone and the drawer carries the guest.
+//
+// Three and most of two used to assert the opposite: they are the
+// regression test for a scope that shrank, which is the kind that goes
+// quietly missing otherwise.
 //
 // Needs the portal on BASE with a seeded database behind it. It writes:
 // it signs a partner up and it decides a booking.
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT_LABEL, clockLine, dataModeOf, requireWrites } from "./lot.mjs";
+import {
+  LOT,
+  LOT_LABEL,
+  OWNER_EMAIL,
+  clockLine,
+  dataModeOf,
+  requireWrites,
+} from "./lot.mjs";
+
+// Lot 1 only, and said the way `audience.mjs` says Lot 2 only.
+//
+// Half of what this tool asserts is an absence — no Décaler, no slot
+// length, no booking rules, no closed days — and every one of those is
+// present and correct under Lot 2. Run against the full dashboard it
+// would report the Lot 2 screens as defects.
+if (LOT !== 1) {
+  console.log(
+    `Ce carnet est celui du lot 1, et le serveur tourne en ${LOT_LABEL} — rien à vérifier.\n` +
+      "Relancer avec LYFE_LOT=1, serveur compris.",
+  );
+  process.exit(0);
+}
 
 const chromium = await chromiumOrExplain();
 
@@ -28,7 +54,7 @@ const BASE = process.env.BASE ?? "http://localhost:3210";
 
 // This tool writes. Against the static driver there is nothing to
 // write to, so it says so and stops rather than failing.
-const driver = await requireWrites(BASE, "Les quatre changements du lot 1");
+const driver = await requireWrites(BASE, "Le carnet du lot 1");
 
 // Who works for LYFE is answered by `platform_admins`, and
 // `src/lib/auth/platform.ts` asks that question of the database only:
@@ -133,7 +159,7 @@ const requirePending = async () => {
   process.exit(0);
 };
 
-console.log(`\nLes quatre décisions · ${LOT_LABEL} · ${width}×${height} · ${clockLine()}\n`);
+console.log(`\nLe carnet du lot 1 · ${LOT_LABEL} · ${width}×${height} · ${clockLine()}\n`);
 
 // ── 1 · LYFE valide une fiche ────────────────────────────────
 
@@ -275,7 +301,7 @@ check(
 console.log("\n  — 2 · décisions au comptoir et recherche");
 
 await signOut();
-await signIn("yassine@darzellij.ma");
+await signIn(OWNER_EMAIL);
 await requirePending();
 
 // The row is a card whose own button carries `data-row="open"`, with
@@ -309,7 +335,10 @@ if (hasRow) {
     absent >= accepter,
     `${absent}`,
   );
-  check("Décaler sur chaque ligne ouverte", decaler >= accepter, `${decaler}`);
+  // Décaler left the sprint on 5 October — « ne figurait pas dans le
+  // périmètre initial et n'est pas prioritaire fonctionnellement
+  // parlant ». A venue that cannot take the hour refuses it.
+  check("et Décaler nulle part", decaler === 0, `${decaler}`);
 
   // And on a confirmed line, by name: the count above would pass if
   // every row were a request.
@@ -335,19 +364,25 @@ if (hasRow) {
       `${onConfirmed.refuser} Refuser sur les lignes confirmées`,
     );
     check(
-      "mais garde Absent et Décaler",
-      onConfirmed.absent > 0 && onConfirmed.decaler > 0,
-      `${onConfirmed.absent} absent · ${onConfirmed.decaler} décaler`,
+      "mais garde Absent",
+      onConfirmed.absent > 0,
+      `${onConfirmed.absent} absent`,
     );
-    // The sheet is where the cancellation went, so it has to be there.
+    check(
+      "et ne propose pas Décaler non plus",
+      onConfirmed.decaler === 0,
+      `${onConfirmed.decaler} décaler sur les lignes confirmées`,
+    );
+    // The sheet is where the cancellation went, so it has to be there —
+    // and it is the last place Décaler could have survived.
     const open = page.locator('[data-row="open"]:visible').first();
     if (await open.count()) {
       await open.click();
       await settle(1200);
       const sheet = await text();
       check(
-        "la feuille de la ligne porte Refuser et Décaler",
-        /Refuser/.test(sheet) && /Décaler/.test(sheet),
+        "la feuille de la ligne porte Refuser, et pas Décaler",
+        /Refuser/.test(sheet) && !/Décaler/.test(sheet),
         "feuille de détail",
       );
       await page.keyboard.press("Escape");
@@ -405,8 +440,8 @@ if (hasRow) {
       await settle(1200);
       const sheet = await text();
       check(
-        "et sa feuille porte Décaler",
-        /Décaler/.test(sheet),
+        "et sa feuille ne porte pas Décaler non plus",
+        !/Décaler/.test(sheet),
         "feuille de détail à 390",
       );
       await page.keyboard.press("Escape");
@@ -415,34 +450,6 @@ if (hasRow) {
   }
   await page.setViewportSize({ width, height });
   await openPending();
-
-  // Décaler: the sheet, the venue's own slots, and the move.
-  await page.locator('button:has-text("Décaler"):visible').first().click();
-  await settle(1500);
-  const sheet = await text();
-  check("Décaler ouvre une feuille", /Décaler la réservation/i.test(sheet));
-  check("qui annonce que le client sera informé", /sera informé/i.test(sheet));
-
-  const slots = page.locator("[data-slots] button");
-  const slotCount = await slots.count();
-  check("la feuille propose les créneaux de l'établissement", slotCount > 0, `${slotCount} créneaux`);
-
-  if (slotCount > 0) {
-    const chosen = (await slots.nth(Math.min(2, slotCount - 1)).innerText()).trim();
-    await slots.nth(Math.min(2, slotCount - 1)).click();
-    await settle(400);
-    await page.locator('button:has-text("Décaler"):visible').last().click();
-    await settle(3000);
-    const after = await text();
-    check("la réservation est décalée", /décalée/i.test(after), chosen);
-    await openPending();
-    check(
-      "et le carnet porte la nouvelle heure",
-      (await text()).includes(chosen.replace(/\s/g, "")) ||
-        (await text()).includes(chosen),
-      chosen,
-    );
-  }
 }
 
 // The search: a name, four digits, a date — grouped by day.
@@ -478,41 +485,61 @@ check("une date trouve la journée", /réservation(s)? trouvée/i.test(byDate), 
 const byNothing = await searchFor("zzzzqqq");
 check("et une recherche vide le dit", /Aucune réservation trouvée/i.test(byNothing));
 
-// ── 3 · les créneaux ─────────────────────────────────────────
+// ── 3 · ce que Disponibilités ne demande plus ────────────────
+//
+// Four things left this screen on 5 October, and each of them left for
+// a reason about the app rather than about the dashboard: nothing
+// downstream reads a pacing rule, a closed day or a grid other than the
+// half hour. A screen that collected them would be collecting them for
+// itself, so the test is that it does not.
 
-console.log("\n  — 3 · durée des créneaux");
+console.log("\n  — 3 · le périmètre du 5 octobre, par ses absences");
 
 await go("/restaurant/disponibilites");
 const dispo = await text();
-check("Disponibilités nomme la durée des créneaux", /Créneaux de/i.test(dispo));
-const select = page.locator("select").filter({ hasText: /minutes|heure/ }).first();
-const options = (await select.count())
-  ? (await select.locator("option").allInnerTexts()).join(" | ")
-  : "";
-check(
-  "et offre 15, 30 et 60 minutes",
-  /15 minutes/.test(options) && /30 minutes/.test(options) && /1 heure/.test(options),
-  options,
-);
-check("le service dit sa durée dans son en-tête", /créneaux de (15|30) minutes|créneaux de 1 heure/i.test(dispo));
 
-// The other venue chose the hour, so its own card says so.
-// The venue cookie is signed since the audit — an unsigned value is
-// ignored, which is the whole point of signing it. So the switch goes
-// through the route the switcher itself calls; `context.request` shares
-// this context's cookie jar, so the signed cookie lands where the page
-// will read it.
-await context.request.post(`${BASE}/api/session/venue`, {
-  data: { venueId: "bar_nomad_casa" },
-});
-await go("/restaurant/disponibilites");
 check(
-  "l'autre établissement a choisi l'heure",
-  /créneaux de 1 heure/i.test(await text()),
+  "la demi-heure est annoncée, pas demandée",
+  /créneaux de 30 minutes/i.test(dispo),
+  "en-tête du service",
 );
-await context.request.post(`${BASE}/api/session/venue`, {
-  data: { venueId: "rst_dar_zellij" },
-});
+const slotSelect = page.locator("select").filter({ hasText: /minutes|heure/ });
+check(
+  "aucun choix de durée de créneau",
+  (await slotSelect.count()) === 0,
+  `${await slotSelect.count()} sélecteur(s)`,
+);
+check(
+  "pas de « Règles de réservation »",
+  !/Règles de réservation/i.test(dispo),
+);
+check("pas de « Réglages avancés »", !/Réglages avancés/i.test(dispo));
+check("pas de « Jours de fermeture »", !/Jours de fermeture/i.test(dispo));
+check(
+  "la réservation en ligne et les services restent",
+  /Accepter les réservations en ligne/i.test(dispo) &&
+    /Service du (soir|midi)|Services|Créneaux/i.test(dispo),
+);
+
+// Horaires asked for closed days too, on the other screen.
+await go("/restaurant/ma-fiche");
+const horaires = page.locator('button:has-text("Horaires"):visible').first();
+if (await horaires.count()) {
+  await horaires.click();
+  await settle(1200);
+  check(
+    "et Ma fiche · Horaires ne les demande pas non plus",
+    !/Jours de fermeture/i.test(await text()),
+  );
+}
+
+// The book still groups, on the grid the app offers.
+await go("/restaurant/reservations");
+check(
+  "le carnet groupe toujours par créneau",
+  /\d{1,2}\s?h\s?(00|30)/i.test(await text()),
+  "demi-heures",
+);
 
 // ── 4 · le client ────────────────────────────────────────────
 
@@ -542,7 +569,7 @@ if (noise.size > 0) {
 
 console.log(
   problems.length === 0
-    ? `\nLes quatre changements tiennent · ${LOT_LABEL} · ${width}×${height}.`
+    ? `\nLe carnet tient son périmètre · ${LOT_LABEL} · ${width}×${height}.`
     : `\n${problems.length} problème(s) : ${problems.join(" · ")}`,
 );
 

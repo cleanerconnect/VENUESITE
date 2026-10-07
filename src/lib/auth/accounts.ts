@@ -75,7 +75,9 @@ const ACCOUNTS: DemoAccount[] = [
   },
   {
     // Two venues *and* an organisation — the account that exercises both
-    // the workspace switcher and the venue switcher.
+    // the workspace switcher and the venue switcher. Lot 2 only: the
+    // Lot 1 seed writes no staff row for him, because a dashboard with
+    // one owner per establishment has nothing to switch.
     userId: "usr_yassine",
     email: "yassine@darzellij.ma",
     password: "demo",
@@ -92,8 +94,11 @@ const ACCOUNTS: DemoAccount[] = [
     eventRole: "scanner",
   },
   {
-    // Two venues, no organisation — the account that has to choose which
-    // venue to open before the portal can show it anything.
+    // Lot 1's partner: one establishment, held as its owner, and no
+    // organisation — so sign-in lands on Dar Zellij with nothing to
+    // choose. Under Lot 2 the seed gives him a second venue and a
+    // manager's role, and he becomes the account that has to pick one
+    // before the portal can show it anything.
     userId: "usr_rachid",
     email: "rachid@darzellij.ma",
     password: "demo",

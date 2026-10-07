@@ -57,7 +57,10 @@ import { formatValue } from "@/lib/dashboard/value";
 import { buildCustomersScreen } from "./crm";
 import { buildAudienceScreen } from "./audience";
 import type { AudienceInsights } from "@/lib/types/venue-operations";
-import { emptyAudience } from "@/lib/types/venue-operations";
+import {
+  emptyAudience,
+  LOT1_SLOT_MINUTES,
+} from "@/lib/types/venue-operations";
 import {
   buildPerformanceScreen,
   buildReportsScreen,
@@ -605,7 +608,6 @@ export function buildDashboardScreen(
         undefined,
         lot,
         false,
-        data.currentService.slotMinutes,
       ),
     ),
     empty: lot1
@@ -644,7 +646,6 @@ export function buildDashboardScreen(
       undefined,
       lot,
       true,
-      data.currentService.slotMinutes,
     );
   const byTime = (a: Reservation, b: Reservation) =>
     Date.parse(a.at) - Date.parse(b.at);
@@ -1229,7 +1230,6 @@ export function buildReservationsScreen(
         depositByReservation.get(r.id),
         lot,
         true,
-        service.slotMinutes,
       ),
     ),
     empty: {
@@ -1797,8 +1797,6 @@ function reservationRow(
   // bookings beside an attention queue that already carries them, and
   // two copies of Accepter on one screen is one too many.
   inlineActions = false,
-  /** The service's grid, which decides the sitting this row files under. */
-  slotMinutes = 30,
 ): EntityRow {
   const vocabulary = configFor(configuration);
   const lot1 = lot === 1;
@@ -1860,7 +1858,12 @@ function reservationRow(
     status: lot1 ? reservationBand(reservation.state) : undefined,
     // The sitting this booking files under, on the half hour the whole
     // dataset is already aligned to.
-    slot: lot1 ? slotOf(reservation.at, slotMinutes) : undefined,
+    //
+    // The service's own grid used to decide it, because Lot 1 let a
+    // venue pick 15, 30 or 60 minutes. It does not any more — the app
+    // offers half hours and nothing else, so the grouping is the half
+    // hour, stated once in `LOT1_SLOT_MINUTES`.
+    slot: lot1 ? slotOf(reservation.at, LOT1_SLOT_MINUTES) : undefined,
     // The phone, on the row, because the one thing a host does with a
     // booking that is not on this screen is ring the guest — and going
     // to the drawer for a number is the tap that gets skipped when the
@@ -1914,7 +1917,8 @@ function reservationRow(
     // the kebab would be a second, quieter path to the same four verbs —
     // and one more small target in a row built for large ones.
     menu: lot1 ? undefined : reservationMenu(reservation, lot),
-    actions: lot1 && inlineActions ? reservationActions(reservation) : undefined,
+    actions:
+      lot1 && inlineActions ? reservationActions(reservation, lot) : undefined,
   };
 }
 
@@ -1964,13 +1968,17 @@ export function slotOf(at: string, slotMinutes: number): string {
  *
  * **Two decisions on a phone, not four.** At 390 a 358px line holds two
  * 44px targets; four wrap into two rows and take the line from 44px to
- * 200. `onPhone: "sheet"` marks the two that step off the line — Décaler
- * on every row, and Absent on a request, which is the one row where the
- * guest has not been told the table is theirs. What stays is the pair
- * the state actually poses: Accepter or Refuser on a request, Check-in
- * or Absent on a confirmed table.
+ * 200. `onPhone: "sheet"` marks what steps off the line — Absent on a
+ * request, which is the one row where the guest has not been told the
+ * table is theirs, and, in Lot 2, Décaler on every row. What stays is
+ * the pair the state actually poses: Accepter or Refuser on a request,
+ * Check-in or Absent on a confirmed table. Under Lot 1 that pair is the
+ * whole row: Décaler left the sprint on 5 October.
  */
-function reservationActions(reservation: Reservation): CtaAction[] | undefined {
+function reservationActions(
+  reservation: Reservation,
+  lot: Lot = 2,
+): CtaAction[] | undefined {
   // Absent used to wait for the table to be due, on the reasoning that
   // offering it early is a mis-tap waiting to happen. In a real service
   // it is the other way round: a host who can see the party is not
@@ -1992,6 +2000,15 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
   // wanted, the hour is wrong — and until now the host's only honest
   // move was to refuse and ask the guest to book again. It sits beside
   // Refuser on every open row, because the choice is between the two.
+  //
+  // Lot 2's, since 5 October. DigiNegoce: the sprint's booking
+  // management is « en attente de confirmation, prochaines arrivées et
+  // les arrivées », plus check-in and no-show — and moving a table « ne
+  // figurait pas dans le périmètre initial et n'est pas prioritaire
+  // fonctionnellement parlant ». A venue that cannot take the hour
+  // refuses it, and the guest books again; whoever rebuilds this in
+  // Lot 2 finds the sheet, the command and the endpoint where they
+  // were.
   const reschedule: CtaAction = {
     action: {
       kind: "command",
@@ -2023,6 +2040,8 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
     variant: "secondary",
   };
 
+  const lot1 = lot === 1;
+
   if (reservation.state === "requested" || reservation.state === "waitlisted") {
     return [
       {
@@ -2036,7 +2055,7 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
         variant: "primary",
       },
       refuse,
-      reschedule,
+      ...(lot1 ? [] : [reschedule]),
       // A request is the one row where the guest has not been told the
       // table is theirs, so « absent » is not yet a thing that can have
       // happened. It stays reachable — in the sheet on a phone.
@@ -2059,7 +2078,7 @@ function reservationActions(reservation: Reservation): CtaAction[] | undefined {
         variant: "primary",
       },
       absent,
-      reschedule,
+      ...(lot1 ? [] : [reschedule]),
     ];
   }
   // Arrived, completed, refused, cancelled, absent: the time on the row
@@ -2257,11 +2276,7 @@ function reservationDetail(
         ]
       : undefined,
     // The sheet is where a decision that the line does not offer lives,
-    // and under Lot 1 there are two of those.
-    //
-    // **Décaler**, because the line drops it on a phone: two 44px
-    // targets are what 358 pixels hold, and moving a table is a
-    // negotiation rather than a reflex.
+    // and under Lot 1 there is one of those.
     //
     // **Refuser** on a booking already accepted, because the line no
     // longer offers it at any width. Cancelling a confirmed guest is
@@ -2269,8 +2284,13 @@ function reservationDetail(
     // the guest's name and phone number are on screen while you take
     // it.
     //
-    // Both are the same commands the line dispatches, so the verb is
-    // the same word in all three places — line, sheet, dialog.
+    // Décaler used to be the second, because the line drops it on a
+    // phone. It is Lot 2's since 5 October — see `reservationActions` —
+    // so the sheet no longer offers it either: one scope, three
+    // surfaces.
+    //
+    // It is the same command the line dispatches, so the verb is the
+    // same word in all three places — line, sheet, dialog.
     actions:
       lot === 1
         ? [
@@ -2308,22 +2328,6 @@ function reservationDetail(
             reservation.state === "waitlisted" ||
             reservation.state === "confirmed"
               ? [
-                  {
-                    action: {
-                      kind: "command" as const,
-                      label: "Décaler",
-                      command: "reservation.reschedule",
-                      payload: {
-                        id: reservation.id,
-                        name: reservation.guestName,
-                        at: reservation.at,
-                        party: reservation.partySize,
-                      },
-                      icon: "calendar-clock" as const,
-                    },
-                    variant: "secondary" as const,
-                    allow: ["owner", "admin"],
-                  },
                   {
                     action: {
                       kind: "command" as const,

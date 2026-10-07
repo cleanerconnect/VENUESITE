@@ -10,6 +10,23 @@ info:
     « Dashobaord basique (Authentification + Création de Venue + Gestion des
     reservation uniquement) ».
 
+    **Périmètre arrêté avec DigiNegoce le 5 octobre 2026**, et cinq
+    choses en sont sorties. Chacune est sortie pour une raison qui
+    tient à l'application, pas au tableau de bord :
+
+    | Sorti du lot 1 | Pourquoi | Ce qui reste ici |
+    |---|---|---|
+    | **Décaler** une réservation | « ne figurait pas dans le périmètre initial et n'est pas prioritaire fonctionnellement parlant » | rien : `PUT /bookings/{id}/reschedule` et `GET /venues/{id}/slots` ont quitté ce fichier |
+    | **Règles de réservation** et **Réglages avancés** | « à quoi sert cette information ? comment doit-elle être exploitée ? — non prioritaire » | `PacingRules` entier, dont le portail n'écrit plus que `onlineBookingOpen` |
+    | **Jours de fermeture** | « rien ne permet d'afficher ce détail au niveau de l'appli — non prioritaire » | `VenueAvailability.closures`, toujours vide |
+    | **Créneaux de 15 / 30 / 60 min** | « gérés aujourd'hui sur la base de 30 minutes uniquement » | `slotMinutes`, lu, jamais écrit, et 30 |
+    | **Rôles** et **sélecteur d'établissement** | un compte par établissement, propriétaire du sien | `Membership.role`, qui vaut `owner`, et un `venues` à un élément |
+
+    Ce qui a quitté le périmètre n'a pas quitté le code : les écrans, les
+    commandes et les pilotes sont intacts, et le lot 2 les rallume sans
+    rien réécrire. Ce fichier décrit ce que le service doit répondre en
+    octobre.
+
     **Ce fichier est dérivé du code, pas de la documentation.** Trois
     sources, dans cet ordre :
 
@@ -772,81 +789,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erreur'
-  /api/business/bookings/{reservationId}/reschedule:
-    put:
-      tags:
-      - Réservations
-      summary: Décaler une réservation
-      operationId: rescheduleBooking
-      description: |
-        « ou inviter l'utilisateur à choisir un autre créneau » — `Détail Sprint ` ligne 46. **`at` doit être un créneau que `GET /venues/{id}/slots` a rendu pour ce jour** : le portail le vérifie avant d'appeler, et le service doit le vérifier aussi. L'état ne change pas — une demande décalée reste une demande. `409` si la réservation a déjà bougé, ou si elle est arrivée, close ou refusée.
-
-        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
-      parameters:
-      - name: reservationId
-        in: path
-        required: true
-        schema:
-          type: string
-        description: La réservation.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - at
-              properties:
-                at:
-                  type: string
-                  format: date-time
-      responses:
-        '200':
-          description: L'aperçu complet après la décision, pour que le portail n'ait pas à
-            relire.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestaurantOverview'
-        '401':
-          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
-            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '403':
-          description: Le jeton est valide et ne porte pas ce périmètre.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '404':
-          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '409':
-          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
-            ou un état déjà décidé).'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '422':
-          description: Corps syntaxiquement valide, contenu refusé.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '500':
-          description: Défaillance du service.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
   /api/business/bookings/{reservationId}/no-show:
     post:
       tags:
@@ -979,57 +921,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Reservation'
-        '401':
-          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
-            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '403':
-          description: Le jeton est valide et ne porte pas ce périmètre.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-        '500':
-          description: Défaillance du service.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Erreur'
-  /api/business/venues/{venueId}/slots:
-    get:
-      tags:
-      - Réservations
-      summary: Les créneaux réservables d'un jour
-      operationId: getBookableSlots
-      description: |
-        Ce que la feuille Décaler propose, et **rien d'autre** : un hôte ne doit pas pouvoir placer une table à une heure que l'établissement ne sert pas. Découpé sur `slotMinutes` du service, et un service qui franchit minuit (« Nuit », 21h00 → 02h00) rend des créneaux du lendemain.
-
-        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
-      parameters:
-      - name: venueId
-        in: path
-        required: true
-        schema:
-          type: string
-        description: L'établissement.
-      - name: date
-        in: query
-        required: true
-        schema:
-          type: string
-          format: date
-      responses:
-        '200':
-          description: Succès.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BookableSlot'
         '401':
           description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
             ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
@@ -2276,8 +2167,20 @@ components:
       - fullName
       - email
       - venues
-      description: 'Identité, périmètre et rôle en une réponse. Le portail n''a aucune autre
-        source : il ne décide d''aucun accès localement.'
+      description: >-
+        Identité, périmètre et rôle en une réponse. Le portail n'a aucune
+        autre source : il ne décide d'aucun accès localement.
+
+
+        **En lot 1, `venues` porte exactement un établissement, et son
+        `role` est `owner`.** Le périmètre arrêté le 5 octobre est
+        l'authentification, la création de venue et la gestion des
+        réservations : un compte par établissement, propriétaire du
+        sien. Le portail n'affiche donc ni sélecteur d'établissement ni
+        libellé de rôle, et la connexion ouvre directement le tableau
+        de bord. Une réponse qui en porte deux reste lisible — le
+        sélecteur revient avec le lot 2 — mais rien dans Prio 02 ne la
+        produit.
     Reservation:
       type: object
       properties:
@@ -2413,8 +2316,15 @@ components:
           - 15
           - 30
           - 60
-          description: La grille du service. **Obligatoire.** Omis, le portail retombe sur
-            30 ; c'est un défaut, pas un contrat.
+          description: >-
+            La grille du service. **Obligatoire, et 30 en lot 1.**
+            L'application ne propose que des demi-heures — « les créneaux
+            de disponibilités sont gérés aujourd'hui sur la base de 30
+            minutes uniquement » (DigiNegoce, 5 octobre) — donc le
+            portail n'offre plus de choix et groupe le carnet sur la
+            demi-heure quoi qu'il reçoive. Servir 15 ou 60 ne casse
+            rien ; cela n'a simplement plus d'effet avant le lot 2.
+            Omis, le portail retombe sur 30.
         slotLoad:
           type: array
           items:
@@ -2804,18 +2714,6 @@ components:
       - date
       - services
       - reservations
-    BookableSlot:
-      type: object
-      properties:
-        at:
-          type: string
-          format: date-time
-        serviceLabel:
-          type: string
-          description: « Déjeuner », « Nuit » — le nom que la feuille Décaler affiche.
-      required:
-      - at
-      - serviceLabel
     AvailabilitySlot:
       type: object
       properties:
@@ -2854,6 +2752,15 @@ components:
             $ref: '#/components/schemas/AvailabilitySlot'
         closures:
           type: array
+          description: >-
+            Les journées retirées du carnet. **Toujours vide en lot 1 :**
+            l'application ne lit pas encore une fermeture — « il n'y a
+            rien qui permet d'afficher ce détail au niveau de l'appli —
+            non prioritaire » (DigiNegoce, 5 octobre) — et un écran qui
+            la collectait faisait croire au partenaire qu'il était
+            fermé un jour où l'application vendait encore. Le champ
+            reste dans la charge utile, et le `PUT` renvoie la liste
+            telle qu'elle est reçue ; c'est le lot 2 qui la remplit.
           items:
             type: object
             properties:
@@ -2947,6 +2854,16 @@ components:
       - version
     PacingRules:
       type: object
+      description: >-
+        Les règles de cadence. **Le lot 1 n'en écrit qu'une :**
+        `onlineBookingOpen`, le grand interrupteur de Disponibilités.
+        « Quid des Réglages avancés et Règles de réservation ? À quoi
+        sert cette information ? Comment doit-elle être exploitée ? —
+        non prioritaire » (DigiNegoce, 5 octobre) : les huit autres ne
+        changent rien à ce que l'application propose aujourd'hui, donc
+        le portail ne les demande plus. Le service les sert et les
+        garde ; `POST /services/configuration` ne reçoit plus que
+        `pacing.set` sur `onlineBookingOpen` avant le lot 2.
       properties:
         maxArrivalsPerQuarter:
           type: integer

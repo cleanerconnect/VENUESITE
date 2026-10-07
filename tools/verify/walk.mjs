@@ -15,7 +15,7 @@
 // deliberately, not a dependency to carry.
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT, LOT_LABEL, venueScreens } from "./lot.mjs";
+import { LOT, LOT_LABEL, ownerOf, signIn, venueScreens } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -27,7 +27,10 @@ const SCREENS = venueScreens();
 
 const width = Number(process.env.W ?? 1440);
 const height = Number(process.env.H ?? 900);
-const email = process.env.EMAIL ?? "yassine@darzellij.ma";
+// Unset by default: each establishment is opened by the account that
+// holds it, which under Lot 1 is a different person per venue and under
+// Lot 2 is Yassine for both. `EMAIL=` pins one account for every venue.
+const email = process.env.EMAIL ?? null;
 // Both venues by default, because they are not the same product.
 // `Détail Sprint` row 41 puts the same user story on Drinks/Cellar, so a
 // lounge renders these seven screens too — and it books créneaux rather
@@ -68,22 +71,23 @@ page.on("console", (m) => {
 });
 page.on("pageerror", (e) => problems.push(`pageerror: ${String(e).slice(0, 160)}`));
 
-await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
-await page.fill('input[type="email"]', email);
-await page.fill('input[type="password"]', "demo");
-await page.click('button[type="submit"]');
-await page.waitForTimeout(2000);
-
 let ok = 0;
 let expected = 0;
 
 for (const venue of venues) {
+  // Signed in per establishment rather than once, because Lot 1 holds
+  // one owner account per venue — there is no switcher to switch with,
+  // and `POST /api/session/venue` is refused for a venue the account
+  // does not hold. Lot 2 signs the same account in twice, which costs
+  // two seconds and keeps one code path.
+  const who = email ?? ownerOf(venue);
+  await signIn(page, BASE, { email: who });
   const res = await page.request.post(`${BASE}/api/session/venue`, {
     data: { venueId: venue },
   });
   if (!res.ok()) problems.push(`venue switch failed: ${res.status()}`);
   await page.waitForTimeout(400);
-  console.log(`\n${venue}`);
+  console.log(`\n${venue} · ${who}`);
 
   for (const [path, label] of SCREENS) {
     const before = problems.length;

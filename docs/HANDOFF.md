@@ -103,11 +103,37 @@ Venue » is one of the three nouns and had no screen at all until now.
 | 0 | Inscription | `/inscription` | Création de Venue | Six steps a partner walks on their own: themselves, the establishment, the address, a photo, the weekly hours, a summary. The draft is saved on the seam after every step, so a closed tab loses nothing, and step 6 creates the venue and signs them in on it. |
 | 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. Its line for non-partners now opens the flow above instead of offering an e-mail address. |
 | 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. |
-| 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Services, capacity, pacing and the booking window — the hours the venue can be booked for. |
+| 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Two blocks since 5 October: online booking on or off, and the services — days, hours, last booking taken, capacity, open or closed. The pacing rules, the advanced settings, the closed days and the choice of grid left the lot that day. |
 | 4 | Accueil | `/restaurant` | Gestion des réservations | Today's book, and the sentence above it. No tiles. |
-| 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | Any day's book, walked a step at a time or picked from a calendar, scoped to one of that day's services — and the four decisions on the row: accepter, refuser with a coded reason, check-in, no-show. |
+| 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | Any day's book, walked a step at a time or picked from a calendar, scoped to one of that day's services — and the four decisions on the row, and only those four: accepter, refuser with a coded reason, check-in, no-show. |
 | 6 | Check-in | `/restaurant/check-in` | Gestion des réservations | Validate a booking at the door, by code or by name. |
 | 7 | Notifications | `/restaurant/notifications` | Gestion des réservations | One alert: a new booking needs a decision. |
+
+**What the 5 October review took out.** DigiNegoce's return on the
+Prio 02 scope — « Dashboard Restau & Drinks - Sprint Prio 02 », read
+with `Planning V3` — removed five things before the sprint opened on
+12 October. Each left because of what the app does, not because of what
+the dashboard could do:
+
+| Out of Lot 1 | Why | Where it went |
+|---|---|---|
+| **Décaler** a booking | not in the original scope, and not a priority | Lot 2 · the sheet, the command and `PUT /bookings/{id}/reschedule` are untouched and unreachable |
+| **Règles de réservation**, **Réglages avancés** | nothing downstream reads a pacing rule | Lot 2 · `PacingRules` still travels; Lot 1 writes `onlineBookingOpen` alone |
+| **Jours de fermeture** | the app cannot show a closed day, so the dashboard would be promising one | Lot 2 · `closures` travels and stays empty |
+| **15 / 30 / 60 minute grid** | the app offers half hours only | Lot 2 · `slotMinutes` is read, never written, and is 30 |
+| **Roles**, **venue switcher** | one owner account per establishment | Lot 2 · with « Équipe et rôles » |
+
+Check-in stayed, and that was the one question in the return that had an
+answer rather than a decision: it is redundant with Réservations « à
+moins qu'il y ait un scanner ». There is one — the app's QR — and
+marking an arrival from Réservations works too.
+
+Two accounts, two establishments, no chooser: `rachid@darzellij.ma`
+opens Dar Zellij and `sofia@nomadrooftop.ma` opens Nomad Rooftop, each
+as its owner. The seed writes one staff row per venue under Lot 1 and
+the full staffed venue under Lot 2, so `Détail Sprint` row 41's
+`Dashboard Drinks/Cellar` is still exercised — by the second account
+rather than by a switch.
 
 The sidebar collapses to two hairline-separated runs — the four
 operational screens, then the two that configure the establishment —
@@ -115,7 +141,8 @@ and drops the group names with them: a label earns its place over ten
 groups, not over two, and the event sidebar labels neither of its own.
 Structurally it is now that sidebar entry for entry: the wordmark, the
 workspace caption (`établissement` against `organisateur`), the identity
-card that opens the switcher, the entries at 13.5 px on 40 px rows with
+card — which opens the switcher in Lot 2 and simply names the
+establishment in Lot 1 — the entries at 13.5 px on 40 px rows with
 an 18 px icon each, and a footer card carrying the signed-in person,
 their role and a kebab holding Se déconnecter.
 
@@ -279,8 +306,15 @@ That serves the committed static dataset. `/login` takes an address and
 a password and nothing else — there is no account list to pick from, no
 guest entry and no shortcut past the form, because none of those exists
 in production. The credentials live in `src/lib/auth/accounts.ts`, the
-file a real backend replaces; `yassine@darzellij.ma` owns both venues
-and is the account every capture and check uses.
+file a real backend replaces, and the memberships come from the seed.
+
+**Who the tools sign in as depends on the lot.** Lot 1 is one owner
+account per establishment — `rachid@darzellij.ma` for Dar Zellij,
+`sofia@nomadrooftop.ma` for Nomad Rooftop, each landing straight on
+their own venue. Lot 2 keeps `yassine@darzellij.ma`, who owns both and
+switches between them. `ownerOf()` in `tools/verify/lot.mjs` is the one
+place that knows, so a tool asks rather than hard-codes an address; the
+password is `demo` for all of them.
 
 Optionally promote to a real database, after which edits persist across
 restarts:
@@ -321,7 +355,7 @@ node tools/verify/audience.mjs        # the minimum group of ten, both configura
 node tools/verify/inscription.mjs     # the seven onboarding steps, the resume, the landing
 node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
 node tools/verify/edges.mjs           # the paths taken by accident — see below
-node tools/verify/decisions.mjs       # LYFE's review, Décaler, the search, the grid, the guest
+node tools/verify/decisions.mjs       # LYFE's review, the four decisions, the search, the guest — and the 5 October absences
 node tools/verify/handshake.mjs       # the app and the portal on one database — see §14
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
 ```
@@ -863,12 +897,12 @@ grouped under their sitting, the way a paper book is ruled off.
 **What `09` holds.** Seven Sections, one per screen, in the order a
 partner meets them, 240 px apart. Each splits into two sub-sections —
 `Ordinateur` on the left at 1440, `Téléphone` on the right at 390 — and
-the support frames (refused state, switcher states, overlays, saved
+the support frames (refused state, overlays, saved
 states, day and tab variants) sit under the frame they belong to:
 
 | Section | Ordinateur | Téléphone |
 |---|---|---|
-| `1 · Connexion` | Connexion · **Sélecteur d'établissement · états** · **Connexion · identifiants refusés** | Connexion |
+| `1 · Connexion` | Connexion · **Connexion · identifiants refusés** | Connexion |
 | `2 · Accueil` | Accueil | Accueil · Plus |
 | `3 · Réservations` | Réservations · Déjeuner · jour précédent (+ Déjeuner) · jour suivant (+ Déjeuner) · Overlay réservation confirmée | Réservations · Overlay réservation confirmée |
 | `4 · Check-in` | Check-in · Overlay caméra | Check-in · Overlay caméra |
@@ -876,17 +910,18 @@ states, day and tab variants) sit under the frame they belong to:
 | `6 · Disponibilités` | Disponibilités · Enregistré | Disponibilités · Enregistré |
 | `7 · Notifications` | Notifications · Enregistré | Notifications · Enregistré |
 
-Two frames on the page are not screen captures. The switcher frame is
-three states of the venue picker at the top of the sidebar — one
-establishment (a card with no affordance), several closed, several open
-with the active one checked. It is there because `Détail Sprint` row 41
-puts the same user story on `Dashboard Drinks/Cellar partenaire`, so one
-account holding a restaurant and a bar is the normal case, not an edge
-one. Each state carries its label and nothing else: the frame is a
-reference for what to build, and a paragraph explaining why is a
-paragraph that goes stale where nobody is reading it.
+The page used to carry a frame of the venue switcher's three states —
+one establishment, several closed, several open with the active one
+ticked. It went on 5 October with the switcher itself: Lot 1 is one
+owner account per establishment, so the card at the top of the sidebar
+names the venue and does not open. `Détail Sprint` row 41 still puts
+the same user story on `Dashboard Drinks/Cellar partenaire`, and that
+is still served — by a second account, `sofia@nomadrooftop.ma`, which
+is how a bar is opened in this lot. The switcher, its three states and
+their frame come back with Lot 2 and « Équipe et rôles ».
 
-`Connexion · identifiants refusés` is the second: the sign-in form after
+One frame on the page is not a screen capture.
+`Connexion · identifiants refusés` is the sign-in form after
 a refusal, which cannot be drawn on the same frame as the resting form
 without the frame asserting two things at once. One message above the
 pair rather than two beneath it — a wrong address and a wrong password
@@ -1091,26 +1126,32 @@ The demo dataset ships one: `validation@lyfe.ma`, password `demo`, who
 holds no venue and no organisation on purpose.
 
 **A booking has four decisions on its row**, always visible: Accepter,
-Refuser, Absent and the new **Décaler**, which moves it to another time
-the venue actually offers and tells the guest in the same call. The
-sheet's times come from the venue's service definitions, and the driver
-re-checks the chosen one before writing.
+Refuser, Absent and Check-in — the four the 5 October scope names, and
+no fifth. **Décaler** was the fifth until that date and is Lot 2's now:
+« ne figurait pas dans le périmètre initial et n'est pas prioritaire
+fonctionnellement parlant ». A venue that cannot hold the hour refuses
+the request and the guest books again, which is what the app supports
+today. The sheet, the command and the two endpoints behind it are
+untouched and unreachable — `reservationActions()` is the one place
+that stopped offering it.
 
 **The chrome's search box searches the whole book**, not the day on
 screen: a name, a phone matched on digits only — so the last four work —
 or a date, with the results grouped by day.
 
-**Each service picks a slot length** of 15, 30 or 60 minutes on
-Disponibilités. Réservations groups by it and the load curve is cut on
-it. The two seeded venues disagree on purpose, so the dataset exercises
-the field.
+**The grid is the half hour, and Lot 1 does not ask.** Each service
+carries a `slotMinutes` of 15, 30 or 60 and Lot 2 lets a venue pick;
+Lot 1 states it in the service card's subheading and groups the book on
+`LOT1_SLOT_MINUTES`. The reason is the app: « les créneaux de
+disponibilités sont gérés aujourd'hui sur la base de 30 minutes
+uniquement — changement à prévoir si créneau à paramétrer ». A
+dashboard offering an hour when the app offers half hours would be
+collecting a number nothing reads.
 
-One thing this does **not** yet do: the consumer app's booking screen
-still offers a hardcoded list of half hours. `backend/postgres_dashboard.py`
-now serves `slot_minutes` and `bookable_times` on every restaurant
-payload, so the change is one line in
-`frontend/app/restaurants.tsx:1123` — but that is the app's UI, which
-the brief ring-fenced, so it is left for whoever owns that screen.
+`backend/postgres_dashboard.py` already serves `slot_minutes` and
+`bookable_times` on every restaurant payload, so the app's side of that
+change is one line in `frontend/app/restaurants.tsx:1123` when the
+grid becomes a choice.
 
 ---
 

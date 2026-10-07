@@ -119,6 +119,18 @@ export const isSlotMinutes = (value: unknown): value is SlotMinutes =>
 export const asSlotMinutes = (value: unknown): SlotMinutes =>
   isSlotMinutes(Number(value)) ? (Number(value) as SlotMinutes) : 30;
 
+/**
+ * The grid Lot 1 runs on, and the only one.
+ *
+ * « Les créneaux de disponibilités sont gérés aujourd'hui sur la base
+ * de 30 minutes uniquement — changement à prévoir si créneau à
+ * paramétrer » (DigiNegoce, 5 October). The app offers half hours;
+ * until it offers anything else, a dashboard that let a venue pick 15
+ * or 60 would be writing a number nothing reads. Lot 1 states it and
+ * Lot 2 asks for it, which is why this is a constant and not a default.
+ */
+export const LOT1_SLOT_MINUTES: SlotMinutes = 30;
+
 export interface ServiceDefinition {
   id: string;
   name: string;

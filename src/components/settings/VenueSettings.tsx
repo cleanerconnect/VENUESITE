@@ -69,6 +69,7 @@ export function VenueSettings({
   only,
   title,
   subtitle,
+  closures = true,
 }: {
   role: PortalRole;
   /**
@@ -90,6 +91,8 @@ export function VenueSettings({
   /** The square tile, as a list of nought or one. */
   thumbnail: VenueAsset[];
   staff: StaffMemberRow[];
+  /** Whether Horaires draws the closed-days card. Lot 1 does not. */
+  closures?: boolean;
 }) {
   const visible = SECTIONS.filter(
     (s) => s.minRole.includes(role) && (!only || only.includes(s.id)),
@@ -140,7 +143,9 @@ export function VenueSettings({
           sections={menu.sections.map((s) => ({ id: s.id, name: s.name }))}
         />
       ) : null}
-      {active === "hours" ? <OpeningHoursForm initial={availability} /> : null}
+      {active === "hours" ? (
+        <OpeningHoursForm initial={availability} closures={closures} />
+      ) : null}
       {/* The app's header is a carousel, so this is a list in an order,
           not one picture with spares: the first is the cover on every
           list card, the rest play behind it. */}

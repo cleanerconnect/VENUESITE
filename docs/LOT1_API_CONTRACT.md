@@ -43,6 +43,30 @@ dans un backlog :
   collection `business_accounts`, 14 jours dont 8 de backend. C'est ce
   qui décide des chemins. Le §6 la reprend cellule par cellule.
 
+**Et un troisième, daté.** Le retour de DigiNegoce du **5 octobre 2026**
+(« Dashboard Restau & Drinks - Sprint Prio 02 ») a retiré cinq choses du
+lot avant le démarrage du 12 octobre. Chacune est sortie pour une raison
+qui tient à l'application plutôt qu'au tableau de bord : le portail
+cessait d'être la seule moitié du produit qui connaissait la règle.
+
+| Sorti du Lot 1 | Ce qu'en dit le retour | Ce que le contrat garde |
+|---|---|---|
+| **Décaler** une réservation | « ne figurait pas dans le périmètre initial et n'est pas prioritaire fonctionnellement parlant » | plus rien : `PUT /bookings/{id}/reschedule` et `GET /venues/{id}/slots` sortent du contrat (§3.1) |
+| **Règles de réservation**, **Réglages avancés** | « à quoi sert cette information ? comment doit-elle être exploitée ? — non prioritaire » | `PacingRules` en entier ; le portail n'écrit plus que `onlineBookingOpen` (§2.6) |
+| **Jours de fermeture** | « rien ne permet d'afficher ce détail au niveau de l'appli — non prioritaire » | `VenueAvailability.closures`, toujours vide (§2.5) |
+| **Créneaux paramétrables** | « gérés aujourd'hui sur la base de 30 minutes uniquement » | `slotMinutes`, lu, jamais écrit, et 30 (§2.6) |
+| **Rôles**, **sélecteur d'établissement** | un compte par établissement, propriétaire du sien | `Membership.role`, qui vaut `owner`, et un `venues` à un élément (§5.1) |
+
+Ce qui est sorti du périmètre n'est pas sorti du code : les écrans, les
+commandes, les pilotes et le double HTTP savent toujours tout faire, et
+le lot 2 les rallume sans réécriture. Ce document décrit ce que le
+service doit répondre **en octobre**.
+
+Check-in reste un écran à part entière, et c'est délibéré : le retour le
+disait redondant avec Réservations « à moins qu'il y ait un scanner ».
+Il y en a un — c'est l'écran du QR de l'application, et marquer une
+arrivée depuis Réservations existe aussi.
+
 ---
 
 ## 1. Comment le portail parle à un backend
@@ -380,8 +404,13 @@ date, y compris celle du jour. `DayBook` est volontairement plus petit :
 ```
 
 **Les quatre décisions de la ligne** (accepter, refuser avec motif,
-check-in, absent) sont la raison d'être de l'écran. Leur état côté
-portail est décrit en §5.2 : trois des quatre ne partent pas encore.
+check-in, absent) sont la raison d'être de l'écran, et elles sont
+exactement les quatre que le retour du 5 octobre nomme : « en attente
+de confirmation, prochaines arrivées et les arrivées », puis « marquer
+la présence via check-in ou signaler un No-show ». Une cinquième —
+Décaler — a quitté le lot ce jour-là ; la ligne et sa feuille ne
+l'offrent plus à aucune largeur. Leur état côté portail est décrit en
+§5.2.
 
 *Tables lues* : `reservations`, `customers`, `services`,
 `service_definitions`, `venue_settings`.
@@ -570,13 +599,23 @@ onzième fichier.
     { "id": "slot_…", "weekday": 1, "opensAt": "19:00", "closesAt": "23:30",
       "capacity": 60, "enabled": true }
   ],
-  "closures": [ { "id": "clo_…", "date": "2026-12-25", "reason": "Noël" } ],
+  "closures": [],
   "updatedAt": "2026-09-24T18:00:00.000Z"
 }
 ```
 
 `weekday` est un jour ISO, 1 = lundi. `updatedAt` est un garde-fou : une
 modification concurrente doit être refusée, pas fusionnée.
+
+**`closures` est vide en Lot 1, et l'écran ne la demande plus.** « Pour
+le jour de fermeture : aujourd'hui, il n'y a rien qui permet d'afficher
+ce détail au niveau de l'appli — non prioritaire » (DigiNegoce,
+5 octobre). Le champ reste dans la charge utile et le `PUT` doit rendre
+la liste telle qu'il la reçoit : un jour fermé ici et vendu par
+l'application serait pire que pas de champ du tout, parce que le
+partenaire croirait sa journée protégée. Fermer un service sur
+Disponibilités est la façon honnête de le dire jusque-là ; la carte
+« Jours de fermeture » revient avec le lot 2.
 
 **Écritures de cet écran** : identité, horaires et photos passent
 aujourd'hui *à côté* du pilote (§5.3).
@@ -655,11 +694,27 @@ une erreur générique. Renvoyez un `409` avec
 `{ "code": "stale", "message": "…" }` et la conversion se fait en une
 ligne dans `http-repository.ts` ; c'est la réponse que nous attendons.
 
-En Lot 1, l'écran n'expose que trois règles de `pacing` — groupe maximum
-en ligne, réservation possible à l'avance, heure limite le jour même —
-plus cinq autres derrière « Réglages avancés ». Toutes les autres clés
-sont quand même écrites telles que relues : l'action porte l'objet
-complet.
+**En Lot 1, l'écran n'expose plus qu'une règle de `pacing` :
+`onlineBookingOpen`** — le grand interrupteur en haut de Disponibilités.
+Les huit autres — groupe maximum et minimum en ligne, réservation
+possible à l'avance, heure limite le jour même, arrivées par quart
+d'heure, couverts par service, validation manuelle à partir de, délai
+minimum — étaient « Règles de réservation » et « Réglages avancés », et
+elles sont sorties du périmètre le 5 octobre : « à quoi sert cette
+information ? comment doit-elle être exploitée ? — non prioritaire ».
+Aucune d'elles ne change ce que l'application propose aujourd'hui.
+
+Elles restent dans la charge utile et l'action porte toujours l'objet
+complet : le portail relit `pacing`, change la clé qu'on lui a demandée
+et réécrit le tout. Un service qui les stocke et les rend n'a rien à
+changer le jour où le lot 2 les rallume.
+
+La grille des créneaux a suivi le même chemin. Le choix 15 / 30 / 60 de
+la carte d'un service n'est plus offert — « les créneaux de
+disponibilités sont gérés aujourd'hui sur la base de 30 minutes
+uniquement » — et la carte annonce la demi-heure dans son en-tête au
+lieu de la demander. `slotMinutes` reste lu, reste obligatoire dans la
+réponse, et vaut 30 ; le portail ne l'écrit plus.
 
 *Tables lues/écrites* : `service_definitions`, `service_zones`,
 `pacing_rules`, `zones`, `venue_settings`.
@@ -790,29 +845,30 @@ cela.
 des booléens de complétude, pas des photos ni des horaires : la question
 est « est-ce un vrai établissement », pas « à quoi ressemble sa fiche ».
 
-**Décaler une réservation**, la quatrième décision sur une ligne :
+**Décaler une réservation est sorti du lot 1 le 5 octobre**, et avec
+lui les deux endpoints qui le servaient :
 
-| Méthode | Chemin | Requête | Réponse |
-|---|---|---|---|
-| `GET` | `/api/business/venues/{id}/slots?date=YYYY-MM-DD` | — | `BookableSlot[]` — `{ at, serviceLabel }` |
-| `PUT` | `/api/business/bookings/{id}/reschedule` | `{ at }` | `RestaurantOverview` |
+| Méthode | Chemin | État |
+|---|---|---|
+| `GET` | `/api/business/venues/{id}/slots?date=YYYY-MM-DD` | **lot 2** — plus appelé, retiré de l'OpenAPI |
+| `PUT` | `/api/business/bookings/{id}/reschedule` | **lot 2** — idem |
 
-Trois règles que le backend doit tenir, parce que le portail les tient :
+DigiNegoce, 5 octobre : sur l'onglet Réservations, « le partenaire doit
+pouvoir visualiser les différentes reservations : en attente de
+confirmation, prochaines arrivées et les arrivées » et « marquer la
+présence via check-in ou signaler un No-show ». Déplacer une table « ne
+figurait pas dans le périmètre initial et n'est pas prioritaire
+fonctionnellement parlant ». Un établissement qui ne peut pas tenir
+l'heure demandée refuse la demande, et le client réserve à nouveau —
+c'est ce que l'application sait faire aujourd'hui.
 
-1. **`at` doit être un créneau que `slots` a renvoyé pour son jour.** Le
-   portail le vérifie avant d'écrire ; un service qui ne le vérifie pas
-   laissera passer une heure que l'application refuserait, et le client
-   se présentera devant une table qui n'a jamais été tenue.
-2. **L'état ne change pas.** Décaler répond à *quand*, pas à *si* : une
-   demande décalée reste une demande en attente de réponse, une
-   réservation acceptée reste acceptée. Un décalage qui accepterait
-   silencieusement une demande serait l'établissement s'engageant sur une
-   table sur laquelle il ne s'est pas engagé.
-3. **Le client est prévenu par le même appel.** Une réservation déplacée
-   sans que le client le sache est le mode de défaillance de cette
-   fonctionnalité, et en faire deux appels est ce qui permet d'oublier le
-   second. Le portail écrit une ligne `messages_log` de type
-   `reservation_decalee`.
+Rien n'a été supprimé côté portail : la feuille
+(`src/components/restaurant/RescheduleSheet.tsx`), la commande
+`reservation.reschedule` et les deux méthodes du pilote attendent le
+sprint qui les achète. Les trois règles que le service devra tenir ce
+jour-là — un `at` pris dans les créneaux rendus par `slots`, un état
+qui ne change pas, et un client prévenu par le même appel — sont
+toujours écrites dans `src/lib/types/business.ts`, au-dessus du type.
 
 **Chercher une réservation dans tout le carnet**, et non filtrer la
 journée affichée :
@@ -917,22 +973,25 @@ vivrait, est `SP-Prio 08`.
 
 ## 4. Ce que le portail n'appelle plus
 
-Six lectures partaient en Lot 1 et leur charge utile n'atteignait aucun
+Des lectures partaient en Lot 1 et leur charge utile n'atteignait aucun
 pixel. Elles sont coupées :
 
-| Appel | Demandé par | Pourquoi rien ne s'affichait |
+| Appel | Demandé par | Pourquoi il ne part plus |
 |---|---|---|
 | `GET /api/business/service-floor?venue_id=` | Accueil | Le constructeur de l'Accueil ne lit jamais ce bundle — dans aucun des deux lots. |
 | `GET /api/business/payments?venue_id=` | Accueil, Réservations | Seuls `hasTransactionSource` et les acomptes en lisent, tous deux derrière une garde Lot 2. |
 | `GET /api/business/marketing?venue_id=` | Notifications | Alimente le journal de délivrance, écran Prio 08. |
-| `GET /api/business/venues/{id}/menu` | Ma fiche | L'onglet Menu n'existe pas en Lot 1. |
-| `GET /api/business/venues/{id}/assets?kind=menu_file` | Ma fiche | La carte fichier est explicitement gardée en `lot === 2`. |
+| `GET /api/business/venues/{id}/menu` | Ma fiche | La liste de plats est l'écran Carte, Lot 2. L'onglet Menu du Lot 1 lit la carte *en données* (`menu-board`) et son fichier. |
 | `GET /api/business/venues/{id}/staff` | Ma fiche | L'onglet Équipe n'existe pas en Lot 1. |
+| `GET /api/business/venues/{id}/slots?date=` | la feuille Décaler | **Sorti le 5 octobre** avec elle : plus personne ne demande les créneaux libres d'une journée. |
+| `PUT /api/business/bookings/{id}/reschedule` | la feuille Décaler | **Sorti le 5 octobre.** Déplacer une table est lot 2 ; refuser et laisser le client reprendre est ce que fait le Lot 1. |
 
-Deux endroits, tous deux commentés : `screenNeeds()` dans
-`src/lib/restaurant/screens.ts` filtre les tranches par lot, et le
+Trois endroits, tous commentés : `screenNeeds()` dans
+`src/lib/restaurant/screens.ts` filtre les tranches par lot, le
 `Promise.all` de `src/app/(organizer)/restaurant/ma-fiche/page.tsx` ne
-demande la carte, son fichier et l'équipe qu'en Lot 2.
+demande la liste de plats et l'équipe qu'en Lot 2, et
+`reservationActions()` n'offre plus Décaler sous Lot 1 — sans bouton,
+aucun des deux appels ne part.
 
 **Ce qu'un parcours complet appelle aujourd'hui**, relevé dans le journal
 du serveur double (§9) après un passage sur les sept écrans des deux
@@ -979,9 +1038,9 @@ la couche de données. Un seul endpoint la sert :
 
 ```json
 {
-  "userId": "usr_yassine",
-  "fullName": "Yassine Alami",
-  "email": "yassine@darzellij.ma",
+  "userId": "usr_rachid",
+  "fullName": "Rachid Amrani",
+  "email": "rachid@darzellij.ma",
   "venues": [
     { "id": "rst_dar_zellij", "name": "Dar Zellij", "shortName": "Dar Zellij",
       "initials": "DZ", "city": "Marrakech", "kind": "restaurant", "role": "owner" }
@@ -993,6 +1052,17 @@ Trois choses en découlent sans rien d'autre à tenir à jour : **qui** est
 connecté, **quels établissements** il détient, et **avec quel rôle**. Le
 portail ne demande rien de plus : le périmètre par établissement est ce
 tableau `venues`, et le rôle décide de ce que chaque écran laisse faire.
+
+**En Lot 1, ce tableau porte exactement un établissement et son `role`
+est `owner`.** Le périmètre arrêté le 5 octobre est l'authentification,
+la création de venue et la gestion des réservations ; les rôles n'en
+sont pas, et un compte qui détient deux établissements oblige à choisir
+avant de voir quoi que ce soit. Un compte, un établissement, son
+propriétaire : `rachid@darzellij.ma` ouvre Dar Zellij et
+`sofia@nomadrooftop.ma` ouvre Nomad, directement. Le portail n'affiche
+donc ni sélecteur d'établissement ni libellé de rôle — le champ reste
+dans la réponse, et le sélecteur revient avec le lot 2, qui vend
+« Équipe et rôles ».
 
 Quatre règles que le service doit respecter :
 
@@ -1288,7 +1358,10 @@ restaurant → … » — n'ont pas d'endpoint dans la colonne H. Il en faut
 
 `POST /api/business/bookings/{id}/remind` et `GET /api/business/account`
 existent aussi dans le pilote ; aucun écran du Lot 1 ne les appelle
-aujourd'hui.
+aujourd'hui. `PUT /api/business/bookings/{id}/reschedule` et
+`GET /api/business/venues/{id}/slots` sont dans le même cas depuis le
+5 octobre, et ils ont quitté le contrat avec le bouton qui les
+appelait.
 
 ### 6.3 Les huit actions de la colonne F
 
@@ -1298,7 +1371,7 @@ aujourd'hui.
 | `Accepter/Refuser réservation` | Accueil et Réservations | ✅ passe par le pilote |
 | `Marquer présence (QR scan)` | Check-in | ✅ scan **et** par nom |
 | `Signaler no-show` | Accueil et Réservations | ✅ passe par le pilote |
-| `Modifier disponibilités` | Disponibilités et Ma fiche · Horaires | ✅ |
+| `Modifier disponibilités` | Disponibilités et Ma fiche · Horaires | ✅ — l'interrupteur de réservation en ligne et les services (jours, heures, capacité, ouverture). Les règles de cadence, les réglages avancés, les jours de fermeture et le choix de la grille sont sortis le 5 octobre. |
 | `Voir analytics: Taux remplissage, revenue estimé, taux no-show` | Performance, Bilans | ⛔ **Prio 08** |
 | `Promouvoir restaurant (boost listing)` | Visibilité | ⛔ **Prio 08** |
 | `Répondre reviews` | Avis | ⛔ **Prio 08** |
@@ -1358,15 +1431,15 @@ votre backend doit pouvoir répondre.
 | `business_accounts` | Connexion (compte métier) | Inscription (étape 6) |
 | `partner_accounts` | Connexion (mot de passe d'un partenaire inscrit) | Inscription (étape 1) |
 | `onboarding_drafts` | Inscription (reprise) | Inscription (chaque étape) |
-| `staff` | Connexion (annuaire, périmètre) | Équipe (Lot 2), Inscription (étape 6) |
-| `reservations` | Accueil, Réservations, Check-in, recherche | Check-in, cycle de vie, Décaler (`at`) |
+| `staff` | Connexion (annuaire, périmètre — une ligne par établissement en lot 1, rôle `owner`) | Équipe (Lot 2), Inscription (étape 6) |
+| `reservations` | Accueil, Réservations, Check-in, recherche | Check-in, cycle de vie (`at` ne bouge plus : Décaler est lot 2) |
 | `platform_admins` | la porte de `/admin/validations` | — (l'équipe LYFE, hors portail) |
 | `reservation_status_history` | — | Check-in, cycle de vie |
 | `customers` | Accueil, Réservations (jointure : visites, e-mail, année de naissance) | — |
 | `services` · `service_slot_load` | Accueil, Réservations | — |
-| `service_definitions` · `service_zones` | Disponibilités, Réservations (la grille), Décaler | Disponibilités, dont `slot_minutes` |
-| `pacing_rules` | Disponibilités | Disponibilités |
-| `availability_slots` · `closures` | Ma fiche, Disponibilités | Ma fiche (horaires) |
+| `service_definitions` · `service_zones` | Disponibilités, Réservations (la grille, toujours 30 min) | Disponibilités, sauf `slot_minutes` |
+| `pacing_rules` | Disponibilités | Disponibilités (`online_booking_open` seul en lot 1) |
+| `availability_slots` · `closures` | Ma fiche, Disponibilités (`closures` vide en lot 1) | Ma fiche (horaires) |
 | `zones` | Accueil, Ma fiche | Ma fiche (disponibilité d'une zone) |
 | `venue_assets` | Ma fiche | Ma fiche (photos) |
 | `notification_preferences` | Notifications | Notifications |

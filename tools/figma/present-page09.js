@@ -112,8 +112,8 @@ const SCREENS = [
     title: "Connexion",
     route: "/login",
     purpose:
-      "Entrer dans le portail. Un seul champ de trop et un partenaire appelle : l'écran refuse en français, ne dit jamais si le compte existe, et demande l'établissement quand le compte en tient plusieurs.",
-    audience: "Tout le personnel du lieu, chaque service.",
+      "Entrer dans le portail. Un seul champ de trop et un partenaire appelle : l'écran refuse en français, ne dit jamais si le compte existe, et ouvre directement l'établissement — un compte, un lieu, depuis le périmètre du 5 octobre.",
+    audience: "Le propriétaire de l'établissement, chaque service.",
     spec: "docs/LOT1_API_CONTRACT.md",
     specLabel: "Contrat Lot 1 § 1 · Comptes et sessions",
     rows: [
@@ -121,7 +121,10 @@ const SCREENS = [
         base: { key: "connexion" },
         states: [
           { name: "Connexion · identifiants refusés", caption: "Identifiants refusés", phone: null },
-          { name: "Sélecteur d'établissement · états", caption: "Choix de l'établissement", phone: null },
+          // « Sélecteur d'établissement · états » était ici : trois états
+          // du sélecteur de la barre latérale. Le lot 1 est un compte
+          // par établissement depuis le 5 octobre, donc la carte nomme
+          // le lieu et ne s'ouvre pas — le cadre revient avec le lot 2.
         ],
       },
     ],
@@ -154,7 +157,7 @@ const SCREENS = [
     title: "Réservations",
     route: "/restaurant/reservations",
     purpose:
-      "Le carnet. On y marche dans les jours et dans les services, on accepte, on refuse, on décale, et la recherche va chercher un nom au-delà de la journée affichée.",
+      "Le carnet. On y marche dans les jours et dans les services, on accepte, on refuse, on marque une arrivée ou une absence, et la recherche va chercher un nom au-delà de la journée affichée.",
     audience: "L'accueil et la direction de salle, avant et pendant le service.",
     spec: "docs/LOT1_API_CONTRACT.md",
     specLabel: "Contrat Lot 1 § 4 · Le carnet",
@@ -187,17 +190,15 @@ const SCREENS = [
         ],
       },
       {
+        // La feuille « Décaler » était l'état de cette ligne. Déplacer
+        // une table est sorti du lot le 5 octobre, donc l'overlay de la
+        // réservation reste seul : c'est la feuille que la ligne ouvre,
+        // et elle porte Refuser, pas Décaler.
         base: {
           name: "Overlay · Réservation confirmée · Nabil Cherkaoui",
           phone: "Overlay · Réservation confirmée · Nabil Cherkaoui · téléphone",
         },
-        states: [
-          {
-            name: "Overlay · Décaler la réservation · Nabil Cherkaoui",
-            phone: "Overlay · Décaler la réservation · Nabil Cherkaoui · téléphone",
-            caption: "Feuille · Décaler",
-          },
-        ],
+        states: [],
       },
     ],
   },
@@ -254,8 +255,8 @@ const SCREENS = [
     title: "Disponibilités",
     route: "/restaurant/disponibilites",
     purpose:
-      "Ce qu'un client peut réserver : les services de la semaine, la durée d'un créneau, et les fermetures exceptionnelles.",
-    audience: "La direction, une fois par saison et à chaque jour férié.",
+      "Ce qu'un client peut réserver : l'interrupteur de la réservation en ligne, et les services de la semaine avec leurs heures et leur capacité. Les règles de cadence, les réglages avancés, les fermetures et le choix de la grille sont sortis du lot le 5 octobre.",
+    audience: "La direction, une fois par saison.",
     spec: "docs/LOT1_API_CONTRACT.md",
     specLabel: "Contrat Lot 1 § 7 · Disponibilités",
     rows: [
