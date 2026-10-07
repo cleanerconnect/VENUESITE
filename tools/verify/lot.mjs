@@ -212,12 +212,19 @@ export async function requireSharedDatabase(base, what) {
  * `venue` names the establishment to pick if the chooser appears; the
  * first one is taken when it does not match. Throws with a readable
  * sentence — not a Playwright stack — when the form refuses.
+ *
+ * `refuseChooser` turns the chooser from a stage to walk through into a
+ * finding: the call returns `{ chooser: true }` instead of clicking.
+ * Lot 1 is one account per establishment, so an account that is asked
+ * which one it wants is the defect, and a helper that helpfully clicks
+ * past it is a helper that hides it.
  */
 export async function signIn(page, base, options = {}) {
   const {
     email = OWNER_EMAIL,
     password = "demo",
     venue = null,
+    refuseChooser = false,
     timeout = 25000,
   } = options;
 
@@ -259,6 +266,7 @@ export async function signIn(page, base, options = {}) {
     const choices = page.locator('main button:not([type="submit"]):visible');
     const count = stillOnTheForm ? 0 : await choices.count().catch(() => 0);
     if (count > 0) {
+      if (refuseChooser) return { chooser: true, url: page.url() };
       const wanted = venue
         ? choices.filter({ hasText: new RegExp(venue, "i") }).first()
         : null;

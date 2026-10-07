@@ -633,6 +633,36 @@ deux moteurs. Les quelques requêtes qui utilisent `strftime`,
 SQLite — trouvent en face des fonctions de même nom installées par
 `db:migrate` depuis `db/postgres-compat.sql`.
 
+#### Les migrations d'un seul lot
+
+`db/migrations/*.sql` s'appliquent une fois chacune, dans l'ordre des
+noms, et `schema_migrations` tient le registre. Une migration dont le
+nom finit par `.lot1.sql` ou `.lot2.sql` ne s'applique qu'au lot
+correspondant — `LYFE_LOT`, par la même règle que partout ailleurs — et
+celle que le lot ne veut pas est **ignorée sans être inscrite au
+registre**, pour qu'un déploiement basculé sur l'autre lot la reçoive à
+ce moment-là. `db:migrate` dit à la fin combien il en garde en réserve.
+
+Il y en a une :
+`009-un-proprietaire-par-etablissement.lot1.sql`. Le périmètre du
+5 octobre est un compte par établissement, `db/seed.mjs` l'écrit ainsi
+depuis — mais une semence ne s'exécute que sur une base vide, donc une
+base déjà en service gardait les quatre personnes de Dar Zellij et les
+trois du Nomad, et `rachid@darzellij.ma` y tenait deux établissements :
+il arrivait sur le sélecteur. La migration ramène une base existante à
+un propriétaire par lieu — Rachid pour Dar Zellij, Sofia pour le
+Nomad — et ne nomme que les lignes du jeu de démonstration, donc un
+partenaire arrivé par `/inscription` n'est pas touché.
+
+Elle n'est pas le seul garde-fou, et c'est voulu : une semence ne rejoue
+pas, une migration n'existe que là où il y a une base, et le service
+métier répondra un jour à la place des deux. La règle est donc aussi
+posée dans `src/lib/auth/directory.ts`, devant les trois pilotes — sous
+le lot 1 un compte tient au plus un établissement, celui qu'il possède,
+et `canAccessVenue` répond la même chose. Un sélecteur retiré de l'écran
+et laissé dans le produit n'est pas un sélecteur retiré :
+`tools/verify/edges.mjs` § 11 vérifie les deux moitiés.
+
 ## 4. The styleguide
 
 Open **`/styleguide`**. It needs no session and no seeded database —

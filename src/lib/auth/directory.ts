@@ -12,6 +12,7 @@ import "server-only";
 // lookup against the Business Service; nothing above the interface moves.
 
 import { dataMode } from "@/lib/data/mode";
+import { activeLot } from "@/lib/lot";
 import {
   staticUser,
   staticUserByEmail,
@@ -318,6 +319,90 @@ function readAccount(body: unknown): DirectoryAccount | null {
   };
 }
 
+/**
+ * One establishment per account, which is what Lot 1 sells.
+ *
+ * The scope agreed with DigiNegoce on 5 October is authentication,
+ * venue creation and booking management. Roles are none of the three,
+ * and an account holding two establishments is a chooser between them
+ * at sign-in — so `db/seed.mjs` writes one owner per venue and
+ * `009-un-proprietaire-par-etablissement.lot1.sql` brings an existing
+ * database to the same place.
+ *
+ * Neither of those reaches every door. A seed only runs on an empty
+ * database; a migration only runs where there is a `DATABASE_URL`. The
+ * fixture pairs in `accounts.ts` — `static` mode, or `db` mode with
+ * `LYFE_DEMO_ACCOUNTS=1` — resolve their venues through this interface
+ * like everything else, and so does a Business Service answering on the
+ * HTTP branch, which this repository does not get to migrate at all.
+ *
+ * So the rule lives here, once, in front of all three: under Lot 1 an
+ * account holds at most one venue. The one it owns if it owns one, the
+ * first otherwise — `venuesForUser` orders deterministically, so the
+ * answer does not move between two requests.
+ *
+ * It narrows `canAccessVenue` with it, deliberately. Hiding the second
+ * establishment from the chooser while still letting a hand-written
+ * `lyfe.venue` cookie through would be a chooser removed from the
+ * screen and left in the product.
+ */
+class SoleVenueDirectory implements Directory {
+  readonly exclusiveVerify?: boolean;
+
+  constructor(private readonly inner: Directory) {
+    this.exclusiveVerify = inner.exclusiveVerify;
+    // `verify` is optional on the interface, and `verifyCredentials`
+    // branches on whether it is there: defining it unconditionally
+    // would make the local directories claim a credential check they
+    // do not have, and every fixture sign-in would fail.
+    if (inner.verify) {
+      this.verify = async (email: string, password: string) =>
+        sole(await inner.verify!(email, password));
+    }
+  }
+
+  verify?: (email: string, password: string) => Promise<DirectoryAccount | null>;
+
+  async listAccounts() {
+    return (await this.inner.listAccounts()).map((a) => sole(a)!);
+  }
+
+  async findByEmail(email: string) {
+    return sole(await this.inner.findByEmail(email));
+  }
+
+  async findById(userId: string) {
+    return sole(await this.inner.findById(userId));
+  }
+
+  /**
+   * Asked of the narrowed account rather than of the inner directory:
+   * the question is "may this user act on this venue", and under Lot 1
+   * the answer has to be the same one the portal showed them.
+   */
+  async canAccessVenue(userId: string, venueId: string) {
+    const account = await this.findById(userId);
+    return Boolean(account?.venues.some((v) => v.id === venueId));
+  }
+}
+
+/** The one venue a Lot 1 account holds: the owned one, else the first. */
+function sole(account: DirectoryAccount | null): DirectoryAccount | null {
+  if (!account || account.venues.length <= 1) return account;
+  const owned = account.venues.find((v) => v.role === "owner");
+  return { ...account, venues: [owned ?? account.venues[0]] };
+}
+
+/**
+ * The Lot 1 rule, wrapped around whichever directory answers.
+ *
+ * Applied in `setDirectory` as well as here, so a test seam cannot
+ * reintroduce a two-venue account into a lot that has no screen for it.
+ */
+function forLot(inner: Directory): Directory {
+  return activeLot() === 1 ? new SoleVenueDirectory(inner) : inner;
+}
+
 let cached: Directory | null = null;
 
 export function directory(): Directory {
@@ -328,21 +413,23 @@ export function directory(): Directory {
   // which is why signing in needed a SQLite file even when every screen
   // was reading a service.
   if (dataMode() === "http") {
-    cached = new HttpDirectory(
-      process.env.LYFE_API_BASE_URL!,
-      process.env.LYFE_API_TOKEN!,
+    cached = forLot(
+      new HttpDirectory(
+        process.env.LYFE_API_BASE_URL!,
+        process.env.LYFE_API_TOKEN!,
+      ),
     );
   } else if (dataMode() === "static") {
-    cached = new StaticDirectory();
+    cached = forLot(new StaticDirectory());
   } else {
-    cached = new DatabaseDirectory();
+    cached = forLot(new DatabaseDirectory());
   }
   return cached;
 }
 
 /** Test seam — install a directory without touching callers. */
 export function setDirectory(next: Directory | null) {
-  cached = next;
+  cached = next ? forLot(next) : null;
 }
 
 export type { DirectoryUser };

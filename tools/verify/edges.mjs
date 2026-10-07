@@ -527,6 +527,63 @@ check(
   /Jazzablanca|Mido Reffas/.test(plus) ? "l'espace organisateur a fui" : "aucune fuite",
 );
 
+// ── 11. Un compte, un établissement ──────────────────────────
+//
+// Le sélecteur « Quel lieu voulez-vous ouvrir ? » est un écran du
+// lot 2 : il sert à choisir entre deux établissements, et le lot 1 n'en
+// donne qu'un par compte depuis le 5 octobre. Il est pourtant réapparu
+// en production, et pour une raison qu'aucun test de code n'attrape —
+// la semence ne rejoue pas. La base portait encore les lignes `staff`
+// d'avant, Rachid y tenait Dar Zellij *et* le Nomad, et le portail lui
+// posait la question.
+//
+// Deux choses sont donc vérifiées ici, et la seconde est celle qui
+// compte : non seulement le sélecteur ne s'affiche pas, mais le second
+// établissement est hors de portée. Un sélecteur retiré de l'écran et
+// laissé dans le produit n'est pas un sélecteur retiré.
+if (LOT === 1) {
+  const soloCtx = await browser.newContext({
+    viewport: { width, height },
+    locale: "fr-FR",
+    timezoneId: "Africa/Casablanca",
+  });
+  const solo = await soloCtx.newPage();
+  const landed = await sharedSignIn(solo, BASE, {
+    email: ownerOf("rst_dar_zellij"),
+    password: "demo",
+    refuseChooser: true,
+  });
+  const asked = typeof landed === "object" && landed?.chooser === true;
+  const url = typeof landed === "string" ? landed : (landed?.url ?? solo.url());
+
+  check(
+    `${ownerOf("rst_dar_zellij")} ouvre son établissement sans qu'on lui demande lequel`,
+    !asked && /\/restaurant/.test(url),
+    asked ? "le sélecteur d'établissement s'est affiché" : url,
+  );
+
+  const body = ((await solo.innerText("body").catch(() => "")) ?? "").replace(/\s+/g, " ");
+  check(
+    "et c'est Dar Zellij, pas le Nomad",
+    /Dar Zellij/.test(body) && !/Nomad/.test(body),
+    body.slice(0, 70),
+  );
+
+  // La bascule, par l'API plutôt que par un bouton : le lot 1 n'affiche
+  // pas de sélecteur, donc la seule façon de poser la question est
+  // celle qu'aurait un navigateur bricolé.
+  const switched = await solo.request
+    .post(`${BASE}/api/session/venue`, { data: { venueId: "bar_nomad_casa" } })
+    .catch(() => null);
+  check(
+    "le second établissement lui est refusé, pas seulement caché",
+    Boolean(switched) && !switched.ok(),
+    switched ? `HTTP ${switched.status()}` : "aucune réponse",
+  );
+
+  await soloCtx.close();
+}
+
 await browser.close();
 
 if (noise.size) {

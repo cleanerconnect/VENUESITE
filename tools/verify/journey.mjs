@@ -569,7 +569,25 @@ if (await picker.count()) {
   // « Aujourd'hui », and this check failed for the calendar rather
   // than for the screen.
   const today = DEMO_CLOCK.toLocaleDateString("en-CA", { timeZone: "Africa/Casablanca" });
-  await picker.fill(today);
+
+  // Refilled if nothing moved, for the arrows' reason one screen up.
+  //
+  // The picker is reached straight off the last arrow press, so the
+  // day list is still re-rendering when `fill` runs — and a controlled
+  // input whose React tree is replaced mid-fill keeps the value the
+  // server sent, not the one Playwright typed. The URL then still says
+  // tomorrow, `waitForParam` spends its twelve seconds, and the tool
+  // reports a date picker that does not work. It does; nobody types
+  // that fast. So: fill, and fill again while the day has not moved.
+  const deadline = Date.now() + 15000;
+  let lastFill = 0;
+  while (Date.now() < deadline && param("jour") !== today && param("jour") !== "") {
+    if (Date.now() - lastFill > 2500) {
+      await picker.fill(today).catch(() => {});
+      lastFill = Date.now();
+    }
+    await page.waitForTimeout(200);
+  }
   // Same reasoning as the arrows: the URL says when the navigation
   // landed, and only then is the screen worth reading.
   await waitForParam("jour", (v) => v === today || v === "");
