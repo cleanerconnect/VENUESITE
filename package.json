@@ -12,7 +12,8 @@
     "db:snapshot": "tsx db/snapshot.mjs",
     "db:migrate": "node db/migrate.mjs",
     "db:bootstrap": "node db/bootstrap.mjs",
-    "db:push": "node db/push.mjs"
+    "db:push": "node db/push.mjs",
+    "db:refresh-book": "node db/refresh-demo-book.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

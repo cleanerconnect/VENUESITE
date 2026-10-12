@@ -343,7 +343,7 @@ function seedVisits({ venue, id, name, phone, visits, lastDays, firstSeenDays, s
       // A past visit's source shows on the Historique of Fiche client, a
       // Lot 1 screen, so a Lot 1 dataset keeps walk-in out of it too.
       channel: (LOT === 1
-        ? ["lyfe", "phone", "site", "lyfe"]
+        ? ["lyfe", "phone", "whatsapp", "lyfe"]
         : ["lyfe", "phone", "site", "walk_in"])[(salt + v) % 4],
       zone_id: null, note: null, deposit_cents: null, no_show_risk: null,
       qr_code: `LYFE-PAST-${id.toUpperCase()}-${v}`,
@@ -543,7 +543,7 @@ insert("services", {
 const BOOKINGS = [
   ["res_001", "cus_1", "Salma Bennani", "+212 661 20 44 18", 4, 0, "confirmed", "lyfe", "z_patio", "Anniversaire, dessert avec bougie", 400, 0.04],
   ["res_002", "cus_3", "Groupe Karam", "+212 662 88 10 03", 6, 1, "confirmed", "phone", "z_salle", "Sans gluten pour deux couverts", null, 0.11],
-  ["res_003", "cus_4", "Yasmine El Alaoui", "+212 663 41 77 92", 4, 1, "confirmed", LOT === 1 ? "site" : "instagram", "z_terrasse", null, null, 0.38],
+  ["res_003", "cus_4", "Yasmine El Alaoui", "+212 663 41 77 92", 4, 1, "confirmed", LOT === 1 ? "whatsapp" : "instagram", "z_terrasse", null, null, 0.38],
   ["res_010", "cus_5", "Nabil Cherkaoui", "+212 665 09 33 71", 2, 2, "requested", "lyfe", null, "Demande une table près de la fontaine", null, 0.22],
   ["res_011", "cus_2", "Hind Tazi", "+212 660 15 62 40", 5, 3, "confirmed", LOT === 1 ? "phone" : "partner", "z_salle", null, 500, 0.03],
 ];
@@ -646,7 +646,7 @@ function fillBook({ venue, service, prefix, arrived, absent, zones }) {
       // under Lot 1. A Lot 1 dataset books through the channels Lot 1
       // can actually receive.
       channel: (LOT === 1
-        ? ["lyfe", "phone", "site", "lyfe"]
+        ? ["lyfe", "phone", "whatsapp", "lyfe"]
         : ["lyfe", "phone", "walk_in", "site"])[n % 4],
       zone_id: zones[n % zones.length],
       note: null, deposit_cents: null,
@@ -705,13 +705,403 @@ function fillAhead({ venue, prefix, capacity, zones, fills }) {
   });
 }
 
-fillAhead({
-  venue: VENUE,
-  prefix: "res_dz",
-  capacity: 120,
-  zones: ["z_salle", "z_patio", "z_terrasse"],
-  fills: [0.55, 0.62, 0.38, 0.3, 0.68, 0.72, 0.26, 0.2, 0.24, 0.14, 0.4, 0.46, 0.1, 0.08],
-});
+// ── The month, service by service ────────────────────────────
+//
+// `fillAhead` above is the fortnight Lot 2 needs for Calendrier and
+// Performance: dinner only, every party confirmed, because those two
+// screens read a curve and not a book. Lot 1 reads the book, and a
+// partner walking the days with the arrows wants every service of every
+// day to hold something, in the states a real book carries. `fillAhead`
+// gave them an empty Déjeuner on all fourteen days, because it only
+// ever wrote between 19h00 and 23h30.
+//
+// So under Lot 1 the fortnight is replaced by a calendar that runs from
+// the demo clock's own day to the end of October, over the service
+// definitions rather than over a hard-coded hour. A service its
+// definition does not run that weekday gets nothing, which is why the
+// Nomad's Monday is empty: `sd_sunset` and `sd_night` declare
+// « 3,4,5,6,7 », and inventing a Monday here would make Réservations
+// and Disponibilités describe two different bars.
+//
+// Everything is derived and nothing is random, like the rest of this
+// file: the same seed run twice writes the same book, which is what
+// makes one capture comparable to the one before it.
+
+/** The last day the demo book covers. */
+const DEMO_BOOK_UNTIL = process.env.LYFE_DEMO_BOOK_UNTIL ?? "2026-10-31";
+
+/**
+ * How far behind the clock the book starts.
+ *
+ * The brief was « from today through 31 October », and a week of
+ * yesterdays is how today comes to have one. Réservations has day
+ * arrows: a reviewer presses the left one, and a demo whose yesterday
+ * is blank reads as a broken screen rather than as a quiet Tuesday.
+ * Those days are also the only place the settled states live — a party
+ * either came or did not — and the demo clock moves a week every week,
+ * so without this the freshly seeded book would lose its whole past
+ * each Thursday.
+ */
+const DEMO_BOOK_FROM_DAYS_BACK = 7;
+
+/**
+ * A deterministic spread, in place of `Math.random`.
+ *
+ * Two rounds of integer mixing: enough that party sizes, channels and
+ * notes do not fall into a visible stripe down the list, and
+ * reproducible so the dataset is the same on every machine and in every
+ * capture.
+ */
+const mix = (n) => {
+  let h = Math.imul(n ^ 0x9e3779b9, 2654435761);
+  h ^= h >>> 15;
+  h = Math.imul(h, 2246822519);
+  h ^= h >>> 13;
+  return h >>> 0;
+};
+
+/** One service's window on a given midnight, from its own definition. */
+function serviceWindowOn(definition, midnight) {
+  const [id, name, kind, weekdays, startsAt, endsAt, lastBookingAt, capacity] =
+    definition;
+  const from = hhmm(startsAt);
+  // A window that ends before it starts runs past midnight — the
+  // Nomad's « Nuit » closes at 02h00 — and its last bookable time with
+  // it.
+  const to = hhmm(endsAt) <= from ? hhmm(endsAt) + 1440 : hhmm(endsAt);
+  const lastAt =
+    hhmm(lastBookingAt) <= from ? hhmm(lastBookingAt) + 1440 : hhmm(lastBookingAt);
+  return {
+    id,
+    name,
+    kind,
+    capacity,
+    weekdays: String(weekdays).split(",").map((n) => Number(n.trim())),
+    opensAt: new Date(midnight.getTime() + from * 60_000),
+    closesAt: new Date(midnight.getTime() + to * 60_000),
+    lastBookingAt: new Date(midnight.getTime() + lastAt * 60_000),
+  };
+}
+
+/**
+ * Every :00 and :30 a party can be seated at, inside one service — and
+ * never past the midnight the service opened on.
+ *
+ * The Nomad's « Nuit » declares 21h00–02h00, last booking 01h00, so its
+ * late slots fall on the *next* calendar day. The portal's book is
+ * `date(r.at) = ?`, and its service window is built from the day the
+ * service opens, so a party seated at 01h00 belongs to Saturday's Nuit
+ * and shows up in Sunday's list. That is a modelling wrinkle older than
+ * this generator and not one a seed should decide; what a seed can do
+ * is not manufacture it. The demo bar takes its last booking at 23h30,
+ * which is a thing bars do, and every row then sits on the day whose
+ * service it belongs to.
+ */
+function seatingSlots(window) {
+  const midnight = new Date(window.opensAt);
+  midnight.setHours(24, 0, 0, 0);
+  const until = Math.min(
+    window.lastBookingAt.getTime(),
+    midnight.getTime() - HALF,
+  );
+  const out = [];
+  let t = slotCeil(new Date(window.opensAt));
+  while (t.getTime() <= until) {
+    out.push(new Date(t));
+    t = new Date(t.getTime() + HALF);
+  }
+  return out.length > 0 ? out : [new Date(Math.min(until, window.lastBookingAt.getTime()))];
+}
+
+// How full a service is by the day of the week. Friday and Saturday are
+// the week; Monday is the week recovering from it. ISO weekday, 1 = Mon.
+const WEEKDAY_FILL = [0.46, 0.5, 0.56, 0.66, 0.86, 0.9, 0.72];
+
+// Where a booking came from: the three ways one reaches a venue that
+// only manages bookings, weighted the way they actually arrive — the
+// app first, then the telephone, then WhatsApp, which is where a host
+// already talks to their regulars and which `Planning V3` Prio 02 buys
+// as a source the dashboard has to be able to show.
+//
+// `site` is gone from this rotation on purpose: it is not in
+// `ReservationChannel`, so `RESERVATION_CHANNEL[channel]` had no label
+// for it and the row's source line printed the raw word.
+const BOOK_CHANNELS = ["lyfe", "lyfe", "phone", "lyfe", "whatsapp", "phone"];
+
+// What people ask for when they book a table. One party in seven
+// carries one: a book where every row has a note reads as generated,
+// and a book where none does leaves the drawer's note line untested.
+const SPECIAL_REQUESTS = [
+  "Anniversaire, dessert avec bougie",
+  "Table en terrasse si possible",
+  "Sans gluten pour deux couverts",
+  "Une chaise haute pour un enfant",
+  "Allergie aux fruits à coque",
+  "Table calme, dîner d'affaires",
+  "Arrivée possible avec 15 min de retard",
+  "Menu végétarien pour une personne",
+  "Loin de la climatisation",
+  "Demande une table près de la fontaine",
+];
+
+// The guest names the book draws on. Declared here rather than beside
+// `seedAudience`, which is the other reader: a `const` is hoisted but
+// not initialised, so the calendar below — which runs first — met them
+// in the temporal dead zone.
+const FIRST_NAMES = ["Youssef","Salma","Mehdi","Ghita","Anas","Imane","Reda","Nawal","Zakaria","Sara","Othmane","Meryem","Ayoub","Hajar","Ismail","Soukaina","Adam","Rim","Walid","Dounia","Karim","Aya","Nabil","Lina"];
+const LAST_NAMES = ["Benjelloun","El Amrani","Bouhlal","Sqalli","Tahiri","Naciri","Lamrani","Belkadi","Ouazzani","Chraibi","Benslimane","Alaoui"];
+
+/**
+ * The book from the demo clock's own day to the end of the month.
+ *
+ * One pass per day, one per service that day's weekday runs, and the
+ * state comes from where the service sits against the clock rather than
+ * from a column of literals:
+ *
+ *   · a service already closed — every party either arrived or did not,
+ *     and about one in eight did not
+ *   · the service in hand — left alone; see `liveService` below
+ *   · a service still to come — confirmed, and two or three of the
+ *     day's bookings are still requests
+ *
+ * `liveService` is the sitting the booking engine already owns. Its
+ * `services` row carries counters summed at the foot of this file from
+ * rows tagged with its id, so a confirmed party written here with a
+ * null service would be in the book and outside the count — the one
+ * contradiction every screen shows at once. `BOOKINGS` and `fillBook`
+ * fill it; this adds two requests to it, tagged with it, because a
+ * request holds no cover and is counted by nothing.
+ */
+function fillCalendar({ venue, prefix, definitions, zones, liveService, liveServiceId }) {
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const firstDay = new Date(today.getTime() - DEMO_BOOK_FROM_DAYS_BACK * 86_400_000);
+  const lastDay = new Date(`${DEMO_BOOK_UNTIL}T00:00:00`);
+  if (lastDay.getTime() < firstDay.getTime()) return { rows: 0, days: 0 };
+
+  let n = 0;
+  let days = 0;
+
+  for (
+    let midnight = firstDay;
+    midnight.getTime() <= lastDay.getTime();
+    midnight = new Date(midnight.getTime() + 86_400_000)
+  ) {
+    // Distance from *today*, so the taper reads as a booking curve and a
+    // day behind the clock is negative rather than merely early.
+    const dayIndex = Math.round((midnight.getTime() - today.getTime()) / 86_400_000);
+    const weekday = ((midnight.getDay() + 6) % 7) + 1;
+    days += 1;
+
+    // Collected rather than queried back: a request is the newest
+    // booking of the day, and which row that is is only known once the
+    // day is placed. Asking SQLite for `date(at) = ?` would also have
+    // been wrong for the Nomad — a 01h00 sitting is stored as the next
+    // day in UTC.
+    //
+    // Per service, so the day's requests do not all land on dinner and
+    // leave every Déjeuner tab reading « À confirmer 0 ».
+    const written = new Map();
+    // Twenty-four first names and twelve surnames make 288 pairs, and a
+    // day holds forty bookings: the birthday problem says two of them
+    // will be the same person about nine times out of ten. Two
+    // « Youssef Benslimane » an hour apart reads as a bug in the book.
+    const named = new Set();
+
+    for (const definition of definitions) {
+      const window = serviceWindowOn(definition, midnight);
+      if (!window.weekdays.includes(weekday)) continue;
+
+      const live =
+        Boolean(liveService) &&
+        window.opensAt.getTime() === liveService.opensAt.getTime();
+      const closed = window.closesAt.getTime() <= now.getTime();
+      // A day already behind the clock is settled in full, including a
+      // service whose hours have not « closed » because the clock sits
+      // inside a later day's window.
+      const settled = closed || dayIndex < 0;
+
+      // The curve tapers the further out it goes — nobody has booked
+      // the 31st yet — and lunch is a lighter service than dinner.
+      const taper = Math.max(0.34, 1 - Math.max(0, dayIndex) * 0.012);
+      const lighter = window.kind === "dejeuner" ? 0.78 : 1;
+      const target = live
+        ? 0
+        : Math.round(window.capacity * WEEKDAY_FILL[weekday - 1] * taper * lighter);
+
+      const slots = seatingSlots(window);
+      let covers = 0;
+      let placed = 0;
+
+      // Two requests and nothing else on the service the engine owns.
+      const requestsOnly = live ? 2 : 0;
+
+      while (placed < requestsOnly || covers < target) {
+        const salt = mix(dayIndex * 9_973 + n * 31 + window.capacity);
+        const size = [2, 2, 2, 3, 4, 4, 4, 5, 6, 2, 4, 8][salt % 12];
+        if (!live && covers + size > target) break;
+        covers += size;
+
+        const state = live
+          ? "requested"
+          : settled
+            ? salt % 8 === 3
+              ? "no_show"
+              : "arrived"
+            : "confirmed";
+
+        // A live service's requests go on slots still to come; every
+        // other sitting walks its own slots and stacks when it is busy.
+        const at = live
+          ? slotStillAhead(slots, placed)
+          : slots[placed % slots.length];
+
+        const id = `${prefix}_c${dayIndex < 0 ? `j${-dayIndex}` : dayIndex}_${String(window.id).replace(/^sd_/, "")}_${placed}`;
+        const bookedAt = new Date(at.getTime() - (2 + (salt % 9)) * 86_400_000);
+        insert("reservations", {
+          id,
+          venue_id: venue,
+          // The live service owns its rows; every other sitting is read
+          // off the definitions, which have no `services` row at all.
+          service_id: live ? liveServiceId : null,
+          customer_id: null,
+          guest_name: guestName(salt, named),
+          guest_phone: `+212 6${String(60_000_000 + (salt % 39_999_999)).slice(0, 8)}`,
+          party_size: size,
+          at: iso(at),
+          state,
+          channel: BOOK_CHANNELS[(salt >>> 9) % BOOK_CHANNELS.length],
+          zone_id: zones[(salt >>> 13) % zones.length],
+          note:
+            salt % 7 === 2
+              ? SPECIAL_REQUESTS[(salt >>> 17) % SPECIAL_REQUESTS.length]
+              : null,
+          deposit_cents: null,
+          // A no-show score is a Performance reading, and Performance is
+          // Lot 2. The book carries what happened, not what was guessed.
+          no_show_risk: null,
+          qr_code: `LYFE-${id.toUpperCase()}`,
+          checked_in_at:
+            state === "arrived" ? iso(new Date(at.getTime() + 4 * 60_000)) : null,
+          created_at: iso(bookedAt),
+          updated_at: iso(state === "arrived" || state === "no_show" ? at : bookedAt),
+        });
+        insert("reservation_status_history", {
+          id: `sh_${id}_1`,
+          reservation_id: id,
+          from_state: null,
+          to_state: "requested",
+          actor: "user",
+          actor_id: null,
+          reason_code: null,
+          note: null,
+          at: iso(bookedAt),
+        });
+        if (state !== "requested") {
+          insert("reservation_status_history", {
+            id: `sh_${id}_2`,
+            reservation_id: id,
+            from_state: "requested",
+            to_state: state,
+            actor: "venue",
+            actor_id: null,
+            reason_code: null,
+            note: null,
+            at: iso(state === "confirmed" ? new Date(at.getTime() - 86_400_000) : at),
+          });
+        }
+
+        if (state === "confirmed") {
+          const sitting = written.get(window.id) ?? [];
+          sitting.push({ id, at: at.getTime() });
+          written.set(window.id, sitting);
+        }
+        n += 1;
+        placed += 1;
+      }
+    }
+
+    // Two or three of the day's bookings are still requests: the newest
+    // ones, which is what an unhandled request is. A day whose services
+    // have all closed has none — nobody leaves a request pending on an
+    // evening that is over.
+    //
+    // Dealt round the day's services rather than taken off the top, so
+    // a partner who opens the Déjeuner tab of a Saturday three weeks
+    // out has something to accept there too.
+    const quota = 2 + (mix(dayIndex + 7) % 2);
+    const sittings = [...written.values()].map((rows) =>
+      rows.sort((a, b) => b.at - a.at),
+    );
+    for (let taken = 0, round = 0; taken < quota && sittings.length > 0; round += 1) {
+      let dealt = 0;
+      for (const rows of sittings) {
+        if (taken >= quota) break;
+        const row = rows[round];
+        if (!row) continue;
+        db.prepare("UPDATE reservations SET state = 'requested' WHERE id = ?").run(row.id);
+        db.prepare(
+          "DELETE FROM reservation_status_history WHERE reservation_id = ? AND from_state IS NOT NULL",
+        ).run(row.id);
+        taken += 1;
+        dealt += 1;
+      }
+      // Every sitting is out of rows: a quiet day can hold fewer
+      // requests than the quota asks for, and looping for them would
+      // not end.
+      if (dealt === 0) break;
+    }
+  }
+
+  return { rows: n, days };
+}
+
+/**
+ * A guest nobody else in this day's book is called.
+ *
+ * Walks the surnames, then the first names, from wherever the mix put
+ * it. Two hundred and eighty-eight pairs against forty bookings, so it
+ * finds one within a step or two; a day that somehow exhausted the pool
+ * gets the plain pair rather than looping for ever.
+ */
+function guestName(salt, taken) {
+  for (let step = 0; step < FIRST_NAMES.length * LAST_NAMES.length; step += 1) {
+    const first = FIRST_NAMES[(salt + Math.floor(step / LAST_NAMES.length)) % FIRST_NAMES.length];
+    const last = LAST_NAMES[((salt >>> 5) + step) % LAST_NAMES.length];
+    const name = `${first} ${last}`;
+    if (!taken.has(name)) {
+      taken.add(name);
+      return name;
+    }
+  }
+  return `${FIRST_NAMES[salt % FIRST_NAMES.length]} ${LAST_NAMES[(salt >>> 5) % LAST_NAMES.length]}`;
+}
+
+/** A slot still ahead of the clock, for a request on a live service. */
+function slotStillAhead(slots, index) {
+  const ahead = slots.filter((s) => s.getTime() >= now.getTime());
+  const pool = ahead.length > 0 ? ahead : slots;
+  return pool[index % pool.length];
+}
+
+if (LOT === 1) {
+  fillCalendar({
+    venue: VENUE,
+    prefix: "res_dz",
+    definitions: DZ_SERVICES,
+    zones: ["z_salle", "z_patio", "z_terrasse"],
+    liveService: DZ_LIVE,
+    liveServiceId: SERVICE,
+  });
+} else {
+  fillAhead({
+    venue: VENUE,
+    prefix: "res_dz",
+    capacity: 120,
+    zones: ["z_salle", "z_patio", "z_terrasse"],
+    fills: [0.55, 0.62, 0.38, 0.3, 0.68, 0.72, 0.26, 0.2, 0.24, 0.14, 0.4, 0.46, 0.1, 0.08],
+  });
+}
 
 // Sized against the resolved service's own capacity rather than a fixed
 // 120: Déjeuner seats 72 and Dîner 120, and a book of 104 covers in a
@@ -1163,13 +1553,24 @@ const NM_SLOTS = bookableSlots(NM_LIVE, now);
   });
 });
 
-fillAhead({
-  venue: VENUE2,
-  prefix: "res_nm",
-  capacity: 70,
-  zones: ["z_n_toit", "z_n_bar"],
-  fills: [0.3, 0.52, 0.6, 0.18, 0.14, 0.34, 0.44, 0.1],
-});
+if (LOT === 1) {
+  fillCalendar({
+    venue: VENUE2,
+    prefix: "res_nm",
+    definitions: NM_SERVICES,
+    zones: ["z_n_toit", "z_n_bar"],
+    liveService: NM_LIVE,
+    liveServiceId: SERVICE2,
+  });
+} else {
+  fillAhead({
+    venue: VENUE2,
+    prefix: "res_nm",
+    capacity: 70,
+    zones: ["z_n_toit", "z_n_bar"],
+    fills: [0.3, 0.52, 0.6, 0.18, 0.14, 0.34, 0.44, 0.1],
+  });
+}
 
 const nmArrived = arrivedFor(NM_LIVE.capacity);
 fillBook({
@@ -2212,11 +2613,9 @@ const INTERESTS = [
  * reaches a venue that only manages bookings.
  */
 const SOURCES = LOT === 1
-  ? ["lyfe", "phone", "site"]
+  ? ["lyfe", "phone", "whatsapp"]
   : ["feed", "recherche", "listes", "boost", "offre", "lien_externe"];
 
-const FIRST_NAMES = ["Youssef","Salma","Mehdi","Ghita","Anas","Imane","Reda","Nawal","Zakaria","Sara","Othmane","Meryem","Ayoub","Hajar","Ismail","Soukaina","Adam","Rim","Walid","Dounia","Karim","Aya","Nabil","Lina"];
-const LAST_NAMES = ["Benjelloun","El Amrani","Bouhlal","Sqalli","Tahiri","Naciri","Lamrani","Belkadi","Ouazzani","Chraibi","Benslimane","Alaoui"];
 
 /** Backfill the named guests, then extend the base. */
 function seedAudience(venueId, prefix, extra, cityWeights, startIndex) {
