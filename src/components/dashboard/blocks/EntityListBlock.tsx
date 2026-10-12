@@ -148,7 +148,15 @@ export function EntityListBlock({ block }: { block: Spec }) {
           on the same list, so they share a line: filters on the left,
           the order on the right. */}
       {block.tabs?.length || (!block.heading && sortControl) ? (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div
+          className={cn(
+            "flex flex-wrap items-center justify-between gap-x-4 gap-y-3",
+            // 12px rather than 16 above a book: the tabs and the first
+            // sitting are the same act of choosing where to look, and
+            // the screen is paying for every band above the rows.
+            block.coverUnit ? "mb-3" : "mb-4",
+          )}
+        >
           {block.tabs?.length ? (
             <FilterTabs
               layoutId={`entity-list-underline-${block.id}`}
@@ -208,7 +216,7 @@ export function EntityListBlock({ block }: { block: Spec }) {
         </div>
       ) : (
         <>
-          <SlotGroups rows={rows} />
+          <SlotGroups rows={rows} coverUnit={block.coverUnit} />
           {block.collapsible ? (
             <button
               type="button"
@@ -253,7 +261,13 @@ function searchText(row: EntityRow) {
  * half past". Rows that carry no slot fall through as one ungrouped run,
  * so every other screen is unchanged.
  */
-function SlotGroups({ rows }: { rows: EntityRow[] }) {
+function SlotGroups({
+  rows,
+  coverUnit,
+}: {
+  rows: EntityRow[];
+  coverUnit?: { one: string; many: string };
+}) {
   const groups: { slot: string | null; rows: EntityRow[] }[] = [];
   for (const row of rows) {
     const slot = row.slot ?? null;
@@ -265,33 +279,26 @@ function SlotGroups({ rows }: { rows: EntityRow[] }) {
   // One book, not a stack of cards.
   //
   // Under host density the sittings live inside a single bordered
-  // block: the hour is a band across it, the bookings are lines under
-  // the band, and one rule separates each from the next. That is the
-  // page of a paper book, and it is also what makes a service fit on a
-  // screen — the gaps between twenty-six cards were 12px each and the
-  // borders 2px, which is 360px of a 900px screen spent on separation.
+  // block: the sitting is a rule across it, the bookings are lines
+  // under the rule, and one hairline separates each from the next. That
+  // is the page of a paper book, and it is also what makes a service
+  // fit on a screen — the gaps between twenty-six cards were 12px each
+  // and the borders 2px, which is 360px of a 900px screen spent on
+  // separation.
   const host = Boolean(rows[0]?.lead);
   if (host) {
     return (
       <div className="overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface">
-        {/* No hour band.
-            It said « 21H00 » across the page and the line directly
-            under it opened with « 21h00 » in the largest type on the
-            screen: the same fact twice, 36px apart. It made sense while
-            a booking was a card with its time stacked inside it and the
-            page needed landmarks; it stopped making sense the moment
-            the times became a column of tabular figures a host reads
-            straight down. Six bands cost 216px of a 900px screen —
-            about four bookings — on the one screen whose whole job is
-            how many bookings you can see.
-
-            What is lost with it is the per-sitting count, « 2 tables ».
-            Nothing in Lot 1 buys a load reading (that is Pilotage,
-            Prio 08), the grouping itself survives — the rows are still
-            ordered and grouped by sitting — and the count of the whole
-            service is on the filter tabs above. */}
         {groups.map((group, i) => (
           <div key={`${group.slot ?? "_"}-${i}`}>
+            {group.slot ? (
+              <SlotHead
+                slot={group.slot}
+                covers={group.rows.reduce((n, r) => n + (r.covers ?? 0), 0)}
+                unit={coverUnit}
+                first={i === 0}
+              />
+            ) : null}
             {group.rows.map((row) => (
               <Row key={row.id} row={row} />
             ))}
@@ -320,6 +327,56 @@ function SlotGroups({ rows }: { rows: EntityRow[] }) {
           ))}
         </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * A sitting's header: the time, a rule, and what the sitting is worth.
+ *
+ * It came back, and it came back thin. The band it replaces was 36px of
+ * uppercase across the page — six of them cost 216px of a 900px screen,
+ * about four bookings, on the one screen whose whole job is how many
+ * bookings you can see, and it said « 21H00 » directly above a line
+ * that opened with « 21h00 » in the largest type on the screen.
+ *
+ * What brought it back is the second half of the sentence: a host
+ * reading the book wants to know what is *coming* at half past, and
+ * « 6 couverts » beside the hour is the load reading the rows cannot
+ * give without being added up by eye. So the hour stays, the count is
+ * covers rather than tables — a table of two and a table of eight are
+ * not the same sitting — and the whole line is 24px: 13px of type on
+ * the same baseline as the hairline that carries it.
+ */
+function SlotHead({
+  slot,
+  covers,
+  unit,
+  first,
+}: {
+  slot: string;
+  covers: number;
+  unit?: { one: string; many: string };
+  first: boolean;
+}) {
+  return (
+    <div
+      // A stable hook for the tape measure: `tools/verify` counts these
+      // and checks what they cost against the fold.
+      data-slot-head=""
+      className={cn(
+        "flex items-center gap-3 px-4 py-[2px] bg-canvas-2 border-b border-line",
+        // No rule on top: the line above it already draws one, and two
+        // hairlines 21px apart read as a box around nothing.
+      )}
+    >
+      <span className="text-host-slot num text-ink">{slot}</span>
+      <span className="h-px flex-1 bg-line" aria-hidden />
+      {covers > 0 && unit ? (
+        <span className="text-host-detail num shrink-0">
+          {covers} {covers > 1 ? unit.many : unit.one}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -477,7 +534,7 @@ function Row({ row }: { row: EntityRow }) {
           book does not contain cards. The rule down its left says « this
           belongs to the booking above »; the words are the point. */}
       {row.signal ? (
-        <div className="mt-1 flex items-start gap-2 border-l-2 border-violet pl-2 text-violet-deep">
+        <div className="mt-0.5 flex items-start gap-2 border-l-2 border-violet pl-2 text-violet-deep">
           <Icon
             name={row.signal.icon ?? "sparkles"}
             size={16}
@@ -546,10 +603,14 @@ function Row({ row }: { row: EntityRow }) {
               // out of Tailwind classes silently stops matching the day
               // the row's layout changes.
               data-row="open"
+              // Opts the line out of the 44px control floor — see the
+              // note in `globals.css`. A line is a region, not a
+              // target in a row of targets.
+              data-book-line={host ? "" : undefined}
               onClick={() => row.detail && openDetail(row.detail)}
               className={cn(
                 "flex-1 min-w-0 text-left",
-                host ? "px-4 py-2" : "p-4",
+                host ? "px-4 py-1" : "p-4",
                 row.status && "pl-6",
               )}
             >
@@ -559,12 +620,12 @@ function Row({ row }: { row: EntityRow }) {
             <Link
               href={row.href}
               data-row="open"
-              className={cn("flex-1 min-w-0", host ? "px-4 py-2" : "p-4", row.status && "pl-6")}
+              className={cn("flex-1 min-w-0", host ? "px-4 py-1" : "p-4", row.status && "pl-6")}
             >
               {host ? hostLine : inner}
             </Link>
           ) : (
-            <div className={cn("flex-1 min-w-0", host ? "px-4 py-2" : "p-4", row.status && "pl-6")}>
+            <div className={cn("flex-1 min-w-0", host ? "px-4 py-1" : "p-4", row.status && "pl-6")}>
               {host ? hostLine : inner}
             </div>
           )}
@@ -576,6 +637,7 @@ function Row({ row }: { row: EntityRow }) {
                   key={`${cta.action.label}-${i}`}
                   cta={cta}
                   size="sm"
+                  compact={host}
                 />
               ))}
             </div>
@@ -597,6 +659,13 @@ function Row({ row }: { row: EntityRow }) {
                 key={`${cta.action.label}-${i}`}
                 cta={cta}
                 size="sm"
+                // 36px here too, which is the one place this codebase
+                // goes under its own 44px floor, and it is deliberate:
+                // the LYFE review asked for the four decisions to be
+                // compact. The width is what keeps them pressable — a
+                // phone button is full-width, so the target is 36 × 160
+                // and a thumb does not have to aim.
+                compact={host}
                 // Full width on a phone: Prévenir and Installer are
                 // pressed one-handed at a host stand, and a 96px button
                 // beside a queue is a mis-tap waiting to happen.

@@ -62,6 +62,42 @@ export const REJECTION_REASONS: Record<RejectionReason, string> = {
   other: "Autre",
 };
 
+/**
+ * Why a venue gave back a table it had already accepted.
+ *
+ * A separate list from `RejectionReason`, and the separation is the
+ * point: refusing a request and cancelling an accepted booking are two
+ * different events, with two different states (`rejected` · `cancelled`)
+ * and two different conversations with the guest. « Complet sur ce
+ * créneau » cannot be why an accepted table went away — the venue had
+ * already said yes — and « Client injoignable » cannot be why a request
+ * was refused.
+ *
+ * Five, because a list a host reads mid-service is a list they can see
+ * at once, and because each of these is an answer somebody downstream
+ * can act on: a run of `overbooked` is a pacing problem, a run of
+ * `unreachable` is a telephone problem, and `guest_request` is not the
+ * venue's fault at all.
+ */
+export type CancellationReason =
+  | "venue_closed"
+  | "overbooked"
+  | "guest_request"
+  | "unreachable"
+  | "other";
+
+export const CANCELLATION_REASONS: Record<CancellationReason, string> = {
+  venue_closed: "Fermeture exceptionnelle",
+  overbooked: "Surréservation",
+  guest_request: "À la demande du client",
+  unreachable: "Client injoignable",
+  other: "Autre",
+};
+
+export function isCancellationReason(value: string): value is CancellationReason {
+  return value in CANCELLATION_REASONS;
+}
+
 export type CheckInMethod = "qr" | "manual";
 
 export interface CheckInResult {

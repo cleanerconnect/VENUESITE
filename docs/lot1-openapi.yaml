@@ -741,9 +741,13 @@ paths:
       summary: Annuler une réservation
       operationId: cancelBooking
       description: |
-        Le client renonce. Distinct de `reject`.
+        L'établissement rend une table qu'il avait acceptée. Distinct de `reject`, qui refuse une *demande* : deux actes, deux états (`cancelled` · `rejected`), deux conversations avec le client, et deux listes de motifs.
 
-        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+        **Le motif est obligatoire et codé.** C'est la seule décision de l'écran que le client n'a pas demandée, donc la seule qui doive dire pourquoi — au client, qui est prévenu, et à qui lira plus tard la fréquence : une série de `overbooked` est un problème de cadence, une série de `unreachable` un problème de téléphone. Un appel sans motif, ou avec un code hors liste, est un `422 reason_required`.
+
+        **Le client est prévenu**, et le message est consigné : une notification que le portail prétend avoir envoyée et ne peut pas montrer n'est pas une notification.
+
+        Réservé à une réservation qui n'a pas encore eu lieu — `requested`, `waitlisted` ou `confirmed`. Sur un constat (`arrived`, `completed`, `no_show`, `rejected`, `cancelled`) c'est un `409 state_conflict`. Le portail ne l'offre que sur une ligne `confirmed`, et seulement dans sa feuille de détail — voir contrat §2.3.
       parameters:
       - name: reservationId
         in: path
@@ -751,6 +755,28 @@ paths:
         schema:
           type: string
         description: La réservation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - reason
+              properties:
+                reason:
+                  type: string
+                  description: |
+                    Motif codé. Liste propre à l'annulation : « Complet sur ce créneau » ne peut pas expliquer une table déjà acceptée.
+                  enum:
+                  - venue_closed
+                  - overbooked
+                  - guest_request
+                  - unreachable
+                  - other
+                note:
+                  type: string
+                  description: Précision libre, facultative. Pour l'équipe.
       responses:
         '200':
           description: L'aperçu complet après la décision, pour que le portail n'ait pas à
@@ -779,8 +805,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Erreur'
         '409':
-          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
-            ou un état déjà décidé).'
+          description: 'Conflit : `state_conflict` quand la réservation a déjà eu lieu
+            (`arrived`, `completed`, `no_show`, `rejected`, `cancelled`), ou la ressource
+            a changé depuis sa lecture.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: '`reason_required` : motif absent ou hors liste.'
           content:
             application/json:
               schema:
@@ -1140,6 +1173,26 @@ paths:
                   type: string
                 category:
                   type: string
+                  description: |
+                    « Catégorie » — un id parmi onze, ou `''` tant que la question n'a pas de réponse. Liste fermée depuis la revue du 12 octobre : l'application regroupe les établissements par catégorie, et « gastro » ne se regroupe pas avec « Restaurant gastronomique ».
+                  enum:
+                  - restaurant_gastronomique
+                  - restaurant_traditionnel
+                  - bistrot
+                  - brasserie
+                  - rooftop
+                  - lounge
+                  - bar_a_cocktails
+                  - cafe
+                  - salon_de_the
+                  - street_food
+                  - autre
+                  - ''
+                categoryOther:
+                  type: string
+                  maxLength: 60
+                  description: |
+                    Les mots du lieu, et seulement quand `category` vaut `autre` : une phrase à côté de « Rooftop » serait une seconde catégorie que rien ne lit. Obligatoire sous `autre` — une « Autre » sans mots est une catégorie qui ne dit rien.
                 address:
                   type: string
                 district:
@@ -1424,6 +1477,8 @@ paths:
 
         Actions du lot 1 : `service.create`, `service.edit`, `service.remove`, `service.set`, `pacing.set`.
 
+        **`service.save` reçoit toujours des horaires explicites.** Les trois préréglages du lot 1 — Petit-déjeuner 7h30–11h00, Déjeuner 12h00–15h00, Dîner 19h00–23h30 — sont une affaire de formulaire : le partenaire dit lequel, le portail remplit les heures, et c'est l'action complète qui part. Un service qui arrive ici n'a pas de préréglage, il a des heures.
+
         Observé en trafic réel pendant la passe de vérification du lot 1.
       parameters:
       - *id001
@@ -1596,7 +1651,14 @@ paths:
       summary: Les photos de l'établissement
       operationId: listAssets
       description: |
-        `kind=photo` est le seul que le lot 1 demande. `kind=menu_file` est explicitement gardé derrière le lot 2.
+        Le lot 1 demande deux `kind` : `photo`, et `menu_file` pour la carte en PDF que l'onglet Menu garde sous la liste de plats.
+
+        **Les deux portent un plafond, et le service l'applique à l'envoi** — un plafond qui ne vit que dans un bouton grisé n'est pas un plafond :
+
+        - `photo` : **six**, soit une « Photo principale » en position 0 et cinq dans le carrousel. La septième est refusée. Un carrousel que personne ne fait défiler jusqu'au bout est du travail fait pour rien ;
+        - `menu_file` : **un**, et un `application/pdf`. Les images de pages sont parties à la revue du 12 octobre : la carte est la liste de plats, et une photo de carte en était une seconde copie inexploitable par la recherche.
+
+        Une fiche déjà en base peut dépasser les deux plafonds — une limite nouvelle ne supprime pas des lignes — donc la longueur des listes n'est pas une garantie.
 
         Observé en trafic réel pendant la passe de vérification du lot 1.
       parameters:
@@ -2408,7 +2470,25 @@ components:
         category:
           type: string
           description: |
-            « Catégorie » — le genre d'établissement, par opposition à ce qu'il cuisine. Une ligne plus bas sur le même écran.
+            « Catégorie » — le genre d'établissement, par opposition à ce qu'il cuisine, une ligne plus bas sur le même écran. Un id parmi onze, ou `''` tant que la question n'a pas de réponse ; la charge utile grand public sert l'id sous `category` et son libellé sous `category_label`.
+          enum:
+          - restaurant_gastronomique
+          - restaurant_traditionnel
+          - bistrot
+          - brasserie
+          - rooftop
+          - lounge
+          - bar_a_cocktails
+          - cafe
+          - salon_de_the
+          - street_food
+          - autre
+          - ''
+        categoryOther:
+          type: string
+          maxLength: 60
+          description: |
+            Les mots du lieu derrière `category = 'autre'`, vides pour les dix autres.
         description:
           type: string
         address:

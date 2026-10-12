@@ -308,9 +308,13 @@ if (await menuTab.count()) {
     .locator('input[type="file"]')
     .first()
     .getAttribute("accept");
+  // A PDF, and nothing else. The two image types left at the LYFE
+  // review of 12 October: the list above is the carte, and a
+  // photograph of a printed page was a second copy of it that no
+  // search can read.
   check(
-    "il accepte un PDF et des images, rien d'autre",
-    (accept ?? "") === "application/pdf,image/jpeg,image/png",
+    "il n'accepte qu'un PDF",
+    (accept ?? "") === "application/pdf",
     accept ?? "aucun",
   );
 

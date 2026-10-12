@@ -17,12 +17,15 @@ export interface VenueIdentityPatch {
   tagline: string;
   description: string;
   /**
-   * « Catégorie » — what kind of establishment this is. The cuisine is
-   * the other half of that question and lives on `VenueListingPatch`
-   * now: it became a closed list the app filters on, which puts it with
-   * the price band and the ambience rather than with the words.
+   * « Catégorie » — what kind of establishment this is, as a
+   * `CategoryId`. The cuisine is the other half of that question and
+   * lives on `VenueListingPatch`: another closed list the app filters
+   * on, which puts it with the price band and the ambience rather than
+   * with the words.
    */
   category: string;
+  /** The venue's own words, and only when `category` is `autre`. */
+  categoryOther: string;
   address: string;
   /** « Quartier », which the app prints before the city. */
   district: string;
@@ -42,7 +45,7 @@ export async function updateVenueIdentity(
   await run(
     `UPDATE venues SET
        name = ?, short_name = ?, tagline = ?, description = ?,
-       category = ?,
+       category = ?, category_other = ?,
        address = ?, district = ?, city = ?, latitude = ?, longitude = ?,
        contact_email = ?, contact_phone = ?, website = ?, kind = ?,
        updated_at = ?
@@ -52,6 +55,7 @@ export async function updateVenueIdentity(
     patch.tagline,
     patch.description,
     patch.category,
+    patch.categoryOther,
     patch.address,
     patch.district,
     patch.city,

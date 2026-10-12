@@ -79,11 +79,21 @@ export interface RestaurantProfile {
    */
   specialties: string;
   /**
-   * « Catégorie » on the same screen, one line below the cuisine —
-   * « Restaurant gastronomique, sushi bar ». What kind of establishment
-   * this is, as opposed to what it cooks.
+   * « Catégorie » on the same screen, one line below the cuisine: what
+   * kind of establishment this is, as opposed to what it cooks.
+   *
+   * A `CategoryId` since the LYFE review closed the list, or `""` on a
+   * fiche that predates it. Free text used to live here and is in
+   * `categoryOther` now, where it belongs to the one id that needs it.
    */
-  category: string;
+  category: CategoryId | "";
+  /**
+   * The venue's own words, and only when `category` is `autre`.
+   *
+   * Empty for the other ten: a sentence beside « Rooftop » would be a
+   * second category nothing reads.
+   */
+  categoryOther: string;
   /**
    * The quarter, which is how a Moroccan address is actually given. The
    * app's header reads « El cenador, Casablanca »: quartier first, then
@@ -286,6 +296,76 @@ export const isCuisineId = (value: string): value is CuisineId =>
 export const cuisineLabel = (value: string): string =>
   isCuisineId(value) ? CUISINE_LABEL[value] : "";
 
+/**
+ * What kind of establishment this is — a closed list, and an « Autre ».
+ *
+ * « Catégorie » was free text, and free text is what the app cannot
+ * group by: « Restaurant gastronomique », « gastro », « resto
+ * gastronomique » and « Gastronomique » are four strings and one
+ * answer. The ten below are the ones the LYFE review named, in the
+ * order it named them, and they cover what the app actually lists in
+ * Morocco.
+ *
+ * `autre` is the eleventh, and it is not a cop-out: a city has places
+ * that are none of these, and the alternative to an « Autre » with a
+ * sentence beside it is a partner picking the nearest wrong one. What
+ * it buys is honesty about the tail — a run of `autre` is a list that
+ * needs an eleventh entry, and that is a decision somebody can read off
+ * a number instead of guessing at.
+ *
+ * The ids are unaccented and ASCII because they travel in a query
+ * string, like the cuisine ids above.
+ */
+export const CATEGORY_IDS = [
+  "restaurant_gastronomique",
+  "restaurant_traditionnel",
+  "bistrot",
+  "brasserie",
+  "rooftop",
+  "lounge",
+  "bar_a_cocktails",
+  "cafe",
+  "salon_de_the",
+  "street_food",
+  "autre",
+] as const;
+
+export type CategoryId = (typeof CATEGORY_IDS)[number];
+
+/** What the app prints, and what the select offers. */
+export const CATEGORY_LABEL: Record<CategoryId, string> = {
+  restaurant_gastronomique: "Restaurant gastronomique",
+  restaurant_traditionnel: "Restaurant traditionnel",
+  bistrot: "Bistrot",
+  brasserie: "Brasserie",
+  rooftop: "Rooftop",
+  lounge: "Lounge",
+  bar_a_cocktails: "Bar à cocktails",
+  cafe: "Café",
+  salon_de_the: "Salon de thé",
+  street_food: "Street food",
+  autre: "Autre",
+};
+
+export const isCategoryId = (value: string): value is CategoryId =>
+  (CATEGORY_IDS as readonly string[]).includes(value);
+
+/**
+ * The label for an id, and for `autre` the venue's own words.
+ *
+ * The payload carries both the id and this, because an app that has to
+ * map eleven ids to eleven sentences is an app that will one day print
+ * `salon_de_the`.
+ */
+export const categoryLabel = (value: string, other = ""): string => {
+  if (!isCategoryId(value)) return "";
+  if (value === "autre") return other.trim() || CATEGORY_LABEL.autre;
+  return CATEGORY_LABEL[value];
+};
+
+/** « Autre » in one line, like every other free line on the fiche. */
+export const CATEGORY_OTHER_MAX = 60;
+
 /** One line, and the app's detail screen gives it one line. */
 export const SPECIALTIES_MAX = 80;
 
@@ -293,10 +373,27 @@ export const SPECIALTIES_MAX = 80;
 export const TAGLINE_MAX = 60;
 
 /**
- * A carte is a PDF or a handful of photographed pages — never a
- * hundred. Ten is what a two-sided menu shot page by page comes to.
+ * One carte, as one PDF.
+ *
+ * It was ten, which was the count for a two-sided menu shot page by
+ * page. The photographs are gone — see `ASSET_RULES.menu_file` — and a
+ * venue has one carte, so the ceiling is one: a second file would be
+ * two cartes on one fiche with nothing to say which the app should
+ * serve.
  */
-export const MENU_FILE_MAX = 10;
+export const MENU_FILE_MAX = 1;
+
+/**
+ * The photos of a fiche: one that leads, five behind it.
+ *
+ * The app's listing shows the first one on the card and the rest as a
+ * carousel on the detail screen, and a carousel nobody swipes to the
+ * end of is work a venue did for nothing. Six is what a guest looks
+ * through before deciding, and the LYFE review set the shape: one
+ * « Photo principale », then five.
+ */
+export const PHOTO_CAROUSEL_MAX = 5;
+export const PHOTO_MAX = 1 + PHOTO_CAROUSEL_MAX;
 
 /**
  * The band, in the currency the guest will actually pay in.
@@ -336,6 +433,46 @@ export type ServiceKind =
   | "diner"
   | "tardif"
   | "creneau";
+
+/**
+ * The services a venue adds by name, and the hours that come with them.
+ *
+ * One list, read by the form that offers them and by the action that
+ * writes them, so the two cannot disagree about what a
+ * « Petit-déjeuner » is. The hours are the usual Moroccan ones — a
+ * breakfast service that opens at half past seven and stops seating at
+ * half past ten — and every one of them is editable on the service's
+ * own card afterwards: a preset is a starting point, not a rule.
+ *
+ * `tardif` and `creneau` are not here on purpose. They exist as kinds
+ * because the data has them, but a late service and a bar's time slot
+ * are Lot 2's, and a preset for something the lot does not sell would
+ * be an empty promise on the one screen that decides what the app
+ * offers.
+ */
+export const SERVICE_PRESETS: Record<
+  "petit_dejeuner" | "dejeuner" | "diner",
+  { name: string; startsAt: string; endsAt: string; lastBookingAt: string }
+> = {
+  petit_dejeuner: {
+    name: "Petit-déjeuner",
+    startsAt: "07:30",
+    endsAt: "11:00",
+    lastBookingAt: "10:30",
+  },
+  dejeuner: {
+    name: "Déjeuner",
+    startsAt: "12:00",
+    endsAt: "15:00",
+    lastBookingAt: "14:00",
+  },
+  diner: {
+    name: "Dîner",
+    startsAt: "19:00",
+    endsAt: "23:30",
+    lastBookingAt: "22:30",
+  },
+};
 
 export type ServiceState =
   | "scheduled"

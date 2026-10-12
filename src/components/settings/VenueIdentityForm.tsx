@@ -2,12 +2,18 @@
 
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { PinMap } from "@/components/map/PinMap";
 import { SaveBar } from "@/components/forms/SaveBar";
 import { useOptimisticForm } from "@/lib/forms/useOptimisticForm";
 import { saveVenueIdentity, type VenueIdentityInput } from "@/app/actions/venue";
-import { TAGLINE_MAX } from "@/lib/types/restaurant";
+import {
+  CATEGORY_IDS,
+  CATEGORY_LABEL,
+  CATEGORY_OTHER_MAX,
+  TAGLINE_MAX,
+} from "@/lib/types/restaurant";
 
 export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) {
   const form = useOptimisticForm({
@@ -83,9 +89,36 @@ export function VenueIdentityForm({ initial }: { initial: VenueIdentityInput }) 
             the whole portal and is settled when the venue is created.
             The stored value is kept and simply not asked for. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          {text("category", "Catégorie", {
-            hint: "Ex. Restaurant gastronomique, riad",
-          })}
+          {/* A closed list since the LYFE review, for the same reason
+              the cuisine became one: « Restaurant gastronomique »,
+              « gastro » and « Gastronomique » are three strings and one
+              answer, and the app groups on this. */}
+          <Select
+            label="Catégorie"
+            value={form.value.category}
+            error={form.errorFor("category") ?? undefined}
+            hint="La liste sur laquelle l'application regroupe les établissements."
+            onChange={(next) => form.set("category", next)}
+            options={[
+              { value: "", label: "Choisissez une catégorie" },
+              ...CATEGORY_IDS.map((id) => ({
+                value: id,
+                label: CATEGORY_LABEL[id],
+              })),
+            ]}
+          />
+          {/* « Autre » is the one option whose content is the sentence,
+              so the sentence appears with it and only with it. */}
+          {form.value.category === "autre" ? (
+            <Input
+              label="Précisez"
+              hint="Une ligne, telle que le client la lira."
+              maxLength={CATEGORY_OTHER_MAX}
+              error={form.errorFor("categoryOther") ?? undefined}
+              value={form.value.categoryOther}
+              onChange={(e) => form.set("categoryOther", e.target.value)}
+            />
+          ) : null}
         </div>
       </Card>
 

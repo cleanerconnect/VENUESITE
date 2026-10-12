@@ -41,6 +41,7 @@ import {
   venueProfile,
   overview as overviewFromStore,
   transitionBooking,
+  cancelBookingAsVenue,
   bookableSlots,
   rescheduleBooking,
   searchReservations,
@@ -50,6 +51,7 @@ import {
 import {
   EmailTaken,
   RepositoryError,
+  StaleWriteError,
 } from "./repository";
 import type {
   AnalyticsInput,
@@ -59,6 +61,7 @@ import type {
   OnboardingDraftPatch,
   OnboardingSignUpInput,
   RejectBookingInput,
+  CancelBookingInput,
   ReservationRefInput,
   RestaurantRepository,
   ReviewReplyInput,
@@ -111,8 +114,22 @@ export class MockRestaurantRepository implements RestaurantRepository {
     return this.getOverview(restaurantId);
   }
 
-  async cancelReservation({ restaurantId, reservationId }: ReservationRefInput) {
-    await transitionBooking(restaurantId, reservationId, "cancelled", "venue");
+  async cancelReservation({ restaurantId, reservationId, reason, note }: CancelBookingInput) {
+    // Not `transitionBooking`: giving back an accepted table owes the
+    // guest a message, and the store keeps the state change, the
+    // history row and that message in one transaction. It also refuses
+    // a booking that is not `confirmed` — see `cancelBookingAsVenue`.
+    const outcome = await cancelBookingAsVenue(restaurantId, reservationId, reason, note);
+    if (!outcome.cancelled) {
+      if (outcome.why === "settled") {
+        throw new RepositoryError(
+          "Cette réservation a déjà eu lieu : elle ne peut plus être annulée.",
+          409,
+          "state_conflict",
+        );
+      }
+      if (outcome.why === "changed") throw new StaleWriteError("La réservation");
+    }
     return this.getOverview(restaurantId);
   }
 

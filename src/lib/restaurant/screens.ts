@@ -1341,12 +1341,26 @@ export function buildReservationsScreen(
         : "Rechercher un client, un téléphone, une table…",
     },
     sorts: [
-      // The default a host works to: the next table to arrive, first.
-      // Sorting by clock time put a party seated at noon above one due
-      // in ten minutes, so the top of the book was the part of the day
-      // already dealt with.
+      // Clock order is the default under Lot 1, and it is the sittings
+      // that make it so.
+      //
+      // « Prochaine arrivée » was the default — open tables first, then
+      // the part of the day already dealt with — on the reasoning that
+      // a party seated at noon should not sit above one due in ten
+      // minutes. That holds for a flat list. It stops holding the
+      // moment the book is ruled off by sitting: the queue order puts
+      // a table *due* at 20h30 in one group and a table that *arrived*
+      // at 20h30 in another, so « 20h30 » heads two different places
+      // in one book and neither header is the sitting's covers. A
+      // paper book runs down the clock; so does this one.
+      //
+      // What a host loses is answered twice over on the same screen:
+      // the state is a coloured band and a word on every line, and
+      // « À confirmer » is a filter tab with its own count. The queue
+      // order is still here, one choice down.
       ...(lot1
         ? ([
+            { id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" },
             {
               id: "next",
               label: "Prochaine arrivée",
@@ -1354,8 +1368,7 @@ export function buildReservationsScreen(
               direction: "asc",
             },
           ] as const)
-        : []),
-      { id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" },
+        : [{ id: "time", label: "Heure · tôt → tard", key: "time", direction: "asc" } as const]),
       { id: "time_desc", label: "Heure · tard → tôt", key: "time", direction: "desc" },
       // A lounge books people, not covers: the sort label was the last
       // place in the book that still said « Couverts » to a bar.
@@ -1390,6 +1403,12 @@ export function buildReservationsScreen(
       title: "Aucune réservation",
       body: "Aucune réservation ne correspond à ce filtre.",
     },
+    // The word each sitting's header counts in. Picked here because the
+    // vocabulary is a server-side fact; only its answer crosses to the
+    // client.
+    coverUnit: lot1
+      ? { one: vocabulary.cover.one, many: vocabulary.cover.many }
+      : undefined,
   };
 
   const shownDate = onAnotherDay ? book!.date : service.date;
@@ -2023,6 +2042,11 @@ function reservationRow(
     // offers half hours and nothing else, so the grouping is the half
     // hour, stated once in `LOT1_SLOT_MINUTES`.
     slot: lot1 ? slotOf(reservation.at, LOT1_SLOT_MINUTES) : undefined,
+    // The same party size as a number, for the sitting's header to add
+    // up. « 4 couverts » is already on the line; a header that says
+    // « 6 couverts » is saying what the next half hour is worth, which
+    // no row can say on its own.
+    covers: lot1 ? reservation.partySize : undefined,
     // The phone, on the row, because the one thing a host does with a
     // booking that is not on this screen is ring the guest — and going
     // to the drawer for a number is the tap that gets skipped when the
@@ -2323,6 +2347,39 @@ function lot1DecisionActions(reservation: Reservation, now: number): CtaAction[]
             },
           ]
         : []),
+      // **Annuler la réservation — in the sheet, and nowhere else.**
+      //
+      // The venue giving back a table it had accepted is the one
+      // decision on this screen the guest did not ask for, and the one
+      // that cannot be undone from their side. The contract named the
+      // conditions for it before the button existed: « une annulation
+      // d'établissement se prend avec le nom et le téléphone du client
+      // sous les yeux et un motif, pas au voisinage de Check-in »
+      // (§2.3). The sheet is where those are on screen. The line is
+      // not, and `reservationActions` therefore does not offer it at
+      // any width.
+      //
+      // `reservation.cancel` opens a dialog rather than writing: the
+      // reason is required, and it is coded so a run of
+      // « Surréservation » is a number somebody can act on rather than
+      // five spellings of the same sentence. The hour rides in the
+      // payload so the confirmation can name the booking — a guest
+      // holds several, and « votre réservation » names none of them.
+      {
+        action: {
+          kind: "command" as const,
+          label: "Annuler la réservation",
+          command: "reservation.cancel",
+          payload: {
+            id: reservation.id,
+            name: reservation.guestName,
+            when: hm(reservation.at),
+          },
+          icon: "calendar-x" as const,
+        },
+        variant: "ghost" as const,
+        allow,
+      },
     ];
   }
   // Arrived, absent, refused, cancelled: a record, and a record takes
@@ -2404,7 +2461,13 @@ function reservationMenu(reservation: Reservation, lot: Lot = 2): EntityRow["men
         action: {
           kind: "command",
           command: "reservation.cancel",
-          payload: { id: reservation.id },
+          // The name and the hour, so the dialog that asks for a reason
+          // can say which booking it is about.
+          payload: {
+            id: reservation.id,
+            name: reservation.guestName,
+            when: hm(reservation.at),
+          },
         },
       });
     }
@@ -3073,7 +3136,7 @@ export function buildScreen(slug: string, ctx: ScreenContext): ScreenSpec | null
   // The dialogs this screen's buttons open, attached to the payload.
   // A button whose command has no form and no handler still says so —
   // there are no buttons that quietly do nothing.
-  return { ...spec, forms: formsFor(spec, ctx.configuration) };
+  return { ...spec, forms: formsFor(spec, ctx.configuration, ctx.lot) };
 }
 
 /**

@@ -183,7 +183,7 @@ export function AssetManager({
         {assets.length === 0 ? (
           <p className="mb-4 rounded-[var(--radius-sm)] border border-dashed border-line px-4 py-3 text-body text-ink-soft">
             Aucune photo pour le moment. La première que vous ajoutez devient
-            la couverture de votre fiche dans l&apos;application.
+            la photo principale de votre fiche dans l&apos;application.
           </p>
         ) : null}
 
@@ -193,16 +193,16 @@ export function AssetManager({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={src(cover)}
-                alt="Photo de couverture"
+                alt="Photo principale"
                 className="aspect-[16/9] w-full object-cover"
               />
               <span className="absolute left-3 top-3 rounded-full bg-ink px-3 py-1 text-meta font-semibold text-canvas">
-                Couverture
+                Photo principale
               </span>
             </div>
             <figcaption className="mt-2 flex items-center justify-between gap-3">
               <span className="text-body text-ink-soft">
-                C'est la photo que le client voit en premier.
+                C&apos;est la photo que le client voit en premier.
               </span>
               <Button
                 variant="ghost"
@@ -213,6 +213,23 @@ export function AssetManager({
               </Button>
             </figcaption>
           </figure>
+        ) : null}
+
+        {/* The carousel, under its own rule.
+            « Clairement séparée » in the review: the principale is the
+            photo on every list card and the rest are what a guest
+            swipes through, and a grid that begins directly under the
+            cover read as six photos of equal standing. */}
+        {cover ? (
+          <div className="mb-3 mt-5 flex items-center gap-3 border-t border-line pt-4">
+            <span className="text-eyebrow text-ink-mute">Carrousel</span>
+            <span className="h-px flex-1 bg-line" aria-hidden />
+            {max !== undefined ? (
+              <span className="text-meta text-ink-mute num">
+                {rest.length} sur {max - 1}
+              </span>
+            ) : null}
+          </div>
         ) : null}
 
         <div
@@ -241,7 +258,7 @@ export function AssetManager({
                   className="inline-flex min-h-11 items-center gap-2 rounded px-2 text-meta font-semibold text-canvas hover:bg-canvas/15"
                 >
                   <Star size={14} strokeWidth={2} aria-hidden />
-                  Couverture
+                  Principale
                 </button>
                 <button
                   type="button"

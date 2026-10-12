@@ -198,10 +198,21 @@ export function SpecBadge({ badge }: { badge: BadgeSpec }) {
 export function ActionControl({
   cta,
   size = "md",
+  compact,
   className,
 }: {
   cta: CtaAction;
   size?: "sm" | "md" | "lg";
+  /**
+   * 36px instead of the host stand's 44px floor, icon and label kept.
+   *
+   * For the decisions on a booking line, and only there: four 44px
+   * buttons set the height of every line that carries one, on the
+   * screen whose job is how many lines you can see. `globals.css`
+   * holds the exception, keyed off `data-compact`, so the floor stays
+   * the floor everywhere else.
+   */
+  compact?: boolean;
   className?: string;
 }) {
   const role = useRole();
@@ -223,8 +234,9 @@ export function ActionControl({
     <Button
       variant={buttonVariant}
       size={size}
-      className={className}
-      iconLeft={action.icon ? <Icon name={action.icon} size={16} strokeWidth={2} /> : undefined}
+      data-compact={compact ? "" : undefined}
+      className={cn(compact && "h-9 px-3 gap-1.5", className)}
+      iconLeft={action.icon ? <Icon name={action.icon} size={compact ? 15 : 16} strokeWidth={2} /> : undefined}
       onClick={
         action.kind === "command"
           ? () => run(action.command, action.payload)

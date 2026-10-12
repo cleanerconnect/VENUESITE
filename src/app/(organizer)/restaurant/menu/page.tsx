@@ -80,6 +80,7 @@ export default async function MenuPage({ searchParams }: Props) {
         tagline: profile.tagline,
         description: profile.description,
         category: profile.category,
+        categoryOther: profile.categoryOther,
         address: profile.address,
         district: profile.district,
         city: profile.city,

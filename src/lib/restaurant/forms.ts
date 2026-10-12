@@ -10,6 +10,7 @@
 
 import type { FormSpec } from "@/lib/dashboard/spec";
 import type { VenueConfiguration } from "@/lib/types/venue-operations";
+import { SERVICE_PRESETS } from "@/lib/types/restaurant";
 import { configFor } from "@/lib/venue/config";
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -549,6 +550,61 @@ export const VENUE_FORMS: Record<string, FormSpec> = {
   },
 
   // ── Disponibilités ──
+  //
+  // Two forms for one command, because the two lots decide different
+  // things when they add a service. `formsFor` picks — see the bottom
+  // of this file.
+  //
+  // Lot 1 adds a *service a venue already runs*: the preset is the
+  // decision, and its hours come with it. « Petit-déjeuner » is 7h30 →
+  // 11h00 because that is what a Moroccan breakfast service is, and a
+  // host who runs a different one changes the two hours on the service's
+  // own card afterwards — which is one write rather than a ten-field
+  // dialog, and is how every other hour on this screen is changed.
+  "service.create.lot1": {
+    title: "Ajouter un service",
+    description: "Ce que l'application propose à la réservation change dès l'enregistrement.",
+    submitLabel: "Ajouter",
+    command: "service.create",
+    fields: [
+      {
+        kind: "select",
+        name: "preset",
+        label: "Service",
+        required: true,
+        value: "diner",
+        // Built from `SERVICE_PRESETS`, so the hours the label promises
+        // are the hours the action writes.
+        options: (
+          Object.keys(SERVICE_PRESETS) as (keyof typeof SERVICE_PRESETS)[]
+        ).map((key) => {
+          const preset = SERVICE_PRESETS[key];
+          // 7h30, not 07h30: an hour is written without its leading
+          // zero in French, and a select is read, not parsed.
+          const hm = (t: string) => t.replace(/^0/, "").replace(":", "h");
+          return {
+            value: key,
+            label: `${preset.name} · ${hm(preset.startsAt)} – ${hm(preset.endsAt)}`,
+          };
+        }),
+      },
+      {
+        kind: "text",
+        name: "weekdays",
+        label: "Jours",
+        hint: "1 = lundi. Par exemple 3,4,5,6,7.",
+        value: "1,2,3,4,5,6,7",
+      },
+      { kind: "number", name: "capacityCovers", label: "Capacité", value: 60, min: 1 },
+      {
+        kind: "note",
+        name: "hours-note",
+        label: "Les horaires suivent le service choisi.",
+        hint: "Ouverture, fermeture et dernière réservation acceptée se règlent ensuite sur la carte du service.",
+      },
+    ],
+  },
+
   "service.create": {
     title: "Ajouter un service",
     description: "Ce que l'application propose à la réservation change dès l'enregistrement.",
@@ -623,11 +679,19 @@ export const VENUE_FORMS: Record<string, FormSpec> = {
 export function formsFor(
   spec: unknown,
   configuration: VenueConfiguration = "restaurant",
+  lot: 1 | 2 = 2,
 ): Record<string, FormSpec> | undefined {
   const serialised = JSON.stringify(spec);
   const used: Record<string, FormSpec> = {};
   for (const [command, form] of Object.entries(VENUE_FORMS)) {
-    if (serialised.includes(`"${command}"`)) used[command] = speak(form, configuration);
+    // A `…​.lot1` entry is the same command's form for Lot 1, and it is
+    // keyed under the command it actually dispatches: the renderer looks
+    // a form up by the command a button fires, so two variants cannot
+    // both be in the map under their own names.
+    if (command.endsWith(".lot1")) continue;
+    if (!serialised.includes(`"${command}"`)) continue;
+    const variant = lot === 1 ? VENUE_FORMS[`${command}.lot1`] : undefined;
+    used[command] = speak(variant ?? form, configuration);
   }
   return Object.keys(used).length > 0 ? used : undefined;
 }

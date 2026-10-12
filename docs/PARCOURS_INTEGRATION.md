@@ -290,6 +290,23 @@ acceptée ; répondez-y quand même `409 state_conflict`, parce qu'une
 interface n'est pas un contrôle d'intégrité. Le tableau complet est au
 contrat, §2.3.
 
+**`cancel` porte un motif, et il est obligatoire.** Rendre une table
+déjà acceptée est la seule décision de l'écran que le client n'a pas
+demandée : `PUT …/cancel` attend `{ reason, note }`, où `reason` est un
+code d'une liste *propre à l'annulation* — `venue_closed`,
+`overbooked`, `guest_request`, `unreachable`, `other` — et pas celle de
+`reject`. « Complet sur ce créneau » ne peut pas expliquer une table que
+l'établissement avait accordée. Sans motif, ou hors liste, répondez
+`422 reason_required` ; sur une réservation qui a déjà eu lieu,
+`409 state_conflict`.
+
+Et **prévenez le client**, puis consignez-le. Le portail l'affiche comme
+un fait accompli — « le client est prévenu » — parce que c'est ce que la
+démo fait : l'état, la ligne d'historique avec son motif et sa note, et
+la ligne `messages_log` de genre `reservation_annulee` partent dans une
+seule transaction. Un service qui écrit l'annulation sans envoyer le
+message laisse le portail mentir à l'hôte.
+
 **Le check-in a une règle à part** : un code déjà utilisé répond `200`
 avec `{ "ok": false, "error": "already_used" }`, **pas** un `409`. Un
 statut d'erreur obligerait le portail à deviner le message, et l'hôte
@@ -373,11 +390,29 @@ envoie une action ; vous rendez une URL signée ; le navigateur y envoie
 les octets. Aucun octet ne traverse `POST /assets`.
 
 **L'onglet Menu en demande deux, pas un.** `assets?kind=menu_file` est
-la carte en fichier — un PDF, une photo — et `menu-board` est la carte
-en données : des sections nommées, et des plats dedans. Le Lot 1 dessine
-les deux sur le même onglet, et le `PUT` remplace la carte entière parce
-que l'ordre des sections est lui-même une donnée. Servir `menu-board`
-vide est acceptable ; ne pas le servir laisse l'onglet Menu en erreur.
+la carte en fichier et `menu-board` est la carte en données : des
+sections nommées, et des plats dedans. Le Lot 1 dessine les deux sur le
+même onglet, et le `PUT` remplace la carte entière parce que l'ordre des
+sections est lui-même une donnée. Servir `menu-board` vide est
+acceptable ; ne pas le servir laisse l'onglet Menu en erreur.
+
+**Deux plafonds à appliquer à l'envoi**, depuis la revue du 12 octobre —
+un plafond qui ne vit que dans un bouton grisé n'est pas un plafond :
+`kind=photo` en accepte **six** (une « Photo principale » en position 0
+et cinq dans le carrousel) et `kind=menu_file` **un seul**, en
+`application/pdf`. Les images de pages sont parties avec la revue : la
+carte est la liste de plats, et une photo de carte en était une seconde
+copie que la recherche ne peut pas lire. Une fiche déjà en base peut
+dépasser les deux — une limite nouvelle ne supprime pas des lignes — donc
+la longueur des listes n'est pas une garantie.
+
+**`category` est un id, comme `cuisine`.** Onze valeurs, `autre`
+comprise, et `category_other` porte la ligne du partenaire derrière
+`autre` et rien derrière les dix autres. Validez l'appartenance et
+servez le libellé à côté de l'id — `category` et `category_label` dans
+la charge utile grand public — parce qu'une application qui ne reçoit
+que des ids finira par imprimer `salon_de_the`. C'est la seule rupture
+de cette revue qui demande une ligne côté application.
 
 **`PUT /settings` porte l'objet entier**, comme le `GET` le rend : le
 portail lit, modifie un champ, réécrit. C'est l'écriture des réglages

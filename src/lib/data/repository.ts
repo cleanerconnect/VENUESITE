@@ -30,6 +30,7 @@ import type {
   NotificationPreferences,
   PortalNotification,
   RejectionReason,
+  CancellationReason,
   VenueAnalytics,
   VenueAvailability,
   VisibilityMetrics,
@@ -54,6 +55,22 @@ export interface RejectBookingInput {
   reservationId: string;
   /** Coded so rejections can be aggregated for quality analytics. */
   reason: RejectionReason;
+  note?: string;
+}
+
+export interface CancelBookingInput {
+  restaurantId: string;
+  reservationId: string;
+  /**
+   * Coded, and required.
+   *
+   * A venue taking back a table it had accepted is the one booking
+   * decision the guest did not ask for, so it is the one that has to
+   * say why — to the guest, who is told, and to whoever later asks how
+   * often this venue does it. Free text alone does not aggregate; a
+   * code with no free text cannot explain the exception.
+   */
+  reason: CancellationReason;
   note?: string;
 }
 
@@ -83,11 +100,14 @@ export interface VenueProfilePatch {
   tagline: string;
   description: string;
   /**
-   * « Catégorie » — what kind of establishment this is. The cuisine is
-   * on `VenueListingPatch`: it is a closed list the app filters on, so
-   * it travels with the price band rather than with the words.
+   * « Catégorie » — what kind of establishment this is, as a
+   * `CategoryId`. The cuisine is on `VenueListingPatch`: it is another
+   * closed list the app filters on, so it travels with the price band
+   * rather than with the words.
    */
   category: string;
+  /** The venue's own words, and only when `category` is `autre`. */
+  categoryOther: string;
   address: string;
   /** « Quartier », which the app prints before the city. */
   district: string;
@@ -211,7 +231,15 @@ export interface RestaurantRepository extends VenueOperationsRepository {
   getDayBook(restaurantId: string, date: string): Promise<DayBook>;
 
   confirmReservation(input: ReservationRefInput): Promise<RestaurantOverview>;
-  cancelReservation(input: ReservationRefInput): Promise<RestaurantOverview>;
+  /**
+   * Gives back a table the venue had accepted, with a coded reason, and
+   * tells the guest.
+   *
+   * `cancelled`, never `rejected`: the second is this contract's word
+   * for a *request* the venue refused, and collapsing the two would
+   * put an accepted table that fell through into the refusal rate.
+   */
+  cancelReservation(input: CancelBookingInput): Promise<RestaurantOverview>;
 
   sendReminder(input: ReservationRefInput): Promise<void>;
   replyToReview(input: ReviewReplyInput): Promise<void>;

@@ -264,6 +264,19 @@ const made = await api.ensureKit(figma);
 const first = await api.presentPage09(figma, { version: "v1" });
 const second = await api.presentPage09(figma, { version: "v1" });
 
+// The same page a third time, without the capture: `redraw: false`
+// presents the frames already on the page. The geometry it produces has
+// to be the one the redrawing pass produced, or the short path is not
+// the same presentation.
+const geometry = () =>
+  page09.children
+    .filter((n) => n.type === "SECTION")
+    .map((o) => `${o.name} ${Math.round(o.x)},${Math.round(o.y)} ${Math.round(o.width)}×${Math.round(o.height)}`)
+    .join(" | ");
+const before = geometry();
+const third = await api.presentPage09(figma, { version: "v1", redraw: false, capturedAt: doc.capturedAt });
+const after = geometry();
+
 // ── What has to be true ──────────────────────────────────────
 const problems = [];
 const say = (ok, line) => {
@@ -328,6 +341,11 @@ for (let i = 1; i < sections.length; i++) {
 say(
   gaps.every((g) => g === api.SECTION_GAP),
   `320 px entre deux sections · ${[...new Set(gaps)].join(", ")}`,
+);
+
+say(
+  after === before && third.missing.length === 0,
+  `sans redessiner : la même mise en page · ${third.missing.join(" | ") || (after === before ? "identique" : "DIFFÉRENTE")}`,
 );
 
 // Every frame ends up dressed, and every dressed frame is in a shelf.

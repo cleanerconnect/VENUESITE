@@ -38,8 +38,12 @@ import {
 } from "@/lib/forms/validation";
 import type { VenueAvailability } from "@/lib/types/business";
 import {
+  isCategoryId,
+  CATEGORY_OTHER_MAX,
   isCuisineId,
   MENU_FILE_MAX,
+  PHOTO_CAROUSEL_MAX,
+  PHOTO_MAX,
   MENU_ITEM_LINE_MAX,
   MENU_ITEM_NAME_MAX,
   MENU_SECTION_MAX,
@@ -98,8 +102,10 @@ export interface VenueIdentityInput {
   /** One line on the app's list cards, 60 characters. */
   tagline: string;
   description: string;
-  /** « Catégorie » — what kind of establishment this is. */
+  /** « Catégorie » — a `CategoryId`, or `""` while unanswered. */
   category: string;
+  /** « Autre », in the venue's own words. */
+  categoryOther: string;
   address: string;
   /** « Quartier », which the app prints before the city. */
   district: string;
@@ -138,7 +144,7 @@ export async function saveVenueIdentity(
       // cannot see the end of is a tagline they did not write.
       tagline: [maxLength(TAGLINE_MAX, "L'accroche")],
       description: [maxLength(2000, "La description")],
-      category: [maxLength(120, "La catégorie")],
+      categoryOther: [maxLength(CATEGORY_OTHER_MAX, "La précision")],
       district: [maxLength(80, "Le quartier")],
       city: [required("La ville")],
       contactEmail: [emailRule],
@@ -148,7 +154,25 @@ export async function saveVenueIdentity(
       longitude: [longitude],
     },
   );
-  if (errors.length) return invalid(errors);
+  // The closed list, and the one option that needs words.
+  //
+  // Not a `validate` rule because both are membership questions rather
+  // than length ones, and the second depends on the first — the same
+  // shape as the cuisine's check in `saveVenueListing` below. Empty is
+  // allowed: a fiche can be saved before every question is answered.
+  const categoryErrors = [
+    ...(input.category !== "" && !isCategoryId(input.category)
+      ? [{ field: "category", message: "Choisissez une catégorie." }]
+      : []),
+    // « Autre » with nothing beside it says less than no category at
+    // all: it is the one option whose whole content is the sentence.
+    ...(input.category === "autre" && input.categoryOther.trim() === ""
+      ? [{ field: "categoryOther", message: "Précisez la catégorie." }]
+      : []),
+  ];
+  if (errors.length || categoryErrors.length) {
+    return invalid([...errors, ...categoryErrors]);
+  }
 
   // Through the repository, not into the store: this form used to write
   // SQLite directly, so a deployment pointed at the Business Service
@@ -160,6 +184,10 @@ export async function saveVenueIdentity(
       tagline: input.tagline.trim(),
       description: input.description.trim(),
       category: input.category.trim(),
+      // Dropped unless it is the one id that uses it: « Rooftop » with
+      // a sentence beside it would be two categories on one fiche.
+      categoryOther:
+        input.category === "autre" ? input.categoryOther.trim() : "",
       address: input.address.trim(),
       district: input.district.trim(),
       city: input.city.trim(),
@@ -596,14 +624,25 @@ export async function confirmUpload(input: {
   if (!input.objectKey.startsWith(`venues/${venueId}/`)) {
     return failed("Fichier refusé.");
   }
-  // The carte is a PDF or a handful of photographed pages. The cap is
-  // enforced here rather than only in the picker, because the picker is
-  // one caller of this action and not the only one.
+  // Two ceilings, enforced here rather than only in the picker: the
+  // picker is one caller of this action and not the only one, and a
+  // limit that lives in a disabled button is not a limit.
   if (input.kind === "menu_file") {
     const held = await getRestaurantRepository().listAssets(venueId, "menu_file");
     if (held.length >= MENU_FILE_MAX) {
       return failed(
-        `La carte tient en ${MENU_FILE_MAX} fichiers au maximum. Retirez-en un avant d'en ajouter un autre.`,
+        "La carte est un seul PDF. Retirez celui qui est en place avant d'en déposer un autre.",
+      );
+    }
+  }
+  // One photo principale and five behind it. Past that the app's
+  // carousel is longer than anybody swipes, and the sixth photograph is
+  // work a venue did for nobody.
+  if (input.kind === "photo") {
+    const held = await getRestaurantRepository().listAssets(venueId, "photo");
+    if (held.length >= PHOTO_MAX) {
+      return failed(
+        `Une fiche porte ${PHOTO_MAX} photos au maximum : une principale et ${PHOTO_CAROUSEL_MAX} dans le carrousel. Retirez-en une avant d'en ajouter une autre.`,
       );
     }
   }

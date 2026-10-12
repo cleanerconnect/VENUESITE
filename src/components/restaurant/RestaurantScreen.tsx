@@ -21,10 +21,14 @@ import {
   type RejectTarget,
 } from "./RejectBookingDialog";
 import {
+  CancelBookingDialog,
+  type CancelTarget,
+} from "./CancelBookingDialog";
+import {
   RescheduleSheet,
   type RescheduleTarget,
 } from "./RescheduleSheet";
-import { REJECTION_REASONS } from "@/lib/types/business";
+import { CANCELLATION_REASONS, REJECTION_REASONS } from "@/lib/types/business";
 import { coversFor } from "@/lib/venue/config";
 import { COPY } from "@/lib/copy/fr";
 import { markGuestArrived } from "@/app/actions/checkin";
@@ -71,6 +75,9 @@ export function RestaurantScreen({
   // Refusal needs a reason before it can be applied, so the command opens
   // a dialog instead of mutating; the store call happens on confirm.
   const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null);
+  // Cancelling an accepted table needs a reason too, and for a stronger
+  // reason: it is the one decision here the guest did not ask for.
+  const [cancelTarget, setCancelTarget] = useState<CancelTarget | null>(null);
   const [rescheduleTarget, setRescheduleTarget] =
     useState<RescheduleTarget | null>(null);
 
@@ -128,14 +135,16 @@ export function RestaurantScreen({
         persist(confirmBooking(id));
       },
 
-      "reservation.cancel": (payload) => {
-        const id = String(payload?.id ?? "");
-        const before = store().data;
-        store().cancelReservation(id);
-        if (store().data === before) return;
-        withUndo(COPY.toast.cancelled, "danger");
-        persist(cancelBooking(id));
-      },
+      // Opens the dialog rather than mutating, like refusing: a
+      // cancellation without a reason is not a cancellation this
+      // contract accepts, and there is no optimistic guess to make
+      // about which reason a host will pick.
+      "reservation.cancel": (payload) =>
+        setCancelTarget({
+          id: String(payload?.id ?? ""),
+          guestName: String(payload?.name ?? "Ce client"),
+          when: payload?.when ? String(payload.when) : undefined,
+        }),
 
       "reservation.reject": (payload) =>
         setRejectTarget({
@@ -328,7 +337,7 @@ export function RestaurantScreen({
       <RejectBookingDialog
         target={rejectTarget}
         onClose={() => setRejectTarget(null)}
-        onConfirm={(reason) => {
+        onConfirm={(reason, note) => {
           if (!rejectTarget) return;
           const id = rejectTarget.id;
           const before = useRestaurantStore.getState().data;
@@ -344,8 +353,40 @@ export function RestaurantScreen({
             undo: () => useRestaurantStore.getState().undo(),
           });
           // The coded reason travels, not the label: `fully_booked`
-          // aggregates, "Complet sur ce créneau" does not.
-          void rejectBooking(id, reason).then((result) => {
+          // aggregates, "Complet sur ce créneau" does not. The note
+          // travels with it — the dialog has always collected one and
+          // this call used to drop it on the floor, so every
+          // « Précision (facultatif) » a host typed stopped at the
+          // browser and never reached the history row that has a
+          // column for it.
+          void rejectBooking(id, reason, note || undefined).then((result) => {
+            if (result.ok) return;
+            useRestaurantStore.getState().undo();
+            toast({
+              tone: "danger",
+              title: result.message ?? COPY.form.savingFailed,
+            });
+          });
+        }}
+      />
+
+      <CancelBookingDialog
+        target={cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={(reason, note) => {
+          if (!cancelTarget) return;
+          const id = cancelTarget.id;
+          const before = useRestaurantStore.getState().data;
+          useRestaurantStore.getState().cancelReservation(id);
+          if (useRestaurantStore.getState().data === before) return;
+          closeDetail();
+          toast({
+            tone: "danger",
+            title: COPY.toast.cancelled,
+            description: `${CANCELLATION_REASONS[reason]} · le client est prévenu.`,
+            undo: () => useRestaurantStore.getState().undo(),
+          });
+          void cancelBooking(id, reason, note || undefined).then((result) => {
             if (result.ok) return;
             useRestaurantStore.getState().undo();
             toast({
