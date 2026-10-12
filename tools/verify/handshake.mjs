@@ -223,25 +223,29 @@ check(
   `slot_minutes ${mine.slot_minutes ?? "absent"} · ${(mine.bookable_times ?? []).slice(0, 4).join(", ")}`,
 );
 
-// The venue changes its grid, and the app has to follow: « et
-// l'application doit proposer ses créneaux dessus » — contrat §3.1.
+// The grid, and what the 5 October scope did to it. « et l'application
+// doit proposer ses créneaux dessus » — contrat §3.1 — but the control
+// that picked 15, 30 or 60 minutes left the lot that day: « les
+// créneaux de disponibilités sont gérés aujourd'hui sur la base de
+// 30 minutes uniquement ». So this tool, which is Lot 1 only, asserts
+// the absence rather than the choice — the same way `decisions.mjs` §3
+// does — and then that the half hour is what the app actually offers.
+// It used to drive the select and fail when it could not find one,
+// which was a check left over from a scope that shrank.
 await page.goto(`${BASE}/restaurant/disponibilites`, { waitUntil: "domcontentloaded" });
 await settle(1500);
-const grid = page.locator('select').filter({ hasText: /minutes|heure/ }).first();
-if (await grid.count()) {
-  await grid.selectOption("60");
-  await settle(1800);
-  const save = page.locator('button:has-text("Enregistrer"):visible:not([disabled])').first();
-  if (await save.count()) { await save.click(); await settle(2400); }
-  const afterGrid = await fetch(`${API}/api/restaurants/${mine.id}`).then((r) => r.json());
-  check(
-    "changer la grille à 60 minutes change ce que l'application propose",
-    afterGrid.slot_minutes === 60,
-    `slot_minutes ${afterGrid.slot_minutes} · ${(afterGrid.bookable_times ?? []).slice(0, 4).join(", ")}`,
-  );
-} else {
-  check("Disponibilités propose une grille de créneaux", false);
-}
+const grid = page.locator("select").filter({ hasText: /minutes|heure/ });
+check(
+  "Disponibilités n'offre pas de grille à choisir · elle a quitté le lot le 5 octobre",
+  (await grid.count()) === 0,
+  `${await grid.count()} sélecteur(s) de créneau`,
+);
+const stillHalfHour = await fetch(`${API}/api/restaurants/${mine.id}`).then((r) => r.json());
+check(
+  "et l'application propose la demi-heure que l'application gère",
+  stillHalfHour.slot_minutes === 30,
+  `slot_minutes ${stillHalfHour.slot_minutes} · ${(stillHalfHour.bookable_times ?? []).slice(0, 4).join(", ")}`,
+);
 
 // And a Ma fiche edit, which is the other direction of the same seam.
 await page.goto(`${BASE}/restaurant/ma-fiche`, { waitUntil: "domcontentloaded" });

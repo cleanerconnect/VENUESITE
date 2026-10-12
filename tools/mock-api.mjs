@@ -133,6 +133,14 @@ function findBooking(bundle, id) {
   return everyBooking(bundle).find((r) => r.id === id) ?? null;
 }
 
+// The two transitions §2.3 says a `409` answers, and only those. Check-in
+// is deliberately not among them: the scanner takes a code at the door,
+// and a guest whose request is still pending should be seatable.
+const ALLOWED_FROM = {
+  rejected: ["requested", "waitlisted"],
+  no_show: ["confirmed"],
+};
+
 /**
  * Applies a state change the way the schema's history would.
  *
@@ -146,6 +154,19 @@ function transition(bundle, id, to) {
   const row = findBooking(bundle, id);
   if (!row) throw new Refused(404, "booking_not_found", "Réservation introuvable.");
   if (row.state === to) return row;
+  // The portal only offers a decision the row's state allows (§2.3), and
+  // the service refuses it anyway: an interface is not an integrity
+  // check. A double that took `reject` on an accepted table or
+  // `no-show` on a request would let the portal ship a call no real
+  // service accepts.
+  const from = ALLOWED_FROM[to];
+  if (from && !from.includes(row.state)) {
+    throw new Refused(
+      409,
+      "state_conflict",
+      `Une réservation « ${row.state} » ne peut pas passer à « ${to} ».`,
+    );
+  }
 
   const service = bundle.overview.currentService;
   const wasBooked = row.state === "confirmed" || row.state === "requested";

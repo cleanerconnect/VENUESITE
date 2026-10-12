@@ -105,7 +105,7 @@ Venue » is one of the three nouns and had no screen at all until now.
 | 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. |
 | 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Two blocks since 5 October: online booking on or off, and the services — days, hours, last booking taken, capacity, open or closed. The pacing rules, the advanced settings, the closed days and the choice of grid left the lot that day. |
 | 4 | Accueil | `/restaurant` | Gestion des réservations | Figures, and no list. Six for today — bookings, covers, to confirm, arrived, absent, the fill rate of the service in hand — eight for the last thirty days, each with its movement against the period before, and bookings per day in bars. Every one of them is counted off `reservations` when the screen is built. « À confirmer » opens the book filtered on the requests; the rows and the decisions are on Réservations. |
-| 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | Any day's book, walked a step at a time or picked from a calendar, scoped to one of that day's services — and the four decisions on the row, and only those four: accepter, refuser with a coded reason, check-in, no-show. |
+| 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | Any day's book, walked a step at a time or picked from a calendar, scoped to one of that day's services — and on each row the decisions its state allows, and only those: accepter and refuser with a coded reason on a request, check-in on a confirmed table, no-show once its hour has passed. |
 | 6 | Check-in | `/restaurant/check-in` | Gestion des réservations | Validate a booking at the door, by code or by name. |
 | 7 | Notifications | `/restaurant/notifications` | Gestion des réservations | One alert: a new booking needs a decision. |
 
@@ -355,7 +355,7 @@ node tools/verify/audience.mjs        # the minimum group of ten, both configura
 node tools/verify/inscription.mjs     # the seven onboarding steps, the resume, the landing
 node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
 node tools/verify/edges.mjs           # the paths taken by accident — see below
-node tools/verify/decisions.mjs       # LYFE's review, the four decisions, the search, the guest — and the 5 October absences
+node tools/verify/decisions.mjs       # LYFE's review, what each state allows, the search, the guest — and the 5 October absences
 node tools/verify/handshake.mjs       # the app and the portal on one database — see §14
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
 ```
@@ -839,7 +839,15 @@ one — even a node's own reactions read back and set again, unchanged. A
 link is therefore only ever inherited, by cloning a node that already
 has it, which is why the « À confirmer » tile sits inside a copy of the
 greeting card's own button and the computer frames' Check-in sits inside
-a copy of the sidebar's entry. And a tile's height depends on its width,
+a copy of the sidebar's entry. The same trick put a link back where one
+had been lost: Accepter on the computer Réservations frame — the one the
+prototype lands on from every sidebar and from Ouvrir le carnet — had
+no reaction since that frame was redrawn at the host scale, so the
+confirmation overlay was reachable from the five day-and-service frames
+and not from the landing one. It is now a clone of the Déjeuner frame's
+Accepter, which carries the link, with the host-scale icon and label
+moved into it and the button's own fill rebound to `couleur/ink` —
+the look of the new, the reaction of the old. And a tile's height depends on its width,
 so the rows are measured after the column has been laid out, not while
 it is being built: measured too early, every tile is the height of a
 three-line label.
@@ -1059,9 +1067,24 @@ rather than against the code that drew them.
 Réservations is the service resolved from the clock: a French long-form
 day and the service with its hours in the header, the Journée block, and
 the book — four filter chips and fifteen rows. The row the service is
-waiting on, Nabil Cherkaoui, is drawn in its **hover state**, so
-**accepter, refuser and signaler une absence** are readable without
-opening anything; a confirmed row shows check-in and absent.
+waiting on, Nabil Cherkaoui, is drawn in its **hover state**, so the two
+decisions a request allows — **accepter** and **refuser** — are readable
+without opening anything, and no third one: the frames hold the same
+state gate the portal does. A confirmed row shows **check-in**, and
+**signaler une absence** beside it only where its hour is already behind
+the frames' 20h30. So the two frames of a day gone by and today's
+déjeuner carry the absence on every confirmed row, tonight's 23h30
+tables and tomorrow's whole book show check-in alone, and an arrived row
+shows nothing at all — eighteen Absent buttons came off the section when
+the rule went in, and the one a reviewer should look for is Nabil's,
+which had an absence to offer on a table that had not been accepted yet.
+
+Two things in that section are an older snapshot of the portal and not
+the rule: its day labels still read 23, 24 and 25 September instead of
+the demo clock's 14, 15 and 16 October, and the computer Dîner frame's
+arrived rows run to 23h00 against a 20h30 clock. Both predate this pass and are
+visual only — the states and the decisions on them are current, which is
+what page 09 is read for.
 
 Accueil is the greeting card and then figures: « Aujourd'hui · jeudi 15
 octobre » over six tiles, « 30 derniers jours · du mercredi 16 septembre
@@ -1245,9 +1268,42 @@ VALUES ('usr_…', 'Prénom Nom', 'prenom@lyfe.ma', now()::text);
 The demo dataset ships one: `validation@lyfe.ma`, password `demo`, who
 holds no venue and no organisation on purpose.
 
-**A booking has four decisions on its row**, always visible: Accepter,
-Refuser, Absent and Check-in — the four the 5 October scope names, and
-no fifth. **Décaler** was the fifth until that date and is Lot 2's now:
+**A booking's row offers the decisions its state allows**, and never a
+decision that state would refuse. Four exist — Accepter, Refuser,
+Check-in, Absent, the four the 5 October scope names and no fifth — and
+each row draws the subset its own state admits:
+
+| The row's state | What it offers |
+|---|---|
+| `requested` — « À confirmer » | **Accepter** · **Refuser** |
+| `confirmed` — « Confirmée » | **Check-in**, and **Absent** once `at` is past the demo clock |
+| `arrived` · `completed` · `no_show` · `rejected` · `cancelled` | nothing |
+
+The same subset on both widths and in the detail sheet, because the row
+and the sheet read the same two facts off the booking — its `status` and
+whether `at` is behind `now` — in `reservationActions()` and
+`lot1DecisionActions()` respectively. A decision the state refuses is not greyed out, it
+is not drawn — a host should not be reading a button to find out it was
+never theirs to press, and an absence noted on a table that has not sat
+down yet is a data error the UI should not make reachable. The service
+side holds the same line: `409 state_conflict` for `no-show` on a
+`requested` booking and for `reject` on a `confirmed` one, and
+`tools/mock-api.mjs` — the one implementation of the contract that runs
+— answers both that way, so the double is not where a forbidden
+transition gets through. Check-in is deliberately outside the rule: the
+scanner reads a code at the door, and a guest whose request is still
+pending should be seatable. `tools/verify/decisions.mjs` §6
+is the guard — it reads every row's badge and its buttons at 1440 and at
+390, in the sheet, and on a service already run out, and it fails on a
+pair it did not expect.
+
+One consequence, named rather than buried: with Refuser off the confirmed
+row and out of its sheet, **no Lot 1 screen cancels a table already
+accepted**. That button was the only path and it wrote `rejected`, so it
+was the wrong verb as well as the wrong neighbour. §12 carries it as a
+gap, with the endpoint that answers it.
+
+**Décaler** was the fifth decision until 5 October and is Lot 2's now:
 « ne figurait pas dans le périmètre initial et n'est pas prioritaire
 fonctionnellement parlant ». A venue that cannot hold the hour refuses
 the request and the guest books again, which is what the app supports
@@ -1413,6 +1469,7 @@ they exist.
 | 3 | ~~No editor for seating areas~~ — **done in Phase 5.** Zones open and close from Ma fiche, and the write reaches the app immediately | — | — |
 | 4 | ~~No preview of the app listing~~ — **done in Phase 5.** Ma fiche renders the listing from the same values the form edits | — | — |
 | 5 | ~500 French literals inline, almost all one-off headings | A copy change means a code change | Medium, mechanical |
+| 8 | **No Lot 1 screen cancels a table already accepted.** Refuser on the confirmed row was the only path and it wrote `rejected` — the word the contract keeps for a refused *request* — so the state rule took it off the row and out of the sheet. `PUT …/cancel` is the right verb and is in the contract | A venue that has to give an accepted table back phones the guest and marks the absence once the hour passes | Small: a sheet action with a reason, on `cancel` rather than `reject` |
 | 6 | ~~`loading.tsx` only on venue routes~~ — **done in Phase 4.** Every route has loading, empty, error and denied states | — | — |
 
 Gap 1 is the one to do first: the venue side is now a complete worked
@@ -1493,7 +1550,7 @@ for a bug that was not there.
 
 ## 13. Rules to keep
 
-Nine things that will rot quietly if nobody defends them.
+Ten things that will rot quietly if nobody defends them.
 
 1. **`components/ui/` imports nothing from `lib/db`, `lib/data` or
    `lib/mock`.** If a component needs data, it takes a prop. This is
@@ -1560,6 +1617,14 @@ Nine things that will rot quietly if nobody defends them.
    going. `tools/verify/walk.mjs` fails any screen with a visible
    container that drew nothing, and `decisions.mjs` counts the Accueil's
    thirty bars.
+10. **A row offers what its state allows, and the rule lives in one
+   place.** `reservationActions()` and `lot1DecisionActions()` in
+   `src/lib/restaurant/screens.ts` are the only two functions that decide
+   which buttons a booking draws, and both take the booking's `status`
+   and a `now`. A new decision goes in the table in section 8, into
+   those two functions, and into `decisions.mjs` §6 — which asserts the
+   pairing rather than trusting it, so a button added to a row that
+   should not have one fails the tool rather than reaching a host.
 
 ---
 

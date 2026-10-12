@@ -669,6 +669,8 @@ paths:
       description: |
         `rejected`, **pas** `cancelled` : l'établissement a refusé, le client n'a pas renoncé. Les deux états restent distincts de bout en bout. Le motif est codé pour être exploitable en aval ; la note est libre.
 
+        Réservé aux demandes. Un refus ne s'applique qu'à une ligne `requested` ou `waitlisted` : sur une table déjà acceptée c'est un `409 state_conflict`, et le portail ne l'offre pas non plus — voir contrat §2.3.
+
         Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
       parameters:
       - name: reservationId
@@ -720,8 +722,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Erreur'
         '409':
-          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
-            ou un état déjà décidé).'
+          description: 'Conflit : `state_conflict` quand la ligne n''est pas une demande
+            (`requested` ou `waitlisted`), ou la ressource a changé depuis sa lecture.'
           content:
             application/json:
               schema:
@@ -798,6 +800,8 @@ paths:
       description: |
         L'autre moitié du résultat d'une réservation. Sans elle une table reste « confirmée » toute la nuit.
 
+        Réservé aux tables acceptées dont l'heure est passée. Sur une ligne `requested` c'est un `409 state_conflict` : personne n'a encore accordé cette table. Le portail n'offre le bouton qu'à partir de `at` — voir contrat §2.3.
+
         Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
       parameters:
       - name: reservationId
@@ -833,8 +837,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Erreur'
         '409':
-          description: 'Conflit : la ressource a changé depuis sa lecture (`expectedVersion`,
-            ou un état déjà décidé).'
+          description: 'Conflit : `state_conflict` quand la ligne n''est pas une table
+            acceptée (`confirmed`), ou la ressource a changé depuis sa lecture.'
           content:
             application/json:
               schema:
