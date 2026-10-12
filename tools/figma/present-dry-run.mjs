@@ -16,7 +16,11 @@
 
 import { readFileSync } from "node:fs";
 
-const SRC = "tools/figma/present-page09.js";
+// `SRC` also takes a minified bundle of the same file, with `BUNDLED=1`,
+// so the bytes that get pasted into `use_figma` can be put through these
+// assertions rather than the source they were built from.
+const SRC = process.env.SRC ?? "tools/figma/present-page09.js";
+const BUNDLED = !!process.env.BUNDLED;
 const CAPTURE = process.env.OUT ?? "docs/lot1-figma-frames.json";
 
 const src = readFileSync(SRC, "utf8");
@@ -250,7 +254,9 @@ page09.setSharedPluginData("lyfe.page09", "chunks", String(pieces));
 const body = src.replace(/^\/\/.*$/gm, "");
 const run = new Function(
   "figma",
-  `${body}\nreturn { ensureKit, presentPage09, GAP, SECTION_GAP, PAD, SCREENS };`,
+  BUNDLED
+    ? `${body}\nreturn P;`
+    : `${body}\nreturn { ensureKit, presentPage09, GAP, SECTION_GAP, PAD, SCREENS };`,
 );
 const api = run(figma);
 

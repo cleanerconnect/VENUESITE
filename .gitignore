@@ -19,3 +19,8 @@ next-env.d.ts
 # is large, so the repository keeps the report and the plates rather than
 # the intermediate numbers.
 scratch/
+
+# The `use_figma` bundle `tools/figma/accueil-pack.mjs` writes: the
+# builder and the figures, minified into one tool call. Both of its
+# sources are in the repository, so the bundle is a build output.
+build/

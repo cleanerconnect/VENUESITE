@@ -1,14 +1,14 @@
 {
-  "base": "http://localhost:3280",
+  "base": "http://localhost:3230",
   "venue": "",
   "account": "rachid@darzellij.ma",
   "depth": "outline",
   "lot": 1,
-  "capturedAt": "2026-10-08T19:30:07.124Z",
+  "capturedAt": "2026-10-15T19:30:06.897Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
-      "purpose": "Ce qui se passe aujourd'hui : chiffres du jour, file d'attente à traiter, bande des quatre prochaines heures.",
+      "purpose": "Les chiffres, pas le carnet : six du jour, six des trente derniers jours, et les réservations par jour.",
       "status": "built",
       "gap": null,
       "dependsOn": null,
@@ -21,15 +21,15 @@
         },
         {
           "level": "h2",
-          "text": "À traiter"
+          "text": "Aujourd'hui · jeudi 15 octobre"
         },
         {
           "level": "h2",
-          "text": "Prochaines arrivées"
+          "text": "30 derniers jours · du mercredi 16 septembre au jeudi 15 octobre"
         },
         {
           "level": "h2",
-          "text": "Arrivés"
+          "text": "Réservations par jour"
         },
         {
           "level": "h1",
@@ -37,27 +37,64 @@
         },
         {
           "level": "h2",
-          "text": "À traiter"
+          "text": "Aujourd'hui · jeudi 15 octobre"
         },
         {
           "level": "h2",
-          "text": "Prochaines arrivées"
+          "text": "30 derniers jours · du mercredi 16 septembre au jeudi 15 octobre"
         },
         {
           "level": "h2",
-          "text": "Arrivés"
+          "text": "Réservations par jour"
         }
       ],
-      "subtitle": "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées.",
-      "tiles": [],
+      "subtitle": "35 réservations aujourd'hui, trois en attente de réponse, 26 déjà arrivées.",
+      "tiles": [
+        {
+          "label": "Réservations",
+          "value": "35"
+        },
+        {
+          "label": "Couverts",
+          "value": "137"
+        },
+        {
+          "label": "À confirmer",
+          "value": "3"
+        },
+        {
+          "label": "Arrivés",
+          "value": "26"
+        },
+        {
+          "label": "Absents",
+          "value": "2"
+        },
+        {
+          "label": "Taux de remplissage · Dîner",
+          "value": "85 %"
+        },
+        {
+          "label": "Taux d'acceptation",
+          "value": "97 %"
+        },
+        {
+          "label": "Taux d'absence",
+          "value": "11 %"
+        },
+        {
+          "label": "Délai moyen de réponse",
+          "value": "1 h 38"
+        },
+        {
+          "label": "Part LYFE",
+          "value": "50 %"
+        }
+      ],
       "pills": [],
       "buttons": [
         "Ouvrir le carnet",
-        "Check-in",
-        "Accepter",
-        "Refuser",
-        "Absent",
-        "21 tables installéesAfficher"
+        "Check-in"
       ],
       "tables": []
     },
@@ -78,8 +115,8 @@
       "subtitle": "",
       "tiles": [],
       "pills": [
-        "26",
-        "1",
+        "28",
+        "3",
         "4",
         "21"
       ],
@@ -87,8 +124,8 @@
         "Imprimer",
         "Déjeuner",
         "Dîner",
-        "Tous26",
-        "À confirmer1",
+        "Tous28",
+        "À confirmer3",
         "Confirmées4",
         "Arrivés21",
         "Check-in",
@@ -128,7 +165,7 @@
           "text": "Aucune arrivée"
         }
       ],
-      "subtitle": "Dar Zellij · 5 arrivées encore attendues",
+      "subtitle": "Dar Zellij · 7 arrivées encore attendues",
       "tiles": [],
       "pills": [],
       "buttons": [

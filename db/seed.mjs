@@ -733,16 +733,19 @@ const DEMO_BOOK_UNTIL = process.env.LYFE_DEMO_BOOK_UNTIL ?? "2026-10-31";
 /**
  * How far behind the clock the book starts.
  *
- * The brief was « from today through 31 October », and a week of
- * yesterdays is how today comes to have one. Réservations has day
- * arrows: a reviewer presses the left one, and a demo whose yesterday
- * is blank reads as a broken screen rather than as a quiet Tuesday.
- * Those days are also the only place the settled states live — a party
- * either came or did not — and the demo clock moves a week every week,
- * so without this the freshly seeded book would lose its whole past
- * each Thursday.
+ * Sixty days, and the number is not a taste: Accueil's second row is
+ * « 30 derniers jours » with a delta against the thirty before, so
+ * sixty days of bookings is the smallest history those tiles can be
+ * computed from. Asked for seven, the screen showed twenty-two empty
+ * bars, a no-show rate drawn from a handful of sittings, and a delta of
+ * +817 % against a period that barely existed.
+ *
+ * It is also what makes the day arrows on Réservations lead somewhere,
+ * and the only place the settled states live — a party either came or
+ * did not. The demo clock moves a week every week, so without a past of
+ * its own the freshly seeded book would lose all of it each Thursday.
  */
-const DEMO_BOOK_FROM_DAYS_BACK = 7;
+const DEMO_BOOK_FROM_DAYS_BACK = 60;
 
 /**
  * A deterministic spread, in place of `Math.random`.
@@ -942,12 +945,20 @@ function fillCalendar({ venue, prefix, definitions, zones, liveService, liveServ
         if (!live && covers + size > target) break;
         covers += size;
 
+        // One request in twenty-three was refused, which is what makes
+        // « taux d'acceptation » a rate: every request accepted reads
+        // as a screen with a hard-coded 100 on it. A refusal held no
+        // table, so it is counted by the acceptance rate and by
+        // nothing else — `rejected` is outside every state the book,
+        // the covers and the fill rate read.
         const state = live
           ? "requested"
           : settled
-            ? salt % 8 === 3
-              ? "no_show"
-              : "arrived"
+            ? salt % 23 === 7
+              ? "rejected"
+              : salt % 8 === 3
+                ? "no_show"
+                : "arrived"
             : "confirmed";
 
         // A live service's requests go on slots still to come; every
@@ -958,6 +969,13 @@ function fillCalendar({ venue, prefix, definitions, zones, liveService, liveServ
 
         const id = `${prefix}_c${dayIndex < 0 ? `j${-dayIndex}` : dayIndex}_${String(window.id).replace(/^sd_/, "")}_${placed}`;
         const bookedAt = new Date(at.getTime() - (2 + (salt % 9)) * 86_400_000);
+        // When the venue answered. Minutes to a few hours after the
+        // request, which is what « délai moyen de réponse » measures —
+        // the decision used to be written a flat day later, and the
+        // tile read « 4 j » for a figure a host thinks of in minutes.
+        const answeredAt = new Date(
+          Math.min(at.getTime(), bookedAt.getTime() + (4 + (salt % 176)) * 60_000),
+        );
         insert("reservations", {
           id,
           venue_id: venue,
@@ -997,17 +1015,39 @@ function fillCalendar({ venue, prefix, definitions, zones, liveService, liveServ
           note: null,
           at: iso(bookedAt),
         });
-        if (state !== "requested") {
+        // A party that arrived was accepted first, and that acceptance
+        // is what the acceptance rate and the reply delay count. Without
+        // this row a settled day contributed nothing to either, so both
+        // were measured over the handful of days still ahead.
+        if (state === "arrived" || state === "no_show") {
           insert("reservation_status_history", {
-            id: `sh_${id}_2`,
+            id: `sh_${id}_a`,
             reservation_id: id,
             from_state: "requested",
-            to_state: state,
+            to_state: "confirmed",
             actor: "venue",
             actor_id: null,
             reason_code: null,
             note: null,
-            at: iso(state === "confirmed" ? new Date(at.getTime() - 86_400_000) : at),
+            at: iso(answeredAt),
+          });
+        }
+        if (state !== "requested") {
+          insert("reservation_status_history", {
+            id: `sh_${id}_2`,
+            reservation_id: id,
+            from_state: state === "arrived" || state === "no_show" ? "confirmed" : "requested",
+            to_state: state,
+            actor: "venue",
+            actor_id: null,
+            reason_code: state === "rejected" ? "complet" : null,
+            note: null,
+            // A confirmation or a refusal is an answer, and it is dated
+            // when the answer was given. An arrival or an absence is
+            // dated when it happened, which is the sitting itself.
+            at: iso(
+              state === "confirmed" || state === "rejected" ? answeredAt : at,
+            ),
           });
         }
 

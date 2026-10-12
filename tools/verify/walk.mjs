@@ -106,9 +106,40 @@ for (const venue of venues) {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
 
+    // A chart that drew nothing. `ResponsiveContainer` renders its box
+    // first and fills it once it has measured a width, so an empty box
+    // on a screen that asks for a chart is a chart that never mounted —
+    // which is how every chart in the portal came to be a blank 220px
+    // rectangle without a single screen failing a check. Only visible
+    // containers count: both lanes are in the DOM at every width and
+    // the hidden one is legitimately 0×0, so it has nothing to draw.
+    const blank = () =>
+      page.evaluate(
+        () =>
+          [...document.querySelectorAll(".recharts-responsive-container")].filter(
+            (c) => c.getBoundingClientRect().width > 0 && c.children.length === 0,
+          ).length,
+      );
+    let blankCharts = await blank();
+    if (blankCharts > 0) {
+      // Give the container its measuring tick before calling it empty.
+      await page
+        .waitForFunction(
+          () =>
+            [...document.querySelectorAll(".recharts-responsive-container")].every(
+              (c) => c.getBoundingClientRect().width === 0 || c.children.length > 0,
+            ),
+          undefined,
+          { timeout: 2500, polling: 200 },
+        )
+        .catch(() => {});
+      blankCharts = await blank();
+    }
+
     const issues = [];
     if (status !== 200) issues.push(`HTTP ${status}`);
     if (overflow > 2) issues.push(`overflow ${overflow}px`);
+    if (blankCharts) issues.push(`${blankCharts} graphique(s) vide(s)`);
     if (/Cette page n'a pas pu charger|Application error/i.test(bodyText)) {
       issues.push("error page");
     }

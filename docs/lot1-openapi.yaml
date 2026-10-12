@@ -2518,6 +2518,148 @@ components:
       - salutation
       - clause
       - subline
+    OverviewFigure:
+      type: object
+      description: |
+        Un chiffre, et la même mesure sur la période de même longueur
+        juste avant. `previous` plutôt qu'un pourcentage : un « +12 % »
+        calculé ici ne peut pas être réexprimé en « +3 » par l'écran, et
+        la tuile veut les deux. La division appartient à l'endroit où le
+        libellé est écrit.
+      required:
+      - value
+      - previous
+      properties:
+        value:
+          type: number
+        previous:
+          type: number
+    BookingSummary:
+      type: object
+      description: |
+        Les deux rangées de chiffres de l'Accueil du lot 1, qui est un
+        écran chiffré sans aucune liste.
+
+        Chaque chiffre est compté sur `reservations`, et les deux qui
+        mesurent la réponse plutôt que la réservation
+        (`acceptanceRate`, `replyMinutes`) sur
+        `reservation_status_history`. Rien n'est stocké : c'est ce qui
+        empêche le chiffre au-dessus du carnet de contredire le carnet.
+        Les définitions exactes sont dans `docs/LOT1_API_CONTRACT.md`
+        § 2.2 ; un backend peut les calculer autrement à condition de
+        rendre les mêmes définitions.
+
+        La fenêtre est en jours UTC, l'unité que le carnet utilise déjà.
+      required:
+      - today
+      - window
+      properties:
+        today:
+          type: object
+          required:
+          - date
+          - bookings
+          - covers
+          - pending
+          - arrived
+          - absent
+          - fillRate
+          - serviceLabel
+          properties:
+            date:
+              type: string
+              format: date
+            bookings:
+              $ref: '#/components/schemas/OverviewFigure'
+            covers:
+              $ref: '#/components/schemas/OverviewFigure'
+            pending:
+              $ref: '#/components/schemas/OverviewFigure'
+              description: En état `requested`. La tuile ouvre Réservations filtré.
+            arrived:
+              $ref: '#/components/schemas/OverviewFigure'
+            absent:
+              $ref: '#/components/schemas/OverviewFigure'
+            fillRate:
+              $ref: '#/components/schemas/OverviewFigure'
+              description: |
+                Pour cent. Les couverts qui tiennent une table dans la
+                fenêtre du service en cours sur sa capacité ; `previous`
+                est le même service la veille.
+            serviceLabel:
+              type: string
+              description: Le service que `fillRate` mesure.
+        window:
+          type: object
+          required:
+          - days
+          - from
+          - to
+          - bookings
+          - covers
+          - acceptanceRate
+          - noShowRate
+          - replyMinutes
+          - sources
+          - perDay
+          properties:
+            days:
+              type: integer
+              example: 30
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+            bookings:
+              $ref: '#/components/schemas/OverviewFigure'
+            covers:
+              $ref: '#/components/schemas/OverviewFigure'
+            acceptanceRate:
+              $ref: '#/components/schemas/OverviewFigure'
+              description: |
+                Pour cent des demandes répondues dans la fenêtre, datées
+                de la réponse et non du repas.
+            noShowRate:
+              $ref: '#/components/schemas/OverviewFigure'
+              description: Pour cent, sur les services passés seulement.
+            replyMinutes:
+              $ref: '#/components/schemas/OverviewFigure'
+              description: Minutes entre l'arrivée d'une demande et sa réponse.
+            sources:
+              type: array
+              description: La part par canal, dans l'ordre d'affichage.
+              items:
+                type: object
+                required:
+                - channel
+                - share
+                properties:
+                  channel:
+                    type: string
+                    enum:
+                    - lyfe
+                    - whatsapp
+                    - phone
+                  share:
+                    $ref: '#/components/schemas/OverviewFigure'
+            perDay:
+              type: array
+              description: |
+                Une ligne par jour de la fenêtre, du plus ancien au plus
+                récent, jours vides compris.
+              items:
+                type: object
+                required:
+                - day
+                - bookings
+                properties:
+                  day:
+                    type: string
+                    format: date
+                  bookings:
+                    type: integer
     RestaurantOverview:
       type: object
       properties:
@@ -2527,6 +2669,8 @@ components:
           $ref: '#/components/schemas/Greeting'
         currentService:
           $ref: '#/components/schemas/Service'
+        bookingSummary:
+          $ref: '#/components/schemas/BookingSummary'
         services:
           type: array
           items:

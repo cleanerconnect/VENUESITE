@@ -17,9 +17,17 @@ import { cn } from "@/lib/utils/cn";
 
 // Declared count is the widest case; narrower viewports step down. A
 // one-column grid is the phone lane's vertical card stack.
+//
+// Two is the exception, and it holds all the way down. A tile is a
+// label, a number and a delta — it fits in half a phone, and the Lot 1
+// Accueil asks for two columns there by name: six figures stacked one
+// per screenful is a column a thumb scrolls past without reading any of
+// them, while two-up puts the whole of « Aujourd'hui » in view at once.
+// Anything wider than two still steps down to one, because a tile at a
+// third of 390 px is a number with no room for its label.
 const COLUMNS: Record<1 | 2 | 3 | 4, string> = {
   1: "",
-  2: "md:grid-cols-2",
+  2: "grid-cols-2",
   3: "md:grid-cols-2 lg:grid-cols-3",
   4: "md:grid-cols-2 lg:grid-cols-4",
 };
@@ -42,7 +50,18 @@ export function KpiGridBlock({
   );
 
   return (
-    <div className={cn("grid grid-cols-1 gap-4", COLUMNS[block.columns ?? 4])}>
+    <div
+      className={cn(
+        "grid gap-4",
+        // `grid-cols-2` has to win over the default, and Tailwind orders
+        // by rule position and not by source order: both are a single
+        // class, so the one that appears later in the generated sheet
+        // would apply. The default is therefore left off when a column
+        // count sets its own base.
+        block.columns === 2 ? "" : "grid-cols-1",
+        COLUMNS[block.columns ?? 4],
+      )}
+    >
       {tiles.map((tile) => (
         <Tile key={tile.id} tile={tile} />
       ))}

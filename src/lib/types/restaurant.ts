@@ -613,6 +613,74 @@ export interface RestaurantPayout {
 
 // ── Overview ─────────────────────────────────────────────────
 
+/**
+ * One figure on the overview, beside the same figure over the period
+ * immediately before it.
+ *
+ * `previous` rather than a percentage: a delta of « +12 % » computed in
+ * the backend cannot be re-expressed as « +3 » by the front end, and the
+ * tile wants both — the number, and how far it moved. Division is the
+ * cheap half and it belongs where the label is written.
+ */
+export interface OverviewFigure {
+  value: number;
+  /** The same measure over the period of equal length just before. */
+  previous: number;
+}
+
+/**
+ * The figures the Lot 1 Accueil is made of.
+ *
+ * Every one of them is counted from `reservations` — and from
+ * `reservation_status_history` for the two that are about answering
+ * rather than about booking. Nothing here is stored, so nothing here
+ * can disagree with the book it summarises: the screen and the carnet
+ * read the same rows.
+ *
+ * `Planning V3` Prio 02 buys « Gestion des reservation uniquement », so
+ * the summary stops where the bookings do: no revenue, no rating, no
+ * ticket. A number a basique dashboard cannot account for is a number
+ * it should not print.
+ */
+export interface BookingSummary {
+  today: {
+    /** The day measured, as the venue counts it. */
+    date: string;
+    bookings: OverviewFigure;
+    covers: OverviewFigure;
+    pending: OverviewFigure;
+    arrived: OverviewFigure;
+    absent: OverviewFigure;
+    /**
+     * 0·100 — covers holding a table in the service in hand, over its
+     * capacity. The previous value is the same service yesterday, which
+     * is the only comparison that means anything: a lunch against a
+     * dinner compares two different rooms.
+     */
+    fillRate: OverviewFigure;
+    /** Which service `fillRate` measures, for the tile's hint. */
+    serviceLabel: string;
+  };
+  /** The trailing window. Thirty days, ending today. */
+  window: {
+    days: number;
+    from: string;
+    to: string;
+    bookings: OverviewFigure;
+    covers: OverviewFigure;
+    /** 0·100 of the requests the venue answered in the window. */
+    acceptanceRate: OverviewFigure;
+    /** 0·100 of the sittings that had happened and nobody came to. */
+    noShowRate: OverviewFigure;
+    /** Mean minutes between a request arriving and being answered. */
+    replyMinutes: OverviewFigure;
+    /** Share of bookings per channel, 0·100, in the order to display. */
+    sources: { channel: ReservationChannel; share: OverviewFigure }[];
+    /** One point per day, oldest first. The bar chart reads this. */
+    perDay: { day: string; bookings: number }[];
+  };
+}
+
 export interface RestaurantOverview {
   restaurant: RestaurantProfile;
   /** Greeting copy, varies by daypart and by how the service is going. */
@@ -674,6 +742,15 @@ export interface RestaurantOverview {
     href: string;
     ctaLabel: string;
   };
+  /**
+   * The counted overview: what Lot 1's Accueil draws.
+   *
+   * Present in every driver, because it is the contract's own shape —
+   * `GET /api/business/overview` carries it — and a field the backend
+   * fills but the snapshot does not would make the static mode a
+   * different product.
+   */
+  bookingSummary: BookingSummary;
   upcomingReservations: Reservation[];
   waitlist: Reservation[];
   activity: RestaurantActivityItem[];

@@ -104,7 +104,7 @@ Venue » is one of the three nouns and had no screen at all until now.
 | 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. Its line for non-partners now opens the flow above instead of offering an e-mail address. |
 | 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. |
 | 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Two blocks since 5 October: online booking on or off, and the services — days, hours, last booking taken, capacity, open or closed. The pacing rules, the advanced settings, the closed days and the choice of grid left the lot that day. |
-| 4 | Accueil | `/restaurant` | Gestion des réservations | Today's book, and the sentence above it. No tiles. |
+| 4 | Accueil | `/restaurant` | Gestion des réservations | Figures, and no list. Six for today — bookings, covers, to confirm, arrived, absent, the fill rate of the service in hand — eight for the last thirty days, each with its movement against the period before, and bookings per day in bars. Every one of them is counted off `reservations` when the screen is built. « À confirmer » opens the book filtered on the requests; the rows and the decisions are on Réservations. |
 | 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | Any day's book, walked a step at a time or picked from a calendar, scoped to one of that day's services — and the four decisions on the row, and only those four: accepter, refuser with a coded reason, check-in, no-show. |
 | 6 | Check-in | `/restaurant/check-in` | Gestion des réservations | Validate a booking at the door, by code or by name. |
 | 7 | Notifications | `/restaurant/notifications` | Gestion des réservations | One alert: a new booking needs a decision. |
@@ -814,11 +814,35 @@ and services. 160px between two frames, 320px between two sections.
 
 Three of the eight screens — Accueil, Réservations, Check-in — are not
 in the capture, and the file's prototype lives on the buttons inside
-them: 49 reactions, and a recreated button is a dead link. So those
-frames are *adopted*: moved into the layout the generator computes,
-never redrawn. The generator reports how many reactions it found and
-how many point at a node that no longer exists; the second number is
-zero, and a run that made it anything else would be a bug.
+them: a recreated button is a dead link. So those frames are *adopted*:
+moved into the layout the generator computes, never redrawn. The
+generator reports how many reactions it found and how many point at a
+node that no longer exists; the second number is zero, and a run that
+made it anything else would be a bug.
+
+The Accueil is the one adopted screen whose *content* is generated all
+the same, because it is now fourteen numbers and thirty bars and nobody
+should be transcribing those by eye. `tools/figma/accueil-figures.mjs`
+reads them out of a running portal — labels, values, movements, the
+lucide icons as Figma vector paths, and the chart geometry recharts
+actually laid out — into `docs/lot1-accueil-figures.json`;
+`tools/figma/accueil-frames.js` replaces one child of each of the four
+Accueil frames with them, the content column, and leaves the frame, the
+chrome instances and the greeting card's buttons where they are.
+`accueil-dry-run.mjs` proves the bookkeeping first and `accueil-pack.mjs`
+builds the one `use_figma` call.
+
+Two constraints that file is built around, both learned the hard way.
+A prototype link cannot be *written* from a plugin here: the sandbox
+accepts `BACK`, `CLOSE` and `URL` reactions and refuses every `NODE`
+one — even a node's own reactions read back and set again, unchanged. A
+link is therefore only ever inherited, by cloning a node that already
+has it, which is why the « À confirmer » tile sits inside a copy of the
+greeting card's own button and the computer frames' Check-in sits inside
+a copy of the sidebar's entry. And a tile's height depends on its width,
+so the rows are measured after the column has been laid out, not while
+it is being built: measured too early, every tile is the height of a
+three-line label.
 
 `tools/figma/present-dry-run.mjs` runs the whole thing against a stub
 sandbox in node before it costs a tool call: every manifest reference
@@ -1024,8 +1048,11 @@ highlighted Accueil, which is the one state the component could draw.
 
 **What no frame on `09` shows.** A sweep of every text node on the page
 returns nothing for any of: liste d'attente, walk-in, acompte, palier,
-étiquette, segment, avis, boost, any KPI label, any amount in MAD, an
-ISO date, or a time off the half-hour grid. That is the same list the
+étiquette, segment, avis, boost, any amount in MAD, an ISO date, or a
+time off the half-hour grid. Figures are no longer on that list — the
+Accueil is fourteen of them since the sprint's own scope asked for them
+— but every one is counted off `reservations`, and none of them names
+anything outside the lot. That is the same list the
 builders and the seed gate, checked against the glyphs on the canvas
 rather than against the code that drew them.
 
@@ -1034,14 +1061,19 @@ day and the service with its hours in the header, the Journée block, and
 the book — four filter chips and fifteen rows. The row the service is
 waiting on, Nabil Cherkaoui, is drawn in its **hover state**, so
 **accepter, refuser and signaler une absence** are readable without
-opening anything; a confirmed row shows check-in and absent. Accueil is
-the greeting and the same fifteen bookings, with no tile and no action —
-the decisions are taken on Réservations, which is the screen that shows
-the outcome.
+opening anything; a confirmed row shows check-in and absent.
 
-One thing is deliberately left as designed: a row's note ("Anniversaire,
-dessert avec bougie") is drawn on Accueil but not in the Réservations
-book, which is how `08` has always drawn both.
+Accueil is the greeting card and then figures: « Aujourd'hui · jeudi 15
+octobre » over six tiles, « 30 derniers jours · du mercredi 16 septembre
+au jeudi 15 octobre » over eight, and « Réservations par jour » with its
+thirty bars. It carried the same fifteen bookings until the figures
+replaced them, under three headings — À traiter, Prochaines arrivées,
+Arrivés — which were the book a second time: every row they drew is on
+Réservations with the same decisions on it. The one reaction that went
+with them is « Accepter » on the first row, and that is the point of the
+change rather than a casualty of it: there is nothing to accept on a
+screen of figures, and the overlay it opened is still reached from
+Réservations, where the rows are.
 
 Page and component ids, the variable collections and the verification
 record live in `docs/phase6-figma-state.json`.
@@ -1461,7 +1493,7 @@ for a bug that was not there.
 
 ## 13. Rules to keep
 
-Eight things that will rot quietly if nobody defends them.
+Nine things that will rot quietly if nobody defends them.
 
 1. **`components/ui/` imports nothing from `lib/db`, `lib/data` or
    `lib/mock`.** If a component needs data, it takes a prop. This is
@@ -1515,6 +1547,19 @@ Eight things that will rot quietly if nobody defends them.
    inventory and adds dress code and age policy. There is no
    per-configuration screen list anywhere in the codebase, and there
    should never be one.
+9. **`react-is` stays pinned to 19 under `recharts`, and a chart has to
+   be seen to be believed.** Next's App Router renders with its own
+   bundled React 19, whose elements carry
+   `Symbol(react.transitional.element)`; `recharts@2` depends on
+   `react-is@18`, which only knows `Symbol(react.element)`. Its
+   `ResponsiveContainer` clones its child to hand it the measured width,
+   recognises nothing, and passes neither width nor height — so the
+   chart renders as an empty 220px box, silently, in every chart in the
+   portal. The `overrides` entry in `package.json` is what fixes it, and
+   there is nothing in a build or a type-check that would notice it
+   going. `tools/verify/walk.mjs` fails any screen with a visible
+   container that drew nothing, and `decisions.mjs` counts the Accueil's
+   thirty bars.
 
 ---
 
