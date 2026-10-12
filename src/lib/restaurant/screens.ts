@@ -622,14 +622,7 @@ export function buildDashboardScreen(
           .filter((r) => r.state !== "arrived" && Date.parse(r.at) >= now)
           .slice(0, 6)
     ).map((r) =>
-      reservationRow(
-        r,
-        data.zones,
-        configuration,
-        undefined,
-        lot,
-        false,
-      ),
+      reservationRow(r, data.zones, configuration, undefined, lot, false, now),
     ),
     empty: lot1
       ? {
@@ -644,104 +637,15 @@ export function buildDashboardScreen(
         },
   };
 
-  // ── Accueil, under host density ──────────────────────────────
+  // Accueil used to carry three groups of these rows — À traiter,
+  // Prochaines arrivées, Arrivés — and their builders outlived them:
+  // they were still assembled on every render of a screen that stopped
+  // returning them when it became figures. Deleted rather than left to
+  // drift out of step with the rule the rows follow.
   //
-  // One list of "Réservations du jour" asked the host to do the sorting:
-  // the request needing a decision sat between two confirmed bookings
-  // and looked like them. Three groups, in the order the work happens.
-  //
-  //   1  À traiter          — a request is the only thing that goes
-  //                           stale. Accepter and refuser are on the row
-  //                           and never behind a hover or a kebab.
-  //   2  Prochaines arrivées — confirmed, not yet in the room, by time.
-  //                           Check-in and absent on the row.
-  //   3  Arrivés            — done. A count and an expand, because a
-  //                           seated party needs no decision and the
-  //                           space belongs to the two groups above.
-  const dayRows = data.upcomingReservations;
-  const hostRow = (r: Reservation) =>
-    reservationRow(
-      r,
-      data.zones,
-      configuration,
-      undefined,
-      lot,
-      true,
-    );
-  const byTime = (a: Reservation, b: Reservation) =>
-    Date.parse(a.at) - Date.parse(b.at);
-
-  const toHandle = dayRows.filter((r) => r.state === "requested").sort(byTime);
-  const expected = dayRows.filter((r) => r.state === "confirmed").sort(byTime);
-  const seated = dayRows.filter((r) => r.state === "arrived").sort(byTime);
-
-  /**
-   * How many rows a group draws before it defers to the book.
-   *
-   * There was no ceiling, and on a real service that is a screen that
-   * takes six seconds. Measured on a seeded day of 2 005 bookings:
-   * Accueil rendered 3 220 rows and took 6,4 s to become interactive at
-   * 1440 and 5,9 s at 390 — the busiest evening of the year being
-   * exactly when a host cannot wait. Réservations was unaffected,
-   * because it scopes to the service in hand.
-   *
-   * Twelve, because that is more than a host reads at a glance and the
-   * group says how many there are in total, so nothing is hidden — the
-   * rest is one tap away in the book, which is the screen for working
-   * through a long list.
-   */
-  const GROUP_CEILING = 12;
-  const shown = (rows: Reservation[]) => rows.slice(0, GROUP_CEILING);
-  /** « … · les 12 premières sur 187 » when, and only when, it is cut. */
-  const reach = (rows: Reservation[], sentence: string) =>
-    rows.length > GROUP_CEILING
-      ? `${sentence} Les ${GROUP_CEILING} premières sur ${rows.length} — le reste est dans le carnet.`
-      : sentence;
-
-  const toHandleBlock: Block = {
-    id: "to-handle",
-    type: "entity-list",
-    heading: "À traiter",
-    subheading:
-      toHandle.length > 0
-        ? reach(toHandle, "Ces clients attendent une réponse.")
-        : "Rien en attente de décision.",
-    rows: shown(toHandle).map(hostRow),
-    empty: {
-      title: "Rien à traiter",
-      body: "Aucune demande n'attend de réponse.",
-      icon: "check",
-    },
-  };
-
-  const expectedBlock: Block = {
-    id: "expected",
-    type: "entity-list",
-    heading: "Prochaines arrivées",
-    subheading: reach(expected, "Confirmées, pas encore en salle."),
-    rows: shown(expected).map(hostRow),
-    empty: {
-      title: "Personne d'attendu",
-      body: "Aucune table confirmée à venir aujourd'hui.",
-      icon: "calendar",
-    },
-  };
-
-  const seatedBlock: Block = {
-    id: "seated",
-    type: "entity-list",
-    heading: "Arrivés",
-    // Collapsed by default: the work is done, and the count is the only
-    // thing a host needs from it mid-service. The count is the whole
-    // group even when the rows below are the ceiling.
-    collapsible: { summary: `${seated.length} ${seated.length === 1 ? "table installée" : "tables installées"}` },
-    rows: shown(seated).map(hostRow),
-    empty: {
-      title: "Personne encore arrivé",
-      body: "Les clients installés apparaîtront ici.",
-      icon: "user-check",
-    },
-  };
+  // What Accueil shows now is in `buildDashboardScreen`'s Lot 1 branch,
+  // and the rows are on Réservations, which is the screen that offers
+  // the decisions.
 
   const feedBlock: Block = {
     id: "activity",
@@ -1474,6 +1378,7 @@ export function buildReservationsScreen(
         depositByReservation.get(r.id),
         lot,
         true,
+        now,
       ),
     ),
     empty: {
@@ -2037,10 +1942,20 @@ function reservationRow(
   deposit?: Deposit,
   lot: Lot = 2,
   // Réservations is where a booking is decided, so that is the only
-  // place the decisions are drawn on the row. Accueil lists the same
-  // bookings beside an attention queue that already carries them, and
-  // two copies of Accepter on one screen is one too many.
+  // place the decisions are drawn on the row. Accueil is figures and
+  // carries no rows at all under Lot 1; Lot 2's lists it beside an
+  // attention queue that already carries them, and two copies of
+  // Accepter on one screen is one too many.
   inlineActions = false,
+  /**
+   * One instant for both runs of the builder — see `ScreenContext.now`.
+   *
+   * It decides whether a confirmed booking is due, which decides
+   * whether the row offers « Absent ». Read from the clock here instead
+   * and the server and the client would disagree about a table whose
+   * hour passed between the two renders.
+   */
+  now: number = Date.now(),
 ): EntityRow {
   const vocabulary = configFor(configuration);
   const lot1 = lot === 1;
@@ -2152,7 +2067,7 @@ function reservationRow(
     ]
       .filter(Boolean)
       .join(" "),
-    detail: reservationDetail(reservation, zones, configuration, lot),
+    detail: reservationDetail(reservation, zones, configuration, lot, now),
     // Réservations is where a booking is decided, and under Lot 1 that
     // is the only place that offers a decision: Accueil's list reads the
     // day, and a kebab there would be a second, quieter way to do the
@@ -2162,7 +2077,7 @@ function reservationRow(
     // and one more small target in a row built for large ones.
     menu: lot1 ? undefined : reservationMenu(reservation, lot),
     actions:
-      lot1 && inlineActions ? reservationActions(reservation, lot) : undefined,
+      lot1 && inlineActions ? reservationActions(reservation, lot, now) : undefined,
   };
 }
 
@@ -2190,45 +2105,57 @@ export function slotOf(at: string, slotMinutes: number): string {
 }
 
 /**
- * The decisions Lot 1 buys on a booking, on the row itself.
+ * The decisions a booking's state allows, on the row itself.
  *
- * Accepter, refuser, décaler and signaler une absence are the whole of
- * what a Lot 1 partner does to a reservation, and all of them sat behind
- * a kebab that had to be opened first — one tap too many at a host
- * stand, and nothing at all on a printed frame. They are the same
- * commands the kebab dispatches, drawn inline and filtered by the state
- * the row is in.
+ * One rule, and the row offers nothing outside it:
  *
- * Two filters, both settled by the design audit rather than by taste.
+ * | État | Ce que la ligne offre |
+ * |---|---|
+ * | À confirmer | Accepter · Refuser |
+ * | Confirmée | Check-in, et Absent une fois l'heure passée |
+ * | Arrivé · Absent | rien |
  *
- * **Refuser only answers a request.** It was on the confirmed row too,
- * on the reasoning that a venue which has to cancel an accepted booking
- * needs a way to say so. It does — but not there. Refuser beside
- * Check-in offers a host mid-service the two opposite ends of the same
- * table, a keystroke apart, and the one that cancels a confirmed guest
- * is the one that cannot be undone. Cancelling an accepted booking is a
- * deliberate act, so it is in the sheet, where the guest's name and
- * phone number are on screen while you do it.
+ * A button a state cannot answer is worse than a missing one. Refuser
+ * on a table already accepted is the one act on this screen that cannot
+ * be undone, a keystroke from Check-in. Absent on a request is a party
+ * that was never told it had a table. Absent on a booking two hours out
+ * is a mis-tap that writes an absence into the no-show rate of a guest
+ * who is on their way. And a row that has arrived or been marked absent
+ * is a record of what happened: a record takes no decisions.
+ *
+ * The clock is `now` — the instant the screen was built, which is the
+ * demo clock when one is set — not `Date.now()` read here. The server
+ * and the client build this row twice and a booking that came due
+ * between the two runs would otherwise grow a button on hydration.
+ *
+ * This reverses one earlier call, deliberately. Absent was drawn on
+ * every open row for a while, on the reasoning that a host who can see
+ * the party is not coming reaches for it before the clock does. What
+ * that misses is the cost of the other direction: the host who reaches
+ * for Absent on the wrong line, and a guest who arrives to a booking
+ * the book has already given away.
  *
  * **Two decisions on a phone, not four.** At 390 a 358px line holds two
  * 44px targets; four wrap into two rows and take the line from 44px to
- * 200. `onPhone: "sheet"` marks what steps off the line — Absent on a
- * request, which is the one row where the guest has not been told the
- * table is theirs, and, in Lot 2, Décaler on every row. What stays is
- * the pair the state actually poses: Accepter or Refuser on a request,
- * Check-in or Absent on a confirmed table. Under Lot 1 that pair is the
- * whole row: Décaler left the sprint on 5 October.
+ * 200. The gate above leaves two on every Lot 1 row, so nothing has to
+ * step off the line any more; `onPhone: "sheet"` is left on Lot 2's
+ * Décaler, which is the only thing that still would.
  */
 function reservationActions(
   reservation: Reservation,
   lot: Lot = 2,
+  now: number = Date.now(),
 ): CtaAction[] | undefined {
-  // Absent used to wait for the table to be due, on the reasoning that
-  // offering it early is a mis-tap waiting to happen. In a real service
-  // it is the other way round: a host who can see the party is not
-  // coming reaches for it before the clock does, and a button that
-  // appears halfway through the evening is a button nobody trusts. It is
-  // drawn on every open row now, like the other two.
+  /**
+   * Has the table's hour arrived?
+   *
+   * The booking's own time, not the end of its sitting: a party that is
+   * late is a party a host is already deciding about, and waiting for
+   * the service to close would put the button out of reach of the
+   * decision it is for.
+   */
+  const due = Date.parse(reservation.at) <= now;
+
   const absent: CtaAction = {
     action: {
       kind: "command",
@@ -2286,6 +2213,9 @@ function reservationActions(
 
   const lot1 = lot === 1;
 
+  // A request: the two answers to it, and nothing else. « Absent » is
+  // not yet a thing that can have happened to a party nobody has told
+  // it has a table.
   if (reservation.state === "requested" || reservation.state === "waitlisted") {
     return [
       {
@@ -2300,15 +2230,13 @@ function reservationActions(
       },
       refuse,
       ...(lot1 ? [] : [reschedule]),
-      // A request is the one row where the guest has not been told the
-      // table is theirs, so « absent » is not yet a thing that can have
-      // happened. It stays reachable — in the sheet on a phone.
-      { ...absent, onPhone: "sheet" },
     ];
   }
   // Already accepted, so Accepter is Check-in — the next thing that
-  // happens to this table. Refuser is *not* here: see the note above
-  // the function. Cancelling a confirmed booking lives in the sheet.
+  // happens to this table. Refuser is not here, at any width or in the
+  // sheet: cancelling a confirmed guest writes `rejected`, which the
+  // contract keeps for a refused *request* (§ 2.3), and it is not the
+  // neighbour of Check-in.
   if (reservation.state === "confirmed") {
     return [
       {
@@ -2321,13 +2249,85 @@ function reservationActions(
         },
         variant: "primary",
       },
-      absent,
+      ...(due ? [absent] : []),
       ...(lot1 ? [] : [reschedule]),
     ];
   }
   // Arrived, completed, refused, cancelled, absent: the time on the row
   // is a record of what happened, and a record takes no decisions.
   return undefined;
+}
+
+/**
+ * The same decisions, worded for the sheet.
+ *
+ * `reservationActions` draws the line, where the labels are as short as
+ * a 44px target allows; this draws the sheet, where there is room for
+ * the verb — « Marquer comme arrivé » rather than « Check-in ». The
+ * state gate is the one above, and the commands are the same commands,
+ * so a host cannot find in one surface a decision the other refuses.
+ */
+function lot1DecisionActions(reservation: Reservation, now: number): CtaAction[] {
+  const allow = ["owner", "admin"];
+  if (reservation.state === "requested" || reservation.state === "waitlisted") {
+    return [
+      {
+        action: {
+          kind: "command",
+          label: "Accepter",
+          command: "reservation.confirm",
+          payload: { id: reservation.id },
+          icon: "check",
+        },
+        variant: "primary",
+        allow,
+      },
+      {
+        action: {
+          kind: "command",
+          label: "Refuser",
+          command: "reservation.reject",
+          payload: { id: reservation.id, name: reservation.guestName },
+          icon: "ban",
+        },
+        variant: "ghost",
+        allow,
+      },
+    ];
+  }
+  if (reservation.state === "confirmed") {
+    return [
+      {
+        action: {
+          kind: "command",
+          label: "Marquer comme arrivé",
+          command: "reservation.arrive",
+          payload: { id: reservation.id },
+          icon: "user-check",
+        },
+        variant: "primary",
+        allow,
+      },
+      ...(Date.parse(reservation.at) <= now
+        ? [
+            {
+              action: {
+                kind: "command" as const,
+                label: "Absent",
+                command: "reservation.noShow",
+                payload: { id: reservation.id },
+                icon: "user-x" as const,
+              },
+              variant: "ghost" as const,
+              allow,
+            },
+          ]
+        : []),
+    ];
+  }
+  // Arrived, absent, refused, cancelled: a record, and a record takes
+  // no decisions here either.
+  return [];
 }
 
 function reservationMenu(reservation: Reservation, lot: Lot = 2): EntityRow["menu"] {
@@ -2417,6 +2417,8 @@ function reservationDetail(
   zones: Zone[],
   configuration: VenueConfiguration = "restaurant",
   lot: Lot = 2,
+  /** One instant for both runs — see `reservationActions`. */
+  now: number = Date.now(),
 ): DetailSpec {
   const risk = Math.round((reservation.noShowRisk ?? 0) * 100);
 
@@ -2519,87 +2521,22 @@ function reservationDetail(
           },
         ]
       : undefined,
-    // The sheet is where a decision that the line does not offer lives,
-    // and under Lot 1 there is one of those.
+    // The sheet offers what the line offers, and the state decides both.
     //
-    // **Refuser** on a booking already accepted, because the line no
-    // longer offers it at any width. Cancelling a confirmed guest is
-    // not the neighbour of Check-in; it is a deliberate act, and here
-    // the guest's name and phone number are on screen while you take
-    // it.
+    // It used to carry two decisions the line did not: Refuser on a
+    // booking already accepted, and Absent on a request. Both are gone,
+    // for the reasons in `reservationActions` — a sheet that answers a
+    // state the row cannot is the same wrong button, one tap further
+    // in, and the sheet is where a host has the guest's name and phone
+    // number in front of them, which makes a mis-tap *more* convincing
+    // rather than less.
     //
-    // Décaler used to be the second, because the line drops it on a
-    // phone. It is Lot 2's since 5 October — see `reservationActions` —
-    // so the sheet no longer offers it either: one scope, three
-    // surfaces.
-    //
-    // It is the same command the line dispatches, so the verb is the
-    // same word in all three places — line, sheet, dialog.
+    // What the sheet still adds is the wording: « Marquer comme
+    // arrivé » rather than « Check-in », because here there is room for
+    // the verb. Same command, same state gate, three surfaces.
     actions:
       lot === 1
-        ? [
-            ...(reservation.state === "requested" ||
-            reservation.state === "waitlisted"
-              ? [
-                  {
-                    action: {
-                      kind: "command" as const,
-                      label: "Accepter",
-                      command: "reservation.confirm",
-                      payload: { id: reservation.id },
-                      icon: "check" as const,
-                    },
-                    variant: "primary" as const,
-                    allow: ["owner", "admin"],
-                  },
-                ]
-              : reservation.state === "confirmed"
-                ? [
-                    {
-                      action: {
-                        kind: "command" as const,
-                        label: "Marquer comme arrivé",
-                        command: "reservation.arrive",
-                        payload: { id: reservation.id },
-                        icon: "user-check" as const,
-                      },
-                      variant: "primary" as const,
-                      allow: ["owner", "admin"],
-                    },
-                  ]
-                : []),
-            ...(reservation.state === "requested" ||
-            reservation.state === "waitlisted" ||
-            reservation.state === "confirmed"
-              ? [
-                  {
-                    action: {
-                      kind: "command" as const,
-                      label: "Refuser",
-                      command: "reservation.reject",
-                      payload: {
-                        id: reservation.id,
-                        name: reservation.guestName,
-                      },
-                      icon: "ban" as const,
-                    },
-                    variant: "ghost" as const,
-                    allow: ["owner", "admin"],
-                  },
-                  {
-                    action: {
-                      kind: "command" as const,
-                      label: "Absent",
-                      command: "reservation.noShow",
-                      payload: { id: reservation.id },
-                      icon: "user-x" as const,
-                    },
-                    variant: "ghost" as const,
-                    allow: ["owner", "admin"],
-                  },
-                ]
-              : []),
-          ]
+        ? lot1DecisionActions(reservation, now)
         : [
             {
               action: {

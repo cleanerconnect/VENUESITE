@@ -478,14 +478,55 @@ date, y compris celle du jour. `DayBook` est volontairement plus petit :
 }
 ```
 
-**Les quatre décisions de la ligne** (accepter, refuser avec motif,
-check-in, absent) sont la raison d'être de l'écran, et elles sont
-exactement les quatre que le retour du 5 octobre nomme : « en attente
+**Les quatre décisions du carnet** (accepter, refuser avec motif,
+check-in, absent) sont la raison d'être de l'écran — quatre en tout,
+dont chaque ligne n'offre que celles que son état permet, voir plus bas
+— et elles sont exactement les quatre que le retour du 5 octobre nomme : « en attente
 de confirmation, prochaines arrivées et les arrivées », puis « marquer
 la présence via check-in ou signaler un No-show ». Une cinquième —
 Décaler — a quitté le lot ce jour-là ; la ligne et sa feuille ne
 l'offrent plus à aucune largeur. Leur état côté portail est décrit en
 §5.2.
+
+**Une ligne n'offre que ce que son état permet**, et c'est la même règle
+sur les deux largeurs et dans la feuille de détail :
+
+| État de la ligne | Ce qu'elle offre |
+|---|---|
+| `requested` — « À confirmer » | **Accepter** · **Refuser** |
+| `confirmed` — « Confirmée » | **Check-in**, et **Absent** seulement une fois `at` passée |
+| `arrived` · `completed` · `no_show` · `rejected` · `cancelled` | rien |
+
+Un bouton qu'un état ne peut pas honorer coûte plus cher qu'un bouton
+manquant. `reject` sur une table déjà acceptée est le seul geste
+irréversible de l'écran et il était à une touche de Check-in ; `no_show`
+sur une demande vise une table que personne n'a encore accordée ;
+`no_show` sur une réservation de dans deux heures écrit une absence au
+compte d'un client qui est en route. Le portail ne les propose donc pas
+— et **le service doit refuser la transition quand même**, parce qu'une
+interface n'est pas un contrôle d'intégrité : `POST …/no-show` sur une
+ligne `requested` et `PUT …/reject` sur une ligne `confirmed` sont des
+`409` de code `state_conflict`, au même titre que les versions périmées
+de §1. `tools/mock-api.mjs` répond ainsi — c'est la seule implémentation
+de ce document qui tourne, et le double ne doit pas être l'endroit où
+une transition interdite passe. Le check-in n'en fait pas partie : le
+scanner lit un code à la porte, et un client dont la demande est encore
+pendante doit pouvoir être installé.
+
+Le carnet ne liste aucune absence : noter une absence sort la
+réservation de la liste de travail, et le carnet *est* cette liste. Le
+compte d'absences du service vient d'une requête à part — voir
+`today.absent` en §2.2.
+
+**Une conséquence à nommer** : plus aucun écran du Lot 1 n'annule une
+table déjà acceptée. Le « Refuser » de la ligne confirmée était le seul
+chemin, et il écrivait `rejected` — le mot que ce document réserve à une
+*demande* refusée, ce qui faussait le motif autant que le compte. Le
+verbe juste est `PUT …/cancel`, il est au contrat (§3), et il attend
+l'écran qui l'appellera : une annulation d'établissement se prend avec
+le nom et le téléphone du client sous les yeux et un motif, pas au
+voisinage de Check-in. En attendant, un hôte qui doit libérer une table
+acceptée appelle le client et la note absente une fois l'heure passée.
 
 *Tables lues* : `reservations`, `customers`, `services`,
 `service_definitions`, `venue_settings`.

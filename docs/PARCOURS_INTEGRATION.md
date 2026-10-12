@@ -275,12 +275,20 @@ client n'a pas renoncé. Les deux états restent distincts de bout en
 bout, et le motif codé est ce qui les rend exploitables.
 
 **Une décision doit être un compare-and-set sur l'état lu.** Deux hôtes
-au même pupitre, l'un tapant Accepter et l'autre Absent : sans cela le
+au même pupitre, l'un tapant Accepter et l'autre Refuser : sans cela le
 carnet garde la dernière écriture arrivée, l'historique enregistre deux
 départs du même état, et le client reçoit deux messages contradictoires.
 C'est précisément le défaut que cet audit a corrigé côté portail
 (`D.1`) ; répondez `409` au perdant et le portail dit « a changé
 entre-temps. Rechargez la page. »
+
+**Et une ligne n'offre que ce que son état permet** — une demande
+propose Accepter et Refuser, une table acceptée Check-in puis Absent
+une fois son heure passée, une ligne arrivée rien. Le portail ne dessine
+donc jamais `no-show` sur une demande ni `reject` sur une table
+acceptée ; répondez-y quand même `409 state_conflict`, parce qu'une
+interface n'est pas un contrôle d'intégrité. Le tableau complet est au
+contrat, §2.3.
 
 **Le check-in a une règle à part** : un code déjà utilisé répond `200`
 avec `{ "ok": false, "error": "already_used" }`, **pas** un `409`. Un
@@ -296,12 +304,14 @@ le fabrique jamais.**
 LYFE_LOT=1 BASE=http://localhost:3210 node tools/verify/decisions.mjs
 ```
 
-Attendu : `Le carnet tient son périmètre · lot 1`. Une trentaine de
-contrôles, dont : les quatre décisions sur chaque ligne ouverte et
-aucune cinquième, Refuser qui n'apparaît que sur une demande, le
-téléphone sur la ligne, le tiroir portant le client — et la moitié de
-l'outil qui vérifie des **absences**, parce qu'un périmètre qui se
-réduit se vérifie comme un périmètre qui s'étend.
+Attendu : `Le carnet tient son périmètre · lot 1`. Une quarantaine de
+contrôles, dont : chaque ligne du carnet n'offrant que ce que son état
+permet, aux deux largeurs et dans la feuille, et aucune cinquième
+décision ; Refuser qui ne répond qu'à une demande ; Absent qui attend
+l'heure de la table ; le téléphone sur la ligne, le tiroir portant le
+client — et la moitié de l'outil qui vérifie des **absences**, parce
+qu'un périmètre qui se réduit se vérifie comme un périmètre qui
+s'étend.
 
 ### Palier 5 — L'établissement tient sa fiche · 5,25 j-h
 

@@ -2,7 +2,7 @@
 //
 //   BASE=http://localhost:3210 node tools/verify/decisions.mjs
 //
-// One tool for five claims only a browser can settle:
+// One tool for six claims only a browser can settle:
 //
 //   1  a venue created by /inscription is pending, its dashboard works,
 //      and it says so — and /admin/validations is LYFE's alone;
@@ -19,17 +19,26 @@
 //   5  Accueil is figures and no list — two titled rows of tiles, a bar
 //      chart, two columns of tiles on a phone, and an « À confirmer »
 //      tile that opens the requests it counts rather than merely the
-//      screen holding them.
+//      screen holding them;
+//   6  a row offers only the decisions its state allows, on the line at
+//      both widths and in the sheet: Accepter and Refuser on a request,
+//      Check-in on a confirmed table and Absent on it only once its
+//      hour has passed, and nothing at all on a row that has arrived or
+//      been marked absent.
 //
 // Three, five and most of two used to assert the opposite: they are the
 // regression test for a scope that shrank, which is the kind that goes
-// quietly missing otherwise.
+// quietly missing otherwise. Six is the one claim here that a browser
+// is strictly necessary for: the rule is three states crossed with a
+// clock across three surfaces, and the only honest way to read it is
+// off the buttons a host can actually press.
 //
 // Needs the portal on BASE with a seeded database behind it. It writes:
 // it signs a partner up and it decides a booking.
 
 import { chromiumOrExplain } from "./browser.mjs";
 import {
+  DEMO_CLOCK,
   LOT,
   LOT_LABEL,
   OWNER_EMAIL,
@@ -329,17 +338,17 @@ if (hasRow) {
   // Exactly as often, not at least: Refuser answers a request and
   // nothing else. It was on the confirmed line too, beside Check-in,
   // which put the two opposite ends of the same table a keystroke
-  // apart. Cancelling an accepted booking is in the sheet now.
+  // apart — and then in that row's sheet, which is the same wrong
+  // button one tap further in. It is in neither place now.
   check(
     "Refuser exactement autant de fois qu'Accepter",
     refuser === accepter,
     `${refuser} refuser · ${accepter} accepter`,
   );
-  check(
-    "Absent sur chaque ligne ouverte, sans attendre l'heure",
-    absent >= accepter,
-    `${absent}`,
-  );
+  // Absent is not one of them. A request is the one row where nobody
+  // has told the party it has a table, so « absent » is not yet a thing
+  // that can have happened — § 6 holds the whole rule.
+  check("et Absent sur aucune demande", absent === 0, `${absent} absent`);
   // Décaler left the sprint on 5 October — « ne figurait pas dans le
   // périmètre initial et n'est pas prioritaire fonctionnellement
   // parlant ». A venue that cannot take the hour refuses it.
@@ -368,10 +377,14 @@ if (hasRow) {
       onConfirmed.refuser === 0,
       `${onConfirmed.refuser} Refuser sur les lignes confirmées`,
     );
+    // Absent, but not on every confirmed line: only on the tables whose
+    // hour has passed. Which ones those are is § 6's business; here it
+    // is enough that there are never more of them than there are
+    // tables.
     check(
-      "mais garde Absent",
-      onConfirmed.absent > 0,
-      `${onConfirmed.absent} absent`,
+      "et Absent au plus une fois par ligne confirmée",
+      onConfirmed.absent <= onConfirmed.checkin,
+      `${onConfirmed.absent} absent · ${onConfirmed.checkin} check-in`,
     );
     check(
       "et ne propose pas Décaler non plus",
@@ -385,9 +398,13 @@ if (hasRow) {
       await open.click();
       await settle(1200);
       const sheet = await text();
+      // The sheet used to be where cancelling an accepted booking
+      // lived. It is nowhere now: a sheet that answers a state the row
+      // cannot is the same wrong button one tap further in, and
+      // `rejected` is the contract's word for a refused *request*.
       check(
-        "la feuille de la ligne porte Refuser, et pas Décaler",
-        /Refuser/.test(sheet) && !/Décaler/.test(sheet),
+        "la feuille d'une ligne confirmée porte l'arrivée, et ni Refuser ni Décaler",
+        /Marquer comme arrivé/.test(sheet) && !/Refuser/.test(sheet) && !/Décaler/.test(sheet),
         "feuille de détail",
       );
       await page.keyboard.press("Escape");
@@ -430,8 +447,8 @@ if (hasRow) {
       decaler: await count("Décaler"),
     };
     check(
-      "à 390 une ligne confirmée propose Check-in et Absent",
-      p2.checkin > 0 && p2.absent > 0,
+      "à 390 une ligne confirmée propose Check-in, et Absent au plus une fois",
+      p2.checkin > 0 && p2.absent <= p2.checkin,
       `${p2.checkin} check-in · ${p2.absent} absent`,
     );
     check(
@@ -720,6 +737,286 @@ check(
   lanes.chart > 390 * 0.8,
   `${lanes.chart} px sur 390`,
 );
+
+// ── 6 · les décisions que l'état autorise ────────────────────
+//
+// Une ligne n'offre que ce que son état permet :
+//
+//   À confirmer   Accepter · Refuser
+//   Confirmée     Check-in, et Absent une fois l'heure passée
+//   Arrivé        rien
+//   Absent        rien
+//
+// Un bouton qu'un état ne peut pas honorer est pire qu'un bouton
+// manquant : Refuser sur une table déjà acceptée est le seul geste
+// irréversible de l'écran, à une touche de Check-in ; Absent sur une
+// demande vise une table que personne n'a encore accordée ; Absent sur
+// une réservation de dans deux heures écrit une absence au compte d'un
+// client qui est en route.
+//
+// Les trois surfaces sont vérifiées — la ligne à 1440, la ligne à 390,
+// la feuille — parce que la règle n'en vaut rien si la feuille offre ce
+// que la ligne refuse, une touche plus loin.
+
+console.log("\n  — 6 · les décisions que l'état autorise");
+
+/** Les verbes du lot, et eux seuls : le reste de la ligne n'est pas une décision. */
+const DECISIONS = /^(Accepter|Refuser|Check-in|Absent|Décaler|Marquer comme arrivé)$/;
+
+/**
+ * Ce que chaque état a le droit d'offrir.
+ *
+ * `due` est vrai quand l'heure de la table est passée sur l'horloge de
+ * la démo. La ligne la porte — « 21h00 » — et l'horloge est celle que
+ * cet outil annonce en tête, donc la comparaison se fait en minutes
+ * locales, sur le carnet du jour.
+ */
+const ALLOWED = {
+  "À confirmer": () => ["Accepter", "Refuser"],
+  Confirmée: (due) => (due ? ["Check-in", "Absent"] : ["Check-in"]),
+  Arrivé: () => [],
+  Absent: () => [],
+  Annulée: () => [],
+  Refusée: () => [],
+  Terminée: () => [],
+};
+
+const clockMinutes = (() => {
+  const at = DEMO_CLOCK ?? new Date();
+  const parts = new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Africa/Casablanca",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(at);
+  const get = (type) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  return get("hour") * 60 + get("minute");
+})();
+
+/** Chaque ligne du carnet : son heure, son état, et ses boutons. */
+const bookRows = (target = page) =>
+  target.evaluate((verbs) => {
+    const rule = new RegExp(verbs);
+    const vis = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+    const rows = [];
+    const words = (el) => (el.textContent || "").replace(/\s+/g, " ").trim();
+    const isRow = (el) => /^\d{1,2}h\d{2}\s*·/.test(words(el));
+    const rowsIn = (el) => [...el.querySelectorAll("button")].filter((b) => vis(b) && isRow(b));
+    // La ligne elle-même est un bouton — elle ouvre la feuille — et son
+    // texte commence par l'heure et le nombre de couverts. Ses décisions
+    // sont ailleurs dans son conteneur, parce qu'un bouton ne peut pas
+    // en contenir un autre ; à quelle profondeur dépend de la largeur,
+    // donc on remonte jusqu'au plus grand ancêtre qui ne contient
+    // encore que cette ligne-là.
+    for (const row of document.querySelectorAll("button")) {
+      if (!vis(row) || !isRow(row)) continue;
+      const label = words(row);
+      const time = /^(\d{1,2})h(\d{2})\s*·/.exec(label);
+      const state = /(À confirmer|Confirmée|Arrivé|Absent|Annulée|Refusée|Terminée)/.exec(label);
+      let box = row.parentElement;
+      let own = row.parentElement;
+      while (box && rowsIn(box).length <= 1) {
+        own = box;
+        box = box.parentElement;
+      }
+      const buttons = [...(own ? own.querySelectorAll("button") : [])]
+        .filter((b) => b !== row && vis(b))
+        .map(words)
+        .filter((t) => rule.test(t));
+      // Marked, because « la ligne de Salma » is not a selector: the
+      // name and the badge are separate text nodes, so no substring of
+      // the rendered text picks one row out.
+      if (own) own.setAttribute("data-rule-row", String(rows.length));
+      rows.push({
+        index: rows.length,
+        minutes: Number(time[1]) * 60 + Number(time[2]),
+        at: `${time[1]}h${time[2]}`,
+        state: state ? state[1] : null,
+        name: label.replace(/^\d{1,2}h\d{2}\s*·\s*\d+\s*\S+\s*/, "").slice(0, 22),
+        buttons,
+      });
+    }
+    return rows;
+  }, DECISIONS.source);
+
+/** La règle, sur un lot de lignes déjà lues. */
+const judge = (rows, lane) => {
+  const seen = {};
+  const wrong = [];
+  for (const row of rows) {
+    if (!row.state || !ALLOWED[row.state]) continue;
+    const due = row.minutes <= clockMinutes;
+    const key = row.state === "Confirmée" ? `Confirmée · ${due ? "passée" : "à venir"}` : row.state;
+    seen[key] = (seen[key] ?? 0) + 1;
+    const want = ALLOWED[row.state](due).join(" + ") || "aucun";
+    const got = row.buttons.join(" + ") || "aucun";
+    if (want !== got) wrong.push(`${row.at} ${key} : ${got} au lieu de ${want}`);
+  }
+  check(
+    `${lane} · chaque ligne n'offre que ce que son état permet`,
+    wrong.length === 0,
+    wrong[0] ?? Object.entries(seen).map(([k, n]) => `${n} × ${k}`).join(", "),
+  );
+  return seen;
+};
+
+await go("/restaurant/reservations");
+const deskRows = await bookRows();
+const deskSeen = judge(deskRows, "ordinateur");
+
+// Les quatre cas doivent être sur la page, sinon la règle est vérifiée
+// contre le vide. Le jeu d'essai du jour en porte au moins un de chaque
+// — une demande, une table passée, une à venir, une arrivée — et § 2 en
+// a consommé une, pas toutes.
+for (const [label, key] of [
+  ["une demande", "À confirmer"],
+  ["une table confirmée dont l'heure est passée", "Confirmée · passée"],
+  ["une table confirmée encore à venir", "Confirmée · à venir"],
+  ["une ligne arrivée", "Arrivé"],
+]) {
+  check(`le carnet du jour porte ${label}`, (deskSeen[key] ?? 0) > 0, `${deskSeen[key] ?? 0} ligne(s)`);
+}
+
+// La feuille dit la même chose que la ligne. Ouverte sur une demande,
+// sur une table à venir et sur une arrivée : trois états, trois
+// réponses, et aucune d'elles n'ajoute un bouton que la ligne refuse.
+const sheetFor = async (predicate, what) => {
+  // Les lignes sont relues à chaque fois : la marque posée par
+  // `bookRows` ne survit pas forcément à l'ouverture d'une feuille, et
+  // une lecture coûte moins qu'un sélecteur qui se trompe de ligne.
+  const row = (await bookRows()).find(predicate);
+  if (!row) return null;
+  await page.locator(`[data-rule-row="${row.index}"] button`).first().click();
+  await settle(1100);
+  const inSheet = await page.evaluate((verbs) => {
+    const rule = new RegExp(verbs);
+    const vis = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+    const sheet =
+      document.querySelector('[role="dialog"]') ??
+      document.querySelector("[data-drawer], aside");
+    if (!sheet) return null;
+    return [...sheet.querySelectorAll("button")]
+      .filter(vis)
+      .map((b) => (b.textContent || "").replace(/\s+/g, " ").trim())
+      .filter((t) => rule.test(t));
+  }, DECISIONS.source);
+  await page.keyboard.press("Escape");
+  await settle(600);
+  return { row, buttons: inSheet, what };
+};
+
+const requestSheet = await sheetFor((r) => r.state === "À confirmer", "une demande");
+if (requestSheet) {
+  check(
+    "la feuille d'une demande : Accepter et Refuser",
+    (requestSheet.buttons ?? []).join(" + ") === "Accepter + Refuser",
+    (requestSheet.buttons ?? []).join(" + ") || "aucun bouton trouvé",
+  );
+}
+const comingSheet = await sheetFor(
+  (r) => r.state === "Confirmée" && r.minutes > clockMinutes,
+  "une table à venir",
+);
+if (comingSheet) {
+  check(
+    "celle d'une table à venir : l'arrivée, et pas Absent",
+    (comingSheet.buttons ?? []).join(" + ") === "Marquer comme arrivé",
+    (comingSheet.buttons ?? []).join(" + ") || "aucun bouton trouvé",
+  );
+}
+const passedSheet = await sheetFor(
+  (r) => r.state === "Confirmée" && r.minutes <= clockMinutes,
+  "une table dont l'heure est passée",
+);
+if (passedSheet) {
+  check(
+    "celle d'une table dont l'heure est passée : l'arrivée et Absent",
+    (passedSheet.buttons ?? []).join(" + ") === "Marquer comme arrivé + Absent",
+    (passedSheet.buttons ?? []).join(" + ") || "aucun bouton trouvé",
+  );
+}
+const seatedSheet = await sheetFor((r) => r.state === "Arrivé", "une ligne arrivée");
+if (seatedSheet) {
+  check(
+    "celle d'une ligne arrivée : aucune décision",
+    (seatedSheet.buttons ?? []).length === 0,
+    (seatedSheet.buttons ?? []).join(" + ") || "aucun bouton",
+  );
+}
+
+// Le service écoulé, où toutes les lignes sont des constats.
+const lunch = page.locator('button:has-text("Déjeuner"):visible').first();
+let lunchSeen = {};
+if (await lunch.count()) {
+  await lunch.click();
+  await settle(1300);
+  lunchSeen = judge(await bookRows(), "service écoulé");
+  await go("/restaurant/reservations");
+}
+
+// La quatrième ligne de la règle — « une ligne absente n'offre rien » —
+// se vérifie autrement, parce que le carnet ne dessine aucune ligne
+// absente : noter une absence sort la réservation de la liste de
+// travail, et c'est le carnet tout entier qui est cette liste. La
+// phrase est dans `overview-store.ts` au-dessus d'`absencesOn` :
+// « marking a booking absent takes it out of the working list — that is
+// the decision behind the Lot 1 chips ». Le compte des absences du
+// service a sa propre requête, justement pour cette raison.
+//
+// Donc : la règle est dans le constructeur pour `no_show`, et ici on
+// vérifie les deux faits observables qui la rendent vraie — le carnet
+// n'en liste aucune, et noter une absence retire la ligne.
+check(
+  "le carnet ne liste aucune absence · elles sortent de la liste de travail",
+  (deskSeen["Absent"] ?? 0) === 0 && (lunchSeen["Absent"] ?? 0) === 0,
+  `${(deskSeen["Absent"] ?? 0) + (lunchSeen["Absent"] ?? 0)} ligne(s) absente(s)`,
+);
+
+// `bookRows` marque les conteneurs au passage, donc cette lecture-ci est
+// celle qui donne les repères du clic.
+const freshRows = await bookRows();
+const dueRow = freshRows.find((r) => r.state === "Confirmée" && r.minutes <= clockMinutes);
+if (dueRow) {
+  const absentOnRow = page
+    .locator(`[data-rule-row="${dueRow.index}"] button:has-text("Absent")`)
+    .first();
+  if ((await absentOnRow.count()) === 0) {
+    check("l'Absent de la ligne due est cliquable", false, `${dueRow.at} ${dueRow.name}`);
+  } else {
+    await absentOnRow.click();
+    await settle(1800);
+    const after = await bookRows();
+    const stillDue = after.filter(
+      (r) => r.state === "Confirmée" && r.minutes <= clockMinutes,
+    ).length;
+    check(
+      "noter une absence retire la ligne du carnet",
+      after.length === freshRows.length - 1 && stillDue === 0,
+      `${freshRows.length} → ${after.length} ligne(s), ${stillDue} table(s) due(s)`,
+    );
+    judge(after, "après l'absence");
+  }
+}
+
+// Et la même règle sur la voie téléphone, où la place manque : c'est là
+// qu'un bouton de trop devient deux rangées de 44 px.
+const phoneBook = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  locale: "fr-FR",
+  timezoneId: "Africa/Casablanca",
+});
+const phoneBookPage = await phoneBook.newPage();
+await sharedSignIn(phoneBookPage, BASE, { email: OWNER_EMAIL, password: "demo" });
+await phoneBookPage.goto(`${BASE}/restaurant/reservations`, { waitUntil: "domcontentloaded" });
+await phoneBookPage.waitForTimeout(1800);
+judge(await bookRows(phoneBookPage), "téléphone");
+await phoneBook.close();
 
 // ── Report ───────────────────────────────────────────────────
 
