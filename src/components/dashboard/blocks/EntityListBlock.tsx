@@ -26,7 +26,14 @@ import { cn } from "@/lib/utils/cn";
 // a title, badges, a meta line, a progress bar, a trailing figure and a
 // signal strip — never about what any of them mean.
 export function EntityListBlock({ block }: { block: Spec }) {
-  const [tab, setTab] = useState(block.tabs?.[0]?.id ?? "");
+  // Seeded from the spec so a link can choose the tab, and only where
+  // that tab exists: `?filtre=` is user input, and a value no tab
+  // answers to would select nothing and show an empty list.
+  const [tab, setTab] = useState(
+    block.tabs?.some((t) => t.id === block.initialTab)
+      ? (block.initialTab as string)
+      : (block.tabs?.[0]?.id ?? ""),
+  );
   // The query comes from the chrome's box, which this block claims on
   // mount. Two search fields on one screen — a stub above and a real one
   // in the card — made the host guess which one did the work.

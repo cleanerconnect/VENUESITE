@@ -14,6 +14,7 @@ import "server-only";
 import { differenceInMinutes, format, startOfDay, subDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import type {
+  BookingSummary,
   DayBook,
   GuestReview,
   MenuItem,
@@ -571,6 +572,225 @@ async function daily(venueId: string, date: string) {
   );
 }
 
+// ── The counted overview ─────────────────────────────────────
+//
+// Lot 1's Accueil is figures and no lists, and every figure here is
+// counted off `reservations` — with `reservation_status_history` for the
+// two that measure answering rather than booking. Two queries and then
+// arithmetic in TypeScript, rather than six aggregate queries: a venue's
+// sixty days is on the order of fifteen hundred rows, the arithmetic is
+// the readable half, and `GROUP BY` written twice over two periods is
+// where an off-by-one hides.
+//
+// The window is UTC days, the same unit `date(r.at) = ?` uses for the
+// book, so the screen and the carnet never disagree about which day a
+// sitting belongs to.
+
+/** A booking that holds, or held, a table. Not refused, not withdrawn. */
+const HELD_STATES = ["requested", "confirmed", "modified", "arrived", "no_show", "completed"];
+/** A party that came. `completed` is a past visit; `arrived` is tonight's. */
+const CAME_STATES = ["arrived", "completed"];
+/** The covers a service counts as booked — a no-show held its table. */
+const BOOKED_STATES = ["confirmed", "modified", "arrived", "no_show", "completed"];
+/** The three ways a booking reaches a venue that only manages bookings. */
+const SUMMARY_SOURCES: Reservation["channel"][] = ["lyfe", "whatsapp", "phone"];
+/** How long the trailing window is. Thirty days, ending today. */
+const SUMMARY_DAYS = 30;
+
+/**
+ * The calendar day an instant falls on, in UTC.
+ *
+ * UTC and not the venue's zone, because this is the unit the rows are
+ * filtered and grouped by: `date(r.at)` in SQLite and in the Postgres
+ * compatibility layer both read the ISO string, and so does the day key
+ * below. Mixing the two is exactly the bug this replaced —
+ * `startOfDay()` is local and `toISOString()` is not, so at 20h30 in
+ * Casablanca the summary measured yesterday and reported it as today.
+ */
+const isoDayOf = (d: Date) => d.toISOString().slice(0, 10);
+/** The same, `n` whole days earlier. */
+const isoDaysBefore = (d: Date, n: number) =>
+  isoDayOf(new Date(d.getTime() - n * 86_400_000));
+const figure = (value: number, previous: number) => ({ value, previous });
+/** A rate in whole percent, and 0 where there is nothing to divide. */
+const rate = (part: number, whole: number) =>
+  whole === 0 ? 0 : Math.round((part / whole) * 100);
+
+/**
+ * Every figure the Lot 1 Accueil draws, for today and for the window.
+ *
+ * `service` is the sitting in hand, and it is used for one thing: the
+ * hours the fill rate divides inside, and the capacity it divides by.
+ * The covers themselves are counted from the rows, so the tile cannot
+ * drift from the book the way a stored counter does.
+ */
+async function bookingSummary(
+  venueId: string,
+  service: Service | null,
+  now: Date,
+): Promise<BookingSummary> {
+  const todayIso = isoDayOf(now);
+  const windowFrom = isoDaysBefore(now, SUMMARY_DAYS - 1);
+  // The period before, of equal length, for every delta on the screen.
+  const priorFrom = isoDaysBefore(now, SUMMARY_DAYS * 2 - 1);
+
+  const rows = (await all(
+    `SELECT at, state, channel, party_size
+       FROM reservations
+      WHERE venue_id = ? AND date(at) >= ? AND date(at) <= ?`,
+    venueId,
+    priorFrom,
+    todayIso,
+  )).map((r) => ({
+    at: String(r.at),
+    day: String(r.at).slice(0, 10),
+    state: String(r.state),
+    channel: String(r.channel) as Reservation["channel"],
+    covers: Number(r.party_size),
+  }));
+
+  // Answered requests, for the acceptance rate and the reply delay.
+  // Keyed on when the venue *answered*, not on when the table was for:
+  // both figures are about the venue's responsiveness, and a request
+  // answered today for a sitting in December belongs to today.
+  const answers = (await all(
+    `SELECT h.to_state AS decision, h.at AS decided_at,
+            (SELECT q.at FROM reservation_status_history q
+              WHERE q.reservation_id = h.reservation_id AND q.to_state = 'requested'
+              ORDER BY q.at LIMIT 1) AS asked_at
+       FROM reservation_status_history h
+       JOIN reservations r ON r.id = h.reservation_id
+      WHERE r.venue_id = ?
+        AND h.from_state = 'requested'
+        AND h.to_state IN ('confirmed', 'rejected')
+        AND date(h.at) >= ? AND date(h.at) <= ?`,
+    venueId,
+    priorFrom,
+    todayIso,
+  )).map((r) => ({
+    decision: String(r.decision),
+    day: String(r.decided_at).slice(0, 10),
+    minutes:
+      r.asked_at === null || r.asked_at === undefined
+        ? null
+        : Math.max(
+            0,
+            differenceInMinutes(new Date(String(r.decided_at)), new Date(String(r.asked_at))),
+          ),
+  }));
+
+  // ── today, and yesterday for the comparison ──
+  const yesterdayIso = isoDaysBefore(now, 1);
+  const onDay = (iso: string) => rows.filter((r) => r.day === iso);
+  const held = (list: typeof rows) => list.filter((r) => HELD_STATES.includes(r.state));
+  const inState = (list: typeof rows, states: string[]) =>
+    list.filter((r) => states.includes(r.state));
+
+  const dayFigures = (iso: string) => {
+    const all0 = onDay(iso);
+    const book = held(all0);
+    return {
+      bookings: book.length,
+      covers: book.reduce((n, r) => n + r.covers, 0),
+      pending: inState(all0, ["requested"]).length,
+      arrived: inState(all0, CAME_STATES).length,
+      absent: inState(all0, ["no_show"]).length,
+    };
+  };
+  const t = dayFigures(todayIso);
+  const y = dayFigures(yesterdayIso);
+
+  /**
+   * The fill of one service, on one day.
+   *
+   * The hours come from the service in hand and are shifted whole days,
+   * so « hier » means the same sitting and not merely the same clock
+   * time: a lunch compared with a dinner compares two different rooms.
+   */
+  const fillOn = (daysBack: number) => {
+    if (!service || service.capacity <= 0) return 0;
+    const shift = daysBack * 86_400_000;
+    const from = Date.parse(service.opensAt) - shift;
+    const to = Date.parse(service.closesAt) - shift;
+    const inside = rows.filter((r) => {
+      const at = Date.parse(r.at);
+      return at >= from && at <= to && BOOKED_STATES.includes(r.state);
+    });
+    return rate(inside.reduce((n, r) => n + r.covers, 0), service.capacity);
+  };
+
+  // ── the window, and the window before it ──
+  const between = (from: string, to: string) =>
+    rows.filter((r) => r.day >= from && r.day <= to);
+  const answersBetween = (from: string, to: string) =>
+    answers.filter((a) => a.day >= from && a.day <= to);
+
+  const priorTo = isoDaysBefore(now, SUMMARY_DAYS);
+  const windowOf = (from: string, to: string) => {
+    const book = held(between(from, to));
+    const bookings = book.length;
+    const decided = answersBetween(from, to);
+    const accepted = decided.filter((a) => a.decision === "confirmed").length;
+    const timed = decided.filter((a) => a.minutes !== null).map((a) => a.minutes as number);
+    const came = inState(between(from, to), CAME_STATES).length;
+    const absent = inState(between(from, to), ["no_show"]).length;
+    return {
+      bookings,
+      covers: book.reduce((n, r) => n + r.covers, 0),
+      acceptanceRate: rate(accepted, decided.length),
+      // Over the sittings that have actually happened: a table booked
+      // for next Friday is not an absence waiting to be counted, and
+      // dividing by it would make the rate fall every time somebody
+      // books further ahead.
+      noShowRate: rate(absent, absent + came),
+      replyMinutes:
+        timed.length === 0
+          ? 0
+          : Math.round(timed.reduce((n, m) => n + m, 0) / timed.length),
+      shareOf: (channel: Reservation["channel"]) =>
+        rate(book.filter((r) => r.channel === channel).length, bookings),
+    };
+  };
+  const w = windowOf(windowFrom, todayIso);
+  const p = windowOf(priorFrom, priorTo);
+
+  // One point per day of the window, oldest first, including the days
+  // that hold nothing — a bar chart with the quiet Mondays missing is a
+  // chart that lies about the shape of a week.
+  const perDay = Array.from({ length: SUMMARY_DAYS }, (_, i) => {
+    const iso = isoDaysBefore(now, SUMMARY_DAYS - 1 - i);
+    return { day: iso, bookings: held(onDay(iso)).length };
+  });
+
+  return {
+    today: {
+      date: todayIso,
+      bookings: figure(t.bookings, y.bookings),
+      covers: figure(t.covers, y.covers),
+      pending: figure(t.pending, y.pending),
+      arrived: figure(t.arrived, y.arrived),
+      absent: figure(t.absent, y.absent),
+      fillRate: figure(fillOn(0), fillOn(1)),
+      serviceLabel: service?.label ?? "",
+    },
+    window: {
+      days: SUMMARY_DAYS,
+      from: windowFrom,
+      to: todayIso,
+      bookings: figure(w.bookings, p.bookings),
+      covers: figure(w.covers, p.covers),
+      acceptanceRate: figure(w.acceptanceRate, p.acceptanceRate),
+      noShowRate: figure(w.noShowRate, p.noShowRate),
+      replyMinutes: figure(w.replyMinutes, p.replyMinutes),
+      sources: SUMMARY_SOURCES.map((channel) => ({
+        channel,
+        share: figure(w.shareOf(channel), p.shareOf(channel)),
+      })),
+      perDay,
+    },
+  };
+}
+
 async function aggregates(venueId: string, service: Service | null) {
   const today = startOfDay(new Date());
   const todayRow = await daily(venueId, day(today));
@@ -717,6 +937,7 @@ export async function overview(venueId: string, viewerFirstName: string): Promis
   const service = await currentService(venueId, list);
   const queue = await waitlist(venueId);
   const agg = await aggregates(venueId, service);
+  const summary = await bookingSummary(venueId, service, new Date());
 
   // The greeting speaks the venue's vocabulary: a lounge books people,
   // not covers, and the participle has to agree with whichever it is.
@@ -766,6 +987,7 @@ export async function overview(venueId: string, viewerFirstName: string): Promis
       amountMad: toMad(Number(nextPayout?.amount_cents ?? 0)),
       scheduledFor: String(nextPayout?.scheduled_for ?? new Date().toISOString()),
     },
+    bookingSummary: summary,
     upcomingReservations: await upcomingReservations(venueId, day(new Date())),
     waitlist: queue,
     activity: await activity(venueId),

@@ -2,7 +2,7 @@
 //
 //   BASE=http://localhost:3210 node tools/verify/decisions.mjs
 //
-// One tool for four claims only a browser can settle:
+// One tool for five claims only a browser can settle:
 //
 //   1  a venue created by /inscription is pending, its dashboard works,
 //      and it says so — and /admin/validations is LYFE's alone;
@@ -15,9 +15,13 @@
 //      anywhere, no slot-length control, no booking rules, no advanced
 //      settings, no closed days — and the book grouped on the half hour
 //      the app actually offers;
-//   4  the row carries the phone and the drawer carries the guest.
+//   4  the row carries the phone and the drawer carries the guest;
+//   5  Accueil is figures and no list — two titled rows of tiles, a bar
+//      chart, two columns of tiles on a phone, and an « À confirmer »
+//      tile that opens the requests it counts rather than merely the
+//      screen holding them.
 //
-// Three and most of two used to assert the opposite: they are the
+// Three, five and most of two used to assert the opposite: they are the
 // regression test for a scope that shrank, which is the kind that goes
 // quietly missing otherwise.
 //
@@ -32,6 +36,7 @@ import {
   clockLine,
   dataModeOf,
   requireWrites,
+  signIn as sharedSignIn,
 } from "./lot.mjs";
 
 // Lot 1 only, and said the way `audience.mjs` says Lot 2 only.
@@ -559,6 +564,162 @@ if (await firstRow.count()) {
   check("et le nombre de visites ici", /Visites ici/i.test(drawer));
   check("et la demande particulière quand il y en a une", /Demande particulière|Le client/i.test(drawer));
 }
+
+// ── 5 · l'Accueil chiffré ────────────────────────────────────
+//
+// L'Accueil du lot 1 était le carnet une seconde fois : À traiter,
+// Prochaines arrivées, Arrivés — trois tris de la même journée, au-
+// dessus d'un bouton qui ouvre Réservations, où les mêmes rangées
+// portent les mêmes décisions. C'est maintenant un écran de chiffres :
+// deux rangées de tuiles et un graphique, et aucune liste.
+//
+// Ce qui est vérifié ici est ce qu'un écran chiffré peut faire de faux :
+// afficher une liste malgré tout, perdre une tuile, ou porter une tuile
+// « À confirmer » qui donne un nombre sans mener aux demandes qu'elle
+// compte. Un chiffre qu'on ne peut pas ouvrir est une impasse.
+
+console.log("\n  — 5 · l'Accueil chiffré");
+
+await go("/restaurant");
+const accueil = await text();
+
+check(
+  "l'Accueil ne porte aucune liste du carnet",
+  !/À traiter|Prochaines arrivées|tables installées/.test(accueil),
+  accueil.match(/À traiter|Prochaines arrivées|tables installées/)?.[0] ?? "aucune liste",
+);
+check(
+  "la carte garde Ouvrir le carnet et Check-in",
+  /Ouvrir le carnet/.test(accueil) && /Check-in/.test(accueil),
+);
+
+const todayTiles = [
+  "Réservations",
+  "Couverts",
+  "À confirmer",
+  "Arrivés",
+  "Absents",
+  "Taux de remplissage",
+];
+const missingToday = todayTiles.filter((l) => !new RegExp(l, "i").test(accueil));
+check(
+  `les six chiffres du jour · ${todayTiles.length - missingToday.length}/6`,
+  missingToday.length === 0,
+  missingToday.join(", "),
+);
+
+const windowTiles = [
+  "Taux d'acceptation",
+  "Taux d'absence",
+  "Délai moyen de réponse",
+  "Part LYFE",
+  "Part WhatsApp",
+  "Part Téléphone",
+];
+const missingWindow = windowTiles.filter(
+  (l) => !new RegExp(l.replace(/'/g, "['’]"), "i").test(accueil),
+);
+check(
+  `les chiffres des 30 jours · ${windowTiles.length - missingWindow.length}/6`,
+  missingWindow.length === 0,
+  missingWindow.join(", "),
+);
+check(
+  "les deux rangées disent sur quoi elles portent",
+  /Aujourd'hui · /.test(accueil) && /30 derniers jours · du /.test(accueil),
+);
+check(
+  "au moins une tuile porte un écart contre la période précédente",
+  /vs hier/.test(accueil) && /vs 30 j préc\./.test(accueil),
+);
+check("le graphique des réservations par jour est là", /Réservations par jour/.test(accueil));
+
+// Et qu'il a dessiné quelque chose. Le titre et la carte peuvent être
+// là autour d'une boîte vide : recharts enveloppe le graphique dans un
+// ResponsiveContainer qui clone son enfant pour lui passer la largeur
+// mesurée, et il ne reconnaît un enfant que par `react-is`. Le routeur
+// d'application de Next rend avec son React 19 embarqué, dont les
+// éléments portent `Symbol(react.transitional.element)` ; recharts 2.13
+// épingle `react-is@18`, qui ne connaît que `Symbol(react.element)`.
+// L'enfant repartait donc sans largeur ni hauteur, et tous les
+// graphiques du portail — les bilans du lot 2 compris — étaient un
+// rectangle blanc de 220 px. Le correctif est un `overrides` dans
+// `package.json` ; ce compte-là est ce qui dira qu'il a sauté.
+const drawn = await page.evaluate(() => ({
+  wrappers: document.querySelectorAll(".recharts-wrapper").length,
+  bars: document.querySelectorAll(".recharts-bar-rectangle").length,
+}));
+check(
+  `et il a dessiné ses trente barres · ${drawn.bars}/30`,
+  drawn.wrappers > 0 && drawn.bars === 30,
+  `${drawn.wrappers} graphique(s), ${drawn.bars} barre(s)`,
+);
+
+// La tuile qui est une porte. `:visible` parce que les deux voies —
+// ordinateur et téléphone — sont toutes deux dans le DOM, et c'est le
+// CSS qui en cache une : sans ça le clic tombe sur la tuile masquée.
+const pendingTile = page.locator('a[href*="filtre=requested"]:visible').first();
+check("la tuile « À confirmer » est un lien", (await pendingTile.count()) > 0);
+if (await pendingTile.count()) {
+  await pendingTile.click();
+  await settle(1800);
+  check(
+    "elle ouvre Réservations sur l'onglet À confirmer",
+    page.url().includes("/restaurant/reservations") && page.url().includes("filtre=requested"),
+    page.url(),
+  );
+  const filtered = await text();
+  // Une demande porte Accepter ; une confirmée porte Check-in. L'onglet
+  // est le bon si la liste n'offre que le premier — ou si la journée
+  // n'a aucune demande, ce que l'écran dit alors en mots.
+  check(
+    "et la liste ne montre que des demandes",
+    /Accepter/.test(filtered) || /Rien|Aucune|aucun/.test(filtered),
+    filtered.slice(0, 60),
+  );
+}
+
+// Deux colonnes de tuiles sur le téléphone, et le graphique pleine
+// largeur : mesuré sur la grille elle-même plutôt que deviné d'une
+// classe, parce que c'est le nombre de colonnes rendu qui compte.
+const phone = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  locale: "fr-FR",
+  timezoneId: "Africa/Casablanca",
+});
+const phonePage = await phone.newPage();
+await sharedSignIn(phonePage, BASE, { email: OWNER_EMAIL, password: "demo" });
+await phonePage.goto(`${BASE}/restaurant`, { waitUntil: "domcontentloaded" });
+await phonePage.waitForTimeout(1800);
+const lanes = await phonePage.evaluate(() => {
+  const grids = [];
+  let chart = 0;
+  for (const el of document.querySelectorAll("div")) {
+    const style = getComputedStyle(el);
+    const box = el.getBoundingClientRect();
+    if (style.display === "grid" && box.width > 200 && el.children.length >= 4) {
+      grids.push(style.gridTemplateColumns.split(" ").length);
+    }
+  }
+  for (const h of document.querySelectorAll("h2")) {
+    if (!/Réservations par jour/.test(h.textContent || "")) continue;
+    let node = h.closest("div");
+    while (node && node.getBoundingClientRect().width < 200) node = node.parentElement;
+    if (node) chart = Math.round(node.getBoundingClientRect().width);
+  }
+  return { grids, chart };
+});
+await phone.close();
+check(
+  "sur le téléphone les tuiles tiennent deux colonnes",
+  lanes.grids.length >= 2 && lanes.grids.every((n) => n === 2),
+  lanes.grids.join(", ") || "aucune grille trouvée",
+);
+check(
+  "et le graphique prend la largeur de la voie",
+  lanes.chart > 390 * 0.8,
+  `${lanes.chart} px sur 390`,
+);
 
 // ── Report ───────────────────────────────────────────────────
 

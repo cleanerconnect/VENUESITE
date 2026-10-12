@@ -87,6 +87,12 @@ export default async function RestaurantSectionPage({
   const serviceParam = Array.isArray(query.service)
     ? query.service[0]
     : query.service;
+  // Which of Réservations' filter tabs to open on. Accueil's
+  // « À confirmer » tile links here; the block itself ignores a value
+  // no tab answers to.
+  const filterParam = Array.isArray(query.filtre)
+    ? query.filtre[0]
+    : query.filtre;
   const demo = parseDemoState(
     Array.isArray(query[DEMO_STATE_PARAM])
       ? query[DEMO_STATE_PARAM][0]
@@ -124,6 +130,7 @@ export default async function RestaurantSectionPage({
         comparison,
         jour,
         serviceParam,
+        filterParam,
       ),
     ]);
     return <RestaurantScreen slug={slug} data={overview} context={context} />;
@@ -192,6 +199,7 @@ async function loadContext(
   comparison: Comparison,
   day: string,
   dayService: string | undefined,
+  dayFilter: string | undefined,
 ): Promise<Omit<ScreenContext, "overview">> {
   // Filtered by lot: a Lot 1 deployment asks for what it renders and
   // nothing else. See `screenNeeds`.
@@ -213,6 +221,7 @@ async function loadContext(
     // capture tools could not drive.
     lot,
     dayService,
+    dayFilter,
   };
 
   await Promise.all(

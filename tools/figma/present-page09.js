@@ -95,7 +95,7 @@ const SCREENS = [
       "Sept étapes pour qu'un établissement existe : qui vous êtes, ce que vous tenez, où, à quoi ça ressemble, ce qu'on y trouve, quand c'est ouvert, et le récapitulatif avant l'envoi à LYFE.",
     audience: "Le ou la propriétaire, une fois, seul·e, souvent sur un téléphone.",
     spec: "docs/LOT1_API_CONTRACT.md",
-    specLabel: "Contrat Lot 1 § 2 · Inscription",
+    specLabel: "Contrat Lot 1 § 2.0 · Inscription",
     flow: "steps",
     rows: [
       { base: { key: "inscription-1" } },
@@ -115,7 +115,7 @@ const SCREENS = [
       "Entrer dans le portail. Un seul champ de trop et un partenaire appelle : l'écran refuse en français, ne dit jamais si le compte existe, et ouvre directement l'établissement — un compte, un lieu, depuis le périmètre du 5 octobre.",
     audience: "Le propriétaire de l'établissement, chaque service.",
     spec: "docs/LOT1_API_CONTRACT.md",
-    specLabel: "Contrat Lot 1 § 1 · Comptes et sessions",
+    specLabel: "Contrat Lot 1 § 2.1 · Connexion",
     rows: [
       {
         base: { key: "connexion" },
@@ -134,10 +134,11 @@ const SCREENS = [
     title: "Accueil",
     route: "/restaurant",
     purpose:
-      "Le service en cours en une page : qui arrive, ce qu'il reste à décider, et l'état de la salle. C'est l'écran qui reste ouvert sur le poste de l'accueil.",
-    audience: "L'hôte ou l'hôtesse d'accueil, en continu pendant le service.",
+      "Des chiffres, pas de listes. Six tuiles pour aujourd'hui — réservations, couverts, à confirmer, arrivés, absents, taux de remplissage du service en cours — huit pour les trente derniers jours, et les réservations par jour en barres. Chaque tuile porte son écart avec la période précédente, et « À confirmer » ouvre le carnet filtré sur les demandes.",
+    audience:
+      "Le ou la propriétaire, d'un coup d'œil avant et après le service. Les lignes, les décisions et les arrivées sont sur Réservations.",
     spec: "docs/LOT1_API_CONTRACT.md",
-    specLabel: "Contrat Lot 1 § 3 · Aperçu du service",
+    specLabel: "Contrat Lot 1 § 2.2 · Accueil",
     rows: [
       {
         base: { name: "/restaurant · Accueil", phone: "/restaurant · Accueil · téléphone" },
@@ -160,7 +161,7 @@ const SCREENS = [
       "Le carnet. On y marche dans les jours et dans les services, on accepte, on refuse, on marque une arrivée ou une absence, et la recherche va chercher un nom au-delà de la journée affichée.",
     audience: "L'accueil et la direction de salle, avant et pendant le service.",
     spec: "docs/LOT1_API_CONTRACT.md",
-    specLabel: "Contrat Lot 1 § 4 · Le carnet",
+    specLabel: "Contrat Lot 1 § 2.3 · Réservations",
     flow: "book",
     rows: [
       {
@@ -210,7 +211,7 @@ const SCREENS = [
       "Marquer l'arrivée d'un client, au code ou à la main. L'écran est fait pour être utilisé debout, une main sur le téléphone.",
     audience: "L'accueil, à la porte.",
     spec: "docs/LOT1_API_CONTRACT.md",
-    specLabel: "Contrat Lot 1 § 5 · Arrivées",
+    specLabel: "Contrat Lot 1 § 2.4 · Check-in",
     rows: [
       {
         base: {
@@ -235,7 +236,7 @@ const SCREENS = [
       "Ce que l'application LYFE affiche du lieu : l'identité et la vignette, les détails et la cuisine, la semaine, les photos, la carte. Cinq onglets, une seule barre d'enregistrement.",
     audience: "La direction, quand quelque chose change — rarement, mais il faut que ça marche.",
     spec: "docs/LOT1_API_CONTRACT.md",
-    specLabel: "Contrat Lot 1 § 6 · La fiche",
+    specLabel: "Contrat Lot 1 § 2.5 · Ma fiche",
     rows: [
       { base: { key: "ma-fiche-identite" } },
       {
@@ -258,7 +259,7 @@ const SCREENS = [
       "Ce qu'un client peut réserver : l'interrupteur de la réservation en ligne, et les services de la semaine avec leurs heures et leur capacité. Les règles de cadence, les réglages avancés, les fermetures et le choix de la grille sont sortis du lot le 5 octobre.",
     audience: "La direction, une fois par saison.",
     spec: "docs/LOT1_API_CONTRACT.md",
-    specLabel: "Contrat Lot 1 § 7 · Disponibilités",
+    specLabel: "Contrat Lot 1 § 2.6 · Disponibilités",
     rows: [
       {
         base: { key: "disponibilites" },
@@ -273,7 +274,7 @@ const SCREENS = [
     purpose: "Qui est prévenu de quoi, et par quel canal. Une matrice, et rien d'autre.",
     audience: "La direction, une fois à l'installation.",
     spec: "docs/LOT1_API_CONTRACT.md",
-    specLabel: "Contrat Lot 1 § 8 · Notifications",
+    specLabel: "Contrat Lot 1 § 2.7 · Notifications",
     rows: [
       {
         base: { key: "notifications" },

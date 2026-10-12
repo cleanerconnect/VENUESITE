@@ -22,13 +22,17 @@ import { formatInTimeZone } from "date-fns-tz";
 import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 import { fr } from "date-fns/locale";
 import type {
+  Action,
   Block,
   DetailSpec,
   CtaAction,
+  Delta,
   EntityRow,
   FeedEntry,
   FilterTab,
+  KpiGridBlock,
   KpiTile,
+  ValueFormat,
   ScreenSpec,
   SemanticTone,
 } from "@/lib/dashboard/spec";
@@ -36,6 +40,7 @@ import type {
   DayBook,
   GuestReview,
   MenuItem,
+  OverviewFigure,
   Reservation,
   RestaurantOverview,
   Service,
@@ -133,7 +138,8 @@ import {
   restaurantHref,
 } from "./slugs";
 import { COUNT, MAD } from "@/lib/dashboard/formats";
-import { coversIn, dayLabel, hm, inWords, initialsOf, mobileTiles, money, openSentence } from "./format";
+import type { IconKey } from "@/lib/dashboard/icons";
+import { barDay, coversIn, dayLabel, hm, inWords, initialsOf, mobileTiles, money, openSentence } from "./format";
 
 /**
  * The venue's word for a booked head.
@@ -344,13 +350,28 @@ export function buildDashboardScreen(
       }
     : null;
 
-  // The three groups below are the screen, and the greeting says in one
-  // sentence what they add up to — so their counts are taken here,
-  // before the card that reports them.
-  const dayRowsForGreeting = data.upcomingReservations;
-  const pendingCount = dayRowsForGreeting.filter((r) => r.state === "requested").length;
-  const arrivedCount = dayRowsForGreeting.filter((r) => r.state === "arrived").length;
-  const totalCount = dayRowsForGreeting.length;
+  // The three counts the greeting's sentence names, taken before the
+  // card that reports them — and from the summary, not from the day's
+  // working list.
+  //
+  // The list is `upcomingReservations`, which leaves out the parties
+  // nobody came for — that is what makes it a working list. Counting the
+  // card's sentence off it and the tile under it off the table gave two
+  // numbers for « réservations aujourd'hui » on one screen, two lines
+  // apart: thirty-three in words, thirty-five in numerals, the
+  // difference being the two absences. One source, so they agree.
+  const summaryToday = data.bookingSummary.today;
+  const pendingCount = summaryToday.pending.value;
+  const arrivedCount = summaryToday.arrived.value;
+  const totalCount = summaryToday.bookings.value;
+  // The card's sentence, in words, over the figures it introduces.
+  //
+  // It used to name the three groups that followed it. They are gone —
+  // Accueil is figures now, and the rows are on Réservations with the
+  // decisions on them — so the sentence says the same three facts and
+  // the tiles below repeat them as numerals. Words first because a
+  // sentence is read once and a grid is scanned; the same two counts in
+  // both places is the point, not a repetition to remove.
   const hostSubline = [
     totalCount === 0
       ? "Aucune réservation aujourd'hui"
@@ -905,20 +926,240 @@ export function buildDashboardScreen(
 
   // Accueil, under « Gestion des reservation uniquement ».
   //
-  // Planning V3's Prio 02 row buys the booking work and names nothing
-  // else, so this screen is the day's book and the sentence above it.
-  // The three numbers went with the rest of Pilotage; the attention
-  // queue went with them, because two of its four sources — a risk
-  // score and an unanswered review — are readings the basique dashboard
-  // does not produce, and the decision the other two ask for is taken
-  // on Réservations, on the row itself.
+  // Figures, and no list. It was three groups of rows — À traiter,
+  // Prochaines arrivées, Arrivés — which were the carnet a second time:
+  // every row they drew is on Réservations, with the same decisions on
+  // it, and a host working through a service works through it there.
+  // What a dashboard is for is the number you cannot get by reading
+  // rows, so the screen is two rows of them — the service in hand, and
+  // the month behind it — and one chart.
+  //
+  // Nothing on it is stored. Every tile is counted off `reservations`
+  // when the screen is built, which is the only way the figure above
+  // the book and the book itself cannot disagree.
+  //
+  // What is still *not* here is Pilotage's own three numbers and its
+  // attention queue: two of that queue's four sources — a risk score
+  // and an unanswered review — are readings the basique dashboard does
+  // not produce, and the decision the other two ask for is taken on
+  // Réservations, on the row itself.
   if (lot1) {
-    const groups = [toHandleBlock, expectedBlock, seatedBlock];
+    const summary = data.bookingSummary;
+
+    /**
+     * A tile's delta, as a percentage of the period before.
+     *
+     * Two cases are not a movement and are left off rather than drawn:
+     * no baseline at all — the first Thursday of a deployment, where
+     * « +100 % » means « from nothing » — and a figure that did not
+     * move, where « +0,0 % » is a line of type saying nothing. A tile
+     * with no delta is one line shorter; a tile with a meaningless one
+     * costs a reader a second every time they pass it.
+     */
+    const movement = (
+      figure: OverviewFigure,
+      period: string,
+      invert = false,
+    ): Delta | undefined => {
+      if (figure.previous === 0) return undefined;
+      const pct = ((figure.value - figure.previous) / figure.previous) * 100;
+      if (Math.abs(pct) < 0.05) return undefined;
+      return { value: Math.round(pct * 10) / 10, period, invert };
+    };
+
+    const SINCE_YESTERDAY = "vs hier";
+    const SINCE_LAST_MONTH = "vs 30 j préc.";
+
+    const todayTile = (
+      id: string,
+      label: string,
+      figure: OverviewFigure,
+      icon: IconKey,
+      options: { invert?: boolean; format?: ValueFormat; hint?: string; action?: Action } = {},
+    ): KpiTile => ({
+      id,
+      label,
+      tone: "surface",
+      icon,
+      metric: { value: figure.value, format: options.format ?? COUNT, animate: true },
+      delta: movement(figure, SINCE_YESTERDAY, options.invert),
+      hint: options.hint,
+      action: options.action,
+    });
+
+    const todayGrid: KpiGridBlock = {
+      id: "today",
+      type: "kpi-grid",
+      columns: 3,
+      tiles: [
+        todayTile("today-bookings", "Réservations", summary.today.bookings, "book"),
+        todayTile(
+          "today-covers",
+          coverNoun(vocabulary),
+          summary.today.covers,
+          "users",
+        ),
+        // The one tile that is also a door. A count of requests is only
+        // useful if pressing it lands on those requests, which is why
+        // Réservations' filter tabs can be addressed — see `initialTab`.
+        todayTile("today-pending", "À confirmer", summary.today.pending, "hourglass", {
+          action: {
+            kind: "link",
+            label: "Voir les demandes",
+            href: `${restaurantHref("reservations")}?filtre=requested`,
+          },
+        }),
+        todayTile("today-arrived", "Arrivés", summary.today.arrived, "user-check"),
+        // Down is good, so the colour follows the meaning and not the
+        // sign: fewer absences is a green figure with a minus on it.
+        todayTile("today-absent", "Absents", summary.today.absent, "user-x", {
+          invert: true,
+        }),
+        // Which sitting, because a fill rate with no service named is a
+        // percentage of nothing in particular — and the comparison is
+        // the same service yesterday, not yesterday.
+        //
+        // The service belongs in the label and not in `hint`: a tile
+        // shows its delta *or* its hint, never both, so a hint on a
+        // tile that always has a delta is a string nobody ever reads.
+        // It was one — the tile said « Taux de remplissage · 85 % ·
+        // +54,5 % vs hier » and never once said « Dîner ».
+        todayTile(
+          "today-fill",
+          `Taux de remplissage · ${summary.today.serviceLabel}`,
+          summary.today.fillRate,
+          "gauge",
+          { format: { kind: "percent" } },
+        ),
+      ],
+    };
+
+    const windowTile = (
+      id: string,
+      label: string,
+      figure: OverviewFigure,
+      icon: IconKey,
+      options: { invert?: boolean; format?: ValueFormat; hint?: string } = {},
+    ): KpiTile => ({
+      id,
+      label,
+      tone: "surface",
+      icon,
+      metric: { value: figure.value, format: options.format ?? COUNT, animate: true },
+      delta: movement(figure, SINCE_LAST_MONTH, options.invert),
+      hint: options.hint,
+    });
+
+    const sourceOf = (channel: Reservation["channel"]) =>
+      summary.window.sources.find((s) => s.channel === channel)?.share ?? {
+        value: 0,
+        previous: 0,
+      };
+
+    const windowGrid: KpiGridBlock = {
+      id: "window",
+      type: "kpi-grid",
+      columns: 4,
+      tiles: [
+        windowTile("win-bookings", "Réservations", summary.window.bookings, "book"),
+        windowTile(
+          "win-covers",
+          coverNoun(vocabulary),
+          summary.window.covers,
+          "users",
+        ),
+        windowTile(
+          "win-acceptance",
+          "Taux d'acceptation",
+          summary.window.acceptanceRate,
+          "check",
+          { format: { kind: "percent" }, hint: "des demandes répondues" },
+        ),
+        windowTile("win-noshow", "Taux d'absence", summary.window.noShowRate, "user-x", {
+          format: { kind: "percent" },
+          invert: true,
+          hint: "des services passés",
+        }),
+        windowTile(
+          "win-reply",
+          "Délai moyen de réponse",
+          summary.window.replyMinutes,
+          "timer",
+          { format: { kind: "duration", unit: "minutes" }, invert: true },
+        ),
+        // The split, one tile per source rather than one tile of three
+        // numbers: a tile is one figure and one label, and three stacked
+        // in a card is a table pretending to be a tile.
+        windowTile("win-lyfe", "Part LYFE", sourceOf("lyfe"), "sparkles", {
+          format: { kind: "percent" },
+          hint: "des réservations",
+        }),
+        windowTile("win-whatsapp", "Part WhatsApp", sourceOf("whatsapp"), "message", {
+          format: { kind: "percent" },
+          hint: "des réservations",
+        }),
+        windowTile("win-phone", "Part Téléphone", sourceOf("phone"), "phone", {
+          format: { kind: "percent" },
+          hint: "des réservations",
+        }),
+      ],
+    };
+
+    const perDayChart: Block = {
+      id: "per-day",
+      type: "chart",
+      heading: "Réservations par jour",
+      subheading: `${summary.window.days} derniers jours · ${summary.window.bookings.value} au total`,
+      variant: "bar",
+      series: summary.window.perDay.map((d) => ({
+        label: barDay(d.day),
+        value: d.bookings,
+      })),
+      valueFormat: COUNT,
+    };
+
+    // A titled run of tiles. `kpi-grid` carries no heading of its own,
+    // and the period belongs *in* the heading rather than under it: the
+    // row says what it counts and over what, in one line, because the
+    // two halves are one fact — « Aujourd'hui » alone is not a scope.
+    const titled = (id: string, heading: string, grid: KpiGridBlock): Block => ({
+      id,
+      type: "group",
+      heading,
+      children: [grid],
+    });
+
+    const todayHeading = `Aujourd'hui · ${dayLabel(summary.today.date)}`;
+    const windowHeading = `${summary.window.days} derniers jours · du ${dayLabel(
+      summary.window.from,
+    )} au ${dayLabel(summary.window.to)}`;
+
     return {
       slug: "",
       title: "Vue d'ensemble",
-      blocks: [greetingBlock, ...groups],
-      mobileBlocks: [greetingBlock, ...groups],
+      blocks: [
+        greetingBlock,
+        titled("today-figures", todayHeading, todayGrid),
+        titled("window-figures", windowHeading, windowGrid),
+        perDayChart,
+      ],
+      // Phone: two columns of tiles, and the chart the full width of the
+      // lane. Six tiles in one column is a screen a thumb scrolls past
+      // without reading; two columns puts today on one screenful.
+      mobileBlocks: [
+        greetingBlock,
+        titled("today-figures-m", todayHeading, {
+          ...todayGrid,
+          id: "today-mobile",
+          columns: 2,
+        }),
+        titled("window-figures-m", windowHeading, {
+          ...windowGrid,
+          id: "window-mobile",
+          columns: 2,
+        }),
+        perDayChart,
+      ],
     };
   }
 
@@ -985,6 +1226,8 @@ export function buildReservationsScreen(
   serviceId?: string,
   /** One instant for both runs of the builder — see `ScreenContext.now`. */
   now: number = Date.now(),
+  /** Which filter tab opens selected, from `?filtre=`. */
+  initialTab?: string,
 ): ScreenSpec {
   const lot1 = lot === 1;
   const today = isoDay(new Date(now));
@@ -1136,6 +1379,7 @@ export function buildReservationsScreen(
         },
     // One list, filtered — rather than four lists a manager has to
     // scan in turn. Counts, search and sort all derive from the rows.
+    initialTab,
     tabs: [
       { id: "all", label: "Tous" },
       {
@@ -2516,6 +2760,13 @@ export interface ScreenContext {
   settings?: VenueSettings;
   subscription?: Subscription;
   support?: SupportTicket[];
+  /**
+   * Which of Réservations' filter tabs opens selected.
+   *
+   * `?filtre=` on the URL, so Accueil's « À confirmer » tile can land on
+   * the requests rather than merely on the screen that holds them.
+   */
+  dayFilter?: string;
   spendByCustomer?: Record<string, number>;
   notificationPreferences?: NotificationPreferences;
   /**
@@ -2727,6 +2978,7 @@ export const RESTAURANT_SCREENS: Record<
       ctx.dayBook,
       ctx.dayService,
       screenNow(ctx),
+      ctx.dayFilter,
     ),
   calendrier: (ctx) =>
     buildCalendarScreen(ctx.serviceFloor ?? EMPTY_FLOOR, ctx.configuration),

@@ -325,6 +325,7 @@ revenueWeek           { amountMad, deltaPctVsLastWeek, series[] }
 rating                { average, reviewCount, deltaVsLastMonth }
 nextPayout            { amountMad, scheduledFor }
 nudge?                { headline, body, href, ctaLabel }
+bookingSummary        BookingSummary
 upcomingReservations  Reservation[]
 waitlist              Reservation[]
 activity              RestaurantActivityItem[]
@@ -335,13 +336,82 @@ payouts               RestaurantPayout[]
 ```
 
 **Ce que l'Accueil du Lot 1 rend réellement** : `greeting`,
-`currentService`, `upcomingReservations` et le vocabulaire venu de
-`settings`. Les trois groupes de l'écran — À traiter, Prochaines
-arrivées, Arrivés — sont des tris de `upcomingReservations` par `state`.
+`bookingSummary` et le vocabulaire venu de `settings`. L'écran est
+chiffré et ne porte aucune liste — les rangées sont sur Réservations,
+avec les décisions dessus — donc `upcomingReservations` ne lui sert
+plus : il est lu par Réservations et par Check-in.
+
 Tout le reste de la charge utile (`averageTicket`, `occupancy`,
 `revenueWeek`, `rating`, `nextPayout`, `payouts`, `reviews`, `topItems`)
 appartient aux écrans du Prio 08 et n'apparaît sur aucun écran du Lot 1 :
 un Lot 1 peut renvoyer des zéros ou des tableaux vides sans rien casser.
+
+#### `BookingSummary` — les deux rangées de chiffres
+
+Chaque chiffre est **compté sur `reservations`**, et les deux qui
+mesurent la réponse plutôt que la réservation le sont sur
+`reservation_status_history`. Rien n'est stocké : c'est ce qui empêche le
+chiffre au-dessus du carnet de contredire le carnet. Un backend peut les
+calculer autrement, à condition de rendre les mêmes définitions.
+
+```json
+{
+  "today": {
+    "date": "2026-10-15",
+    "bookings":  { "value": 35,  "previous": 22 },
+    "covers":    { "value": 137, "previous": 94 },
+    "pending":   { "value": 3,   "previous": 0 },
+    "arrived":   { "value": 26,  "previous": 18 },
+    "absent":    { "value": 2,   "previous": 4 },
+    "fillRate":  { "value": 85,  "previous": 55 },
+    "serviceLabel": "Dîner"
+  },
+  "window": {
+    "days": 30,
+    "from": "2026-09-16",
+    "to":   "2026-10-15",
+    "bookings":       { "value": 894,  "previous": 866 },
+    "covers":         { "value": 3371, "previous": 3307 },
+    "acceptanceRate": { "value": 97,   "previous": 95 },
+    "noShowRate":     { "value": 11,   "previous": 12 },
+    "replyMinutes":   { "value": 98,   "previous": 91 },
+    "sources": [
+      { "channel": "lyfe",     "share": { "value": 50, "previous": 53 } },
+      { "channel": "whatsapp", "share": { "value": 18, "previous": 15 } },
+      { "channel": "phone",    "share": { "value": 32, "previous": 32 } }
+    ],
+    "perDay": [{ "day": "2026-09-16", "bookings": 26 }]
+  }
+}
+```
+
+Chaque figure est `{ value, previous }` et non un pourcentage :
+`previous` est la même mesure sur la période de même longueur juste
+avant, et la division appartient à l'endroit où le libellé est écrit —
+un « +12 % » calculé côté serveur ne peut pas être réexprimé en « +3 »
+par l'écran, et la tuile veut les deux.
+
+Les définitions, dans l'ordre des tuiles :
+
+| Champ | Ce qui est compté |
+|---|---|
+| `today.bookings` | les réservations du jour, dans tout état **sauf** `cancelled` et `rejected` — une demande refusée n'est pas une réservation du jour |
+| `today.covers` | la somme de `partySize` sur ces mêmes lignes |
+| `today.pending` | celles en `requested` |
+| `today.arrived` | celles en `arrived` ou `completed` |
+| `today.absent` | celles en `no_show` |
+| `today.fillRate` | les couverts qui tiennent une table dans la fenêtre du service en cours (`confirmed`, `modified`, `arrived`, `no_show`, `completed`) sur sa capacité, en pour cent. `previous` est **le même service la veille** : un déjeuner comparé à un dîner compare deux salles différentes |
+| `today.serviceLabel` | le service que `fillRate` mesure. L'écran le met dans le libellé de la tuile — « Taux de remplissage · Dîner » — et pas sous le chiffre : une tuile affiche son écart *ou* son indication, jamais les deux, et cette tuile a toujours un écart |
+| `window.bookings` · `covers` | comme pour le jour, sur la fenêtre |
+| `window.acceptanceRate` | parmi les demandes que l'établissement a **répondues** dans la fenêtre, la part confirmée plutôt que refusée. Datée de la réponse, pas du repas : une demande répondue aujourd'hui pour décembre compte aujourd'hui |
+| `window.noShowRate` | `no_show / (no_show + arrivés)` sur les services **passés**. Une table réservée pour vendredi prochain n'est pas une absence en attente, et diviser par elle ferait baisser le taux chaque fois que quelqu'un réserve plus loin |
+| `window.replyMinutes` | la moyenne des minutes entre l'arrivée d'une demande et sa réponse |
+| `window.sources[]` | la part des réservations par canal, en pour cent, dans l'ordre d'affichage. Les trois canaux du Lot 1 : `lyfe`, `whatsapp`, `phone` |
+| `window.perDay[]` | une ligne par jour de la fenêtre, du plus ancien au plus récent, **jours vides compris** — un graphique dont les lundis calmes manquent mentirait sur la forme d'une semaine |
+
+La fenêtre est en jours UTC, l'unité que `date(r.at)` utilise déjà pour
+le carnet : l'écran et le carnet ne peuvent donc pas être en désaccord
+sur le jour auquel appartient un couvert.
 
 `Reservation`, la forme qui porte tout l'écran :
 
@@ -373,9 +443,14 @@ bookedCovers, arrivedCovers, noShowCovers, revenueMad, slotLoad[] }`.
 
 *Tables lues* : `venues`, `venue_tags`, `venue_settings`, `services`,
 `service_definitions`, `service_slot_load`, `zones`, `reservations`
-(jointes à `customers`), `waitlist`, `activity`, `analytics_daily`,
-`reviews`, `review_replies`, `review_tags`, `payouts`, `menu_items`,
-`menu_item_dietary`.
+(jointes à `customers`), `reservation_status_history`, `waitlist`,
+`activity`, `analytics_daily`, `reviews`, `review_replies`,
+`review_tags`, `payouts`, `menu_items`, `menu_item_dietary`.
+
+*Le lien que l'Accueil pose* : la tuile « À confirmer » ouvre
+`/restaurant/reservations?filtre=requested`. `filtre` nomme un onglet de
+Réservations ; une valeur à laquelle aucun onglet ne répond est ignorée
+et l'écran ouvre sur « Tous ».
 
 ### 2.3 Réservations — `/restaurant/reservations`
 

@@ -31,6 +31,22 @@ import { appendFileSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import {
+  installDemoClock,
+  resolveDemoClock,
+  DEMO_CLOCK_ENV,
+} from "../src/lib/time/demo-clock-shared.mjs";
+
+// The same clock as the seed, the portal and the tools.
+//
+// This double rebases the snapshot onto « now » (see below), so its idea
+// of now decides every date it serves. Left on the real clock while the
+// portal ran on the demo clock, the two disagreed by however far apart
+// the two days were: the Accueil's figures were right — they are counts
+// — and its headings said « Aujourd'hui · lundi 12 octobre » over a
+// portal that believed it was Thursday the 15th. Installed before the
+// rebase, because the rebase reads `Date.now()` at module load.
+installDemoClock(resolveDemoClock(process.env[DEMO_CLOCK_ENV]));
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT = resolve(HERE, "../src/lib/data/static/venue-snapshot.json");

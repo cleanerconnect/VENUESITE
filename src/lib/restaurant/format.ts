@@ -53,6 +53,19 @@ export const shortDay = (value: string) => {
   return Number.isNaN(date.getTime()) ? "—" : formatInTimeZone(date, VENUE_TIME_ZONE, "EEE d MMM", { locale: fr });
 };
 
+/**
+ * "14/10", for an axis with thirty of them on it.
+ *
+ * `shortDay` is "ven 14 mars", which is the right label for one date in
+ * a sentence and unreadable thirty times across a chart.
+ */
+export const barDay = (value: string) => {
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T12:00:00Z`)
+    : venueInstant(value);
+  return Number.isNaN(date.getTime()) ? "—" : formatInTimeZone(date, VENUE_TIME_ZONE, "dd/MM");
+};
+
 export const money = (n: number) => formatValue(n, MAD);
 
 /** "6 couverts" at a restaurant, "6 personnes" at a lounge. */

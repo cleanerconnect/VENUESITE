@@ -335,6 +335,15 @@ export interface EntityListBlock extends BlockBase {
   rows: EntityRow[];
   /** Sliding-underline filter tabs. Omit for a plain list. */
   tabs?: FilterTab[];
+  /**
+   * Which tab opens selected, by id. Defaults to the first.
+   *
+   * It exists so a tab can be linked to. Accueil's « À confirmer » tile
+   * is a number and a door: the figure is only useful if pressing it
+   * lands on those bookings, and the tab was component state, so the
+   * link could reach the screen but never the filter.
+   */
+  initialTab?: string;
   /** Enables the search field. */
   search?: { placeholder: string };
   /** Enables the sort select. First option is the default. */

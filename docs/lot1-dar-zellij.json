@@ -1,367 +1,365 @@
 {
-  "base": "http://localhost:3280",
-  "venue": "rst_dar_zellij",
+  "base": "http://localhost:3300",
+  "venue": "",
   "account": "rachid@darzellij.ma",
   "depth": "full",
   "lot": 1,
-  "capturedAt": "2026-10-08T19:30:09.538Z",
+  "capturedAt": "2026-10-15T19:30:06.936Z",
   "screens": {
     "/restaurant": {
       "label": "Accueil",
-      "purpose": "Ce qui se passe aujourd'hui : chiffres du jour, file d'attente à traiter, bande des quatre prochaines heures.",
+      "purpose": "Les chiffres, pas le carnet : six du jour, six des trente derniers jours, et les réservations par jour.",
       "status": "built",
       "gap": null,
       "dependsOn": null,
       "roles": null,
       "workspace": "venue",
       "title": "Bonsoir, Rachid. Le service est lancé.",
-      "eyebrow": null,
-      "subtitle": "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées.",
+      "eyebrow": "Réservations",
+      "subtitle": "35 réservations aujourd'hui, trois en attente de réponse, 26 déjà arrivées.",
       "venue": "DZ",
       "blocks": [
         {
-          "kind": "list",
-          "heading": "À traiter",
-          "subheading": "Ces clients attendent une réponse.",
+          "kind": "kpi-grid",
+          "heading": "Aujourd'hui · jeudi 15 octobre",
+          "subheading": "+59,1 %· vs hier",
           "actions": [
             "Ouvrir le carnet",
-            "Check-in",
-            "Accepter",
-            "Refuser",
-            "Absent",
-            "Accepter",
-            "Refuser",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "21 tables installéesAfficher"
+            "Check-in"
           ],
           "facets": [],
           "texts": [
             "Le service est lancé.",
-            "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées.",
-            "À traiter",
-            "Ces clients attendent une réponse.",
-            "21h30",
-            "·",
-            "2 couverts",
-            "Nabil Cherkaoui",
+            "35 réservations aujourd'hui, trois en attente de réponse, 26 déjà arrivées.",
+            "Aujourd'hui · jeudi 15 octobre",
+            "Réservations",
+            "35",
+            "· vs hier",
+            "Couverts",
+            "137",
+            "· vs hier",
             "À confirmer",
-            "+212 665 09 33 71 · LYFE",
-            "Demande une table près de la fontaine",
-            "Prochaines arrivées",
-            "Confirmées, pas encore en salle.",
-            "20h30",
-            "·",
-            "4 couverts",
-            "Salma Bennani",
-            "Confirmée",
-            "+212 661 20 44 18 · Patio · LYFE",
-            "Anniversaire, dessert avec bougie",
-            "21h00",
-            "·",
-            "6 couverts",
-            "Groupe Karam",
-            "Confirmée",
-            "+212 662 88 10 03 · Grande salle · Téléphone",
-            "Sans gluten pour deux couverts",
-            "21h00",
-            "·",
-            "4 couverts",
-            "Yasmine El Alaoui",
-            "Confirmée",
-            "+212 663 41 77 92 · Terrasse · site",
-            "22h00",
-            "·",
-            "5 couverts",
-            "Hind Tazi",
-            "Confirmée",
-            "+212 660 15 62 40 · Grande salle · Téléphone",
+            "3",
             "Arrivés",
-            "21 tables installées",
-            "Afficher"
+            "26",
+            "· vs hier",
+            "Absents",
+            "2",
+            "· vs hier",
+            "Taux de remplissage · Dîner",
+            "85 %",
+            "· vs hier",
+            "30 derniers jours · du mercredi 16 septembre au jeudi 15 octobre",
+            "Réservations",
+            "894",
+            "· vs 30 j préc.",
+            "Couverts",
+            "3 371",
+            "· vs 30 j préc.",
+            "Taux d'acceptation",
+            "97 %",
+            "· vs 30 j préc.",
+            "Taux d'absence",
+            "11 %",
+            "· vs 30 j préc.",
+            "Délai moyen de réponse",
+            "1 h 38",
+            "· vs 30 j préc.",
+            "Part LYFE",
+            "50 %",
+            "· vs 30 j préc.",
+            "Part WhatsApp",
+            "18 %",
+            "· vs 30 j préc.",
+            "Part Téléphone",
+            "32 %",
+            "des réservations",
+            "Réservations par jour",
+            "30 derniers jours · 894 au total"
           ],
-          "items": [
+          "tiles": [
             {
-              "title": "Nabil Cherkaoui",
-              "meta": "Demande une table près de la fontaine",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Accepter",
-                "Refuser",
-                "Absent",
-                "Accepter"
+              "label": "Réservations",
+              "value": "35",
+              "meta": [
+                "+59,1 %· vs hier"
               ],
-              "lead": {
-                "time": "21h30",
-                "party": "2 couverts"
-              },
-              "state": "À confirmer",
-              "note": "Demande une table près de la fontaine"
+              "pills": []
             },
             {
-              "title": "Salma Bennani",
-              "meta": "Anniversaire, dessert avec bougie",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Check-in",
-                "Absent",
-                "Check-in",
-                "Absent"
+              "label": "Couverts",
+              "value": "137",
+              "meta": [
+                "+45,7 %· vs hier"
               ],
-              "lead": {
-                "time": "20h30",
-                "party": "4 couverts"
-              },
-              "state": "Confirmée",
-              "note": "Anniversaire, dessert avec bougie"
+              "pills": []
             },
             {
-              "title": "Groupe Karam",
-              "meta": "Sans gluten pour deux couverts",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Check-in",
-                "Absent",
-                "Check-in",
-                "Absent"
-              ],
-              "lead": {
-                "time": "21h00",
-                "party": "6 couverts"
-              },
-              "state": "Confirmée",
-              "note": "Sans gluten pour deux couverts"
+              "label": "À confirmer",
+              "value": "3",
+              "meta": [],
+              "pills": []
             },
             {
-              "title": "Yasmine El Alaoui",
-              "meta": "+212 663 41 77 92 · Terrasse · site",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Check-in",
-                "Absent",
-                "Check-in",
-                "Absent"
+              "label": "Arrivés",
+              "value": "26",
+              "meta": [
+                "+44,4 %· vs hier"
               ],
-              "lead": {
-                "time": "21h00",
-                "party": "4 couverts"
-              },
-              "state": "Confirmée",
-              "note": null
+              "pills": []
             },
             {
-              "title": "Hind Tazi",
-              "meta": "+212 660 15 62 40 · Grande salle · Téléphone",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Check-in",
-                "Absent",
-                "Check-in",
-                "Absent"
+              "label": "Absents",
+              "value": "2",
+              "meta": [
+                "-50,0 %· vs hier"
               ],
-              "lead": {
-                "time": "22h00",
-                "party": "5 couverts"
-              },
-              "state": "Confirmée",
-              "note": null
+              "pills": []
+            },
+            {
+              "label": "Taux de remplissage · Dîner",
+              "value": "85 %",
+              "meta": [
+                "+54,5 %· vs hier"
+              ],
+              "pills": []
+            },
+            {
+              "label": "Taux d'acceptation",
+              "value": "97 %",
+              "meta": [
+                "+2,1 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Taux d'absence",
+              "value": "11 %",
+              "meta": [
+                "-8,3 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Délai moyen de réponse",
+              "value": "1 h 38",
+              "meta": [
+                "+7,7 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Part LYFE",
+              "value": "50 %",
+              "meta": [
+                "-5,7 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Part WhatsApp",
+              "value": "18 %",
+              "meta": [
+                "+20,0 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Part Téléphone",
+              "value": "32 %",
+              "meta": [
+                "des réservations"
+              ],
+              "pills": []
             }
           ]
         },
         {
-          "kind": "list",
-          "heading": "À traiter",
-          "subheading": "Ces clients attendent une réponse.",
+          "kind": "kpi-grid",
+          "heading": "Aujourd'hui · jeudi 15 octobre",
+          "subheading": "+59,1 %· vs hier",
           "actions": [
             "Ouvrir le carnet",
-            "Check-in",
-            "Accepter",
-            "Refuser",
-            "Absent",
-            "Accepter",
-            "Refuser",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "Check-in",
-            "Absent",
-            "21 tables installéesAfficher"
+            "Check-in"
           ],
           "facets": [],
           "texts": [
             "Le service est lancé.",
-            "26 réservations aujourd'hui, une en attente de réponse, 21 déjà arrivées.",
-            "À traiter",
-            "Ces clients attendent une réponse.",
-            "21h30",
-            "·",
-            "2 couverts",
-            "Nabil Cherkaoui",
+            "35 réservations aujourd'hui, trois en attente de réponse, 26 déjà arrivées.",
+            "Aujourd'hui · jeudi 15 octobre",
+            "Réservations",
+            "35",
+            "· vs hier",
+            "Couverts",
+            "137",
+            "· vs hier",
             "À confirmer",
-            "+212 665 09 33 71 · LYFE",
-            "Demande une table près de la fontaine",
-            "Prochaines arrivées",
-            "Confirmées, pas encore en salle.",
-            "20h30",
-            "·",
-            "4 couverts",
-            "Salma Bennani",
-            "Confirmée",
-            "+212 661 20 44 18 · Patio · LYFE",
-            "Anniversaire, dessert avec bougie",
-            "21h00",
-            "·",
-            "6 couverts",
-            "Groupe Karam",
-            "Confirmée",
-            "+212 662 88 10 03 · Grande salle · Téléphone",
-            "Sans gluten pour deux couverts",
-            "21h00",
-            "·",
-            "4 couverts",
-            "Yasmine El Alaoui",
-            "Confirmée",
-            "+212 663 41 77 92 · Terrasse · site",
-            "22h00",
-            "·",
-            "5 couverts",
-            "Hind Tazi",
-            "Confirmée",
-            "+212 660 15 62 40 · Grande salle · Téléphone",
+            "3",
             "Arrivés",
-            "21 tables installées",
-            "Afficher"
+            "26",
+            "· vs hier",
+            "Absents",
+            "2",
+            "· vs hier",
+            "Taux de remplissage · Dîner",
+            "85 %",
+            "· vs hier",
+            "30 derniers jours · du mercredi 16 septembre au jeudi 15 octobre",
+            "Réservations",
+            "894",
+            "· vs 30 j préc.",
+            "Couverts",
+            "3 371",
+            "· vs 30 j préc.",
+            "Taux d'acceptation",
+            "97 %",
+            "· vs 30 j préc.",
+            "Taux d'absence",
+            "11 %",
+            "· vs 30 j préc.",
+            "Délai moyen de réponse",
+            "1 h 38",
+            "· vs 30 j préc.",
+            "Part LYFE",
+            "50 %",
+            "· vs 30 j préc.",
+            "Part WhatsApp",
+            "18 %",
+            "· vs 30 j préc.",
+            "Part Téléphone",
+            "32 %",
+            "des réservations",
+            "Réservations par jour",
+            "30 derniers jours · 894 au total",
+            "16/09",
+            "17/09",
+            "18/09",
+            "19/09",
+            "20/09",
+            "21/09",
+            "22/09",
+            "23/09",
+            "24/09",
+            "26/09",
+            "27/09",
+            "28/09",
+            "29/09",
+            "30/09",
+            "01/10",
+            "02/10",
+            "03/10",
+            "04/10",
+            "05/10",
+            "06/10",
+            "07/10",
+            "08/10",
+            "09/10",
+            "10/10",
+            "11/10",
+            "12/10",
+            "13/10",
+            "14/10",
+            "15/10",
+            "0",
+            "15",
+            "30",
+            "45",
+            "60"
           ],
-          "items": [
+          "tiles": [
             {
-              "title": "Nabil Cherkaoui",
-              "meta": "Demande une table près de la fontaine",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Accepter",
-                "Refuser",
-                "Absent",
-                "Accepter"
+              "label": "Réservations",
+              "value": "35",
+              "meta": [
+                "+59,1 %· vs hier"
               ],
-              "lead": {
-                "time": "21h30",
-                "party": "2 couverts"
-              },
-              "state": "À confirmer",
-              "note": "Demande une table près de la fontaine"
+              "pills": []
             },
             {
-              "title": "Salma Bennani",
-              "meta": "Anniversaire, dessert avec bougie",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Check-in",
-                "Absent",
-                "Check-in",
-                "Absent"
+              "label": "Couverts",
+              "value": "137",
+              "meta": [
+                "+45,7 %· vs hier"
               ],
-              "lead": {
-                "time": "20h30",
-                "party": "4 couverts"
-              },
-              "state": "Confirmée",
-              "note": "Anniversaire, dessert avec bougie"
+              "pills": []
             },
             {
-              "title": "Groupe Karam",
-              "meta": "Sans gluten pour deux couverts",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Check-in",
-                "Absent",
-                "Check-in",
-                "Absent"
-              ],
-              "lead": {
-                "time": "21h00",
-                "party": "6 couverts"
-              },
-              "state": "Confirmée",
-              "note": "Sans gluten pour deux couverts"
+              "label": "À confirmer",
+              "value": "3",
+              "meta": [],
+              "pills": []
             },
             {
-              "title": "Yasmine El Alaoui",
-              "meta": "+212 663 41 77 92 · Terrasse · site",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Check-in",
-                "Absent",
-                "Check-in",
-                "Absent"
+              "label": "Arrivés",
+              "value": "26",
+              "meta": [
+                "+44,4 %· vs hier"
               ],
-              "lead": {
-                "time": "21h00",
-                "party": "4 couverts"
-              },
-              "state": "Confirmée",
-              "note": null
+              "pills": []
             },
             {
-              "title": "Hind Tazi",
-              "meta": "+212 660 15 62 40 · Grande salle · Téléphone",
-              "initials": null,
-              "trailing": null,
-              "pills": [],
-              "actions": [
-                "Check-in",
-                "Absent",
-                "Check-in",
-                "Absent"
+              "label": "Absents",
+              "value": "2",
+              "meta": [
+                "-50,0 %· vs hier"
               ],
-              "lead": {
-                "time": "22h00",
-                "party": "5 couverts"
-              },
-              "state": "Confirmée",
-              "note": null
+              "pills": []
+            },
+            {
+              "label": "Taux de remplissage · Dîner",
+              "value": "85 %",
+              "meta": [
+                "+54,5 %· vs hier"
+              ],
+              "pills": []
+            },
+            {
+              "label": "Taux d'acceptation",
+              "value": "97 %",
+              "meta": [
+                "+2,1 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Taux d'absence",
+              "value": "11 %",
+              "meta": [
+                "-8,3 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Délai moyen de réponse",
+              "value": "1 h 38",
+              "meta": [
+                "+7,7 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Part LYFE",
+              "value": "50 %",
+              "meta": [
+                "-5,7 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Part WhatsApp",
+              "value": "18 %",
+              "meta": [
+                "+20,0 %· vs 30 j préc."
+              ],
+              "pills": []
+            },
+            {
+              "label": "Part Téléphone",
+              "value": "32 %",
+              "meta": [
+                "des réservations"
+              ],
+              "pills": []
             }
           ]
         }
@@ -391,6 +389,11 @@
             "Absent",
             "Check-in",
             "Absent",
+            "Accepter",
+            "Refuser",
+            "Absent",
+            "Accepter",
+            "Refuser",
             "Check-in",
             "Absent",
             "Check-in",
@@ -399,6 +402,11 @@
             "Absent",
             "Check-in",
             "Absent",
+            "Accepter",
+            "Refuser",
+            "Absent",
+            "Accepter",
+            "Refuser",
             "Accepter",
             "Refuser",
             "Absent",
@@ -412,11 +420,11 @@
           "facets": [
             {
               "label": "Tous",
-              "count": "26"
+              "count": "28"
             },
             {
               "label": "À confirmer",
-              "count": "1"
+              "count": "3"
             },
             {
               "label": "Confirmées",
@@ -428,13 +436,13 @@
             }
           ],
           "texts": [
-            "jeudi 8 octobre",
+            "jeudi 15 octobre",
             "Aujourd'hui.",
             "Choisir une date",
             "Déjeuner",
             "Dîner",
-            "26",
-            "1",
+            "28",
+            "3",
             "4",
             "21",
             "Trier par",
@@ -450,6 +458,12 @@
             "Confirmée",
             "+212 661 20 44 18 · Patio · LYFE",
             "Anniversaire, dessert avec bougie",
+            "20h30",
+            "·",
+            "2 couverts",
+            "Youssef Belkadi",
+            "À confirmer",
+            "+212 667118637 · Patio · LYFE",
             "21h00",
             "·",
             "6 couverts",
@@ -462,7 +476,13 @@
             "4 couverts",
             "Yasmine El Alaoui",
             "Confirmée",
-            "+212 663 41 77 92 · Terrasse · site",
+            "+212 663 41 77 92 · Terrasse · WhatsApp",
+            "21h00",
+            "·",
+            "2 couverts",
+            "Ismail Naciri",
+            "À confirmer",
+            "+212 685711001 · Terrasse · Téléphone",
             "21h30",
             "·",
             "2 couverts",
@@ -487,7 +507,7 @@
             "2 couverts",
             "Sanaa Mourad",
             "Arrivé",
-            "+212 610275822 · Terrasse · site",
+            "+212 610275822 · Terrasse · WhatsApp",
             "20h00",
             "·",
             "4 couverts",
@@ -499,7 +519,7 @@
             "3 couverts",
             "Table Ourika",
             "Arrivé",
-            "+212 610827466 · Grande salle · site",
+            "+212 610827466 · Grande salle · WhatsApp",
             "20h00",
             "·",
             "2 couverts",
@@ -511,7 +531,7 @@
             "8 couverts",
             "Anniversaire Chraïbi",
             "Arrivé",
-            "+212 611379110 · Patio · site",
+            "+212 611379110 · Patio · WhatsApp",
             "20h00",
             "·",
             "4 couverts",
@@ -523,7 +543,7 @@
             "2 couverts",
             "Sofia Guessous",
             "Arrivé",
-            "+212 611930754 · Terrasse · site",
+            "+212 611930754 · Terrasse · WhatsApp",
             "20h00",
             "·",
             "4 couverts",
@@ -535,19 +555,7 @@
             "6 couverts",
             "Table Koutoubia",
             "Arrivé",
-            "+212 612482398 · Grande salle · site",
-            "20h00",
-            "·",
-            "4 couverts",
-            "Hakim Sbaï",
-            "Arrivé",
-            "+212 612758220 · Terrasse · LYFE",
-            "20h30",
-            "·",
-            "4 couverts",
-            "Rachid Benjelloun",
-            "Arrivé",
-            "+212 610137911 · Patio · Téléphone"
+            "+212 612482398 · Grande salle · WhatsApp"
           ],
           "items": [
             {
@@ -570,6 +578,25 @@
               "note": "Anniversaire, dessert avec bougie"
             },
             {
+              "title": "Youssef Belkadi",
+              "meta": "+212 667118637 · Patio · LYFE",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [
+                "Accepter",
+                "Refuser",
+                "Absent",
+                "Accepter"
+              ],
+              "lead": {
+                "time": "20h30",
+                "party": "2 couverts"
+              },
+              "state": "À confirmer",
+              "note": null
+            },
+            {
               "title": "Groupe Karam",
               "meta": "Sans gluten pour deux couverts",
               "initials": null,
@@ -590,7 +617,7 @@
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "+212 663 41 77 92 · Terrasse · site",
+              "meta": "+212 663 41 77 92 · Terrasse · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -605,6 +632,25 @@
                 "party": "4 couverts"
               },
               "state": "Confirmée",
+              "note": null
+            },
+            {
+              "title": "Ismail Naciri",
+              "meta": "+212 685711001 · Terrasse · Téléphone",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [
+                "Accepter",
+                "Refuser",
+                "Absent",
+                "Accepter"
+              ],
+              "lead": {
+                "time": "21h00",
+                "party": "2 couverts"
+              },
+              "state": "À confirmer",
               "note": null
             },
             {
@@ -661,7 +707,7 @@
             },
             {
               "title": "Sanaa Mourad",
-              "meta": "+212 610275822 · Terrasse · site",
+              "meta": "+212 610275822 · Terrasse · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -689,7 +735,7 @@
             },
             {
               "title": "Table Ourika",
-              "meta": "+212 610827466 · Grande salle · site",
+              "meta": "+212 610827466 · Grande salle · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -717,7 +763,7 @@
             },
             {
               "title": "Anniversaire Chraïbi",
-              "meta": "+212 611379110 · Patio · site",
+              "meta": "+212 611379110 · Patio · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -745,7 +791,7 @@
             },
             {
               "title": "Sofia Guessous",
-              "meta": "+212 611930754 · Terrasse · site",
+              "meta": "+212 611930754 · Terrasse · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -773,7 +819,7 @@
             },
             {
               "title": "Table Koutoubia",
-              "meta": "+212 612482398 · Grande salle · site",
+              "meta": "+212 612482398 · Grande salle · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -952,6 +998,11 @@
             "Absent",
             "Check-in",
             "Absent",
+            "Accepter",
+            "Refuser",
+            "Absent",
+            "Accepter",
+            "Refuser",
             "Check-in",
             "Absent",
             "Check-in",
@@ -960,6 +1011,11 @@
             "Absent",
             "Check-in",
             "Absent",
+            "Accepter",
+            "Refuser",
+            "Absent",
+            "Accepter",
+            "Refuser",
             "Accepter",
             "Refuser",
             "Absent",
@@ -973,11 +1029,11 @@
           "facets": [
             {
               "label": "Tous",
-              "count": "26"
+              "count": "28"
             },
             {
               "label": "À confirmer",
-              "count": "1"
+              "count": "3"
             },
             {
               "label": "Confirmées",
@@ -989,13 +1045,13 @@
             }
           ],
           "texts": [
-            "jeudi 8 octobre",
+            "jeudi 15 octobre",
             "Aujourd'hui.",
             "Choisir une date",
             "Déjeuner",
             "Dîner",
-            "26",
-            "1",
+            "28",
+            "3",
             "4",
             "21",
             "Trier par",
@@ -1011,6 +1067,12 @@
             "Confirmée",
             "+212 661 20 44 18 · Patio · LYFE",
             "Anniversaire, dessert avec bougie",
+            "20h30",
+            "·",
+            "2 couverts",
+            "Youssef Belkadi",
+            "À confirmer",
+            "+212 667118637 · Patio · LYFE",
             "21h00",
             "·",
             "6 couverts",
@@ -1023,7 +1085,13 @@
             "4 couverts",
             "Yasmine El Alaoui",
             "Confirmée",
-            "+212 663 41 77 92 · Terrasse · site",
+            "+212 663 41 77 92 · Terrasse · WhatsApp",
+            "21h00",
+            "·",
+            "2 couverts",
+            "Ismail Naciri",
+            "À confirmer",
+            "+212 685711001 · Terrasse · Téléphone",
             "21h30",
             "·",
             "2 couverts",
@@ -1048,7 +1116,7 @@
             "2 couverts",
             "Sanaa Mourad",
             "Arrivé",
-            "+212 610275822 · Terrasse · site",
+            "+212 610275822 · Terrasse · WhatsApp",
             "20h00",
             "·",
             "4 couverts",
@@ -1060,7 +1128,7 @@
             "3 couverts",
             "Table Ourika",
             "Arrivé",
-            "+212 610827466 · Grande salle · site",
+            "+212 610827466 · Grande salle · WhatsApp",
             "20h00",
             "·",
             "2 couverts",
@@ -1072,7 +1140,7 @@
             "8 couverts",
             "Anniversaire Chraïbi",
             "Arrivé",
-            "+212 611379110 · Patio · site",
+            "+212 611379110 · Patio · WhatsApp",
             "20h00",
             "·",
             "4 couverts",
@@ -1084,7 +1152,7 @@
             "2 couverts",
             "Sofia Guessous",
             "Arrivé",
-            "+212 611930754 · Terrasse · site",
+            "+212 611930754 · Terrasse · WhatsApp",
             "20h00",
             "·",
             "4 couverts",
@@ -1096,19 +1164,7 @@
             "6 couverts",
             "Table Koutoubia",
             "Arrivé",
-            "+212 612482398 · Grande salle · site",
-            "20h00",
-            "·",
-            "4 couverts",
-            "Hakim Sbaï",
-            "Arrivé",
-            "+212 612758220 · Terrasse · LYFE",
-            "20h30",
-            "·",
-            "4 couverts",
-            "Rachid Benjelloun",
-            "Arrivé",
-            "+212 610137911 · Patio · Téléphone"
+            "+212 612482398 · Grande salle · WhatsApp"
           ],
           "items": [
             {
@@ -1131,6 +1187,25 @@
               "note": "Anniversaire, dessert avec bougie"
             },
             {
+              "title": "Youssef Belkadi",
+              "meta": "+212 667118637 · Patio · LYFE",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [
+                "Accepter",
+                "Refuser",
+                "Absent",
+                "Accepter"
+              ],
+              "lead": {
+                "time": "20h30",
+                "party": "2 couverts"
+              },
+              "state": "À confirmer",
+              "note": null
+            },
+            {
               "title": "Groupe Karam",
               "meta": "Sans gluten pour deux couverts",
               "initials": null,
@@ -1151,7 +1226,7 @@
             },
             {
               "title": "Yasmine El Alaoui",
-              "meta": "+212 663 41 77 92 · Terrasse · site",
+              "meta": "+212 663 41 77 92 · Terrasse · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -1166,6 +1241,25 @@
                 "party": "4 couverts"
               },
               "state": "Confirmée",
+              "note": null
+            },
+            {
+              "title": "Ismail Naciri",
+              "meta": "+212 685711001 · Terrasse · Téléphone",
+              "initials": null,
+              "trailing": null,
+              "pills": [],
+              "actions": [
+                "Accepter",
+                "Refuser",
+                "Absent",
+                "Accepter"
+              ],
+              "lead": {
+                "time": "21h00",
+                "party": "2 couverts"
+              },
+              "state": "À confirmer",
               "note": null
             },
             {
@@ -1222,7 +1316,7 @@
             },
             {
               "title": "Sanaa Mourad",
-              "meta": "+212 610275822 · Terrasse · site",
+              "meta": "+212 610275822 · Terrasse · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -1250,7 +1344,7 @@
             },
             {
               "title": "Table Ourika",
-              "meta": "+212 610827466 · Grande salle · site",
+              "meta": "+212 610827466 · Grande salle · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -1278,7 +1372,7 @@
             },
             {
               "title": "Anniversaire Chraïbi",
-              "meta": "+212 611379110 · Patio · site",
+              "meta": "+212 611379110 · Patio · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -1306,7 +1400,7 @@
             },
             {
               "title": "Sofia Guessous",
-              "meta": "+212 611930754 · Terrasse · site",
+              "meta": "+212 611930754 · Terrasse · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -1334,7 +1428,7 @@
             },
             {
               "title": "Table Koutoubia",
-              "meta": "+212 612482398 · Grande salle · site",
+              "meta": "+212 612482398 · Grande salle · WhatsApp",
               "initials": null,
               "trailing": null,
               "pills": [],
@@ -1546,7 +1640,7 @@
           "title": "Refuser la demande",
           "lines": [
             "Refuser la demande",
-            "Nabil Cherkaoui sera prévenu dans l'application.",
+            "Youssef Belkadi sera prévenu dans l'application.",
             "Motif du refus",
             "Complet sur ce créneau",
             "Groupe trop nombreux",
@@ -1583,7 +1677,7 @@
       "workspace": "venue",
       "title": "Check-in",
       "eyebrow": null,
-      "subtitle": "Dar Zellij · 5 arrivées encore attendues",
+      "subtitle": "Dar Zellij · 7 arrivées encore attendues",
       "venue": "DZ",
       "blocks": [
         {
@@ -1594,9 +1688,9 @@
           "facets": [],
           "texts": [
             "Check-in",
-            "Dar Zellij · 5 arrivées encore attendues"
+            "Dar Zellij · 7 arrivées encore attendues"
           ],
-          "body": "Check-inDar Zellij · 5 arrivées encore attendues",
+          "body": "Check-inDar Zellij · 7 arrivées encore attendues",
           "pills": []
         },
         {
@@ -1605,6 +1699,8 @@
           "subheading": "Check-in enregistre une arrivée sans code.",
           "actions": [
             "Scanner le code",
+            "Check-in",
+            "Check-in",
             "Check-in",
             "Check-in",
             "Check-in",
@@ -1621,6 +1717,10 @@
             "4 couverts · Patio",
             "Anniversaire, dessert avec bougie",
             "Check-in",
+            "20h30",
+            "Youssef Belkadi",
+            "2 couverts · Patio",
+            "Check-in",
             "21h00",
             "Groupe Karam",
             "6 couverts · Grande salle",
@@ -1629,6 +1729,10 @@
             "21h00",
             "Yasmine El Alaoui",
             "4 couverts · Terrasse",
+            "Check-in",
+            "21h00",
+            "Ismail Naciri",
+            "2 couverts · Terrasse",
             "Check-in",
             "21h30",
             "Nabil Cherkaoui",

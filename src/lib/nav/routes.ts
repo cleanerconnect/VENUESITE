@@ -258,7 +258,7 @@ export const ROUTES: RouteEntry[] = [
     lot: 1,
     label: "Accueil",
     purpose:
-      "Ce qui se passe aujourd'hui : chiffres du jour, file d'attente à traiter, bande des quatre prochaines heures.",
+      "Les chiffres, pas le carnet : six du jour, six des trente derniers jours, et les réservations par jour.",
     workspace: "venue",
     status: "built",
   },
