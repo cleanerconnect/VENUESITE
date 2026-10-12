@@ -192,6 +192,7 @@ async function servicesOn(
   venueId: string,
   date: string,
   book: Reservation[],
+  absences: Reservation[] = [],
 ): Promise<Service[]> {
   // The live row is one service — the one running now — and a venue that
   // serves lunch and dinner runs two. Réservations offers the day's
@@ -222,12 +223,15 @@ async function servicesOn(
         closesAt.setDate(closesAt.getDate() + 1);
       }
 
-      const held = book.filter((b) => {
+      const inWindow = (b: Reservation) => {
         const at = new Date(b.at).getTime();
         return at >= opensAt.getTime() && at <= closesAt.getTime();
-      });
+      };
+      const held = book.filter(inWindow);
+      const missed = absences.filter(inWindow);
       const covered = (states: Reservation["state"][]) =>
         held
+          .concat(missed)
           .filter((b) => states.includes(b.state))
           .reduce((n, b) => n + b.partySize, 0);
 
@@ -249,7 +253,10 @@ async function servicesOn(
         state: (closesAt.getTime() < Date.now() ? "closed" : "upcoming") as Service["state"],
         capacity: Number(r.capacity_covers),
         slotMinutes: asSlotMinutes(r.slot_minutes),
-        bookedCovers: covered(["confirmed", "arrived"]),
+        // A party that never came still held its table: the service was
+        // booked for it. The same rule the live row's own reconciliation
+        // uses in `db/seed.mjs`.
+        bookedCovers: covered(["confirmed", "arrived", "no_show"]),
         arrivedCovers: covered(["arrived"]),
         noShowCovers: covered(["no_show"]),
         // No takings on a day that has not happened, and none recorded
@@ -294,9 +301,31 @@ export async function dayBookFor(venueId: string, date: string): Promise<DayBook
   const reservations = await upcomingReservations(venueId, date);
   return {
     date,
-    services: await servicesOn(venueId, date, reservations),
+    services: await servicesOn(venueId, date, reservations, await absencesOn(venueId, date)),
     reservations,
   };
+}
+
+/**
+ * The day's absences, which the book itself does not carry.
+ *
+ * Marking a booking absent takes it out of the working list — that is
+ * the decision behind the Lot 1 chips, and `upcomingReservations` below
+ * is where it is made. But a service's *count* of absences is a fact
+ * about the evening, not a row in a working list, and deriving it from
+ * that list made it zero: a past day read « 96 couverts réservés sur
+ * 120 · 0 couvert absent » above a table holding four of them.
+ *
+ * So the count has its own query. Two readings of the same table for
+ * two different questions, rather than one reading answering both
+ * badly.
+ */
+async function absencesOn(venueId: string, date: string): Promise<Reservation[]> {
+  return (await all(
+    `${BOOKING_SELECT} AND r.state = 'no_show' AND date(r.at) = ? ORDER BY r.at`,
+    venueId,
+    date,
+  )).map(reservationRow);
 }
 
 // ── Bookings ─────────────────────────────────────────────────

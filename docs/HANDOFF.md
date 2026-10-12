@@ -557,12 +557,70 @@ le journal de build :
 |---|---|
 | pas de `DATABASE_URL` | rien. Le portail retombe sur SQLite ou sur l'instantané, ce qui est le comportement documenté d'un déploiement sans base. |
 | une base **vide** | applique le schéma, génère le jeu de démonstration et le copie. Le premier déploiement d'un projet Neon neuf atterrit donc sur Dar Zellij plutôt que sur un portail vide. |
-| une base **avec au moins un établissement** | applique le schéma — c'est idempotent, et c'est ainsi qu'un changement de schéma arrive en production — et **n'écrit rien d'autre**. |
+| une base **avec au moins un établissement** | applique le schéma — c'est idempotent, et c'est ainsi qu'un changement de schéma arrive en production — et rafraîchit **le carnet de démonstration**, et rien d'autre (voir ci-dessous). |
 
 **Aucun `TRUNCATE` dans ce chemin.** C'est la différence entre cette
 étape et `db:reset`, et elle est structurelle : `db/push.mjs` a deux
 modes, et celui que le build utilise (`--if-empty`) ne contient pas
 l'instruction qui efface.
+
+#### Le carnet de démonstration, sur une base déjà en service
+
+Le jeu de données est accroché à l'horloge de démonstration — le jeudi
+de la semaine à 20h30 — et la semence ne s'exécute que sur une base
+vide. Entre les deux, un cas : le déploiement en place depuis trois
+semaines. Ses établissements, ses comptes et les partenaires qui se
+sont inscrits sont exactement ce qu'ils doivent être, et son carnet a
+trois semaines. Réservations ouvre sur un jeudi soir déjà passé, et
+chaque jour devant est vide.
+
+`db/refresh-demo-book.mjs` est ce cas et rien d'autre. Il remplace les
+réservations des deux établissements de démonstration :
+
+- `venues`, `partner_accounts`, `staff`, `customers`, `zones`,
+  `venue_settings`, `service_definitions` — jamais lus, jamais écrits ;
+- **une réservation prise par le portail ou par l'application n'est
+  jamais supprimée.** Ces identifiants sont `res_` suivi d'une seule
+  suite en base 36 (`newId`, dans `operations-write-store.ts`) ; tout
+  identifiant semé est soit présent dans le fichier qu'on vient de
+  générer, soit porteur d'un second souligné (`res_dz_c3_din_5`). La
+  suppression est l'union de ces deux ensembles, et un identifiant
+  d'exécution n'est dans ni l'un ni l'autre ;
+- les deux lignes `services` en direct suivent, parce que leurs
+  compteurs sont sommés du carnet ;
+- le tout dans une transaction, verrou de table compris : un refus
+  laisse l'ancien carnet en place plutôt que la moitié de chacun, et
+  deux builds simultanés ne s'effacent pas l'un l'autre.
+- un échec **ne casse pas le build**. Un carnet périmé est une démo qui
+  montre jeudi dernier ; un build rouge est un déploiement qui ne montre
+  rien.
+
+`LYFE_SKIP_DEMO_BOOK=1` le désactive. À la main :
+`DATABASE_URL=… npm run db:seed && DATABASE_URL=… npm run db:refresh-book`.
+
+#### Ce que le carnet contient
+
+De sept jours avant l'horloge au 31 octobre, service par service, sur
+les définitions de `service_definitions` plutôt que sur une heure écrite
+en dur — donc le lundi du Nomad est vide, parce que `sd_sunset` et
+`sd_night` déclarent « 3,4,5,6,7 » et qu'un lundi inventé ici ferait
+décrire deux bars différents à Réservations et à Disponibilités.
+
+| Quand | Dans quel état |
+|---|---|
+| un service déjà clos | arrivé, ou absent pour un sur huit |
+| le service en cours | ce que la semence lui donne déjà, plus deux demandes |
+| un service à venir | confirmé, et deux ou trois demandes par jour, réparties entre les services de la journée |
+
+Le remplissage suit le jour de la semaine — vendredi et samedi pleins,
+lundi calme — s'allège à mesure qu'on s'éloigne, et le déjeuner est plus
+léger que le dîner. Les sources sont les trois que le lot 1 reçoit :
+LYFE, Téléphone, WhatsApp, dans cet ordre de fréquence. Une réservation
+sur sept porte une demande particulière. Rien n'est tiré au hasard : un
+mélange d'entiers remplace `Math.random`, donc deux semences écrivent le
+même carnet et deux captures sont comparables.
+
+`LYFE_DEMO_BOOK_UNTIL` déplace la fin du carnet.
 
 Deux détails qui comptent parce que Vercel peut lancer deux builds dans
 la même seconde :

@@ -41,6 +41,22 @@
 // bad afternoon where the database is unreachable and you need to ship a
 // front-end fix anyway: the build succeeds, and the schema is applied by
 // the next deploy.
+//
+// ── The demo book ────────────────────────────────────────────────────
+//
+// One more thing happens on a database that already has venues, and it
+// is the only write this step makes to one: the **demo book** is
+// refreshed. The dataset is anchored to the demo clock — the Thursday
+// of the week at 20h30 — so a deployment that went up three weeks ago
+// opens Réservations on an evening that has already happened, with
+// every day ahead of it empty. Nothing in the first-deploy path can fix
+// that, because the first deploy already happened.
+//
+// `db/refresh-demo-book.mjs` replaces the reservations of the two demo
+// establishments and nothing else: not the venues, not the accounts,
+// not the guests, and never a booking made through the portal or the
+// app. It is a separate script because that boundary is the whole of
+// its value, and `LYFE_SKIP_DEMO_BOOK=1` turns it off.
 
 import { execFileSync } from "node:child_process";
 import { rmSync } from "node:fs";
@@ -145,6 +161,51 @@ async function writeDemoAccounts(client) {
   return written;
 }
 
+/**
+ * Regenerates the demo book and swaps it in, on a database that has one.
+ *
+ * The generator only writes SQLite, so the book is produced into a
+ * scratch file exactly as the first-deploy path does, then handed to
+ * `db/refresh-demo-book.mjs`, which is the half that knows what it is
+ * allowed to touch.
+ *
+ * A failure here does **not** fail the build. A stale book is a demo
+ * that shows last Thursday; a red build is a deployment that shows
+ * nothing. The script says what went wrong, rolls its own transaction
+ * back, and the schema — which is what this step exists for — is
+ * already applied by then.
+ */
+function refreshDemoBook(venueCount) {
+  if (process.env.LYFE_SKIP_DEMO_BOOK) {
+    console.log(
+      `db:bootstrap — ${venueCount} établissement(s) en base, carnet laissé en place (LYFE_SKIP_DEMO_BOOK)`,
+    );
+    return;
+  }
+  console.log(
+    `db:bootstrap — ${venueCount} établissement(s) en base, régénération du carnet de démonstration`,
+  );
+  try {
+    execFileSync(process.execPath, ["db/seed.mjs", "--reset", "--sqlite-only", SEED_FILE], {
+      stdio: "inherit",
+    });
+    execFileSync(process.execPath, ["db/refresh-demo-book.mjs", SEED_FILE], {
+      stdio: "inherit",
+    });
+  } catch {
+    console.error(
+      "db:bootstrap — le carnet de démonstration n'a pas été rafraîchi. " +
+        "Le schéma est appliqué et le déploiement continue ; les " +
+        "réservations affichées sont celles d'avant.",
+    );
+  }
+  try {
+    rmSync(SEED_FILE, { force: true });
+  } catch {
+    // A leftover scratch file is untidy, not fatal.
+  }
+}
+
 const client = await connect();
 let venues = 0;
 let accounts = 0;
@@ -169,27 +230,34 @@ try {
       // A leftover scratch file is untidy, not fatal.
     }
     console.log("db:bootstrap — base prête");
-  } else if (accounts > 0) {
-    console.log(
-      `db:bootstrap — ${venues} établissement(s) et ${accounts} compte(s) en base, rien à semer`,
-    );
-  } else if (process.env.LYFE_SKIP_DEMO_ACCOUNTS) {
-    console.log(
-      `db:bootstrap — ${venues} établissement(s) en base, aucun compte, ` +
-        "et LYFE_SKIP_DEMO_ACCOUNTS est posé : personne ne pourra se connecter",
-    );
   } else {
-    console.log(
-      `db:bootstrap — ${venues} établissement(s) en base et aucun compte : ` +
-        "écriture des comptes de démonstration",
-    );
-    const written = await writeDemoAccounts(client);
-    console.log(
-      `db:bootstrap — ${written} compte(s) écrit(s), mot de passe ` +
-        (process.env.LYFE_SEED_PASSWORD
-          ? "LYFE_SEED_PASSWORD"
-          : "« demo » (posez LYFE_SEED_PASSWORD pour en changer)"),
-    );
+    // An existing database. Its book is as old as the deployment, which
+    // is the one thing this step rewrites here; whether anybody can
+    // sign in to read it is the separate question below.
+    refreshDemoBook(venues);
+
+    if (accounts > 0) {
+      console.log(
+        `db:bootstrap — ${venues} établissement(s) et ${accounts} compte(s) en base, aucun compte à semer`,
+      );
+    } else if (process.env.LYFE_SKIP_DEMO_ACCOUNTS) {
+      console.log(
+        `db:bootstrap — ${venues} établissement(s) en base, aucun compte, ` +
+          "et LYFE_SKIP_DEMO_ACCOUNTS est posé : personne ne pourra se connecter",
+      );
+    } else {
+      console.log(
+        `db:bootstrap — ${venues} établissement(s) en base et aucun compte : ` +
+          "écriture des comptes de démonstration",
+      );
+      const written = await writeDemoAccounts(client);
+      console.log(
+        `db:bootstrap — ${written} compte(s) écrit(s), mot de passe ` +
+          (process.env.LYFE_SEED_PASSWORD
+            ? "LYFE_SEED_PASSWORD"
+            : "« demo » (posez LYFE_SEED_PASSWORD pour en changer)"),
+      );
+    }
   }
 } finally {
   await client.end();
