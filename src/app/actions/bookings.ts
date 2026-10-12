@@ -20,7 +20,7 @@ import { getRestaurantRepository } from "@/lib/data";
 import { RepositoryError, StaleWriteError } from "@/lib/data/repository";
 import { COPY } from "@/lib/copy/fr";
 import { logFailure } from "@/lib/errors/reference";
-import type { RejectionReason } from "@/lib/types/business";
+import type { CancellationReason, RejectionReason } from "@/lib/types/business";
 import type { Reservation } from "@/lib/types/restaurant";
 
 const RESTAURANT_PATH = "/restaurant/[[...section]]";
@@ -110,12 +110,25 @@ export async function reportNoShowBooking(reservationId: string) {
   );
 }
 
-/** A confirmed booking is undone — by the venue, on the guest's behalf. */
-export async function cancelBooking(reservationId: string) {
+/**
+ * The venue gives back a table it had accepted, and says why.
+ *
+ * The reason is required and coded, and the note travels with it — the
+ * one that explains the exception a code cannot. It reaches the
+ * repository, unlike `rejectBooking`'s note, which the dialog used to
+ * collect and the call used to drop.
+ */
+export async function cancelBooking(
+  reservationId: string,
+  reason: CancellationReason,
+  note?: string,
+) {
   return withVenue((venueId) =>
     getRestaurantRepository().cancelReservation({
       restaurantId: venueId,
       reservationId,
+      reason,
+      note,
     }),
   );
 }

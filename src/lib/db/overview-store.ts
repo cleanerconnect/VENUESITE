@@ -29,7 +29,13 @@ import type {
   ServiceKind,
   Zone,
 } from "@/lib/types/restaurant";
-import { isCuisineId, isVenueStatus, type CuisineId } from "@/lib/types/restaurant";
+import {
+  isCategoryId,
+  isCuisineId,
+  isVenueStatus,
+  type CategoryId,
+  type CuisineId,
+} from "@/lib/types/restaurant";
 import { StaleWriteError } from "@/lib/data/repository";
 import { asSlotMinutes } from "@/lib/types/venue-operations";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
@@ -73,7 +79,12 @@ export async function venueProfile(venueId: string): Promise<RestaurantProfile |
     // make an unanswered question look answered.
     cuisine: isCuisineId(String(r.cuisine ?? "")) ? (String(r.cuisine) as CuisineId) : "",
     specialties: String(r.specialties ?? ""),
-    category: String(r.category ?? ""),
+    // Lenient the same way the cuisine above is: a fiche written before
+    // the list closed carries a sentence, and a sentence is not a
+    // category the app can group by. It reads as unanswered, which is
+    // what it is.
+    category: isCategoryId(String(r.category ?? "")) ? (String(r.category) as CategoryId) : "",
+    categoryOther: String(r.category_other ?? ""),
     district: String(r.district ?? ""),
     tagline: String(r.tagline ?? ""),
     capacity: Number(r.capacity),
@@ -1063,6 +1074,109 @@ export async function transitionBooking(
       at,
     );
   });
+}
+
+/**
+ * Gives back an accepted table, with a reason, and tells the guest.
+ *
+ * `transitionBooking` would write the state and the history row on its
+ * own — it already takes a reason code and a note. What it cannot do is
+ * the third write, and the third write is the point: a venue that
+ * cancels a table the guest is counting on owes them a message, and a
+ * notification the portal claims to have sent and cannot show is not a
+ * notification. So all three go in one transaction, the way
+ * `rescheduleBooking` does it: the booking is cancelled *and* the guest
+ * is told, or neither happened.
+ *
+ * The state guard is here rather than in the caller because it is a
+ * fact about the data: a booking that has already happened cannot be
+ * cancelled. A party seated, gone, refused or cancelled is a record of
+ * what happened, and a record is not a plan to call off.
+ *
+ * Which live states may be cancelled is wider than what Lot 1 *offers*,
+ * and the two are different questions. The portal offers it on a
+ * « Confirmée » line and nowhere else, because a request is answered
+ * with Refuser and its own reason list; the store accepts a request or
+ * a waiting booking too, because Lot 2's kebab has always let a host
+ * call one off and because nothing about the data says it cannot be.
+ */
+export async function cancelBookingAsVenue(
+  venueId: string,
+  reservationId: string,
+  reason: string,
+  note?: string,
+): Promise<{ cancelled: boolean; why?: "not_found" | "settled" | "changed" }> {
+  const current = await one(
+    `SELECT r.state, r.at, r.guest_name, r.guest_phone, r.customer_id, c.email
+       FROM reservations r
+       LEFT JOIN customers c ON c.id = r.customer_id
+      WHERE r.id = ? AND r.venue_id = ?`,
+    reservationId,
+    venueId,
+  );
+  if (!current) return { cancelled: false, why: "not_found" };
+  const live = ["requested", "waitlisted", "confirmed"];
+  const was = String(current.state);
+  if (!live.includes(was)) return { cancelled: false, why: "settled" };
+
+  const now = new Date().toISOString();
+  let cancelled = true;
+  await transaction(async () => {
+    // Conditional on the state this transaction read, like every other
+    // write on a booking: two hosts cancelling the same table must not
+    // send the guest two messages.
+    const { changes } = await run(
+      "UPDATE reservations SET state = 'cancelled', updated_at = ? WHERE id = ? AND venue_id = ? AND state = ?",
+      now,
+      reservationId,
+      venueId,
+      was,
+    );
+    if (changes === 0) {
+      cancelled = false;
+      return;
+    }
+    await run(
+      `INSERT INTO reservation_status_history
+         (id, reservation_id, from_state, to_state, actor, actor_id, reason_code, note, at)
+       VALUES (?, ?, ?, 'cancelled', 'venue', NULL, ?, ?, ?)`,
+      `sh_${reservationId}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+      reservationId,
+      was,
+      reason,
+      note ?? null,
+      now,
+    );
+    const email = current.email ? String(current.email) : "";
+    await run(
+      `INSERT INTO messages_log
+         (id, venue_id, customer_id, reservation_id, channel, kind, recipient,
+          preview, status, failure_reason, at)
+       VALUES (?, ?, ?, ?, ?, 'reservation_annulee', ?, ?, 'envoye', '', ?)`,
+      `ml_${reservationId}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+      venueId,
+      current.customer_id ?? null,
+      reservationId,
+      email ? "email" : "sms",
+      email || String(current.guest_phone),
+      // The hour, because a guest holds several bookings and « votre
+      // réservation » names none of them. Not the reason: the coded
+      // one is the venue's own bookkeeping and « Surréservation » is
+      // not a sentence to send anybody.
+      // `locale: fr` because a message to a guest in Casablanca does
+      // not say « 15 October ». The reschedule message above this one
+      // has the same gap and is left for its own pass rather than
+      // changed from under a frame that was captured with it.
+      `Votre réservation du ${formatInTimeZone(
+        new Date(String(current.at)),
+        VENUE_TIME_ZONE,
+        "d MMMM 'à' HH'h'mm",
+        { locale: fr },
+      )} est annulée par l'établissement.`,
+      now,
+    );
+  });
+  return cancelled ? { cancelled: true } : { cancelled: false, why: "changed" };
 }
 
 // ── Analytics & visibility ───────────────────────────────────

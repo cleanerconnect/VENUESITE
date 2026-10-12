@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-15T19:30:00.703Z",
+  "capturedAt": "2026-10-15T19:30:01.060Z",
   "capturedUnderLot": 1,
   "serves": [
     1,
@@ -107,7 +107,8 @@
           "subline": "Restaurant · Marrakech",
           "cuisine": "marocaine",
           "specialties": "Tajines, pastilla et méchoui du vendredi",
-          "category": "Restaurant gastronomique, riad",
+          "category": "restaurant_gastronomique",
+          "categoryOther": "",
           "district": "Médina",
           "tagline": "Marocain contemporain dans un riad de la médina",
           "capacity": 120,
@@ -12768,7 +12769,8 @@
         "subline": "Restaurant · Marrakech",
         "cuisine": "marocaine",
         "specialties": "Tajines, pastilla et méchoui du vendredi",
-        "category": "Restaurant gastronomique, riad",
+        "category": "restaurant_gastronomique",
+        "categoryOther": "",
         "district": "Médina",
         "tagline": "Marocain contemporain dans un riad de la médina",
         "capacity": 120,
@@ -15005,7 +15007,7 @@
             "maxPartyOnline": 6,
             "defaultQuoteMinutes": 20,
             "pausedReason": "",
-            "updatedAt": "2026-10-15T19:30:00.602Z"
+            "updatedAt": "2026-10-15T19:30:00.945Z"
           },
           "briefing": {
             "serviceId": "svc_current",
@@ -16806,7 +16808,7 @@
             "noShowFeeMad": 0,
             "guestMessage": "",
             "version": 1,
-            "updatedAt": "2026-10-15T19:30:00.611Z"
+            "updatedAt": "2026-10-15T19:30:00.956Z"
           },
           "cancellations": [],
           "transactions": [],
@@ -19546,7 +19548,8 @@
           "subline": "Bar · Casablanca",
           "cuisine": "fusion",
           "specialties": "Cocktails d'auteur et petite restauration du soir",
-          "category": "Bar à cocktails, rooftop",
+          "category": "bar_a_cocktails",
+          "categoryOther": "",
           "district": "Gauthier",
           "tagline": "Cocktails et DJ sur les toits, vue sur le port",
           "capacity": 70,
@@ -26488,7 +26491,8 @@
         "subline": "Bar · Casablanca",
         "cuisine": "fusion",
         "specialties": "Cocktails d'auteur et petite restauration du soir",
-        "category": "Bar à cocktails, rooftop",
+        "category": "bar_a_cocktails",
+        "categoryOther": "",
         "district": "Gauthier",
         "tagline": "Cocktails et DJ sur les toits, vue sur le port",
         "capacity": 70,
@@ -27831,7 +27835,7 @@
             "maxPartyOnline": 6,
             "defaultQuoteMinutes": 20,
             "pausedReason": "",
-            "updatedAt": "2026-10-15T19:30:00.690Z"
+            "updatedAt": "2026-10-15T19:30:01.046Z"
           },
           "briefing": {
             "serviceId": "svc_nomad_current",
@@ -29318,7 +29322,7 @@
             "noShowFeeMad": 0,
             "guestMessage": "",
             "version": 1,
-            "updatedAt": "2026-10-15T19:30:00.694Z"
+            "updatedAt": "2026-10-15T19:30:01.050Z"
           },
           "cancellations": [],
           "transactions": [],

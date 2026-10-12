@@ -102,10 +102,10 @@ Venue » is one of the three nouns and had no screen at all until now.
 |---:|---|---|---|---|
 | 0 | Inscription | `/inscription` | Création de Venue | Six steps a partner walks on their own: themselves, the establishment, the address, a photo, the weekly hours, a summary. The draft is saved on the seam after every step, so a closed tab loses nothing, and step 6 creates the venue and signs them in on it. |
 | 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. Its line for non-partners now opens the flow above instead of offering an e-mail address. |
-| 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. |
-| 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Two blocks since 5 October: online booking on or off, and the services — days, hours, last booking taken, capacity, open or closed. The pacing rules, the advanced settings, the closed days and the choice of grid left the lot that day. |
+| 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. Three closed lists since 12 October: **Catégorie** is ten values and an « Autre » with its own line, **Photos** is one principale and five in a carousel, and **Menu** is the item list plus one optional PDF. |
+| 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Two blocks since 5 October: online booking on or off, and the services — days, hours, last booking taken, capacity, open or closed. The pacing rules, the advanced settings, the closed days and the choice of grid left the lot that day. A service is added by naming which one it is, and its hours come with the name: **Petit-déjeuner 7h30–11h00**, Déjeuner 12h00–15h00, Dîner 19h00–23h30. |
 | 4 | Accueil | `/restaurant` | Gestion des réservations | Figures, and no list. Six for today — bookings, covers, to confirm, arrived, absent, the fill rate of the service in hand — eight for the last thirty days, each with its movement against the period before, and bookings per day in bars. Every one of them is counted off `reservations` when the screen is built. « À confirmer » opens the book filtered on the requests; the rows and the decisions are on Réservations. |
-| 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | Any day's book, walked a step at a time or picked from a calendar, scoped to one of that day's services — and on each row the decisions its state allows, and only those: accepter and refuser with a coded reason on a request, check-in on a confirmed table, no-show once its hour has passed. |
+| 5 | Réservations | `/restaurant/reservations` | Gestion des réservations | Any day's book, walked a step at a time or picked from a calendar, scoped to one of that day's services, ruled off by sitting — a thin header per half hour with the time and the sitting's covers — and in clock order. On each row the decisions its state allows, and only those: accepter and refuser with a coded reason on a request, check-in on a confirmed table, no-show once its hour has passed; **annuler la réservation** with its own coded reason, in that row's sheet and on no line. |
 | 6 | Check-in | `/restaurant/check-in` | Gestion des réservations | Validate a booking at the door, by code or by name. |
 | 7 | Notifications | `/restaurant/notifications` | Gestion des réservations | One alert: a new booking needs a decision. |
 
@@ -355,7 +355,8 @@ node tools/verify/audience.mjs        # the minimum group of ten, both configura
 node tools/verify/inscription.mjs     # the seven onboarding steps, the resume, the landing
 node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
 node tools/verify/edges.mjs           # the paths taken by accident — see below
-node tools/verify/decisions.mjs       # LYFE's review, what each state allows, the search, the guest — and the 5 October absences
+node tools/verify/decisions.mjs       # LYFE's review, what each state allows, the cancellation, the search, the guest
+node tools/verify/fiche.mjs           # the fiche's closed lists: category, the photos' ceiling, the carte, the service presets
 node tools/verify/handshake.mjs       # the app and the portal on one database — see §14
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
 ```
@@ -795,6 +796,32 @@ re-captured and not re-drawn. Both are here now, and
 `tools/figma/pack-frames.mjs` is how the JSON reaches a sandbox that
 has no `fetch`: 213 000 characters of escaped string literal compress
 to 52 000 of base64, which the replay's own twenty-line decoder undoes.
+`--call` writes the two `use_figma` calls that carry those halves onto
+the page and turn them back into the chunks the replay reads, each step
+asserting the length it expects and the whole asserting a hash of the
+unpacked text — because a literal that long is typed into a tool call
+by whatever is driving the plugin, and one character lost in the
+transfer used to surface as a `JSON.parse` error in the middle of the
+document, which reads exactly like a broken codec.
+
+**Three shorter paths, for a pass that changed three tabs.** Handing
+over 38 frames to redraw six of them is most of the cost of a Figma
+round trip, so each half now has a way to carry only what it needs.
+`replay-page09.js` takes the capture as an argument, and
+`tools/figma/replay-pack.mjs` writes one call out of the minified
+replay plus the frames of the sections named in `SECTIONS` — `KEYS`
+narrows it to the frames a pass actually changed — with a hash of those
+frames checked inside the sandbox before anything is drawn: the frames
+are mostly numbers, and a dropped digit in a coordinate is still valid
+JavaScript, so nothing else would catch it.
+`presentPage09(figma, { redraw: false })` presents the frames the page
+already carries instead of drawing them again, which is the only
+version of the presentation that needs no capture on the page at all;
+the stamps say which frame is which, and the chrome, the reactions and
+the three adopted screens stay untouched. `tools/figma/present-pack.mjs`
+builds that call, and the dry run runs a third pass with it and asserts
+the geometry is the one the redrawing pass produced — if the short path
+laid the page out differently it would not be the same presentation.
 
 **The page is now a handoff, not a contact sheet.**
 `tools/figma/present-page09.js` takes over from `replay-page09.js`,
@@ -1297,11 +1324,24 @@ is the guard — it reads every row's badge and its buttons at 1440 and at
 390, in the sheet, and on a service already run out, and it fails on a
 pair it did not expect.
 
-One consequence, named rather than buried: with Refuser off the confirmed
-row and out of its sheet, **no Lot 1 screen cancels a table already
-accepted**. That button was the only path and it wrote `rejected`, so it
-was the wrong verb as well as the wrong neighbour. §12 carries it as a
-gap, with the endpoint that answers it.
+**And one decision the row does not offer at all: Annuler la
+réservation.** It is in the sheet of a `confirmed` row and on no line at
+either width, because giving back a table the venue had accepted is the
+one decision here the guest did not ask for — it belongs where their
+name and telephone number are on screen, not beside Check-in. It takes a
+**required coded reason** from its own five (`venue_closed`,
+`overbooked`, `guest_request`, `unreachable`, `other`) plus free text,
+writes `cancelled` rather than `rejected`, and tells the guest: the
+state, the history row with its `reason_code` and `note`, and a
+`messages_log` line of kind `reservation_annulee` go in one transaction,
+so the table is given back *and* the guest is told, or neither happened.
+A reason list of its own because the two acts are different — « Complet
+sur ce créneau » cannot be why an accepted table went away; the venue
+had already said yes.
+
+That closes the gap the last pass named: for a fortnight no Lot 1 screen
+could cancel an accepted table, because the only path had been a Refuser
+that wrote the wrong word.
 
 **Décaler** was the fifth decision until 5 October and is Lot 2's now:
 « ne figurait pas dans le périmètre initial et n'est pas prioritaire
@@ -1469,7 +1509,7 @@ they exist.
 | 3 | ~~No editor for seating areas~~ — **done in Phase 5.** Zones open and close from Ma fiche, and the write reaches the app immediately | — | — |
 | 4 | ~~No preview of the app listing~~ — **done in Phase 5.** Ma fiche renders the listing from the same values the form edits | — | — |
 | 5 | ~500 French literals inline, almost all one-off headings | A copy change means a code change | Medium, mechanical |
-| 8 | **No Lot 1 screen cancels a table already accepted.** Refuser on the confirmed row was the only path and it wrote `rejected` — the word the contract keeps for a refused *request* — so the state rule took it off the row and out of the sheet. `PUT …/cancel` is the right verb and is in the contract | A venue that has to give an accepted table back phones the guest and marks the absence once the hour passes | Small: a sheet action with a reason, on `cancel` rather than `reject` |
+| 8 | ~~No Lot 1 screen cancels a table already accepted~~ — **closed on 12 October.** « Annuler la réservation » is in the confirmed row's sheet, with a required coded reason of its own, and it writes `cancelled` through `PUT …/cancel` and tells the guest. See §8 | — | — |
 | 6 | ~~`loading.tsx` only on venue routes~~ — **done in Phase 4.** Every route has loading, empty, error and denied states | — | — |
 
 Gap 1 is the one to do first: the venue side is now a complete worked
@@ -1550,7 +1590,7 @@ for a bug that was not there.
 
 ## 13. Rules to keep
 
-Ten things that will rot quietly if nobody defends them.
+Eleven things that will rot quietly if nobody defends them.
 
 1. **`components/ui/` imports nothing from `lib/db`, `lib/data` or
    `lib/mock`.** If a component needs data, it takes a prop. This is
@@ -1625,6 +1665,26 @@ Ten things that will rot quietly if nobody defends them.
    those two functions, and into `decisions.mjs` §6 — which asserts the
    pairing rather than trusting it, so a button added to a row that
    should not have one fails the tool rather than reaching a host.
+
+   The two functions are not interchangeable, and that is the rule's
+   second half: the line is what a host presses mid-service, the sheet
+   is where the guest's name and number are on screen. A decision that
+   cannot be undone from the guest's side belongs in the sheet —
+   « Annuler la réservation » is there and on no line — and a decision
+   that has to be taken in three seconds belongs on the line. §7 of
+   `decisions.mjs` counts the cancellation on every line at both widths
+   and expects zero.
+11. **A closed list is a list, a free line is a line, and they are
+   different fields.** `cuisine` was free text and could not be
+   filtered; `category` was free text and could not be grouped. Both are
+   ids now, with `specialties` and `category_other` holding the words
+   that used to be mixed in with them. The shape to copy, when the next
+   field closes: ids in `src/lib/types/restaurant.ts` with a label map
+   and a guard, a `Select` built from the ids, a lenient read that turns
+   an unknown value into `""` rather than printing it, a migration that
+   maps what it can and keeps the sentence, and the id *and* its label
+   in the app payload — an app handed only ids will one day print
+   `salon_de_the`. `tools/verify/fiche.mjs` holds the ground.
 
 ---
 

@@ -277,6 +277,15 @@ export interface EntityRow {
    * ruled off by sitting.
    */
   slot?: string;
+  /**
+   * Host density: how many covers this row is, as a number.
+   *
+   * `lead.party` already says « 4 couverts » for the row itself; this
+   * is the same fact in a form the sitting's header can add up. A
+   * string would have to be parsed back, and a word that changes with
+   * the venue's configuration is not a number.
+   */
+  covers?: number;
   href?: string;
   /** Kebab entries. They label themselves, so they carry a bare Intent. */
   menu?: { id: string; label: string; action: Intent; destructive?: boolean }[];
@@ -351,6 +360,16 @@ export interface EntityListBlock extends BlockBase {
   empty?: { title: string; body?: string; icon?: IconKey; action?: Action };
   /** Shown when filters exclude everything, as opposed to an empty list. */
   noMatches?: { title: string; body?: string };
+  /**
+   * The word a sitting's header counts in — « couverts » at a
+   * restaurant, « personnes » at a lounge.
+   *
+   * The unit belongs to the block rather than the row because it is a
+   * fact about the venue, not about the booking, and a spec crosses to
+   * the client as JSON: the function that picks the word stays on the
+   * server and only its answer travels.
+   */
+  coverUnit?: { one: string; many: string };
 }
 
 // ── Slot grid ────────────────────────────────────────────────

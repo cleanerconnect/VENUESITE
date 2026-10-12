@@ -20,7 +20,9 @@ next-env.d.ts
 # the intermediate numbers.
 scratch/
 
-# The `use_figma` bundle `tools/figma/accueil-pack.mjs` writes: the
-# builder and the figures, minified into one tool call. Both of its
-# sources are in the repository, so the bundle is a build output.
+# The `use_figma` calls the packers write: `accueil-pack.mjs` (the
+# builder and the figures), `replay-pack.mjs` (the replay and the frames
+# of one section), `present-pack.mjs` (the presentation) and
+# `pack-frames.mjs --call` (the capture, in two halves of base64). Every
+# source is in the repository, so each bundle is a build output.
 build/

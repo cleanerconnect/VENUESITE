@@ -1,5 +1,5 @@
 import type { PendingVenue } from "@/lib/types/restaurant";
-import { isCuisineId } from "@/lib/types/restaurant";
+import { isCategoryId, isCuisineId } from "@/lib/types/restaurant";
 import type {
   VenueValidationInput,
   RescheduleBookingInput,
@@ -27,6 +27,7 @@ import {
   type CheckInInput,
   type NoShowInput,
   type RejectBookingInput,
+  type CancelBookingInput,
   type ReservationRefInput,
   type RestaurantRepository,
   type ReviewReplyInput,
@@ -145,7 +146,11 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     return this.transition(restaurantId, reservationId, "confirmed");
   }
 
-  async cancelReservation({ restaurantId, reservationId }: ReservationRefInput) {
+  async cancelReservation({ restaurantId, reservationId }: CancelBookingInput) {
+    // The reason is accepted and dropped, as it is on `rejectReservation`
+    // above: the snapshot has no analytics sink to put it in and no
+    // message log to show the guest was told. What it can do is stop
+    // collapsing the state, and it does.
     return this.transition(restaurantId, reservationId, "cancelled");
   }
 
@@ -361,7 +366,10 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       shortName: patch.shortName,
       tagline: patch.tagline,
       description: patch.description,
-      category: patch.category,
+      // Guarded like the cuisine on `updateVenueListing` below: the
+      // overlay is the one place a payload becomes a typed profile.
+      category: isCategoryId(patch.category) ? patch.category : "",
+      categoryOther: patch.categoryOther,
       address: patch.address,
       district: patch.district,
       city: patch.city,

@@ -920,15 +920,37 @@ async function presentPage09(figma, options = {}) {
     if (!kit[name]) throw new Error(`composant absent : ${name} — lancer ensureKit d'abord`);
   }
 
-  const count = Number(page.getSharedPluginData(NS, "chunks") || 0);
-  if (!count) throw new Error("aucune donnée : stocker les morceaux d'abord");
-  let raw = "";
-  for (let i = 0; i < count; i++) raw += page.getSharedPluginData(NS, `data${i}`);
-  const doc = JSON.parse(raw);
+  // ── the capture, or the frames already on the page ──
+  //
+  // `redraw: false` presents what is there instead of drawing it
+  // again. The two jobs are separate: `replay-page09.js` puts the
+  // captured frames on the page, this file dresses them, lays out the
+  // shelves and writes the annotations. Redrawing here as well means
+  // the whole 38-frame capture has to be on the page's plugin data
+  // before the presentation can run — so a pass that replayed three
+  // tabs had to hand over the other thirty-five frames too, just to
+  // get its shelf laid out again.
+  //
+  // With it off, the stamps say which frame is which and nothing is
+  // redrawn: the chrome instances, the prototype reactions and the
+  // hand-edited frames (Accueil, Réservations, Check-in — which the
+  // capture does not own at all) stay exactly as they are. Pass
+  // `capturedAt` for the cover, which is the only other thing the
+  // capture was read for.
+  let doc = null;
+  if (options.redraw !== false) {
+    const count = Number(page.getSharedPluginData(NS, "chunks") || 0);
+    if (!count) throw new Error("aucune donnée : stocker les morceaux d'abord");
+    let raw = "";
+    for (let i = 0; i < count; i++) raw += page.getSharedPluginData(NS, `data${i}`);
+    doc = JSON.parse(raw);
+  }
 
   const report = [];
   stripPresentation(page);
-  const drawn = await redrawCaptured(figma, page, doc, report);
+  const drawn = doc
+    ? await redrawCaptured(figma, page, doc, report)
+    : stampedFrames(page);
   const named = namedFrames(page);
 
   // ── the sections, one after another ──
@@ -1058,7 +1080,7 @@ async function presentPage09(figma, options = {}) {
   // ── the cover, left of the first section ──
   let cover = page.children.find((n) => n.type === "FRAME" && /^Couverture/.test(n.name));
   if (cover) cover.remove();
-  cover = coverBoard(figma, doc, version);
+  cover = coverBoard(figma, doc ?? { capturedAt: options.capturedAt }, version);
   cover.setSharedPluginData(NS, "generated", "1");
   page.appendChild(cover);
   cover.x = -(COVER_W + SECTION_GAP);
@@ -1088,3 +1110,9 @@ async function presentPage09(figma, options = {}) {
 //
 //   return await ensureKit(figma);
 //   return await presentPage09(figma, { version: "v1" });
+//
+// or, to lay out and annotate the frames the page already carries
+// without redrawing them from the capture:
+//
+//   return await presentPage09(figma, { version: "v1", redraw: false,
+//                                       capturedAt: "2026-10-15" });

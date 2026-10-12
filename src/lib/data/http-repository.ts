@@ -35,6 +35,7 @@ import {
   type CheckInInput,
   type NoShowInput,
   type RejectBookingInput,
+  type CancelBookingInput,
   type ReservationRefInput,
   type RestaurantRepository,
   type ReviewReplyInput,
@@ -143,10 +144,15 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     );
   }
 
-  cancelReservation({ reservationId }: ReservationRefInput) {
+  cancelReservation({ reservationId, reason, note }: CancelBookingInput) {
+    // The body is the whole of what distinguishes this call from a
+    // state flip: the coded reason the contract requires, and the free
+    // text that explains the exception. Both travel, and the note only
+    // when there is one.
     return this.request<RestaurantOverview>(
       "PUT",
       `/api/business/bookings/${reservationId}/cancel`,
+      note ? { reason, note } : { reason },
     );
   }
 

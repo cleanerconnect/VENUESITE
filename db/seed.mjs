@@ -190,7 +190,11 @@ insert("venues", {
   // matched « Marocaine » by substring and by luck.
   cuisine: "marocaine",
   specialties: "Tajines, pastilla et méchoui du vendredi",
-  category: "Restaurant gastronomique, riad",
+  // A `CATEGORY_IDS` id since the list closed. « riad » was the
+  // other half of the old free line and is a word for the room, not a
+  // category the app groups by.
+  category: "restaurant_gastronomique",
+  category_other: "",
   address: "12 derb Sidi Ahmed Soussi, Médina",
   district: "Médina",
   city: "Marrakech",
@@ -1472,7 +1476,8 @@ insert("venues", {
   // the ten it belongs under. The sentence says what it actually is.
   cuisine: "fusion",
   specialties: "Cocktails d'auteur et petite restauration du soir",
-  category: "Bar à cocktails, rooftop",
+  category: "bar_a_cocktails",
+  category_other: "",
   address: "18 boulevard d'Anfa, Gauthier",
   district: "Gauthier",
   city: "Casablanca",

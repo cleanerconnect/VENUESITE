@@ -23,7 +23,11 @@ import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FilterTabs } from "@/components/ui/FilterTabs";
 import { PermissionDenied } from "@/components/data/QueryState";
-import { MENU_FILE_MAX } from "@/lib/types/restaurant";
+import {
+  MENU_FILE_MAX,
+  PHOTO_CAROUSEL_MAX,
+  PHOTO_MAX,
+} from "@/lib/types/restaurant";
 
 type SectionId =
   | "identity"
@@ -146,16 +150,20 @@ export function VenueSettings({
       {active === "hours" ? (
         <OpeningHoursForm initial={availability} closures={closures} />
       ) : null}
-      {/* The app's header is a carousel, so this is a list in an order,
-          not one picture with spares: the first is the cover on every
-          list card, the rest play behind it. */}
+      {/* One photo leads, five follow.
+          The app's list card shows the first and its detail screen
+          plays the rest as a carousel, so this is a list in an order
+          and not one picture with spares. The ceiling is new: a
+          carousel of thirty is work a venue did that no guest reaches
+          the end of. */}
       {active === "media" ? (
         <AssetManager
           kind="photo"
           title="Photos"
-          description="La première est la couverture, et l'ordre est celui du carrousel dans l'application. Sur les autres, Couverture la met en premier."
+          description={`Une photo principale, puis un carrousel de ${PHOTO_CAROUSEL_MAX} au maximum. Sur les autres, « Photo principale » la met en premier.`}
           layout="gallery"
           addLabel="Ajouter une photo"
+          max={PHOTO_MAX}
           initial={photos}
         />
       ) : null}
@@ -163,16 +171,18 @@ export function VenueSettings({
           It was an upload and nothing else — a PDF, or ten photographs
           of the pages — which gave the app a file to offer and no menu
           to lay out, and gave the guest prices from whenever the card
-          was last printed. The board is the menu; the file stays under
-          it, for a venue whose card is a designed object. */}
+          was last printed. The board is the menu; one PDF stays under
+          it, for a venue whose card is a designed object. The
+          photographs are gone: an unsearchable second copy of the list
+          above, usually shot at an angle in a dim room. */}
       {active === "menu_file" ? (
         <div className="space-y-6">
           <MenuBoardForm initial={menu} />
           <AssetManager
             kind="menu_file"
             title="La carte en PDF"
-            description={`Facultatif, et en plus de la liste ci-dessus : un PDF, ou jusqu'à ${MENU_FILE_MAX} photos de ses pages, dans l'ordre. Les clients peuvent l'ouvrir depuis votre fiche.`}
-            addLabel="Ajouter un fichier"
+            description="Facultatif, et en plus de la liste ci-dessus : un PDF que les clients peuvent ouvrir depuis votre fiche."
+            addLabel="Ajouter le PDF"
             max={MENU_FILE_MAX}
             initial={menuFiles}
           />

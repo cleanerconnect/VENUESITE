@@ -413,7 +413,14 @@ for (const tab of ["Détails", "Horaires", "Photos", "Menu"]) {
       check("les équipements sont des interrupteurs", /Réservation recommandée/.test(b));
     }
     if (tab === "Menu") {
-      check("le Menu n'accepte qu'un fichier", /un PDF, ou jusqu'à 10 photos/.test(await body()));
+      // One optional PDF under the item list, since 12 October. The
+      // ten photographed pages are gone with the review.
+      const menuTab = await body();
+      check("la carte est une liste de plats", /Ajouter un plat|Ajouter une rubrique/.test(menuTab));
+      check(
+        "et le fichier est un PDF facultatif, un seul",
+        /un PDF que les clients peuvent ouvrir/.test(menuTab) && !/photos de ses pages/.test(menuTab),
+      );
     }
   } else {
     lot1Only(`Ma fiche a un onglet ${tab}`);

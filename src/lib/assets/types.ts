@@ -74,7 +74,18 @@ export const ASSET_RULES: Record<
   },
   menu_file: {
     maxBytes: 20 * 1024 * 1024,
-    contentTypes: ["application/pdf", "image/jpeg", "image/png"],
+    // A PDF, and no longer a photograph of a page.
+    //
+    // The tab offered both while it *was* the carte: before the item
+    // list existed, a venue with no PDF could still get its menu into
+    // the app by shooting the pages. The list is the carte now — a dish
+    // is a name, a line and a price, and that is what the app searches,
+    // filters and prices — so a photograph of a page is a second,
+    // unsearchable copy of the same thing, usually taken at an angle in
+    // a dim room. The LYFE review asked for it to go; what stays is the
+    // PDF, for a venue that has a designed one and wants a guest to be
+    // able to download it.
+    contentTypes: ["application/pdf"],
     label: "Carte",
   },
   export: {

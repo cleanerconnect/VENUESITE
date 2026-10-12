@@ -9,7 +9,17 @@
 // ── How to run it ────────────────────────────────────────────────────
 //
 // The Figma plugin sandbox has no `fetch`, so the JSON cannot be read
-// from disk or from a URL: it has to be handed in. Two steps.
+// from disk or from a URL: it has to be handed in.
+//
+// For one or two sections, `tools/figma/replay-pack.mjs` is the short
+// way: it prints this file minified, with just those sections' frames
+// as an object literal beside it and the `return` already written, as
+// one `use_figma` call. No codec and no round trip — a capture that
+// fits in the call cannot arrive half-transferred, which a base64
+// literal can and did.
+//
+// For the whole file, or for more sections than fit in 50 000
+// characters, it is two steps.
 //
 // 1. Store the file on page 09's shared plugin data, in chunks of
 //    about 26 000 characters:
@@ -151,16 +161,24 @@ const GAP = 120; // between two frames with no history to go on
 /** The page, by name: its id survives nothing, but its name is read. */
 const PAGE_MATCH = /^09 /;
 
-async function replayPage09(figma, only) {
+async function replayPage09(figma, only, given) {
   const page = figma.root.children.find((p) => PAGE_MATCH.test(p.name));
   if (!page) throw new Error("page 09 absente");
   await figma.setCurrentPageAsync(page);
 
-  const count = Number(page.getSharedPluginData(NS, "chunks") || 0);
-  if (!count) throw new Error("aucune donnée : stocker les morceaux d'abord");
-  let raw = "";
-  for (let i = 0; i < count; i++) raw += page.getSharedPluginData(NS, `data${i}`);
-  const doc = JSON.parse(raw);
+  // The capture, either handed in with the call or read off the page.
+  // `given` is what `replay-pack.mjs` bundles: a run that only touches
+  // one section needs only that section's frames, and a few sections'
+  // worth of JSON fits in the call beside the code. The page's own
+  // chunks remain the way to carry the whole file.
+  let doc = given;
+  if (!doc) {
+    const count = Number(page.getSharedPluginData(NS, "chunks") || 0);
+    if (!count) throw new Error("aucune donnée : stocker les morceaux d'abord");
+    let raw = "";
+    for (let i = 0; i < count; i++) raw += page.getSharedPluginData(NS, `data${i}`);
+    doc = JSON.parse(raw);
+  }
 
   for (const key of Object.keys(WEIGHT)) {
     try {

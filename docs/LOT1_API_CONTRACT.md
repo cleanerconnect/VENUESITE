@@ -478,6 +478,26 @@ date, y compris celle du jour. `DayBook` est volontairement plus petit :
 }
 ```
 
+**Le carnet est réglé par service.** Les lignes sont groupées par
+tranche de trente minutes — `LOT1_SLOT_MINUTES`, la seule grille que
+l'application propose — sous une ligne d'en-tête qui dit l'heure et
+**les couverts de la tranche** : « 13h30 · 9 couverts ». Un hôte ne lit
+pas un carnet comme une liste, il le lit comme une suite de services, et
+la question est toujours ce qui arrive à la demie ; aucune ligne ne peut
+répondre seule, parce qu'une table de deux et une table de huit ne font
+pas la même tranche.
+
+Ce qui en découle : **le tri par défaut est l'heure**, du plus tôt au
+plus tard. « Prochaine arrivée » — les tables ouvertes d'abord, puis la
+part de la journée déjà traitée — reste au choix, un cran plus bas.
+L'ordre de la file mettait une table *attendue* à 20h30 dans un groupe
+et une table *arrivée* à 20h30 dans un autre, donc « 20h30 » coiffait
+deux endroits du même carnet et aucun des deux en-têtes n'était les
+couverts de la tranche. Un carnet de papier descend l'horloge ; celui-ci
+aussi. Ce qu'un hôte y perd est répondu deux fois sur le même écran :
+l'état est une bande colorée et un mot sur chaque ligne, et
+« À confirmer » est un onglet avec son compte.
+
 **Les quatre décisions du carnet** (accepter, refuser avec motif,
 check-in, absent) sont la raison d'être de l'écran — quatre en tout,
 dont chaque ligne n'offre que celles que son état permet, voir plus bas
@@ -491,11 +511,11 @@ l'offrent plus à aucune largeur. Leur état côté portail est décrit en
 **Une ligne n'offre que ce que son état permet**, et c'est la même règle
 sur les deux largeurs et dans la feuille de détail :
 
-| État de la ligne | Ce qu'elle offre |
-|---|---|
-| `requested` — « À confirmer » | **Accepter** · **Refuser** |
-| `confirmed` — « Confirmée » | **Check-in**, et **Absent** seulement une fois `at` passée |
-| `arrived` · `completed` · `no_show` · `rejected` · `cancelled` | rien |
+| État de la ligne | La ligne offre | Sa feuille offre en plus |
+|---|---|---|
+| `requested` — « À confirmer » | **Accepter** · **Refuser** | — |
+| `confirmed` — « Confirmée » | **Check-in**, et **Absent** seulement une fois `at` passée | **Annuler la réservation** |
+| `arrived` · `completed` · `no_show` · `rejected` · `cancelled` | rien | rien |
 
 Un bouton qu'un état ne peut pas honorer coûte plus cher qu'un bouton
 manquant. `reject` sur une table déjà acceptée est le seul geste
@@ -518,15 +538,60 @@ réservation de la liste de travail, et le carnet *est* cette liste. Le
 compte d'absences du service vient d'une requête à part — voir
 `today.absent` en §2.2.
 
-**Une conséquence à nommer** : plus aucun écran du Lot 1 n'annule une
-table déjà acceptée. Le « Refuser » de la ligne confirmée était le seul
-chemin, et il écrivait `rejected` — le mot que ce document réserve à une
-*demande* refusée, ce qui faussait le motif autant que le compte. Le
-verbe juste est `PUT …/cancel`, il est au contrat (§3), et il attend
-l'écran qui l'appellera : une annulation d'établissement se prend avec
-le nom et le téléphone du client sous les yeux et un motif, pas au
-voisinage de Check-in. En attendant, un hôte qui doit libérer une table
-acceptée appelle le client et la note absente une fois l'heure passée.
+#### Annuler une table acceptée — dans la feuille, et nulle part ailleurs
+
+C'est la seule décision de l'écran que le client n'a pas demandée, et la
+seule que ce document fait porter par un motif **obligatoire**. Elle est
+dans la feuille de détail d'une ligne `confirmed`, où le nom et le
+téléphone du client sont à l'écran pendant qu'on la prend ; elle n'est
+sur aucune ligne, à aucune largeur, parce qu'une annulation
+d'établissement ne se prend pas au voisinage de Check-in.
+
+Elle écrit `cancelled` — jamais `rejected`, que ce document réserve à une
+*demande* refusée. Le « Refuser » de la ligne confirmée était le chemin
+d'avant et il écrivait le mauvais mot, ce qui faussait le motif autant
+que le compte.
+
+```
+PUT /api/business/bookings/{id}/cancel
+{ "reason": "overbooked", "note": "Groupe de 12 déplacé en salle haute." }
+```
+
+`reason` est un code, pas du texte libre, et c'est une liste à part de
+celle de `reject` : refuser une demande et reprendre une table accordée
+sont deux actes, avec deux états et deux conversations avec le client.
+« Complet sur ce créneau » ne peut pas expliquer une table déjà
+acceptée — l'établissement avait dit oui.
+
+| Code | Ce que l'hôte lit |
+|---|---|
+| `venue_closed` | Fermeture exceptionnelle |
+| `overbooked` | Surréservation |
+| `guest_request` | À la demande du client |
+| `unreachable` | Client injoignable |
+| `other` | Autre |
+
+`note` est facultative et libre ; elle est pour l'équipe. Un appel sans
+`reason`, ou avec un code hors liste, est un **`422 reason_required`** :
+un motif par défaut serait une façon de ne pas répondre, et c'est
+précisément le chiffre que quelqu'un lira plus tard — une série de
+`overbooked` est un problème de cadence, une série de `unreachable` est
+un problème de téléphone.
+
+**Le client est prévenu.** Le service envoie le message et le consigne :
+une notification que le portail prétend avoir envoyée et ne peut pas
+montrer n'est pas une notification. Côté démo, `cancelBookingAsVenue`
+écrit l'état, la ligne d'historique avec son `reason_code` et son `note`,
+et la ligne `messages_log` de genre `reservation_annulee`, dans une
+seule transaction : la table est rendue *et* le client est averti, ou
+rien n'a eu lieu.
+
+Quels états l'appel accepte est plus large que ce que le portail
+**offre** : `requested`, `waitlisted` et `confirmed` — une réservation
+qui n'a pas encore eu lieu. Sur une ligne `arrived`, `completed`,
+`no_show`, `rejected` ou `cancelled`, c'est un `409 state_conflict` :
+un constat ne s'annule pas. Le Lot 1 ne l'offre que sur `confirmed`,
+parce qu'une demande se refuse.
 
 *Tables lues* : `reservations`, `customers`, `services`,
 `service_definitions`, `venue_settings`.
@@ -606,7 +671,8 @@ fiche de l'application (`yEBXM5UoNTQI7MKc9sMB9y`, cadres `827:237` et
 | `tagline` | la ligne unique des cartes de liste, **60 caractères**, refusée au-delà |
 | `cuisine` | « Type de cuisine » — **un id parmi dix**, celui sur lequel l'application filtre |
 | `specialties` | la ligne sous la cuisine, **80 caractères**, dans les mots du partenaire |
-| `category` | « Catégorie » — le genre d'établissement, une ligne plus bas |
+| `category` | « Catégorie » — le genre d'établissement, une ligne plus bas : **un id parmi onze**, celui sur lequel l'application regroupe |
+| `category_other` | la ligne du partenaire derrière `category = 'autre'`, **60 caractères**, vide pour les dix autres |
 | `district` | « El cenador, Casablanca » : le quartier, **avant** la ville |
 | `priceRange` | « Fourchette de prix », quatre niveaux, nommés par leur fourchette en MAD par personne — « Moins de 150 MAD · économique » à « Plus de 500 MAD · gastronomique » |
 
@@ -637,6 +703,45 @@ portail le recadre en 1:1 **dans le navigateur avant l'envoi**, sur
 Ma fiche · Identité comme à l'étape 4 de l'inscription, donc l'objet
 stocké est carré par construction et rien en aval n'a à deviner quel
 tiers d'une photo 16:9 garder.
+
+**`category` est devenue une liste fermée de dix, plus une « Autre ».**
+Même changement que la cuisine, une revue plus tard, pour la même
+raison : l'application regroupe les établissements par catégorie, et
+« Restaurant gastronomique », « gastro », « resto gastronomique » et
+« Gastronomique » sont quatre chaînes et une réponse. Les onze ids, dans
+l'ordre où la revue LYFE les a nommés :
+
+| Id | Libellé |
+|---|---|
+| `restaurant_gastronomique` | Restaurant gastronomique |
+| `restaurant_traditionnel` | Restaurant traditionnel |
+| `bistrot` | Bistrot |
+| `brasserie` | Brasserie |
+| `rooftop` | Rooftop |
+| `lounge` | Lounge |
+| `bar_a_cocktails` | Bar à cocktails |
+| `cafe` | Café |
+| `salon_de_the` | Salon de thé |
+| `street_food` | Street food |
+| `autre` | **Autre**, et `category_other` porte les mots du lieu |
+
+La différence avec la cuisine est cette onzième entrée, et elle est
+délibérée : une ville a des lieux qui ne sont aucun des dix, et
+l'alternative à une « Autre » accompagnée d'une phrase est un partenaire
+qui coche le moins faux. `category_other` est **obligatoire quand
+`category` vaut `autre`** — une « Autre » sans mots est une catégorie
+qui ne dit rien — et vide pour les dix autres : une phrase à côté de
+« Rooftop » serait une seconde catégorie que rien ne lit. Vide est
+accepté sur les deux champs : une fiche s'enregistre avant que toutes
+les questions aient leur réponse.
+
+La charge utile porte **l'id et son libellé** — `category` et
+`category_label` en §5.5 — parce qu'une application qui doit mapper onze
+ids à onze phrases est une application qui finira par imprimer
+`salon_de_the`. Pour `autre`, le libellé *est* `category_other`. La
+migration `010-categorie-fermee.sql` rapproche l'ancien texte d'un id
+quand le texte le dit et met le reste sous `autre` avec la phrase à
+côté : rien de ce qu'un partenaire a écrit n'est perdu.
 
 `VenueListing` — ce qu'écrit l'onglet Détails :
 
@@ -696,15 +801,30 @@ base ne disparaît pas parce que l'écran a changé.
 basique n'a aucun écran, et le formulaire ne le demande qu'en Lot 2. Le
 service, lui, porte le champ dans les deux cas.
 
-**Photos** : l'ordre est celui du carrousel dans l'application, et la
-position 0 est la couverture — celle que portent les cartes de liste et
-l'en-tête de la fiche. `PUT /assets/order` est l'écriture.
+**Photos — une principale, puis cinq.** L'ordre est celui du carrousel
+dans l'application, et la position 0 est la **photo principale** : celle
+que portent les cartes de liste et l'en-tête de la fiche.
+`PUT /assets/order` est l'écriture, et « Photo principale » sur une
+autre la remet en position 0.
 
-**Menu** : un PDF, ou jusqu'à **dix** images des pages, dans l'ordre.
-Rien d'autre. Pas d'éditeur de plats : celui-là est l'écran Carte du Lot
-2, et un lieu qui photographie sa carte chaque saison n'est pas un lieu
-qui tiendra quarante lignes de plats à jour. Le service refuse le
-onzième fichier.
+**Six au maximum**, et le service refuse la septième — `PHOTO_MAX`,
+soit une principale plus `PHOTO_CAROUSEL_MAX` = 5. La revue LYFE a posé
+la forme et le chiffre vient de l'écran qui les lit : un carrousel que
+personne ne fait défiler jusqu'au bout est du travail qu'un
+établissement a fait pour rien. Une fiche déjà en base peut en porter
+davantage — une limite nouvelle ne supprime pas des lignes — donc la
+longueur de `photos[]` n'est pas une garantie sur laquelle
+l'application s'appuie.
+
+**Menu : la liste, et un PDF.** La carte est la liste de plats
+(`VenueMenu` ci-dessus). Le fichier reste à côté, facultatif, et c'est
+désormais **un seul PDF** : `MENU_FILE_MAX` = 1, et `ASSET_RULES`
+n'accepte plus que `application/pdf`. Les images de pages sont parties à
+la revue du 12 octobre — une photo de carte est une seconde copie,
+inexploitable par la recherche, de la liste juste au-dessus, prise de
+travers dans une salle sombre. Le service refuse le second fichier et
+refuse une image. Pas d'éditeur de plats ici non plus : celui-là est
+l'écran Carte du Lot 2.
 
 `VenueAvailability` :
 
@@ -794,6 +914,30 @@ discriminée par `kind`, qui porte le numéro de version lu :
   "sameDayCutoff": "17:00", "minLeadMinutes": 60,
   "onlineBookingOpen": true, "reopenAt": null, "expectedVersion": 7 }
 ```
+
+**Les trois préréglages.** Lot 1 ajoute un service en disant *lequel*,
+et ses horaires viennent avec le nom :
+
+| Préréglage | Ouverture | Fermeture | Dernière réservation |
+|---|---|---|---|
+| **Petit-déjeuner** | 7h30 | 11h00 | 10h30 |
+| **Déjeuner** | 12h00 | 15h00 | 14h00 |
+| **Dîner** | 19h00 | 23h30 | 22h30 |
+
+Le petit-déjeuner est l'ajout de la revue du 12 octobre ; `kind`
+`petit_dejeuner` existait dans le schéma depuis la première version et
+n'avait aucun chemin pour entrer. Les horaires sont les habituels, et
+tous les trois se modifient ensuite sur la carte du service — un
+préréglage est un point de départ, pas une règle. `SERVICE_PRESETS`
+(`src/lib/types/restaurant.ts`) est la liste, lue par le formulaire qui
+les propose *et* par l'action qui les écrit, pour que l'un ne puisse pas
+promettre une heure que l'autre n'écrit pas. Lot 2 garde le formulaire
+complet, cadence comprise.
+
+`tardif` et `creneau` restent des `kind` sans préréglage : un service de
+nuit et le créneau d'un bar sont du Lot 2, et un préréglage pour ce que
+le lot ne vend pas serait une promesse vide sur l'écran qui décide de ce
+que l'application propose.
 
 Si `expectedVersion` ne correspond plus, le service doit **refuser**
 l'écriture, pas fusionner : c'est ce qui décide de ce qui est réservable
@@ -913,7 +1057,7 @@ d'être de l'écran Réservations (§5.2) :
 |---|---|---|---|
 | `PUT` | `/api/business/bookings/{id}/confirm` | — | `RestaurantOverview` |
 | `PUT` | `/api/business/bookings/{id}/reject` | `{ reason, note }` | `RestaurantOverview` |
-| `PUT` | `/api/business/bookings/{id}/cancel` | — | `RestaurantOverview` |
+| `PUT` | `/api/business/bookings/{id}/cancel` | `{ reason, note }` | `RestaurantOverview` |
 | `POST` | `/api/business/bookings/{id}/no-show` | — | `RestaurantOverview` |
 | `POST` | `/api/business/bookings/{id}/remind` | — | `204` |
 
@@ -1348,16 +1492,17 @@ Les clés, telles quelles :
 | `cuisine_label` | idem, traduit | « Marocaine » — ce que l'écran imprime |
 | `specialties` | `venues.specialties` | la ligne sous la cuisine, 80 caractères |
 | `thumbnail_url` | `venue_assets` `kind='logo'` | la tuile carrée des listes ; `null` si le lieu n'en a pas |
-| `category` | `venues.category` | « Catégorie » |
+| `category` | `venues.category` | « Catégorie » — l'**id** parmi les onze, ce sur quoi l'application regroupe |
+| `category_label` | idem, traduit ; `venues.category_other` pour `autre` | « Salon de thé » — ce que l'écran imprime |
 | `tagline` | `venues.tagline` | la ligne des cartes de liste, 60 caractères |
 | `district` | `venues.district` | « El cenador, … » — le quartier |
 | `city` | `venues.city` | « …, Casablanca » — la ville, après le quartier |
 | `price_range` | `venues.price_range` | 1 à 4 |
 | `price_level` | idem, en entier 1–4 | le filtre de recherche |
 | `price_range_label` | idem, en phrase | « Plus de 500 MAD par personne » |
-| `photos[]` | `venue_assets` `kind='photo'`, par `position` | le carrousel ; `image` reste la première |
+| `photos[]` | `venue_assets` `kind='photo'`, par `position` | le carrousel ; `image` reste la première, et une fiche enregistrée depuis le 12 octobre en porte **six au plus** |
 | `menu[]` | `menu_categories` + `menu_items` | l'écran Menu : `{ id, name, items: [{ id, name, description, price_mad }] }`, dans l'ordre du partenaire |
-| `menu_files[]` | `venue_assets` `kind='menu_file'`, par `position` | la carte en PDF, facultative — `{ url, content_type }` |
+| `menu_files[]` | `venue_assets` `kind='menu_file'`, par `position` | la carte en PDF, facultative — `{ url, content_type }`. **Un seul fichier** depuis le 12 octobre, et un `application/pdf` : les images de pages sont parties avec la revue. Reste une liste pour les fiches plus anciennes |
 | `ambience[]` | `venue_tags` `kind='ambience'` | « Ambiance : Élégant, minimaliste, moderne » — `{ id, label }` |
 | `features[]` | `venue_tags` `kind='feature'` | le bloc « Equipements » — `{ id, label }` |
 
@@ -1369,9 +1514,9 @@ réimplémenter la table de traduction ; ne servir que le libellé rendrait
 design les dessine, tout ce que le design ne nomme pas suivant dans
 l'ordre du partenaire.
 
-**`cuisine` a changé de sens et `menu` a changé de forme.** Ce sont les
-deux seules ruptures, et les deux sont nommées ici plutôt que
-découvertes par un client :
+**Trois clés ont changé de sens ou de forme.** Ce sont les seules
+ruptures, et toutes sont nommées ici plutôt que découvertes par un
+client :
 
 - `cuisine` servait une phrase et sert un id. Ce que l'écran imprimait,
   c'est `cuisine_label` désormais, et la phrase que le partenaire
@@ -1385,6 +1530,16 @@ découvertes par un client :
   la carte elle-même, rubriques et plats. Les fichiers n'ont pas
   disparu : ils sont sous `menu_files`, et restent facultatifs. Un plat
   `visible = 0` — le « masqué » de l'éditeur Carte — ne voyage pas.
+  Depuis le 12 octobre `menu_files` porte **un PDF au plus**, et plus
+  d'images de pages : un client qui affichait la deuxième page d'une
+  carte photographiée n'en recevra plus pour les fiches enregistrées
+  depuis.
+- `category` servait une phrase et sert un id, comme `cuisine` avant
+  elle. Ce que l'écran imprimait, c'est `category_label` désormais, et
+  pour `category = 'autre'` ce libellé est la ligne que le partenaire a
+  écrite. Un client qui affichait `category` tel quel affichera
+  `salon_de_the` : c'est la seule rupture de cette revue qui demande un
+  changement côté application, et elle est d'une ligne.
 
 Aucune autre clé n'a changé de sens, aucune n'a disparu, et `image` est
 toujours la première photo.

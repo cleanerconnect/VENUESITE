@@ -338,6 +338,25 @@ body {
   width: 20px;
   height: 20px;
 }
+/* The two exceptions, both on the book.
+   A decision on a booking line is 36px, not 44: four of them at 44 set
+   the line's height for every row that carries one, and the line is
+   the thing a host is trying to see more of. 36 is still a mouse target
+   and still a thumb target at the stand — the phone lane keeps the full
+   44, because that is where a thumb actually presses them.
+   The line's own open-the-sheet region drops the floor for the same
+   reason: it is the whole width of the book, so its height is set by
+   its type and its padding, not by how small a target it would be. */
+[data-density="host"] button[data-compact] {
+  min-height: 36px;
+}
+[data-density="host"] button[data-compact] .text-control-sm,
+[data-density="host"] button[data-compact].text-control-sm {
+  font-size: 14px;
+}
+[data-density="host"] button[data-book-line] {
+  min-height: 0;
+}
 /* One size for a button, and it is the body size.
    The three steps were 15 / 15 / 16 here, which put a 15px step in the
    scale for no reason a reader could name: a button on a host stand is
@@ -398,13 +417,18 @@ body {
    is to be a landmark rather than to be read. It is a band, not a label
    above a heading, which is the pattern the rule is aimed at.
    Its size is the body step — 15px was a step of its own. */
+/* The sitting's hour on its header line.
+   16px uppercase was a band's type — « 21H00 » across the page. The
+   header is a hairline now and the hour is a time, not a label, so it
+   is 13px and it keeps its lowercase h: a French hour is 21h00, and
+   uppercasing it made the book shout the one thing on it that is
+   already a number. */
 .text-host-slot {
-  font-size: 16px;
-  line-height: 1.2;
-  letter-spacing: 0.04em;
+  font-size: 13px;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  text-transform: uppercase;
 }
 
 .text-metric-sm {

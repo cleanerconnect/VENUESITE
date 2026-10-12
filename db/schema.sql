@@ -62,8 +62,15 @@ CREATE TABLE IF NOT EXISTS venues (
   -- hold before the filter needed an id.
   specialties          TEXT NOT NULL DEFAULT '',
   -- « Catégorie »: what kind of place this is, as opposed to what it
-  -- cooks. « Restaurant gastronomique, sushi bar ».
+  -- cooks, as one of the eleven ids in CATEGORY_IDS. A closed list
+  -- since the LYFE review, for the same reason `cuisine` is one — the
+  -- app groups establishments by it, and « gastro » and « Restaurant
+  -- gastronomique » cannot be grouped together.
   category             TEXT NOT NULL DEFAULT '',
+  -- The sentence behind `category = 'autre'`, and empty for the other
+  -- ten. A city has places that are none of the eleven, and an
+  -- « Autre » with no words is a category that says nothing.
+  category_other       TEXT NOT NULL DEFAULT '',
   address              TEXT NOT NULL DEFAULT '',
   -- The quarter. The app's header reads « quartier, ville », in that
   -- order, so the two are stored side by side.

@@ -24,7 +24,11 @@
 //      both widths and in the sheet: Accepter and Refuser on a request,
 //      Check-in on a confirmed table and Absent on it only once its
 //      hour has passed, and nothing at all on a row that has arrived or
-//      been marked absent.
+//      been marked absent;
+//   7  a confirmed table can be given back, and only from its sheet:
+//      « Annuler la réservation » is in the sheet and on no line at
+//      either width, it refuses to go through without a coded reason,
+//      it writes `cancelled` — and the line leaves the book.
 //
 // Three, five and most of two used to assert the opposite: they are the
 // regression test for a scope that shrank, which is the kind that goes
@@ -1017,6 +1021,147 @@ await phoneBookPage.goto(`${BASE}/restaurant/reservations`, { waitUntil: "domcon
 await phoneBookPage.waitForTimeout(1800);
 judge(await bookRows(phoneBookPage), "téléphone");
 await phoneBook.close();
+
+// ── 7 · rendre une table acceptée ────────────────────────────
+//
+// « Annuler la réservation », dans la feuille d'une ligne confirmée et
+// nulle part ailleurs.
+//
+// Trois faits, et chacun compte :
+//
+//   · la feuille l'offre, la ligne non — à 1440 comme à 390. Une
+//     annulation d'établissement se prend avec le nom et le téléphone
+//     du client sous les yeux, pas au voisinage de Check-in ;
+//   · elle ne part pas sans motif. Le bouton de confirmation reste
+//     inerte tant qu'aucun motif n'est choisi, parce qu'un motif par
+//     défaut est une façon de ne pas répondre ;
+//   · elle écrit `cancelled`, pas `rejected`, et la ligne sort du
+//     carnet — le contrat garde les deux mots pour deux actes.
+
+console.log("\n  — 7 · rendre une table acceptée");
+
+const CANCEL = "Annuler la réservation";
+
+/** Le libellé, sur les lignes d'un carnet. */
+const cancelOnLines = (target = page) =>
+  target.evaluate((label) => {
+    const vis = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+    const words = (el) => (el.textContent || "").replace(/\s+/g, " ").trim();
+    // Les boutons d'une ligne vivent dans le conteneur de la ligne, à
+    // côté de la région qui ouvre la feuille — jamais dedans.
+    return [...document.querySelectorAll('[data-row="open"]')]
+      .map((row) => row.parentElement)
+      .flatMap((box) => [...(box ? box.querySelectorAll("button") : [])])
+      .filter((b) => !b.hasAttribute("data-row") && vis(b))
+      .map(words)
+      .filter((t) => t === label).length;
+  }, CANCEL);
+
+await go("/restaurant/reservations");
+check(
+  "aucune ligne n'offre l'annulation · ordinateur",
+  (await cancelOnLines()) === 0,
+  `${await cancelOnLines()} bouton(s) sur les lignes`,
+);
+
+// La feuille d'une table confirmée, elle, l'offre.
+const confirmedRow = (await bookRows()).find((r) => r.state === "Confirmée");
+let cancelledOne = null;
+if (!confirmedRow) {
+  check("le carnet du jour porte une table confirmée à annuler", false, "aucune");
+} else {
+  const before = (await bookRows()).length;
+  await page.locator(`[data-rule-row="${confirmedRow.index}"] button`).first().click();
+  await settle(1100);
+  // Pas de sélecteur de feuille : `aside` attrape la barre latérale, et
+  // `[role="dialog"]` attrapera le dialogue du motif dans un instant.
+  // La ligne n'offre pas ce libellé — le contrôle juste au-dessus vient
+  // de l'établir — donc un bouton visible qui le porte est celui de la
+  // feuille.
+  const trigger = page.locator(`button:has-text("${CANCEL}"):visible`).first();
+  check(
+    "la feuille d'une table confirmée offre l'annulation",
+    (await trigger.count()) > 0,
+    `${confirmedRow.at} ${confirmedRow.name}`,
+  );
+  if (await trigger.count()) {
+    await trigger.click();
+    await settle(900);
+    // Le dialogue : un motif obligatoire, et une précision libre.
+    const dialog = page.locator('[role="dialog"]').last();
+    const confirm = dialog.locator(`button:has-text("${CANCEL}")`).last();
+    check("le dialogue du motif s'ouvre", (await dialog.count()) > 0, "dialogue");
+    check(
+      "sans motif, l'annulation ne part pas",
+      await confirm.isDisabled(),
+      "bouton inerte",
+    );
+    const motifs = await dialog
+      .locator("fieldset button")
+      .evaluateAll((els) => els.map((e) => (e.textContent || "").trim()));
+    check(
+      "le motif est une liste courte",
+      motifs.length === 5 && motifs.includes("Surréservation"),
+      motifs.join(" · ") || "aucun motif",
+    );
+    check(
+      "et une précision libre l'accompagne",
+      (await dialog.locator("textarea").count()) > 0,
+      "champ libre",
+    );
+    await dialog.locator("fieldset button", { hasText: "Surréservation" }).first().click();
+    await dialog.locator("textarea").first().fill("Vérifié par la recette.");
+    await settle(300);
+    check("un motif choisi arme l'annulation", await confirm.isEnabled(), "bouton actif");
+    await confirm.click();
+    await settle(2400);
+    const after = (await bookRows()).length;
+    check(
+      "la table annulée sort du carnet",
+      after === before - 1,
+      `${before} → ${after} ligne(s)`,
+    );
+    cancelledOne = confirmedRow;
+  }
+}
+
+// `cancelled`, et pas `rejected` : le carnet ne montre aucun des deux,
+// donc le fait se lit là où il est écrit — l'état de la réservation,
+// relu par l'écran qui la compte. L'Accueil compte les absences, pas
+// les annulations ; ce qui est vérifiable ici est que la ligne a
+// disparu du carnet *et* que le compte « Confirmées » a baissé d'une.
+if (cancelledOne) {
+  const counts = await page.evaluate(() =>
+    [...document.querySelectorAll("main button")]
+      .map((b) => (b.textContent || "").replace(/\s+/g, " ").trim())
+      .find((t) => /^Confirmées/.test(t)) ?? "",
+  );
+  check(
+    "le compte des confirmées suit",
+    /Confirmées/.test(counts),
+    counts || "onglet introuvable",
+  );
+}
+
+// Et à 390, la ligne ne l'offre pas davantage.
+const cancelPhone = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  locale: "fr-FR",
+  timezoneId: "Africa/Casablanca",
+});
+const cancelPhonePage = await cancelPhone.newPage();
+await sharedSignIn(cancelPhonePage, BASE, { email: OWNER_EMAIL, password: "demo" });
+await cancelPhonePage.goto(`${BASE}/restaurant/reservations`, { waitUntil: "domcontentloaded" });
+await cancelPhonePage.waitForTimeout(1800);
+check(
+  "aucune ligne n'offre l'annulation · téléphone",
+  (await cancelOnLines(cancelPhonePage)) === 0,
+  `${await cancelOnLines(cancelPhonePage)} bouton(s) sur les lignes`,
+);
+await cancelPhone.close();
 
 // ── Report ───────────────────────────────────────────────────
 

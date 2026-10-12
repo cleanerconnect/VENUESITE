@@ -19,6 +19,7 @@ import { StaleWriteError } from "@/lib/data/repository";
 import { COPY } from "@/lib/copy/fr";
 import { logFailure } from "@/lib/errors/reference";
 import type { NotificationChannel } from "@/lib/types/business";
+import { SERVICE_PRESETS } from "@/lib/types/restaurant";
 
 export interface CommandResult {
   ok: boolean;
@@ -644,15 +645,24 @@ export async function runScreenCommand(
       case "service.edit": {
         const config = await repo.getServiceConfiguration(venueId);
         const existing = config.services.find((s) => s.id === str(values, "id"));
+        // Lot 1 adds a service by naming which one it is; the hours come
+        // with it. `SERVICE_PRESETS` is the list — it is also what the
+        // form offers, so the two cannot disagree about what a
+        // « Petit-déjeuner » is.
+        const chosen = str(values, "preset");
+        const preset =
+          chosen in SERVICE_PRESETS
+            ? SERVICE_PRESETS[chosen as keyof typeof SERVICE_PRESETS]
+            : undefined;
         await repo.runConfigurationAction(venueId, {
           kind: "service.save",
           id: existing?.id ?? null,
-          name: str(values, "name"),
+          name: str(values, "name") || preset?.name || "",
           kindLabel: str(values, "kindLabel", "service"),
           weekdays: weekdays(values, "weekdays"),
-          startsAt: str(values, "startsAt", "19:00"),
-          endsAt: str(values, "endsAt", "23:00"),
-          lastBookingAt: str(values, "lastBookingAt", "22:00"),
+          startsAt: str(values, "startsAt", preset?.startsAt ?? "19:00"),
+          endsAt: str(values, "endsAt", preset?.endsAt ?? "23:00"),
+          lastBookingAt: str(values, "lastBookingAt", preset?.lastBookingAt ?? "22:00"),
           capacityCovers: num(values, "capacityCovers", 60),
           coversPerQuarter: num(values, "coversPerQuarter", 10),
           slotMinutes: asSlotMinutes(num(values, "slotMinutes", 30)),

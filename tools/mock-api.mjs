@@ -133,12 +133,41 @@ function findBooking(bundle, id) {
   return everyBooking(bundle).find((r) => r.id === id) ?? null;
 }
 
-// The two transitions §2.3 says a `409` answers, and only those. Check-in
-// is deliberately not among them: the scanner takes a code at the door,
+// The transitions §2.3 says a `409` answers, and only those. Check-in is
+// deliberately not among them: the scanner takes a code at the door,
 // and a guest whose request is still pending should be seatable.
+//
+// `cancelled` is wider than what the portal offers — Lot 1 offers it on
+// a « Confirmée » line only — because the rule here is about the data: a
+// booking that has already happened cannot be called off.
+/** The eleven the contract names, in its order. */
+const CATEGORY_IDS = [
+  "restaurant_gastronomique",
+  "restaurant_traditionnel",
+  "bistrot",
+  "brasserie",
+  "rooftop",
+  "lounge",
+  "bar_a_cocktails",
+  "cafe",
+  "salon_de_the",
+  "street_food",
+  "autre",
+];
+
+/** The five the contract names, and no sixth. */
+const CANCELLATION_REASONS = [
+  "venue_closed",
+  "overbooked",
+  "guest_request",
+  "unreachable",
+  "other",
+];
+
 const ALLOWED_FROM = {
   rejected: ["requested", "waitlisted"],
   no_show: ["confirmed"],
+  cancelled: ["requested", "waitlisted", "confirmed"],
 };
 
 /**
@@ -369,7 +398,11 @@ const ROUTES = [
       shortName: body.shortName,
       tagline: body.tagline ?? "",
       description: body.description,
-      category: body.category ?? "",
+      // The category is one of the eleven ids now, and the sentence
+      // beside it belongs to « autre » alone — the same rule the
+      // portal's own action applies before it gets here.
+      category: CATEGORY_IDS.includes(String(body.category ?? "")) ? body.category : "",
+      categoryOther: body.category === "autre" ? (body.categoryOther ?? "") : "",
       address: body.address,
       district: body.district ?? "",
       city: body.city,
@@ -474,9 +507,25 @@ const ROUTES = [
     if (body?.note) row.rejectionNote = body.note;
     return bundle.overview;
   }],
-  ["PUT", /^\/api\/business\/bookings\/([^/]+)\/cancel$/, (m, q) => {
+  ["PUT", /^\/api\/business\/bookings\/([^/]+)\/cancel$/, (m, q, body) => {
     const bundle = scoped(q);
-    transition(bundle, m[1], "cancelled");
+    // The reason is required, and it is the whole difference between
+    // this call and a state flip: a venue giving back a table it had
+    // accepted owes an answer to the guest and a number to whoever
+    // later asks how often it happens. A double that took the call
+    // without one would let the portal ship a request no real service
+    // accepts.
+    const reason = String(body?.reason ?? "");
+    if (!CANCELLATION_REASONS.includes(reason)) {
+      throw new Refused(
+        422,
+        "reason_required",
+        `Motif d'annulation attendu : ${CANCELLATION_REASONS.join(", ")}.`,
+      );
+    }
+    const row = transition(bundle, m[1], "cancelled");
+    row.cancellationReason = reason;
+    if (body?.note) row.cancellationNote = body.note;
     return bundle.overview;
   }],
   ["POST", /^\/api\/business\/bookings\/([^/]+)\/no-show$/, (m, q) => {
@@ -646,6 +695,7 @@ function makeVenueFromDraft(draft) {
     cuisine: draft.cuisine ?? "",
     specialties: draft.specialties ?? "",
     category: "",
+    categoryOther: "",
     district: draft.district ?? "",
     tagline: "",
     capacity: 40,
