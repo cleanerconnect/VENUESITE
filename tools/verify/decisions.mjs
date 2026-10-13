@@ -1163,6 +1163,279 @@ check(
 );
 await cancelPhone.close();
 
+// ── 8 · la carte d'une réservation ───────────────────────────
+//
+// Les mesures de la revue, lues sur le rendu plutôt que sur les
+// classes : une classe peut être écrite et perdre son duel de
+// spécificité, et une carte dont le rayon est écrasé par une règle
+// plus forte est fausse avec le bon `className`.
+//
+// Ce qui est vérifié : fond blanc, rayon 12, filet d'un pixel d'encre
+// à 10 %, 12px entre deux cartes, 16px de retrait, le bandeau d'état
+// *dans* le bord gauche, les trois lignes à 22 / 17 / 14, la note en
+// violet jamais collée au nom, les décisions à 40px toutes alignées à
+// droite et centrées verticalement — et, la plus facile à perdre :
+// **une largeur par libellé**. « Check-in » faisait 101px dans une
+// carte à deux décisions et 318 dans une carte à une seule, parce que
+// le bouton était `flex-1` ; deux largeurs pour un libellé, c'est la
+// chose que la revue interdit nommément.
+//
+// Les bandeaux d'heure avec : 32px de haut, 15px semi-gras, le compte
+// de couverts à droite, 24px au-dessus et 8 en dessous — sauf le
+// premier, qui n'a pas de carte au-dessus à séparer.
+
+console.log("\n  — 8 · la carte d'une réservation");
+
+/** Everything the review names, measured in the page. */
+const CARD_PROBE = () => {
+  const px = (v) => Math.round(parseFloat(v) * 10) / 10;
+  const seen = (el) => el.getBoundingClientRect().width > 1;
+  const cards = [...document.querySelectorAll("main [data-book-row]")].filter(seen);
+  if (cards.length === 0) return { cards: 0 };
+  const first = cards[0];
+  const cs = getComputedStyle(first);
+  const region = first.querySelector('[data-row="open"]');
+  const rs = region ? getComputedStyle(region) : null;
+
+  const gaps = new Set();
+  for (let i = 1; i < cards.length; i++) {
+    const a = cards[i - 1].getBoundingClientRect();
+    const b = cards[i].getBoundingClientRect();
+    const d = Math.round(b.top - a.bottom);
+    // Only consecutive cards of the same run: across a band the gap is
+    // the band's own spacing, which is checked separately.
+    if (d >= 0 && d <= 20) gaps.add(d);
+  }
+
+  const size = (el) => (el ? px(getComputedStyle(el).fontSize) : null);
+  const band = first.querySelector("span[aria-hidden]");
+  const cardBox = first.getBoundingClientRect();
+
+  const noteCard = cards.find((c) => c.querySelector(".text-violet-deep"));
+  const note = noteCard
+    ? (() => {
+        const n = noteCard.querySelector(".text-violet-deep");
+        return {
+          icon: Boolean(n.querySelector("svg")),
+          marginTop: px(getComputedStyle(n).marginTop),
+          violet: getComputedStyle(n).color,
+        };
+      })()
+    : null;
+
+  const widths = {};
+  const heights = new Set();
+  let inline = 0;
+  let stacked = 0;
+  const laneInset = new Set();
+  const offCentre = new Set();
+  for (const card of cards) {
+    const box = card.getBoundingClientRect();
+    for (const b of card.querySelectorAll("button[data-compact]")) {
+      const r = b.getBoundingClientRect();
+      if (r.width < 1) continue;
+      const label = (b.textContent ?? "").trim();
+      heights.add(Math.round(r.height));
+      (widths[label] ??= []).push(Math.round(r.width));
+      if (r.top > box.top + 48) stacked++;
+      else {
+        inline++;
+        offCentre.add(
+          Math.round(Math.abs((r.top + r.bottom) / 2 - (box.top + box.bottom) / 2)),
+        );
+      }
+    }
+    const lane = card.querySelector("div.md\\:flex");
+    if (lane && lane.getBoundingClientRect().width > 1) {
+      laneInset.add(Math.round(box.right - lane.getBoundingClientRect().right));
+    }
+  }
+
+  const bands = [...document.querySelectorAll("main [data-slot-head]")]
+    .filter(seen)
+    .map((b) => {
+      const st = getComputedStyle(b);
+      const hour = b.firstElementChild;
+      const covers = b.lastElementChild;
+      return {
+        h: Math.round(b.getBoundingClientRect().height),
+        bg: st.backgroundColor,
+        mt: px(st.marginTop),
+        mb: px(st.marginBottom),
+        hourSize: size(hour),
+        hourWeight: getComputedStyle(hour).fontWeight,
+        coversInset:
+          covers && covers !== hour
+            ? Math.round(
+                b.getBoundingClientRect().right - covers.getBoundingClientRect().right,
+              )
+            : null,
+      };
+    });
+
+  return {
+    cards: cards.length,
+    bg: cs.backgroundColor,
+    radius: px(cs.borderTopLeftRadius),
+    borderWidth: px(cs.borderTopWidth),
+    borderColour: cs.borderTopColor,
+    pad: rs ? [px(rs.paddingTop), px(rs.paddingRight), px(rs.paddingBottom)] : null,
+    padLeft: rs ? px(rs.paddingLeft) : null,
+    gaps: [...gaps],
+    bandLeft: band ? Math.round(band.getBoundingClientRect().left - cardBox.left) : null,
+    bandWidth: band ? Math.round(band.getBoundingClientRect().width) : null,
+    lead: size(first.querySelector(".text-host-lead")),
+    name: size(first.querySelector(".text-host-name")),
+    detail: size(first.querySelector(".text-host-detail")),
+    detailColour: (() => {
+      const d = first.querySelector(".text-host-detail");
+      return d ? getComputedStyle(d).color : null;
+    })(),
+    note,
+    heights: [...heights],
+    inline,
+    stacked,
+    laneInset: [...laneInset],
+    offCentre: [...offCentre],
+    manyWidths: Object.entries(widths)
+      .filter(([, w]) => new Set(w).size > 1)
+      .map(([label, w]) => `${label} ${[...new Set(w)].join("/")}`),
+    bands: bands.length,
+    bandShape: [
+      ...new Set(bands.map((b) => `${b.h}/${b.hourSize}/${b.hourWeight}/${b.mb}`)),
+    ],
+    bandTops: [...new Set(bands.map((b) => b.mt))],
+    bandBg: [...new Set(bands.map((b) => b.bg))],
+    coversInset: [...new Set(bands.map((b) => b.coversInset))],
+  };
+};
+
+// Le carnet entier, pas le filtre « À confirmer » : l'écart entre deux
+// cartes ne se mesure qu'entre deux cartes d'une même demi-heure, et
+// trois demandes réparties sur trois services n'en donnent aucune.
+await go("/restaurant/reservations");
+await settle(1600);
+const card = await page.evaluate(CARD_PROBE);
+
+check("le carnet dessine des cartes", card.cards > 0, `${card.cards}`);
+check("fond blanc", card.bg === "rgb(255, 255, 255)", card.bg);
+check("rayon 12", card.radius === 12, `${card.radius}`);
+check("filet d'un pixel", card.borderWidth === 1, `${card.borderWidth}`);
+check(
+  "filet d'encre à 10 %",
+  / 0\.1\)$/.test(card.borderColour ?? ""),
+  card.borderColour,
+);
+check(
+  "16px de retrait",
+  String(card.pad) === "16,16,16",
+  String(card.pad),
+);
+check(
+  "et 16px après le bandeau",
+  card.padLeft === 22,
+  `${card.padLeft} (6 de bandeau + 16)`,
+);
+check(
+  "12px entre deux cartes",
+  card.gaps.length > 0 && card.gaps.every((g) => g === 12),
+  card.gaps.length ? String(card.gaps) : "aucune paire mesurée",
+);
+check(
+  "le bandeau d'état est dans le bord",
+  card.bandLeft === 1 && card.bandWidth === 6,
+  `à ${card.bandLeft}, large de ${card.bandWidth}`,
+);
+check("l'heure et les couverts à 22", card.lead === 22, `${card.lead}`);
+check("le nom à 17", card.name === 17, `${card.name}`);
+check("le contexte à 14", card.detail === 14, `${card.detail}`);
+check(
+  "et en encre à 70 %",
+  /0\.7\)$/.test(card.detailColour ?? ""),
+  card.detailColour,
+);
+check(
+  "la note porte son icône",
+  Boolean(card.note?.icon),
+  card.note ? "oui" : "aucune note sur ce service",
+);
+check(
+  "et n'est pas collée au nom",
+  (card.note?.marginTop ?? 0) >= 8,
+  `${card.note?.marginTop}px`,
+);
+check("les décisions font 40px", String(card.heights) === "40", String(card.heights));
+check(
+  "une seule largeur par libellé",
+  card.manyWidths.length === 0,
+  card.manyWidths.join(" · "),
+);
+
+// Desktop only: the lane is inline, right-aligned to the card's own
+// padding, and centred on the card whatever its height.
+if (width >= 768) {
+  check("les décisions sont sur la carte", card.inline > 0 && card.stacked === 0, `${card.inline} / ${card.stacked}`);
+  check(
+    "alignées à droite",
+    String(card.laneInset) === "1",
+    `retrait ${String(card.laneInset)}`,
+  );
+  check(
+    "et centrées verticalement",
+    card.offCentre.every((d) => d <= 1),
+    `écart ${String(card.offCentre)}`,
+  );
+}
+
+check("les bandeaux d'heure font 32px", card.bandShape.every((s) => s.startsWith("32/")), String(card.bandShape));
+check(
+  "l'heure en 15px semi-gras",
+  card.bandShape.every((s) => s.includes("/15/600/")),
+  String(card.bandShape),
+);
+check("8px sous le bandeau", card.bandShape.every((s) => s.endsWith("/8")), String(card.bandShape));
+check(
+  "24px au-dessus, sauf le premier",
+  card.bandTops.every((t) => t === 0 || t === 24) && card.bandTops.includes(24),
+  String(card.bandTops),
+);
+check("sur un fond canvas-2", String(card.bandBg) === "rgb(248, 245, 251)", String(card.bandBg));
+check("les couverts à droite", String(card.coversInset) === "16", String(card.coversInset));
+
+// Et le téléphone : la même carte, les décisions dessous.
+const cardPhone = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  locale: "fr-FR",
+  timezoneId: "Africa/Casablanca",
+});
+const cardPhonePage = await cardPhone.newPage();
+await sharedSignIn(cardPhonePage, BASE, { email: OWNER_EMAIL, password: "demo" });
+await cardPhonePage.goto(`${BASE}/restaurant/reservations`, {
+  waitUntil: "domcontentloaded",
+});
+await cardPhonePage.waitForTimeout(1800);
+const cardAt390 = await cardPhonePage.evaluate(CARD_PROBE);
+check(
+  "390 · la même carte",
+  cardAt390.radius === 12 &&
+    cardAt390.gaps.length > 0 &&
+    cardAt390.gaps.every((g) => g === 12),
+  `rayon ${cardAt390.radius}, écarts ${String(cardAt390.gaps)}`,
+);
+check("390 · les trois lignes à 22 / 17 / 14", `${cardAt390.lead}/${cardAt390.name}/${cardAt390.detail}` === "22/17/14", `${cardAt390.lead}/${cardAt390.name}/${cardAt390.detail}`);
+check(
+  "390 · les décisions passent sous la carte",
+  cardAt390.stacked > 0 && cardAt390.inline === 0,
+  `${cardAt390.stacked} dessous, ${cardAt390.inline} dessus`,
+);
+check("390 · toujours 40px", String(cardAt390.heights) === "40", String(cardAt390.heights));
+check(
+  "390 · une seule largeur par libellé",
+  cardAt390.manyWidths.length === 0,
+  cardAt390.manyWidths.join(" · "),
+);
+await cardPhone.close();
+
 // ── Report ───────────────────────────────────────────────────
 
 if (noise.size > 0) {

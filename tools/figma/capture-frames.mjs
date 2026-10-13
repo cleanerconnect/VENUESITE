@@ -231,7 +231,7 @@ const RECORD = String(function record(rootSelector, excludeSelectors) {
   const nameOf = (el, text) => {
     const tag = el.tagName.toLowerCase();
     const label = el.getAttribute("aria-label");
-    if (el.hasAttribute("data-book-row")) return "ligne";
+    if (el.hasAttribute("data-book-row")) return "carte";
     if (el.hasAttribute("data-card")) return "bloc";
     if (el.getAttribute("role") === "switch") return `interrupteur${label ? ` · ${label}` : ""}`;
     if (el.getAttribute("role") === "radio") return `choix${label ? ` · ${label}` : ""}`;

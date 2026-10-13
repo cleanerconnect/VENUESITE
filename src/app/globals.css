@@ -348,7 +348,12 @@ body {
    reason: it is the whole width of the book, so its height is set by
    its type and its padding, not by how small a target it would be. */
 [data-density="host"] button[data-compact] {
-  min-height: 36px;
+  /* 40px. It was 36 — the LYFE review's own number when a booking was
+     a line in a book and four decisions set that line's height. A
+     booking is a card now, 16px of padding tall either way, so the
+     button is no longer what decides how many bookings fit: 40 is the
+     review's new number, and it buys back four pixels of target. */
+  min-height: 40px;
 }
 [data-density="host"] button[data-compact] .text-control-sm,
 [data-density="host"] button[data-compact].text-control-sm {
@@ -389,21 +394,25 @@ body {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-/* The name is a heading — the row's heading — so it is the h3 step
-   rather than a 17px one of its own. 17 and 18 cannot both be defended
-   to a reader, and the larger of the two is the one the hierarchy
-   wants: the name is what a host says out loud. */
+/* The name, beside the hour rather than under it.
+   17px, one step under the 18 of an h3: on a card the name shares its
+   line with a 22px hour and a 22px cover count, and at 18 it competed
+   with them instead of following them. The weight carries it — a
+   semibold 17 beside a bold 22 reads as second, which is where the
+   name belongs. */
 .text-host-name {
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.25;
   font-weight: 600;
 }
-/* The context line is meta. It was 14px, a step that existed only here
-   and only one notch under the body, which reads as an accident rather
-   than as a level. 13px is the floor this density already declares, and
-   it is where secondary text belongs. */
+/* The context line: the telephone, the zone and how the booking
+   arrived. 14px rather than the 13px floor, because on a card it has a
+   line of its own instead of fighting for the end of the hour's line —
+   it is the number a host rings, and a number read from a stand is
+   worth the extra pixel. Ink at 70 %, which is this density's
+   secondary. */
 .text-host-detail {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.45;
   font-weight: 500;
   color: rgb(10 31 61 / 0.70);
@@ -424,11 +433,16 @@ body {
    uppercasing it made the book shout the one thing on it that is
    already a number. */
 .text-host-slot {
-  font-size: 13px;
+  /* 15px semibold on a 32px band, in the same ink at 70 % as the band's
+     cover count. The hour was 13px bold on a hairline, sized to cost a
+     book nothing; the band is a landmark between runs of cards now, so
+     it is read rather than squinted at. No tracking: a French hour is
+     21h00, and letterspacing a number is decoration. */
+  font-size: 15px;
   line-height: 1.3;
-  letter-spacing: 0.02em;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  color: rgb(10 31 61 / 0.70);
 }
 
 .text-metric-sm {
