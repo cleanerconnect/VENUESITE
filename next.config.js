@@ -62,8 +62,30 @@ const SECURITY_HEADERS = [
 ];
 
 /** @type {import('next').NextConfig} */
+// The demo assets have to reach the deployment that serves them.
+//
+// `/api/assets/[...key]` reads bytes off the filesystem, under
+// `.data/assets` — the local driver that stands in for S3 until there
+// is a bucket. The build writes them: `db/bootstrap.mjs` runs
+// `db/seed.mjs` before `next build`, and the seed writes a PNG per
+// photo, a vignette and a carte as it writes the rows that name them.
+//
+// Nothing referenced that directory from code, so Next's output tracing
+// did not see it, and the function was bundled without a single byte of
+// it. On Vercel every asset the route was asked for resolved to a path
+// that is not in the bundle: Ma fiche → Photos drew its frames and the
+// route answered 404 for all of them. The rows were there — this is the
+// other half of the same empty screen, and a count of `venue_assets`
+// cannot see it.
+//
+// Declaring it here is what puts the files in the function. It is a
+// build-output concern and not a code one, which is exactly why no
+// import could have expressed it.
 const nextConfig = {
   reactStrictMode: true,
+  outputFileTracingIncludes: {
+    "/api/assets/[...key]": [".data/assets/**"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },

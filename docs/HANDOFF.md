@@ -558,7 +558,7 @@ le journal de build :
 |---|---|
 | pas de `DATABASE_URL` | rien. Le portail retombe sur SQLite ou sur l'instantané, ce qui est le comportement documenté d'un déploiement sans base. |
 | une base **vide** | applique le schéma, génère le jeu de démonstration et le copie. Le premier déploiement d'un projet Neon neuf atterrit donc sur Dar Zellij plutôt que sur un portail vide. |
-| une base **avec au moins un établissement** | applique le schéma — c'est idempotent, et c'est ainsi qu'un changement de schéma arrive en production — et rafraîchit **le carnet de démonstration**, et rien d'autre (voir ci-dessous). |
+| une base **avec au moins un établissement** | applique le schéma — c'est idempotent, et c'est ainsi qu'un changement de schéma arrive en production — complète **les pièces de démonstration qui manquent** et rafraîchit **le carnet** (voir ci-dessous). Rien d'autre n'est écrit. |
 
 **Aucun `TRUNCATE` dans ce chemin.** C'est la différence entre cette
 étape et `db:reset`, et elle est structurelle : `db/push.mjs` a deux
@@ -598,6 +598,76 @@ réservations des deux établissements de démonstration :
 
 `LYFE_SKIP_DEMO_BOOK=1` le désactive. À la main :
 `DATABASE_URL=… npm run db:seed && DATABASE_URL=… npm run db:refresh-book`.
+
+#### Les pièces qui manquent, sur une base déjà en service
+
+Rafraîchir le carnet et rien d'autre laisse un trou qui s'élargit à
+chaque livraison. La semence grandit — les photos y sont entrées le
+26 septembre, un jour après que la première base en a été remplie — et
+une ligne ajoutée à la semence après qu'une base a été semée n'atteint
+jamais cette base : le seul chemin qui l'écrit est celui d'une base
+vide, et cette base n'est plus vide depuis trois semaines.
+
+Le symptôme n'est pas une table vide, c'est un écran qui se lit comme
+cassé : **Ma fiche → Photos sans aucune photo**, sur un établissement
+dont le jeu de données porte quatre photos, une vignette et une carte.
+
+`db/refresh-demo-fixtures.mjs` est ce trou et rien d'autre. Pour les
+deux établissements de démonstration il écrit les lignes que la semence
+fraîche porte et que la base n'a pas :
+
+- **il insère, il ne met jamais à jour.** Chaque instruction est
+  `ON CONFLICT DO NOTHING`. Une ligne déjà là garde toutes ses valeurs,
+  ce qui le rend sûr sur une base qu'un relecteur modifie : un service
+  renommé, une zone redessinée, une description tapée dans Ma fiche
+  sont des lignes qui existent, donc aucune n'est touchée ;
+- **les deux établissements de démonstration seulement**, directement
+  ou par la ligne parente qui l'est. Un partenaire venu par
+  `/inscription` a son propre identifiant : rien ici ne le nomme ;
+- **aucune suppression.** Une photo qu'un relecteur a retirée revient au
+  déploiement suivant, parce que « la fiche a des photos » fait partie
+  du contrat de la démo. Rien d'autre ne revient ;
+- il tourne **avant** le carnet, et l'ordre porte : `reservations`
+  porte `customer_id` et `zone_id`, et le rafraîchissement annule ceux
+  que sa cible ne connaît pas. Les clients et les salles d'abord, et le
+  carnet qui arrive ensuite garde ses noms.
+
+Les tables couvertes sont déclarées dans `FIXTURES`, en tête du
+fichier, avec la raison de chacune. `LYFE_SKIP_DEMO_FIXTURES=1` le
+désactive.
+
+#### Une seule horloge pour le build et le portail
+
+La semence accroche son jeu de données à un instant, et le portail rend
+contre un. Ce doit être le **même**, et livrés à eux-mêmes ils ne le
+sont pas : `db/seed.mjs` est un outil, donc un `LYFE_DEMO_CLOCK` absent
+veut dire « le jeudi de cette semaine à 20h30 » pour lui, alors que le
+portail lit une variable absente comme l'horloge réelle — le
+comportement documenté d'un déploiement, qui n'a pas à se figer.
+
+Un mardi, le build écrit donc un carnet dont le service en direct est
+daté de jeudi, et le portail ouvre Réservations sur mardi et demande
+les lignes de mardi : la barre du jour nomme le service que la base
+porte, le carnet dessous est interrogé pour le jour que l'horloge
+porte, et l'écran affiche **« Carnet vide » avec deux mille
+réservations dans la table**.
+
+`db/bootstrap.mjs` dit donc aux semences qu'il lance ce que le portail
+lira : la variable quand elle est posée, et `off` — l'horloge réelle —
+quand elle ne l'est pas. Accord dans les deux configurations, plutôt
+que dans une seule.
+
+Et les octets suivent : `/api/assets/[...key]` lit les fichiers sous
+`.data/assets`, que la semence écrit au moment du build, et
+`outputFileTracingIncludes` dans `next.config.js` est ce qui les fait
+entrer dans la fonction déployée. Sans cette ligne les lignes
+`venue_assets` sont en base, la route répond 404 pour chacune, et Ma
+fiche dessine onze cadres vides — l'autre moitié du même écran, qu'un
+décompte en base ne peut pas voir.
+
+`node tools/verify/bootstrap.mjs` est le contrôle qui tient tout cela :
+il fabrique la base périmée, lance le bootstrap dessus et compte ce qui
+en sort.
 
 #### Ce que le carnet contient
 

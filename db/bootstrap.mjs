@@ -57,6 +57,44 @@
 // not the guests, and never a booking made through the portal or the
 // app. It is a separate script because that boundary is the whole of
 // its value, and `LYFE_SKIP_DEMO_BOOK=1` turns it off.
+//
+// ── The demo fixtures ────────────────────────────────────────────────
+//
+// And one more: `db/refresh-demo-fixtures.mjs`, which writes the demo
+// venues' fixture rows that are **absent**, and only those.
+//
+// A refresh that rewrites the book and nothing else leaves a gap that
+// widens with every release. The seed grows — photos landed in it on
+// 26 September, one day after the first database was filled from it —
+// and a row added to the seed after a database was first seeded never
+// reaches that database, because the first-deploy path is the only one
+// that writes it and the first deploy already happened. The symptom is
+// a screen that reads as broken rather than empty: Ma fiche Photos with
+// no photos, on a production database that has never held a single
+// `venue_assets` row.
+//
+// It inserts and never updates, so a value a reviewer changed on a row
+// that exists stays changed, and `LYFE_SKIP_DEMO_FIXTURES=1` turns it
+// off.
+//
+// ── One clock for the build and the portal ───────────────────────────
+//
+// The seed anchors its dataset to a moment, and the portal renders
+// against one. They have to be the *same* moment, and left alone they
+// are not: `db/seed.mjs` is a tool, so an unset `LYFE_DEMO_CLOCK` means
+// « the Thursday of this week at 20h30 » to it, while the portal takes
+// an unset variable to mean the real clock — the documented behaviour of
+// a deployment, which should not freeze.
+//
+// So on a Tuesday the build writes a book whose live service is dated
+// Thursday, and the portal opens Réservations on Tuesday and asks for
+// Tuesday's rows: the day bar names the service the data has, the book
+// under it is queried for the day the clock has, and the screen says
+// « Carnet vide » with two thousand bookings in the table.
+//
+// The seed children below are therefore told what the portal will use:
+// the variable when it is set, and `off` — the real clock — when it is
+// not. Agreement in both configurations, rather than agreement in one.
 
 import { execFileSync } from "node:child_process";
 import { rmSync } from "node:fs";
@@ -82,6 +120,22 @@ import {
 const SEED_FILE = resolve(`.data/bootstrap-${process.pid}.db`);
 
 /**
+ * What the seed children are told « now » is: whatever the portal will
+ * read.
+ *
+ * `db/seed.mjs` imports `toolClock`, whose fallback is Thursday 20h30 —
+ * right for a capture that has to look the same tomorrow, wrong for the
+ * dataset a deployment serves, because the portal's fallback is the real
+ * clock. Passing `off` makes the seed take the deployment's own view of
+ * the hour; passing the variable on, where it is set, freezes both to
+ * one instant. Either way the build and the portal agree, which is the
+ * only property that matters here.
+ */
+const CLOCK = {
+  LYFE_DEMO_CLOCK: process.env.LYFE_DEMO_CLOCK?.trim() || "off",
+};
+
+/**
  * Runs one of the sibling scripts, and stops the build with *its* exit
  * code if it fails.
  *
@@ -92,7 +146,10 @@ const SEED_FILE = resolve(`.data/bootstrap-${process.pid}.db`);
  */
 const run = (script, ...args) => {
   try {
-    execFileSync(process.execPath, [script, ...args], { stdio: "inherit" });
+    execFileSync(process.execPath, [script, ...args], {
+      stdio: "inherit",
+      env: { ...process.env, ...CLOCK },
+    });
   } catch (error) {
     // The child's own message is above this line; this one says which
     // step failed, because a build log read from the bottom otherwise
@@ -188,13 +245,28 @@ function refreshDemoBook(venueCount) {
   try {
     execFileSync(process.execPath, ["db/seed.mjs", "--reset", "--sqlite-only", SEED_FILE], {
       stdio: "inherit",
+      env: { ...process.env, ...CLOCK },
     });
+    // The fixture rows first — the photos, the services, the rooms and
+    // the guests a database seeded before they existed has never held.
+    // Before the book, because the book carries `customer_id` and
+    // `zone_id` and the refresh nulls the ones its target cannot
+    // match: guests and rooms first, and the book keeps its names.
+    if (process.env.LYFE_SKIP_DEMO_FIXTURES) {
+      console.log(
+        "db:bootstrap — pièces de démonstration laissées en place (LYFE_SKIP_DEMO_FIXTURES)",
+      );
+    } else {
+      execFileSync(process.execPath, ["db/refresh-demo-fixtures.mjs", SEED_FILE], {
+        stdio: "inherit",
+      });
+    }
     execFileSync(process.execPath, ["db/refresh-demo-book.mjs", SEED_FILE], {
       stdio: "inherit",
     });
   } catch {
     console.error(
-      "db:bootstrap — le carnet de démonstration n'a pas été rafraîchi. " +
+      "db:bootstrap — le jeu de démonstration n'a pas été rafraîchi. " +
         "Le schéma est appliqué et le déploiement continue ; les " +
         "réservations affichées sont celles d'avant.",
     );
