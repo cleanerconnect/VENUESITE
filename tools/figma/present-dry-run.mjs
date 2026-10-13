@@ -154,15 +154,12 @@ const HANDMADE = [
   ["/restaurant · Accueil · téléphone", 390, 1929],
   ["/plus · Plus · téléphone", 390, 844],
   ["/restaurant · Accueil · en attente de validation · téléphone", 390, 2049],
-  ["/restaurant/reservations · Réservations", 1440, 1315],
-  ["/restaurant/reservations · Réservations · Déjeuner", 1440, 1315],
-  ["/restaurant/reservations · Réservations · jour précédent", 1440, 1315],
-  ["/restaurant/reservations · Réservations · jour précédent · Déjeuner", 1440, 1315],
-  ["/restaurant/reservations · Réservations · jour suivant", 1440, 1315],
-  ["/restaurant/reservations · Réservations · jour suivant · Déjeuner", 1440, 1315],
+  // The book's seven frames are not here any more: the capture owns
+  // them since the card, so the stamped loop below makes them and the
+  // manifest reaches them by key. Only the sheets they open are still
+  // drawn by hand.
   ["Overlay · Réservation confirmée · Nabil Cherkaoui", 1440, 900],
   ["Overlay · Décaler la réservation · Nabil Cherkaoui", 1440, 900],
-  ["/restaurant/reservations · Réservations · téléphone", 390, 1730],
   ["Overlay · Réservation confirmée · Nabil Cherkaoui · téléphone", 390, 844],
   ["Overlay · Décaler la réservation · Nabil Cherkaoui · téléphone", 390, 844],
   ["/restaurant/check-in · Check-in", 1440, 1024],

@@ -28,13 +28,17 @@
 //
 // ── What it does not touch ───────────────────────────────────────────
 //
-// Three of the eight screens — Accueil, Réservations, Check-in — are
-// not in the capture, and their frames carry the file's forty-nine
-// prototype reactions on the buttons inside them. Those frames are
-// *adopted*: moved into the layout the generator computes, never
-// recreated. A recreated button is a new node, and a new node is a dead
-// link. The five screens the capture owns are replaced as before, and
-// any reaction on the frame itself travels with it.
+// Two of the eight screens — Accueil and Check-in — are not in the
+// capture, and their frames carry prototype reactions on the buttons
+// inside them. Those frames are *adopted*: moved into the layout the
+// generator computes, never recreated. A recreated button is a new
+// node, and a new node is a dead link.
+//
+// Réservations was the third until the card. `replay-page09.js` now
+// keeps a frame and replaces what is inside it, and inherits a link by
+// cloning the node that holds it, so the book's seven frames are
+// captured like the rest — which is how the card reached them. The six
+// screens the capture owns are presented from their stamps.
 
 const NS = "lyfe.page09";
 const KIT = "lyfe.kit";
@@ -172,32 +176,32 @@ const SCREENS = [
     specLabel: "Contrat Lot 1 § 2.3 · Réservations",
     flow: "book",
     rows: [
+      // Keyed, not named, since the capture owns all seven. The day
+      // frames show the dinner service — the one the landing frame
+      // shows — and each carries its own Déjeuner beside it, which is
+      // what their links have always said.
       {
-        base: {
-          name: "/restaurant/reservations · Réservations",
-          phone: "/restaurant/reservations · Réservations · téléphone",
-          tablet: "reservations",
-        },
+        base: { key: "reservations" },
         states: [
-          { name: "/restaurant/reservations · Réservations · Déjeuner", phone: null, caption: "Service · Déjeuner" },
+          { key: "reservations-dejeuner", widths: [1440], caption: "Service · Déjeuner" },
         ],
       },
       {
-        base: { name: "/restaurant/reservations · Réservations · jour précédent", phone: null },
+        base: { key: "reservations-jour-precedent", widths: [1440] },
         states: [
           {
-            name: "/restaurant/reservations · Réservations · jour précédent · Déjeuner",
-            phone: null,
+            key: "reservations-jour-precedent-dejeuner",
+            widths: [1440],
             caption: "Jour précédent · Déjeuner",
           },
         ],
       },
       {
-        base: { name: "/restaurant/reservations · Réservations · jour suivant", phone: null },
+        base: { key: "reservations-jour-suivant", widths: [1440] },
         states: [
           {
-            name: "/restaurant/reservations · Réservations · jour suivant · Déjeuner",
-            phone: null,
+            key: "reservations-jour-suivant-dejeuner",
+            widths: [1440],
             caption: "Jour suivant · Déjeuner",
           },
         ],
@@ -887,11 +891,17 @@ function coverBoard(figma, doc, version) {
 /** The frame a manifest reference names, at one width, or null. */
 function resolve(ref, width, drawn, named) {
   if (!ref) return null;
+  // A frame that only exists at one width says so. The book's day and
+  // service states are drawn at 1440 and nowhere else: while they were
+  // reached by name, `phone: null` said that; keyed, the key would be
+  // looked for on every shelf and reported missing on two of them.
+  if (ref.widths && ref.widths.indexOf(width) < 0) return null;
   if (ref.key) return drawn[`${ref.key}@${width}`] ?? null;
-  // The three adopted screens are named rather than keyed at 1440 and
-  // 390, because the page draws them by hand there. At 768 they are
+  // Accueil and Check-in are named rather than keyed at 1440 and 390,
+  // because the page draws them by hand there. At 768 they are
   // captured under a key of their own, so the tablet shelf takes that
-  // and never dresses the desktop frame in a tablet bezel.
+  // and never dresses the desktop frame in a tablet bezel. The
+  // overlays are named too: they are hand-drawn at both widths.
   if (width === 768) return ref.tablet ? drawn[`${ref.tablet}@768`] ?? null : null;
   const name = width <= 480 ? ref.phone : ref.name;
   if (!name) return null;
@@ -997,8 +1007,8 @@ async function presentPage09(figma, options = {}) {
   //
   // With it off, the stamps say which frame is which and nothing is
   // redrawn: the chrome instances, the prototype reactions and the
-  // hand-edited frames (Accueil, Réservations, Check-in — which the
-  // capture does not own at all) stay exactly as they are. Pass
+  // hand-edited frames (Accueil and Check-in, which the capture does
+  // not own at 1440 or 390) stay exactly as they are. Pass
   // `capturedAt` for the cover, which is the only other thing the
   // capture was read for.
   let doc = null;
@@ -1059,11 +1069,12 @@ async function presentPage09(figma, options = {}) {
           // this width. The states and the day-and-service frames of
           // the book have no phone and no tablet copy, and a shelf
           // without them is the drawing, not a hole in it.
-          const named_here = row.base
-            ? width === 768
-              ? row.base.tablet
-              : row.base.key || (width > 480 ? row.base.name : row.base.phone)
-            : null;
+          const named_here =
+            !row.base || (row.base.widths && row.base.widths.indexOf(width) < 0)
+              ? null
+              : width === 768
+                ? row.base.tablet
+                : row.base.key || (width > 480 ? row.base.name : row.base.phone);
           if (named_here) {
             missing.push(`${screen.section} · ${width} · ${row.base.key ?? row.base.name ?? row.base.phone}`);
           }

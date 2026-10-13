@@ -955,19 +955,33 @@ follow.
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
 | `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states, and the onboarding's seven steps at both widths, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1`; its five editable sections are replayed from `docs/lot1-figma-frames.json`, written by `tools/figma/capture-frames.mjs`, and the page is laid out by `tools/figma/present-page09.js` |
 
-**The five sections a partner types into are not drawn by hand.**
+**Six of the eight sections are not drawn by hand.**
 `tools/figma/capture-frames.mjs` walks the running portal — Connexion,
-five tabs of Ma fiche and the saved state of Détails and of Horaires,
-Disponibilités, Notifications, and the onboarding's seven steps, at
-1440 and at 390,
-38 frames in all — and writes the boxes the browser actually painted,
-with their measured geometry, their fills and their type, to
+the book and its day-and-service states, five tabs of Ma fiche and the
+saved state of Détails and of Horaires, Disponibilités, Notifications,
+and the onboarding's seven steps, at 1440, at 768 and at 390, 67 frames
+in all — and writes the boxes the browser actually painted, with their
+measured geometry, their fills and their type, to
 `docs/lot1-figma-frames.json`. `tools/figma/replay-page09.js` runs
-inside Figma and draws that file back into the page, moving each
-frame's sidebar and topbar instances across so the sidebar keeps the
-item it shows as active. A frame there cannot claim a field the screen
-does not have, and a field added to the screen reaches the frame by
-re-running one command.
+inside Figma and draws that file back into the page, keeping each frame
+it finds and replacing only its content, so the sidebar keeps the item
+it shows as active and every link into the frame still resolves. A
+frame there cannot claim a field the screen does not have, and a field
+added to the screen reaches the frame by re-running one command.
+
+Two things about running it, both learned by losing a run to them.
+Seed *before* starting the portal: `db/seed.mjs --reset` writes a new
+database file under a server that has the old one open, and the next
+write through that server fails with « attempt to write a readonly
+database », which the save bar reports as « La connexion a échoué » and
+which this tool used to photograph as the « Enregistré » state. A
+`next build` under a running `next start` has the same shape: the
+server action ids in the page stop matching the ones the server
+answers to. And since the responsive pass a screen renders its blocks
+in two lanes — a `md:hidden` stack for the phone and the one the width
+in hand shows — so every control the capture presses is matched with
+`:visible`; without it the first match is as often the hidden copy, and
+clicking it waits thirty seconds for a button that is `display: none`.
 
 The two halves used to be one half: the capture was in the repository
 and the replay lived in a chat transcript, so the page could be
@@ -1018,13 +1032,60 @@ the page comes from, so there is no loose text left in a shelf. Arrows
 between an onboarding step and the next, and between the book's days
 and services. 160px between two frames, 320px between two sections.
 
-Three of the eight screens — Accueil, Réservations, Check-in — are not
-in the capture, and the file's prototype lives on the buttons inside
-them: a recreated button is a dead link. So those frames are *adopted*:
-moved into the layout the generator computes, never redrawn. The
-generator reports how many reactions it found and how many point at a
-node that no longer exists; the second number is zero, and a run that
-made it anything else would be a bug.
+Two of the eight screens — Accueil and Check-in — are not in the
+capture, and the file's prototype lives on the buttons inside them: a
+recreated button is a dead link. So those frames are *adopted*: moved
+into the layout the generator computes, never redrawn. The generator
+reports how many reactions it found and how many point at a node that
+no longer exists; the second number is zero, and a run that made it
+anything else would be a bug.
+
+**Réservations was the third until the card.** The book's seven frames
+— the landing screen at 1440 and at 390, the lunch service beside it,
+and the two neighbouring days with a service each — are captured and
+replayed like the rest of the page now, which is how the booking card
+reached them. Two facts had to be faced first, and both live in
+`replay-page09.js`.
+
+*A frame is kept, and only what is inside it changes.* These frames are
+destinations as much as sources: every sidebar on the page points at
+the landing one, each day arrow at its neighbour, each service tab at
+the same day's other service. A destination cannot be rewritten any
+more than a reaction can be written, so swapping a frame for a new one
+of the same name would have taken every link *into* it with it — and
+without one dangling reaction to show for it, because those links
+would simply have pointed at a node that was gone. So the replay
+resizes the frame it found, drops the content, keeps the chrome and
+re-pins it. The node's id, which is what an inbound link holds, never
+changes. It is what `accueil-frames.js` already did to the four Accueil
+frames, now the way every captured frame is drawn.
+
+*A link out of the frame is inherited.* Before the old content goes,
+every reaction carrier in it is cloned, and the clone takes the drawn
+button's box, fill, radius, stroke and children: the look of the new,
+the reaction of the old. The pairing is by name — the file's
+« Accepter » against the capture's « bouton · Accepter », with the
+older « Button · Accepter » spelling read as the same label.
+
+One exception, and it belongs to the book rather than to the tool.
+« Accepter » hangs on a booking waiting for an answer, and a service
+with none draws no Accepter at all — Déjeuner on the 15th is five
+tables and every one of them already confirmed. The link falls back to
+the first card of that book, which opens the same sheet in one tap,
+and the run says which: `hérité … Accepter → la carte`. A link with
+nowhere at all to go is the one case where the replay refuses: it
+leaves the frame exactly as it found it and reports `conservé`, because
+a frame redrawn with a link quietly missing passes every other check
+here.
+
+`replay-dry-run.mjs` holds that ground before a tool call is spent. It
+seeds a stub page with the prototype as the file really carries it,
+runs the replay twice over, and asserts that the census of destinations
+is the same before and after, that nothing points at a node the run
+removed, that every content link ended up on a node the capture drew,
+and that the second pass — which inherits from the first pass's clones,
+as every run after the first one does — moves nothing. Then it plants a
+link with no target and checks that the frame came through untouched.
 
 The Accueil is the one adopted screen whose *content* is generated all
 the same, because it is now fourteen numbers and thirty bars and nobody
@@ -1050,10 +1111,11 @@ had been lost: Accepter on the computer Réservations frame — the one the
 prototype lands on from every sidebar and from Ouvrir le carnet — had
 no reaction since that frame was redrawn at the host scale, so the
 confirmation overlay was reachable from the five day-and-service frames
-and not from the landing one. It is now a clone of the Déjeuner frame's
-Accepter, which carries the link, with the host-scale icon and label
-moved into it and the button's own fill rebound to `couleur/ink` —
-the look of the new, the reaction of the old. And a tile's height depends on its width,
+and not from the landing one. It was fixed with a clone of the
+Déjeuner frame's Accepter carrying the host-scale icon and label and
+the button's own fill rebound to `couleur/ink` — the look of the new,
+the reaction of the old — and that one-off is now the rule the replay
+follows for every frame it redraws. And a tile's height depends on its width,
 so the rows are measured after the column has been laid out, not while
 it is being built: measured too early, every tile is the height of a
 three-line label.

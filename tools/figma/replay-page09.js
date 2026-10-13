@@ -75,12 +75,21 @@ const NS = "lyfe.page09";
 /** Which section each captured key belongs in, and in what order. */
 const HOME = {
   "connexion": ["1 · Connexion", 0],
-  // The three the page adopts at 1440 and at 390, captured at 768 only:
-  // new keys, so the replay creates them and the frames the prototype
-  // lives on are not touched. See `capture-frames.mjs`.
+  // Accueil and Check-in the page still adopts at 1440 and at 390,
+  // captured at 768 only: new keys, so the replay creates them and the
+  // frames the prototype lives on are not touched. Their content is
+  // fourteen numbers and a chart, and `accueil-frames.js` writes that.
   "accueil": ["2 · Accueil", 0],
-  "reservations": ["3 · Réservations", 0],
   "check-in": ["4 · Check-in", 0],
+  // The book and the six states page 09 shows beside it. It was
+  // adopted at 1440 and at 390 until the replay learned to inherit a
+  // reaction; now every frame of it is drawn from the capture.
+  "reservations": ["3 · Réservations", 0],
+  "reservations-dejeuner": ["3 · Réservations", 1],
+  "reservations-jour-precedent": ["3 · Réservations", 2],
+  "reservations-jour-precedent-dejeuner": ["3 · Réservations", 3],
+  "reservations-jour-suivant": ["3 · Réservations", 4],
+  "reservations-jour-suivant-dejeuner": ["3 · Réservations", 5],
   "ma-fiche-identite": ["5 · Ma fiche", 0],
   "ma-fiche-details": ["5 · Ma fiche", 1],
   "ma-fiche-enregistre": ["5 · Ma fiche", 2],
@@ -112,6 +121,16 @@ const HOME = {
  */
 const ADOPT = {
   "connexion@1440": "128:12",
+  // The book's seven frames, drawn by hand until the card. Each one is
+  // claimed where it stands so its reactions can be inherited rather
+  // than lost; after this run the stamps carry them.
+  "reservations@1440": "128:398",
+  "reservations@390": "218:1106",
+  "reservations-dejeuner@1440": "202:964",
+  "reservations-jour-precedent@1440": "202:574",
+  "reservations-jour-precedent-dejeuner@1440": "211:12674",
+  "reservations-jour-suivant@1440": "202:769",
+  "reservations-jour-suivant-dejeuner@1440": "211:12869",
   "ma-fiche-identite@1440": "316:1179",
   "ma-fiche-details@1440": "328:819",
   "ma-fiche-enregistre@1440": "326:1395",
@@ -169,6 +188,13 @@ const GAP = 120; // between two frames with no history to go on
 
 /** The page, by name: its id survives nothing, but its name is read. */
 const PAGE_MATCH = /^09 /;
+
+/**
+ * The words on a booking's decisions, which is the one family of
+ * button whose presence depends on the day rather than on the screen.
+ * A link on one of them falls back to the booking itself.
+ */
+const DECISION = /^(Accepter|Refuser|Check-in|Absent|Annuler)/;
 
 async function replayPage09(figma, only, given) {
   const page = figma.root.children.find((p) => PAGE_MATCH.test(p.name));
@@ -252,6 +278,133 @@ async function replayPage09(figma, only, given) {
     node.clipsContent = false;
     for (const kid of tuple[10] || []) node.appendChild(build(kid, x, y));
     return node;
+  };
+
+  // ── A link is inherited, never written ──
+  //
+  // This sandbox accepts `BACK`, `CLOSE` and `URL` reactions and
+  // refuses every `NODE` one — not only a hand-built action, but a
+  // node's own reactions read back and set again, unchanged. So a
+  // redrawn button is a dead link, which is why three screens were
+  // drawn by hand on this page for months rather than captured.
+  //
+  // The way round it is to clone the node that already carries the
+  // link and move the new drawing into the clone: the look of the new,
+  // the reaction of the old. `accueil-frames.js` uses the same trick
+  // on two buttons; this does it for every reaction a frame holds.
+  //
+  // The chrome needs none of it. Those instances move across whole a
+  // few lines down, and their reactions with them.
+
+  /** Is this node inside one of the frame's `Chrome / …` instances? */
+  const chromeBorne = (node, frame) => {
+    for (let c = node; c && c.id !== frame.id; c = c.parent) {
+      if (/^Chrome \//.test(c.name)) return true;
+    }
+    return false;
+  };
+
+  /**
+   * Which drawn node each of the old frame's links should move onto.
+   *
+   * A carrier is matched by its label: the file calls the button
+   * « Accepter » or « Button · Accepter » depending on which generation
+   * of this page drew it, and the capture calls it « bouton ·
+   * Accepter ». Two carriers of one label take the first two drawn
+   * buttons that bear it, in reading order, rather than both the first.
+   *
+   * `lost` names a link the drawing has nowhere to put. The frame is
+   * then left alone: a book whose « Accepter » has no button is a
+   * capture to fix, not a reaction to drop.
+   */
+  const inheritance = (old, root) => {
+    const pairs = [];
+    const lost = [];
+    const taken = {};
+    const pick = (name) => {
+      const at = taken[name] || 0;
+      const found = root.findAll((n) => n.name === name)[at];
+      if (found) taken[name] = at + 1;
+      return found;
+    };
+    const carriers = old
+      .findAll((n) => n.reactions && n.reactions.length)
+      .filter((n) => !chromeBorne(n, old));
+    for (const carrier of carriers) {
+      // What the link was hung on to begin with. A carrier this run
+      // finds is as often a clone a previous run grafted as a button
+      // somebody drew by hand, and the graft renames it after the node
+      // it replaced — so the name alone drifts: « Accepter » becomes
+      // « bouton · Accepter » becomes nothing matchable at all, and the
+      // frame stops being redrawn from the second pass on. The stamp
+      // holds the first name and every pass reads that.
+      const label = (carrier.getSharedPluginData(NS, "inherited") || carrier.name)
+        .replace(/^(?:Button|bouton) · /, "");
+      const target = pick(`bouton · ${label}`);
+      if (target) {
+        pairs.push({ carrier, target, label, via: "bouton" });
+        continue;
+      }
+      // A decision the day does not offer still has somewhere honest
+      // to go. « Accepter » hangs on the book's pending booking, and a
+      // service with nothing pending left draws no Accepter at all —
+      // Déjeuner on the 15th is five tables and all of them confirmed.
+      // The sheet that button opens is the sheet a booking opens, so
+      // the link moves onto the first card: one tap, same overlay, and
+      // a reaction kept rather than dropped for want of a button.
+      const card = DECISION.test(label) ? pick("carte") : null;
+      if (card) {
+        pairs.push({ carrier, target: card, label, via: "carte" });
+        continue;
+      }
+      lost.push(carrier.name);
+    }
+    return { pairs, lost };
+  };
+
+  /** The clone takes the drawn button's box, its look and its children. */
+  const graft = (pair) => {
+    const target = pair.target;
+    const clone = pair.carrier.clone();
+    if (clone.type !== "FRAME") {
+      throw new Error(`${pair.carrier.name} : un ${clone.type} ne peut pas porter le dessin`);
+    }
+    // Auto-layout would re-flow children the capture has already
+    // placed, and the capture places everything absolutely.
+    clone.layoutMode = "NONE";
+    for (const kid of clone.children.slice()) kid.remove();
+    clone.name = target.name;
+    clone.resizeWithoutConstraints(
+      Math.max(1, target.width),
+      Math.max(1, target.height),
+    );
+    clone.fills = target.fills;
+    clone.strokes = target.strokes;
+    clone.strokeAlign = target.strokeAlign;
+    // Both read `figma.mixed` on a node whose sides disagree. The
+    // capture never writes one that does, and a guard is cheaper than
+    // the exception.
+    if (typeof target.strokeWeight === "number") clone.strokeWeight = target.strokeWeight;
+    if (typeof target.cornerRadius === "number") clone.cornerRadius = target.cornerRadius;
+    clone.effects = target.effects;
+    clone.opacity = target.opacity;
+    clone.visible = true;
+    clone.clipsContent = target.clipsContent;
+    for (const kid of target.children.slice()) clone.appendChild(kid);
+    const parent = target.parent;
+    parent.insertChild(parent.children.indexOf(target), clone);
+    clone.x = target.x;
+    clone.y = target.y;
+    target.remove();
+    // Passed along rather than overwritten, so the tenth pass still
+    // knows the link came off « Accepter » and not off the card it has
+    // been sitting on since the second.
+    clone.setSharedPluginData(
+      NS,
+      "inherited",
+      pair.carrier.getSharedPluginData(NS, "inherited") || pair.carrier.name,
+    );
+    return clone;
   };
 
   // ── Where each frame lives ──
@@ -340,12 +493,30 @@ async function replayPage09(figma, only, given) {
     const shelf = shelves[`${job.section}@${job.width}`];
     const old = await claimed(f.k);
 
-    const frame = figma.createFrame();
-    frame.name = f.n;
-    frame.resizeWithoutConstraints(job.width, Math.max(1, f.h));
-    frame.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
-    frame.clipsContent = true;
-    frame.setSharedPluginData(NS, "frame", f.k);
+    // The drawing first, and the links' landing places worked out
+    // before anything is taken off the frame being replaced: a frame
+    // this run cannot redraw without dropping a link is a frame this
+    // run leaves exactly as it found it.
+    const root = build(f.root, 0, 0);
+    const plan = old ? inheritance(old, root) : { pairs: [], lost: [] };
+    if (plan.lost.length) {
+      root.remove();
+      report.push(`conservé ${f.k} · lien sans cible : ${plan.lost.join(", ")}`);
+      continue;
+    }
+
+    // The links, onto the buttons the capture drew for them. Done
+    // while the old content still stands, because a clone is the only
+    // way a reaction travels.
+    for (const pair of plan.pairs) graft(pair);
+    if (plan.pairs.length) {
+      report.push(
+        `hérité   ${f.k} · ` +
+          plan.pairs
+            .map((x) => (x.via === "carte" ? `${x.label} → la carte` : x.label))
+            .join(", "),
+      );
+    }
 
     // A frame the page did not have has no chrome to inherit, so it
     // borrows a clone from a frame of the same width in the same
@@ -380,10 +551,35 @@ async function replayPage09(figma, only, given) {
       }
     }
 
-    if (chromeFrom) {
-      for (const piece of chromeFrom.children.slice()) {
-        if (piece.type !== "INSTANCE") continue;
-        if (!/^Chrome \//.test(piece.name)) continue;
+    // ── the frame is kept, and only what is inside it changes ──
+    //
+    // The prototype points *at* these frames as much as out of them:
+    // the sidebar's Réservations entry on five of them, Ouvrir le
+    // carnet on Accueil, each day arrow on its neighbour. A
+    // destination cannot be rewritten any more than a reaction can be
+    // written, so a frame swapped for a new one of the same name takes
+    // every link into it into the bin. Keeping the node and replacing
+    // its content costs nothing and keeps all of them — and it is what
+    // `accueil-frames.js` already does to the four Accueil frames.
+    const pieces = (chromeFrom ? chromeFrom.children.slice() : []).filter(
+      (c) => c.type === "INSTANCE" && /^Chrome \//.test(c.name) && wants(c.name),
+    );
+    if (old) {
+      const keep = pieces.slice();
+      for (const kid of old.children.slice()) {
+        if (keep.indexOf(kid) < 0) kid.remove();
+      }
+    }
+
+    const frame = old || figma.createFrame();
+    frame.name = f.n;
+    frame.resizeWithoutConstraints(job.width, Math.max(1, f.h));
+    frame.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
+    frame.clipsContent = true;
+    frame.setSharedPluginData(NS, "frame", f.k);
+
+    {
+      for (const piece of pieces) {
         const px = piece.x;
         const pw = piece.width;
         const ph = piece.height;
@@ -415,21 +611,18 @@ async function replayPage09(figma, only, given) {
     // invisible while `at` was hardcoded at 292 and the inset was 32,
     // because 260 + 32 is 292; it was wrong for the two screens whose
     // `main` has no inset, and they hung 32px off the frame.
-    const root = build(f.root, 0, 0);
     frame.appendChild(root);
     root.x = f.at[0] + root.x;
     root.y = f.at[1] + root.y;
 
     if (old) {
-      const parent = old.parent;
-      parent.insertChild(parent.children.indexOf(old), frame);
-      frame.x = old.x;
-      frame.y = old.y;
-      const slot = shelf.seq.find((s) => s.node === old);
-      if (slot) slot.node = frame;
-      else shelf.seq.push({ node: frame, y: old.y, h: old.height });
-      old.remove();
-      report.push(`remplacé ${f.k}`);
+      // Its place on the shelf is its own, already in `seq` from step
+      // 2 with the height it had: the layout pass reads that and gives
+      // the new height the gaps the old one had.
+      if (!shelf.seq.find((s) => s.node === frame)) {
+        shelf.seq.push({ node: frame, y: frame.y, h: frame.height });
+      }
+      report.push(`redessiné ${f.k}`);
     } else {
       shelf.inner.appendChild(frame);
       frame.x = PAD;
