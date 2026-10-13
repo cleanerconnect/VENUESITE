@@ -514,8 +514,21 @@ function Row({ row }: { row: EntityRow }) {
           </span>
         ) : null}
 
+        {/* The telephone, the zone and the channel — on their own line
+            until 1280, on the first line after it.
+            Measured at 768 with the navigation moved out of the way:
+            the line reads time 188, name up to 208, state, and 220 of
+            decisions, which leaves the detail between 4 and 148 pixels
+            of the 168 to 249 it needs. A phone number clipped to four
+            pixels is not a short phone number, it is a sliver where a
+            number should be — and the number is the one thing a host
+            leaves this screen to find. So below `xl` it drops under the
+            name, where it has the width, and the decisions keep their
+            single line either way. The phone is untouched: there the
+            whole line wraps already, and the detail has a line of its
+            own without being told to take one. */}
         {row.meta ? (
-          <div className="text-host-detail num min-w-0 flex-1 truncate">
+          <div className="text-host-detail num min-w-0 flex-1 truncate md:hidden xl:block">
             {row.meta}
           </div>
         ) : null}
@@ -527,6 +540,12 @@ function Row({ row }: { row: EntityRow }) {
           <SpecBadge key={`${badge.label}-${i}`} badge={badge} />
         ))}
       </div>
+
+      {row.meta ? (
+        <div className="text-host-detail num mt-0.5 hidden truncate md:block xl:hidden">
+          {row.meta}
+        </div>
+      ) : null}
 
       {/* The note, on the second line it earns.
           A marker rather than a chip: the violet fill and the 8px of

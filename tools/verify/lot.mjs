@@ -258,13 +258,16 @@ export async function signIn(page, base, options = {}) {
   while (Date.now() < deadline) {
     if (!page.url().includes("/login")) return page.url();
 
-    // Stage two: which of my venues? Buttons, not a dialog — the panel
-    // replaces the form in place, so the form's disappearance is what
-    // says the stage changed. Without that test the loop would click
-    // « Mot de passe oublié ? » while waiting.
-    const stillOnTheForm = (await page.locator('input[type="email"]').count()) > 0;
-    const choices = page.locator('main button:not([type="submit"]):visible');
-    const count = stillOnTheForm ? 0 : await choices.count().catch(() => 0);
+    // Stage two: which of my venues? Buttons, not a dialog, and the
+    // panel replaces the form in place — so the stage is read from the
+    // panel's own name rather than from « the form is gone and
+    // something is clickable ». That guess was wrong once per hundred
+    // runs: a sign-in that succeeds unmounts the e-mail box a frame
+    // before the redirect, leaving « Mot de passe oublié ? » visible
+    // and no form around it, and the tool reported a chooser that was
+    // never drawn.
+    const choices = page.locator('[data-stage="choose-venue"] button:visible');
+    const count = await choices.count().catch(() => 0);
     if (count > 0) {
       if (refuseChooser) return { chooser: true, url: page.url() };
       const wanted = venue

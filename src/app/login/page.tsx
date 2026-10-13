@@ -38,16 +38,33 @@ export default function LoginPage() {
       data-density={host ? "host" : undefined}
       className="min-h-screen flex flex-col md:flex-row"
     >
-      {/* === Left column — the mark, on the dark panel === */}
-      <section className="bg-surface-ink text-canvas flex flex-col justify-between p-8 md:p-12 lg:p-16 md:basis-1/2 md:flex-shrink-0">
+      {/* === Left column — the mark, on the dark panel ===
+          On a phone it is a strip, not a column.
+          Drawn as a column it was 340px of dark panel above the form:
+          the mark at its large cut, 64px of air, two lines of serif
+          headline, 64px more air and a signature — and the page then
+          ran 995px against an 844px screen, so « Se connecter » was
+          under the fold on the one screen whose whole job is that
+          button. The review's own words: a small logo and the form
+          immediately, the headline reduced to a one-line strip.
+          So below 768 the same three pieces lie on one 56px line — the
+          small cut of the mark, the headline on a single truncated
+          line, and the signature dropped, since « LYFE · Maroc » under
+          the LYFE mark is the mark again. */}
+      <section className="bg-surface-ink text-canvas flex items-center gap-3 px-5 py-3 md:flex-col md:justify-between md:items-stretch md:gap-0 md:p-12 lg:p-16 md:basis-1/2 md:flex-shrink-0">
         {/* `self-start` so the mark keeps its own width: stretched to the
             flex cross-axis, `objectFit: contain` centres the artwork and
             the logo drifts into the middle of the panel. */}
-        <div className="self-start">
-          <Brand size="lg" variant="white" />
+        <div className="shrink-0 md:self-start">
+          <span className="md:hidden">
+            <Brand size="sm" variant="white" />
+          </span>
+          <span className="hidden md:block">
+            <Brand size="lg" variant="white" />
+          </span>
         </div>
 
-        <div className="mt-16 md:mt-0">
+        <div className="min-w-0 md:mt-0">
           {/* No eyebrow.
               « ESPACE PARTENAIRE » in 11px tracked capitals above the
               headline was two things this audit removes: a label above a
@@ -55,7 +72,7 @@ export default function LoginPage() {
               the 13px floor. The sentence underneath already says whose
               space this is. */}
           <h1
-            className="text-h1 max-w-[19ch]"
+            className="text-meta text-canvas/70 truncate md:text-h1 md:text-canvas md:whitespace-normal md:max-w-[19ch]"
             style={{ fontFamily: "var(--font-serif)", fontWeight: 600 }}
           >
             {COPY.auth.hero}
@@ -68,11 +85,17 @@ export default function LoginPage() {
             `/70` is 6,6:1, and the line is a signature rather than
             something to read, so there is nothing to lose by making it
             legible. */}
-        <p className="text-meta text-canvas/70 mt-16 md:mt-0">LYFE · Maroc</p>
+        <p className="hidden md:block text-meta text-canvas/70 md:mt-0">
+          LYFE · Maroc
+        </p>
       </section>
 
       {/* === Right column — the one form === */}
-      <section className="bg-surface flex items-center justify-center p-6 md:p-12 md:basis-1/2 md:flex-1 border-t md:border-t-0 md:border-l border-line-soft min-h-[60vh] md:min-h-screen">
+      {/* `min-h-[60vh]` is gone from the phone: 60% of the viewport
+          under a 340px panel is how the page came to be taller than the
+          screen. The column is its content's height now, and the form
+          is the tallest thing in it. */}
+      <section className="bg-surface flex flex-1 items-center justify-center p-6 md:p-12 md:basis-1/2 md:flex-1 border-t md:border-t-0 md:border-l border-line-soft md:min-h-screen">
         {/* The panel reads `?expired=1`, so it needs a boundary for the
             static shell to render around. */}
         <Suspense fallback={<div className="w-full max-w-[400px] h-[420px]" />}>

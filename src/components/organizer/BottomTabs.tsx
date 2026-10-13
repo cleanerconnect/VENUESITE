@@ -46,7 +46,7 @@ export function BottomTabs() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-line-soft shadow-[0_-4px_16px_color-mix(in oklab, var(--color-ink) 6%, transparent)] pb-[env(safe-area-inset-bottom)]"
+      className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-line-soft shadow-[0_-4px_16px_color-mix(in oklab, var(--color-ink) 6%, transparent)] pb-[env(safe-area-inset-bottom)]"
       aria-label="Navigation principale"
     >
       {/* As many columns as there are tabs.

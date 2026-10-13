@@ -32,7 +32,45 @@ const OUT = process.env.OUT ?? "docs/lot1-figma-frames.json";
  * `tab` clicks a FilterTabs button before the shot; `steps` walks the
  * onboarding. Everything else is a plain navigation.
  */
+/**
+ * The widths, the screen each one stands for, and the word a frame's
+ * name carries at it.
+ *
+ * 768 joins 1440 and 390 with the responsive pass: a tablet held in
+ * portrait is where the navigation column used to appear and leave
+ * 508px of page beside it, and page 09 had no frame at that width to
+ * show it either way. 1024 — the same tablet on its side — is walked by
+ * `walk.mjs` rather than drawn here: a shelf of the same eight screens
+ * rotated is a second copy of them, and the orientation is a thing that
+ * either renders or does not, which is a check rather than a drawing.
+ */
+const SHAPE = {
+  1440: { height: 900, suffix: "", chrome: 120 },
+  768: { height: 1024, suffix: " · tablette", chrome: 120 },
+  390: { height: 844, suffix: " · téléphone", chrome: 88 },
+};
+const WIDTHS = [1440, 768, 390];
+
 const FRAMES = [
+  // ── The three the page adopts, at tablet width only ──
+  //
+  // Accueil, Réservations and Check-in are drawn by hand on page 09 at
+  // 1440 and at 390, because the file's prototype lives on the buttons
+  // inside them and a recreated button is a dead link. At 768 there is
+  // no frame to protect: these keys are new, so the replay creates them
+  // and the linked frames are not touched. Which also puts the one
+  // screen the review asks about on tablet — the book, with its
+  // decisions on a single line — on the page rather than in a sentence.
+  { key: "accueil", path: "/restaurant", name: "Accueil", session: true, widths: [768] },
+  {
+    key: "reservations",
+    path: "/restaurant/reservations",
+    name: "Réservations",
+    session: true,
+    widths: [768],
+  },
+  { key: "check-in", path: "/restaurant/check-in", name: "Check-in", session: true, widths: [768] },
+
   { key: "ma-fiche-identite", path: "/restaurant/ma-fiche", name: "Ma fiche", session: true },
   { key: "ma-fiche-details", path: "/restaurant/ma-fiche", name: "Ma fiche · Détails", session: true, tab: "Détails" },
   { key: "ma-fiche-horaires", path: "/restaurant/ma-fiche", name: "Ma fiche · Horaires", session: true, tab: "Horaires" },
@@ -163,6 +201,27 @@ const RECORD = String(function record(rootSelector, excludeSelectors) {
     return out;
   };
 
+  /**
+   * The ink an element would be drawn in, inherited rather than read.
+   *
+   * `color` is an inherited property, so the browser always answers —
+   * but an element may set it to something that is not an ink. The one
+   * that matters here is `next/image`, which writes
+   * `color: transparent` inline on every image: the nearest ancestor
+   * that is *not* transparent is the colour the surface actually uses.
+   *
+   * Falls back to the document's own ink, so a stand-in is never
+   * invisible — an unreadable label is a thing a designer can see and
+   * fix, and a label that is not drawn at all is not.
+   */
+  const inherited = (el) => {
+    for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+      const ink = rgb(getComputedStyle(node).color);
+      if (ink) return ink;
+    }
+    return rgb(getComputedStyle(document.documentElement).color) ?? { r: 0, g: 0, b: 0, a: 1 };
+  };
+
   const base = root.getBoundingClientRect();
   const ox = base.left + window.scrollX;
   const oy = base.top + window.scrollY;
@@ -268,7 +327,76 @@ const RECORD = String(function record(rootSelector, excludeSelectors) {
     // `<select>` paints the *label* of the chosen option, and its
     // options are children the browser does not lay out — so without
     // this the Ville field came back as an empty box.
-    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") {
+    // A box, not a word.
+    //
+    // A checkbox's `value` is « on » — the HTML default, which nothing
+    // on screen says — and the recorder was painting it as text next to
+    // « Se souvenir de moi ». So the ticked state is drawn as what it
+    // is: a filled square inside the box, in the colour the browser
+    // actually used for the accent.
+    if (
+      (el.tagName === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ||
+      el.getAttribute?.("role") === "checkbox"
+    ) {
+      const on = el.checked || el.getAttribute?.("aria-checked") === "true";
+      if (on) {
+        const inset = Math.max(2, Math.round(Math.min(r.width, r.height) * 0.26));
+        kids.push({
+          t: "group",
+          n: "coche",
+          x: round(box.x + inset),
+          y: round(box.y + inset),
+          w: round(r.width - inset * 2),
+          h: round(r.height - inset * 2),
+          fill: rgb(cs.accentColor !== "auto" ? cs.accentColor : cs.color),
+          stroke: null,
+          sw: 0,
+          r: el.type === "radio" ? Math.round(r.width / 2) : 2,
+          kids: [],
+        });
+      }
+    } else if (
+      el.tagName === "IMG" ||
+      el.tagName === "svg" ||
+      el.tagName === "VIDEO"
+    ) {
+      // An image is bytes the recorder does not carry, and an empty box
+      // where the LYFE mark belongs reads as a frame that lost its
+      // logo — which is exactly what the review saw on the replayed
+      // phone Connexion. The box keeps its place and its size, and says
+      // what it is: the `alt`, which for the mark is « LYFE ».
+      const alt = (el.getAttribute?.("alt") ?? el.getAttribute?.("aria-label") ?? "").trim();
+      if (alt) {
+        const size = Math.max(11, Math.min(Math.round(r.height * 0.5), 28));
+        kids.push({
+          t: "text",
+          v: alt,
+          sp: [0, 0],
+          x: box.x,
+          y: round(box.y + (r.height - size * 1.2) / 2),
+          w: box.w,
+          h: Math.round(size * 1.2),
+          s: size,
+          fw: 700,
+          lh: null,
+          // Not this element's own `color`: `next/image` writes
+          // `color: transparent` inline, on every image it renders, so
+          // that a broken image shows nothing rather than its alt text
+          // in the page's ink. Read literally that is a colour with no
+          // alpha, which the recorder stores as « no fill » and the
+          // replay draws as nothing — the mark was *recorded* and then
+          // painted invisible, at all three widths. It is the second
+          // way to lose the same logo, and it does not look like a bug
+          // in the capture: the node is there, with the right text, the
+          // right size and the right place.
+          //
+          // So the stand-in borrows the ink of the surface it sits on,
+          // which is the colour the mark is drawn in anyway.
+          c: inherited(el),
+          al: "center",
+        });
+      }
+    } else if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") {
       const chosen =
         el.tagName === "SELECT"
           ? (el.selectedOptions?.[0]?.textContent ?? "").trim()
@@ -353,10 +481,11 @@ const capture = async (page, selector, exclude = []) => {
 
 const frames = [];
 
-for (const width of [1440, 390]) {
-  const phone = width === 390;
+for (const width of WIDTHS) {
+  // `SHAPE` carries what used to be a boolean: three widths, not two.
+  const shape = SHAPE[width];
   const context = await browser.newContext({
-    viewport: { width, height: phone ? 844 : 900 },
+    viewport: { width, height: shape.height },
     locale: "fr-FR",
     timezoneId: "Africa/Casablanca",
     deviceScaleFactor: 1,
@@ -369,6 +498,10 @@ for (const width of [1440, 390]) {
   if (typeof landed !== "string") throw new Error(landed.refused);
 
   for (const frame of FRAMES) {
+    // A frame can name the widths it belongs to. The three the page
+    // adopts say `[768]`, and nothing claims them at the widths where
+    // page 09 draws them by hand.
+    if (frame.widths && !frame.widths.includes(width)) continue;
     await page.goto(`${BASE}${frame.path}`, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForTimeout(1500);
     if (frame.tab) {
@@ -412,7 +545,7 @@ for (const width of [1440, 390]) {
     const shot = await capture(page, "main", ["aside"]);
     frames.push({
       key: `${frame.key}@${width}`,
-      name: `${frame.path} · ${frame.name}${phone ? " · téléphone" : ""}`,
+      name: `${frame.path} · ${frame.name}${shape.suffix}`,
       width,
       chrome: "dashboard",
       // Measured, not assumed. Two of these screens give `main` the
@@ -421,7 +554,7 @@ for (const width of [1440, 390]) {
       // right edge of the frame they sit in.
       at: { x: Math.round(shot.x), y: Math.round(shot.y) },
       root: shot.tree,
-      height: Math.max(phone ? 844 : 900, Math.round(shot.h) + (phone ? 88 : 120)),
+      height: Math.max(shape.height, Math.round(shot.h) + shape.chrome),
     });
     console.log(`  ${frame.key.padEnd(22)} ${width}px · ${Math.round(shot.h)}px de contenu`);
     if (frame.saveHours) {
@@ -440,7 +573,7 @@ for (const width of [1440, 390]) {
   // Its own context: /inscription belongs to somebody who has no
   // account yet, and a signed-in tab is sent to the dashboard instead.
   const guest = await browser.newContext({
-    viewport: { width, height: phone ? 844 : 900 },
+    viewport: { width, height: shape.height },
     locale: "fr-FR",
     timezoneId: "Africa/Casablanca",
     deviceScaleFactor: 1,
@@ -455,17 +588,17 @@ for (const width of [1440, 390]) {
     const shot = await capture(guestPage, "main", []);
     frames.push({
       key: `${CONNEXION.key}@${width}`,
-      name: `${CONNEXION.path} · ${CONNEXION.name}${phone ? " · téléphone" : ""}`,
+      name: `${CONNEXION.path} · ${CONNEXION.name}${shape.suffix}`,
       width,
       chrome: "none",
       at: { x: Math.round(shot.x), y: Math.round(shot.y) },
       root: shot.tree,
-      height: Math.max(phone ? 844 : 900, Math.round(shot.y + shot.h) + 48),
+      height: Math.max(shape.height, Math.round(shot.y + shot.h) + 48),
     });
     console.log(`  ${CONNEXION.key.padEnd(22)} ${width}px · ${Math.round(shot.h)}px de contenu`);
   }
 
-  await walkOnboarding(guestPage, width, phone);
+  await walkOnboarding(guestPage, width, shape);
   await guest.close();
 }
 
@@ -475,7 +608,7 @@ for (const width of [1440, 390]) {
  * A fresh account per width, because a draft is spent once it has made
  * its venue and a second width would reopen somebody else's answers.
  */
-async function walkOnboarding(page, width, phone) {
+async function walkOnboarding(page, width, shape) {
   const stamp = `${Date.now().toString(36)}${width}`;
   const shot = async (step) => {
     // The density wrapper, which is the flow's own column: `body > div`
@@ -483,12 +616,12 @@ async function walkOnboarding(page, width, phone) {
     const taken = await capture(page, '[data-density="host"]', []);
     frames.push({
       key: `${ONBOARDING[step - 1].key}@${width}`,
-      name: `/inscription · ${ONBOARDING[step - 1].name}${phone ? " · téléphone" : ""}`,
+      name: `/inscription · ${ONBOARDING[step - 1].name}${shape.suffix}`,
       width,
       chrome: "none",
       at: { x: Math.round(taken.x), y: Math.round(taken.y) },
       root: taken.tree,
-      height: Math.max(phone ? 844 : 900, Math.round(taken.y + taken.h) + 48),
+      height: Math.max(shape.height, Math.round(taken.y + taken.h) + 48),
     });
     console.log(`  inscription ${step}/7${" ".repeat(11)} ${width}px · ${Math.round(taken.h)}px`);
   };

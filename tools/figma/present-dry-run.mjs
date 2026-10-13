@@ -143,6 +143,7 @@ const CHROME = {
     ["Chrome / Sidebar · Dashboard basique", 0, 0, 260],
     ["Chrome / Topbar", 260, 0, 1180],
   ],
+  768: [["Chrome / BottomTabs · Dashboard basique", 0, -76, 768]],
   390: [["Chrome / BottomTabs · Dashboard basique", 0, -76, 390]],
 };
 
@@ -285,7 +286,7 @@ const say = (ok, line) => {
 };
 
 console.log(`\nRépétition de la présentation · ${doc.frames.length} cadres capturés\n`);
-say(made.made.length === 4, `les quatre composants sont créés · ${made.made.join(", ")}`);
+say(made.made.length === 5, `les cinq composants sont créés · ${made.made.join(", ")}`);
 say(second.missing.length === 0, `toutes les références trouvent un cadre · ${second.missing.join(" | ") || "aucune manquante"}`);
 say(second.dangling === 0, `aucune réaction ne pointe dans le vide · ${second.reactions} réactions, ${second.dangling} orphelines`);
 say(

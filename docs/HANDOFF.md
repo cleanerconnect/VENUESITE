@@ -455,9 +455,70 @@ LYFE_LOT=2 npx next start -p 3210     # 31 venue screens
 LYFE_LOT=2 node tools/verify/walk.mjs
 ```
 
-Both modes pass at **both widths** — `W=390 H=844` included, which is
-the check that catches a page scrolling sideways on a phone. Under
-Lot 1 `audience.mjs` reports that its screen is
+Both modes pass at **six widths**, portrait and landscape for the two
+tablet ones — `walk.mjs` walks the table itself rather than taking `W`
+and `H` once, so a screen that only breaks at one size cannot pass by
+being measured at another:
+
+| | |
+|---|---|
+| 390 × 844 | the phone the audit was written against |
+| 430 × 932 | the largest phone, where a one-column layout starts to look empty |
+| 768 × 1024 **and** 1024 × 768 | the tablet, both ways up |
+| 1280 × 800 | the laptop, which is where the sidebar's icon rail lives |
+| 1440 × 900 | the reference width every capture is taken at |
+
+`W` and `H` still override, for measuring one size by hand. The check
+that catches a page scrolling sideways on a phone is the same one at all
+six: a horizontal overflow anywhere fails the screen.
+
+#### What the shell does at each width
+
+One rule, three states, and the thing that makes it a rule rather than
+three layouts is that the navigation is never drawn twice:
+
+| Width | Navigation |
+|---|---|
+| under 1024 | the bottom bar, four tabs, `lg:hidden` |
+| 1024 to 1280 | the sidebar as an **icon rail**, 80px, labels hidden, every row carrying its name as a `title` and an `aria-label` |
+| 1280 and up | the sidebar with its labels, 260px |
+
+The rail is not a third design: it is the same `SidebarBody` with
+`rail` set, so an entry added to the sidebar appears in the rail
+without anybody remembering to add it twice. At 768 the sidebar was
+costing 260px of a 508px content column — the measurement that decided
+the breakpoint.
+
+Two more rules the pass is held to:
+
+- **44px tap targets.** `[data-density="host"]` lifts controls to 44,
+  and the two documented exceptions are the book's decision buttons
+  (`button[data-compact]`, 36px, which the LYFE review asked for by
+  name) and the book-line button (`button[data-book-line]`, which has
+  no height of its own).
+- **The primary action and the main content in the first viewport, no
+  scrolling.** True on every screen at every width, with no exception
+  left. Inscription held the last two: steps 2 and 4 ask six questions
+  and offer four drop zones, and as long as « Continuer » was the last
+  line of the card they measured 1035px and 1135px against a 844px
+  phone. Two columns from 768 took them to 915 and 857, which is better
+  and still not inside a 900px laptop window, and the content cannot
+  shrink further without an eighth step the contract does not have.
+
+  So the button left the card. `/inscription` now pins its action row
+  to the bottom of the window with the same `SAVE_BAR_CARD` Ma fiche
+  and Disponibilités use, under a local shell that differs from
+  `SAVE_BAR_SHELL` in one value — `bottom-0` instead of `bottom-20`,
+  because the onboarding flow has no phone tab bar to clear. It had to
+  come out of the `<Card>`, which is `overflow-hidden` and would have
+  pinned the bar to the bottom of the card instead of the screen, and
+  the error line came with it, since it is the answer to pressing the
+  button. Measured after: the action sits at 883 of 900 at 1440, 783 of
+  800 at 1280, 1007 of 1024 at 768 and 827 of 844 at 390, on all seven
+  steps. `tools/verify/inscription.mjs` carries no ceilings any more —
+  it asserts the rule itself, and it is run at six sizes.
+
+Under Lot 1, `audience.mjs` reports that its screen is
 not registered and exits clean rather than failing on a 404 it asked for
 itself, and `configuration.mjs` asserts a different sidebar in each lot:
 in Lot 2 the nine or ten named groups, in Lot 1 the six entries, the
@@ -1029,13 +1090,22 @@ rather than for the nav groups of `src/lib/nav/workspaces.ts` — a
 prototype reads in the order it is played, not in the order the sidebar
 groups its entries.
 
-Each section holds two sub-sections side by side, also 240px apart:
-`Ordinateur` at 1440 on the left, `Téléphone` at 390 on the right. Under
-the screen in each, its related states are grouped and labelled — the
-camera, the confirmations, the two journées and their two services, the
-three Ma fiche tabs, the « Enregistré » states. So a section reads down
-as one screen and across as one screen at two widths, and nothing on the
+Each section holds **three** sub-sections, 320px apart: `Ordinateur` at
+1440, `Tablette` at 768, `Téléphone` at 390. Under the screen in each,
+its related states are grouped and labelled — the camera, the
+confirmations, the two journées and their two services, the three Ma
+fiche tabs, the « Enregistré » states. So a section reads down as one
+screen and across as one screen at three widths, and nothing on the
 page is a frame whose relationship to its neighbours you have to guess.
+
+`Tablette` is the shelf the responsive pass added, and it is the one
+that earns its place by disagreeing with both its neighbours: at 768 the
+sidebar is gone and the bottom bar is there, which is the 1440 frame's
+navigation and the 390 frame's at once, and the book's row holds its
+buttons on one line, which the 390 frame's cannot. Its frames wear
+`Shell / Tablette` on `02` — a 32px-radius slab with a sensor dot and a
+180px home bar — for the same reason the phone frames wear a phone: a
+reviewer should never have to be told which device a frame is of.
 
 Where the page came from — the capture command, the workbook rows the
 scope is read off, and what happened to the eleven screens Lot 1 leaves

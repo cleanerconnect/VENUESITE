@@ -25,8 +25,39 @@ const BASE = process.env.BASE ?? "http://localhost:3210";
 // build does not register is not walked and not counted as missing.
 const SCREENS = venueScreens();
 
-const width = Number(process.env.W ?? 1440);
-const height = Number(process.env.H ?? 900);
+// Six viewports, in one run.
+//
+// It walked one width at a time and the matrix ran it twice, at 1440
+// and at 390 — which is a phone and a desktop, and nothing in between.
+// The two tablet widths are where the portal actually broke: at 768 the
+// navigation column appeared and left 508px of page beside it, and
+// nobody saw that because nothing ever opened the portal at 768.
+//
+// `W` and `H` still take one number each, so `W=390 H=844` is the same
+// run it always was. Given a list — `W=390,768 H=844,1024` — it walks
+// each pair. With neither, it walks all six: the two phones, the tablet
+// in both orientations, and the two desktops.
+const SIX = [
+  [390, 844],
+  [430, 932],
+  [768, 1024],
+  [1024, 768],
+  [1280, 800],
+  [1440, 900],
+];
+const numbers = (name) =>
+  (process.env[name] ?? "")
+    .split(",")
+    .map((n) => Number(n.trim()))
+    .filter((n) => Number.isFinite(n) && n > 0);
+const askedWidths = numbers("W");
+const askedHeights = numbers("H");
+const VIEWPORTS = askedWidths.length
+  ? askedWidths.map((w, i) => [
+      w,
+      askedHeights[i] ?? askedHeights[0] ?? SIX.find(([sw]) => sw === w)?.[1] ?? 900,
+    ])
+  : SIX;
 // Unset by default: each establishment is opened by the account that
 // holds it, which under Lot 1 is a different person per venue and under
 // Lot 2 is Yassine for both. `EMAIL=` pins one account for every venue.
@@ -44,14 +75,6 @@ const venues = process.env.VENUE
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
 });
-// `locale` because a native date input formats its own value from the
-// browser's locale, not from the page: without it a French portal
-// captures `09/25/2026` next to a day it spells "vendredi 25 septembre".
-const context = await browser.newContext({
-  viewport: { width, height },
-  locale: "fr-FR",
-});
-const page = await context.newPage();
 
 const problems = [];
 // The map draws OpenStreetMap tiles and geocodes through Nominatim.
@@ -59,20 +82,39 @@ const problems = [];
 // load is not this portal's defect — the component renders and stays
 // usable without them. Anything else on the console still fails the run.
 const EXTERNAL_MAP = /tile\.openstreetmap\.org|nominatim\.openstreetmap\.org|\/api\/geocode/;
-page.on("console", (m) => {
-  if (m.type() !== "error") return;
-  const text = m.text();
-  // A failed resource logs its message here and its URL in `location()`;
-  // a tile server refused by the runner's proxy says only
-  // « ERR_TUNNEL_CONNECTION_FAILED » in the text, so both are checked.
-  const from = m.location()?.url ?? "";
-  if (EXTERNAL_MAP.test(text) || EXTERNAL_MAP.test(from)) return;
-  problems.push(`console: ${text.slice(0, 160)}`);
-});
-page.on("pageerror", (e) => problems.push(`pageerror: ${String(e).slice(0, 160)}`));
+/** A fresh context per viewport, with its own console listeners. */
+async function openPage(width, height) {
+  // `locale` because a native date input formats its own value from the
+  // browser's locale, not from the page: without it a French portal
+  // captures `09/25/2026` next to a day it spells "vendredi 25 septembre".
+  const context = await browser.newContext({
+    viewport: { width, height },
+    locale: "fr-FR",
+  });
+  const page = await context.newPage();
+  page.on("console", (m) => {
+    if (m.type() !== "error") return;
+    const text = m.text();
+    // A failed resource logs its message here and its URL in `location()`;
+    // a tile server refused by the runner's proxy says only
+    // « ERR_TUNNEL_CONNECTION_FAILED » in the text, so both are checked.
+    const from = m.location()?.url ?? "";
+    if (EXTERNAL_MAP.test(text) || EXTERNAL_MAP.test(from)) return;
+    problems.push(`console: ${text.slice(0, 160)}`);
+  });
+  page.on("pageerror", (e) => problems.push(`pageerror: ${String(e).slice(0, 160)}`));
+  return { context, page };
+}
 
 let ok = 0;
 let expected = 0;
+const perViewport = [];
+
+for (const [width, height] of VIEWPORTS) {
+const { context, page } = await openPage(width, height);
+const okBefore = ok;
+const expectedBefore = expected;
+console.log(`\n──── ${width}×${height} ────`);
 
 for (const venue of venues) {
   // Signed in per establishment rather than once, because Lot 1 holds
@@ -156,8 +198,13 @@ for (const venue of venues) {
   }
 }
 
-console.log(
-  `\n${ok}/${expected} screens clean at ${width}×${height} · ${LOT_LABEL} · ${venues.join(", ")}`,
+perViewport.push(
+  `${String(width).padStart(4)}×${String(height).padEnd(4)} ${ok - okBefore}/${expected - expectedBefore}`,
 );
+await context.close();
+}
+
+console.log(`\n${ok}/${expected} screens clean · ${LOT_LABEL} · ${venues.join(", ")}`);
+for (const line of perViewport) console.log(`  ${line}`);
 await browser.close();
 process.exit(ok === expected ? 0 : 1);

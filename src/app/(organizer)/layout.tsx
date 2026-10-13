@@ -121,7 +121,7 @@ export default async function OrganizerLayout({
           />
           <MobileSidebarDrawer />
         </div>
-        <div className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">
+        <div className="flex-1 min-w-0 flex flex-col pb-20 lg:pb-0">
           <div className="no-print contents">
             <Topbar />
           </div>

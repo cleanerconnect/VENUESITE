@@ -100,12 +100,17 @@ export function Topbar() {
           type="button"
           onClick={() => openDrawer(true)}
           aria-label="Ouvrir le menu"
-          className="md:hidden h-11 w-11 -ml-2 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
+          className="lg:hidden h-11 w-11 -ml-2 rounded-full hover:bg-ink/[0.04] flex items-center justify-center text-ink transition-colors"
         >
           <Menu size={20} strokeWidth={2} />
         </button>
 
-        <div className="md:hidden flex-1 flex justify-center">
+        {/* The mark, until the sidebar carries it again at 1280.
+            It used to go at 768, which left 768-1023 with the column
+            gone and no mark anywhere on screen. Centred while it is the
+            only thing beside the hamburger, inline once the search
+            appears at 768 — one copy of the mark either way. */}
+        <div className="lg:hidden flex-1 md:flex-none flex justify-center">
           <Brand size="sm" />
         </div>
 
