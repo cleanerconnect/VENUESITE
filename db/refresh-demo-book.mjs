@@ -31,7 +31,13 @@
 // The two live `services` rows go with it: their counters are summed
 // from the book at the foot of `db/seed.mjs`, so a new book under the
 // old counters is the contradiction that file spends four paragraphs
-// avoiding.
+// avoiding. So do the `no_show_records`, which the delete cascades away
+// and which are a fact about the bookings rather than about the venue.
+//
+// Everything else the demo dataset holds — the photos, the services the
+// venue defines, the rooms, the guests, the carte — is
+// `db/refresh-demo-fixtures.mjs`, which runs just before this one and
+// only ever inserts.
 //
 // `LYFE_SKIP_DEMO_BOOK=1` turns it off for a deployment that wants its
 // book left exactly where it is.
@@ -175,6 +181,18 @@ try {
     .filter((r) => historyIds.has(String(r.reservation_id)));
   await copy("reservation_status_history", history);
 
+  // And the no-shows, which are the same kind of thing and were being
+  // lost: `no_show_records.reservation_id` references `reservations`
+  // ON DELETE CASCADE, so every delete above took the venue's no-show
+  // history with it and nothing put it back. Three refreshes later the
+  // database held none, and Performance reported a no-show rate of zero
+  // for a venue whose dataset describes eleven of them — a figure that
+  // is wrong rather than missing, which is the worse of the two.
+  const noShows = fresh("no_show_records").filter((r) =>
+    historyIds.has(String(r.reservation_id)),
+  );
+  await copy("no_show_records", noShows);
+
   await client.query("COMMIT");
 
   const span = bookings.reduce(
@@ -187,6 +205,7 @@ try {
   console.log(
     `db:refresh-demo-book — ${removed} réservation(s) de démonstration retirée(s), ` +
       `${written} écrite(s) du ${span.from} au ${span.to}` +
+      `, ${noShows.length} absence(s)` +
       (orphaned > 0 ? ` · ${orphaned} sans client connu, rattachée(s) à personne` : ""),
   );
 } catch (error) {
