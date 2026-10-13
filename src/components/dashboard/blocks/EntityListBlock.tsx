@@ -276,19 +276,24 @@ function SlotGroups({
     else groups.push({ slot, rows: [row] });
   }
 
-  // One book, not a stack of cards.
+  // One card per booking, in runs under a band.
   //
-  // Under host density the sittings live inside a single bordered
-  // block: the sitting is a rule across it, the bookings are lines
-  // under the rule, and one hairline separates each from the next. That
-  // is the page of a paper book, and it is also what makes a service
-  // fit on a screen — the gaps between twenty-six cards were 12px each
-  // and the borders 2px, which is 360px of a 900px screen spent on
-  // separation.
+  // The sittings used to live inside a single bordered block — the hour
+  // a rule across it, the bookings lines under the rule, one hairline
+  // between each. That was the page of a paper book, and it was chosen
+  // for a measured reason: the gaps between twenty-six cards are 12px
+  // each, which is 300px of a 900px screen spent on separation.
+  //
+  // The review asked for the card back, and the trade is the trade: a
+  // booking is now a thing you can point at, with its own edge, its own
+  // state band and room for the note — and fewer of them fit on a
+  // screen. What the card does *not* get back is the chrome that made
+  // the first version expensive: no shadow, no lift, no 20px radius, no
+  // 32px of padding. 12px of radius, one hairline, 16px of padding.
   const host = Boolean(rows[0]?.lead);
   if (host) {
     return (
-      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface">
+      <div>
         {groups.map((group, i) => (
           <div key={`${group.slot ?? "_"}-${i}`}>
             {group.slot ? (
@@ -299,9 +304,14 @@ function SlotGroups({
                 first={i === 0}
               />
             ) : null}
-            {group.rows.map((row) => (
-              <Row key={row.id} row={row} />
-            ))}
+            {/* 12px between cards, and nothing else between them: the
+                edge of a card is already a separator, and a rule as
+                well would be two. */}
+            <div className="flex flex-col gap-3">
+              {group.rows.map((row) => (
+                <Row key={row.id} row={row} />
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -332,21 +342,22 @@ function SlotGroups({
 }
 
 /**
- * A sitting's header: the time, a rule, and what the sitting is worth.
+ * A sitting's band: the hour on the left, what the sitting is worth on
+ * the right.
  *
- * It came back, and it came back thin. The band it replaces was 36px of
- * uppercase across the page — six of them cost 216px of a 900px screen,
- * about four bookings, on the one screen whose whole job is how many
- * bookings you can see, and it said « 21H00 » directly above a line
- * that opened with « 21h00 » in the largest type on the screen.
+ * 32px of canvas-2, 15px semibold, both halves in the ink at 70 % —
+ * the review's measurements. It is a landmark between runs of cards
+ * rather than a rule inside a block, which is why it has a background
+ * now and no hairline: a band on a tint does not need a line as well.
  *
- * What brought it back is the second half of the sentence: a host
- * reading the book wants to know what is *coming* at half past, and
- * « 6 couverts » beside the hour is the load reading the rows cannot
- * give without being added up by eye. So the hour stays, the count is
- * covers rather than tables — a table of two and a table of eight are
- * not the same sitting — and the whole line is 24px: 13px of type on
- * the same baseline as the hairline that carries it.
+ * The covers rather than the tables, as before: a table of two and a
+ * table of eight are not the same sitting, and « 6 couverts » beside
+ * the hour is the load that reading the cards cannot give without
+ * being added up by eye.
+ *
+ * 24px above and 8px below — except above the first, where there are no
+ * cards to separate it from and the block's own margin has already
+ * done the work.
  */
 function SlotHead({
   slot,
@@ -362,16 +373,14 @@ function SlotHead({
   return (
     <div
       // A stable hook for the tape measure: `tools/verify` counts these
-      // and checks what they cost against the fold.
+      // and checks their height and their spacing.
       data-slot-head=""
       className={cn(
-        "flex items-center gap-3 px-4 py-[2px] bg-canvas-2 border-b border-line",
-        // No rule on top: the line above it already draws one, and two
-        // hairlines 21px apart read as a box around nothing.
+        "flex h-8 items-center justify-between gap-3 bg-canvas-2 px-4 mb-2",
+        first ? "" : "mt-6",
       )}
     >
-      <span className="text-host-slot num text-ink">{slot}</span>
-      <span className="h-px flex-1 bg-line" aria-hidden />
+      <span className="text-host-slot num">{slot}</span>
       {covers > 0 && unit ? (
         <span className="text-host-detail num shrink-0">
           {covers} {covers > 1 ? unit.many : unit.one}
@@ -474,63 +483,58 @@ function Row({ row }: { row: EntityRow }) {
   );
 
 
-  // ── The host line ──
+  // ── The three lines of a card ──
   //
   // Written out rather than bent out of the Lot 2 row, because the two
-  // want opposite things: a card stacks its facts, a line in a book
-  // puts them on one baseline and lets the least important one give up
-  // its width first.
+  // want different orders: the Lot 2 card leads with its title, and a
+  // booking leads with its hour.
   //
-  // Order left to right is the order a host reads: when (22px, the
-  // largest type on the screen), who (18px), what state (16px, in its
-  // tone), then the context they only need if they are about to ring
-  // the guest (13px, and the first thing to truncate).
+  // One · when, how many, who. The hour and the covers at 22px because
+  // they decide what happens in the next ten minutes; the name at 17px
+  // beside them because it is what a host says out loud, and a step
+  // under so it follows rather than competes.
   //
-  // A note is the exception that earns a second line. It is the one
-  // field that can say « allergy », so it is never truncated and never
-  // hidden — the lines that carry one are taller than the lines that
-  // do not, which is the right way round.
+  // Two · the telephone, the zone and how the booking arrived, at 14px
+  // in the ink at 70 %. Its own line at every width now. It used to
+  // hop onto the first line above 1280 and drop under the name below
+  // it, because the line had to hold the decisions too; the card's
+  // decisions are in their own column, so the context keeps one line
+  // at 390, at 768 and at 1440 and the rule is the same everywhere.
+  //
+  // Three · the note, when there is one, in violet with its icon. It
+  // is the one field that can say « allergy », so it is never
+  // truncated, never hidden, and never tucked against the name: 8px of
+  // air above it, which is what « never squeezed » costs.
+  //
+  // The state keeps its word on the first line, after the name, at the
+  // meta step in its own tone. The band down the left edge says the
+  // same thing in colour, and colour alone is not a statement — a host
+  // reading a sunlit screen, or anybody who does not separate green
+  // from amber, needs the word. It is 13px rather than the 16px it was
+  // on the old line: beside a 17px name, a 16px state read as a second
+  // name.
   const hostLine = row.lead ? (
     <>
-      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 md:flex-nowrap">
-        <div className="flex shrink-0 items-baseline gap-2 md:w-[188px]">
-          <span className="text-host-lead text-ink">{row.lead.time}</span>
-          <span className="text-host-lead text-ink/70" aria-hidden>·</span>
-          <span className="text-host-lead text-ink/70">{row.lead.party}</span>
-        </div>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span className="text-host-lead text-ink">{row.lead.time}</span>
+        <span className="text-host-lead text-ink/70" aria-hidden>
+          ·
+        </span>
+        <span className="text-host-lead text-ink/70">{row.lead.party}</span>
 
-        <h4 className="text-host-name text-ink truncate shrink-0 max-w-[13rem]">
+        <h4 className="text-host-name text-ink min-w-0 truncate">
           {row.title}
         </h4>
 
         {row.status ? (
           <span
             className={cn(
-              "text-body font-semibold shrink-0",
+              "text-meta font-semibold shrink-0",
               STATUS_BAND[row.status.tone].text,
             )}
           >
             {row.status.label}
           </span>
-        ) : null}
-
-        {/* The telephone, the zone and the channel — on their own line
-            until 1280, on the first line after it.
-            Measured at 768 with the navigation moved out of the way:
-            the line reads time 188, name up to 208, state, and 220 of
-            decisions, which leaves the detail between 4 and 148 pixels
-            of the 168 to 249 it needs. A phone number clipped to four
-            pixels is not a short phone number, it is a sliver where a
-            number should be — and the number is the one thing a host
-            leaves this screen to find. So below `xl` it drops under the
-            name, where it has the width, and the decisions keep their
-            single line either way. The phone is untouched: there the
-            whole line wraps already, and the detail has a line of its
-            own without being told to take one. */}
-        {row.meta ? (
-          <div className="text-host-detail num min-w-0 flex-1 truncate md:hidden xl:block">
-            {row.meta}
-          </div>
         ) : null}
 
         {/* The state is the band and the word; a second pill saying the
@@ -542,23 +546,16 @@ function Row({ row }: { row: EntityRow }) {
       </div>
 
       {row.meta ? (
-        <div className="text-host-detail num mt-0.5 hidden truncate md:block xl:hidden">
-          {row.meta}
-        </div>
+        <div className="text-host-detail num mt-1 truncate">{row.meta}</div>
       ) : null}
 
-      {/* The note, on the second line it earns.
-          A marker rather than a chip: the violet fill and the 8px of
-          padding made it a small card inside a line, and a line in a
-          book does not contain cards. The rule down its left says « this
-          belongs to the booking above »; the words are the point. */}
       {row.signal ? (
-        <div className="mt-0.5 flex items-start gap-2 border-l-2 border-violet pl-2 text-violet-deep">
+        <div className="mt-2 flex items-start gap-2 text-violet-deep">
           <Icon
             name={row.signal.icon ?? "sparkles"}
             size={16}
             strokeWidth={2}
-            className="mt-[1px] shrink-0"
+            className="mt-[2px] shrink-0"
           />
           <span className="text-meta font-medium">{row.signal.text}</span>
         </div>
@@ -566,29 +563,30 @@ function Row({ row }: { row: EntityRow }) {
     </>
   ) : null;
 
-  // ── A line in a book, or a card ──
+  // ── The card ──
   //
-  // Under host density a booking is a *line*: no border of its own, no
-  // radius, no shadow, no lift on hover — separated from the next one
-  // by a single rule, the way a paper reservation book separates two
-  // sittings. Twenty-six bookings used to be twenty-six cards, each
-  // with a 20px radius and a shadow that grew on hover, and a card is
-  // for grouping things that belong together, not for decorating a
-  // list. The card chrome also cost 12px of gap and 32px of padding
-  // per booking, which is most of the reason a service did not fit on
-  // a screen.
+  // White, 12px of radius, one hairline of ink at 10 %, 16px of
+  // padding, and the state band inside the left edge — the review's
+  // measurements, written here because they are the contract and not a
+  // preference.
   //
-  // The hover affordance stays — a line that opens a sheet has to say
-  // so — as a background tint, which is a state and not an animation.
+  // `overflow-hidden` is what puts the band *inside* the edge: the band
+  // is positioned against the padding box, so it starts just inside the
+  // hairline, and the radius clips its corners into the card's own.
   //
-  // Everywhere else the row keeps the card it always had.
+  // What the card deliberately does not have: a shadow, a lift on
+  // hover, and the 20px radius of its first version. The hover
+  // affordance is a background tint — a card that opens a sheet has to
+  // say so, and a state is not an animation.
+  //
+  // Everywhere else the row keeps the Lot 2 card it always had.
   return (
     <div className={host ? "" : "transition-shadow"}>
       <div
         className={cn(
           "relative overflow-hidden",
           host
-            ? "bg-surface border-b border-line last:border-b-0 hover:bg-canvas-2"
+            ? "bg-surface border border-ink/10 rounded-[12px] hover:bg-canvas-2"
             : "bg-surface border border-line rounded-[var(--radius-lg)] hover:shadow-soft",
         )}
         data-book-row={host ? "" : undefined}
@@ -607,12 +605,10 @@ function Row({ row }: { row: EntityRow }) {
             and a button inside a button is invalid HTML that React
             refuses to hydrate.
 
-            The decisions are on the right, level with the time and the
-            covers, so a booking is one line tall. Stacked under the row
-            they cost ~60px each, and a service of fifteen ran to nearly
-            three screens of scrolling to reach the last sitting. Below
-            the breakpoint they move under the row, where a thumb can
-            reach them — see the block after this one. */}
+            `items-center` is the review's « vertically centred »: the
+            decisions sit on the middle of the card, whether the card is
+            two lines tall or three. Below 768 they move under it, where
+            a thumb can reach them — see the block after this one. */}
         <div className="flex items-center">
           {row.detail ? (
             <button
@@ -622,15 +618,18 @@ function Row({ row }: { row: EntityRow }) {
               // out of Tailwind classes silently stops matching the day
               // the row's layout changes.
               data-row="open"
-              // Opts the line out of the 44px control floor — see the
-              // note in `globals.css`. A line is a region, not a
-              // target in a row of targets.
+              // Opts the card's own open-the-sheet region out of the
+              // 44px control floor — see the note in `globals.css`. It
+              // is a region the width of the card, sized by its type
+              // and its padding, not a target in a row of targets.
               data-book-line={host ? "" : undefined}
               onClick={() => row.detail && openDetail(row.detail)}
               className={cn(
-                "flex-1 min-w-0 text-left",
-                host ? "px-4 py-1" : "p-4",
-                row.status && "pl-6",
+                "flex-1 min-w-0 text-left p-4",
+                // 16px from the band, not from the card's edge: the
+                // band takes 6px of the left inset, so the text starts
+                // at 22 and reads as 16 from the thing beside it.
+                row.status && "pl-[22px]",
               )}
             >
               {host ? hostLine : inner}
@@ -639,24 +638,33 @@ function Row({ row }: { row: EntityRow }) {
             <Link
               href={row.href}
               data-row="open"
-              className={cn("flex-1 min-w-0", host ? "px-4 py-1" : "p-4", row.status && "pl-6")}
+              className={cn("flex-1 min-w-0 p-4", row.status && "pl-[22px]")}
             >
               {host ? hostLine : inner}
             </Link>
           ) : (
-            <div className={cn("flex-1 min-w-0", host ? "px-4 py-1" : "p-4", row.status && "pl-6")}>
+            <div className={cn("flex-1 min-w-0 p-4", row.status && "pl-[22px]")}>
               {host ? hostLine : inner}
             </div>
           )}
 
+          {/* Right-aligned and vertically centred, from 768 up.
+              `shrink-0` and `whitespace-nowrap` on every control are
+              what make « the same width per label across all rows »
+              true rather than likely: a button sized by its own label
+              and never squeezed by its neighbours comes out the same
+              width in every card that carries that label, whether that
+              card holds two decisions or four.
+              `tools/verify/decisions.mjs` measures it. */}
           {row.actions?.length ? (
-            <div className="hidden md:flex items-center gap-2 shrink-0 pl-3 pr-4">
+            <div className="hidden md:flex items-center justify-end gap-2 shrink-0 pl-3 pr-4">
               {row.actions.map((cta, i) => (
                 <ActionControl
                   key={`${cta.action.label}-${i}`}
                   cta={cta}
                   size="sm"
                   compact={host}
+                  className="shrink-0 whitespace-nowrap"
                 />
               ))}
             </div>
@@ -672,23 +680,32 @@ function Row({ row }: { row: EntityRow }) {
             The spec is responsible for putting those actions in the
             row's detail sheet — this only hides them. */}
         {phoneActions.length ? (
-          <div className={cn("md:hidden flex flex-wrap gap-2 px-4 pb-4 -mt-1", row.status && "pl-6")}>
+          <div
+            className={cn(
+              "md:hidden flex flex-wrap gap-2 px-4 pb-4",
+              row.status && "pl-[22px]",
+            )}
+          >
             {phoneActions.map((cta, i) => (
               <ActionControl
                 key={`${cta.action.label}-${i}`}
                 cta={cta}
                 size="sm"
-                // 36px here too, which is the one place this codebase
-                // goes under its own 44px floor, and it is deliberate:
-                // the LYFE review asked for the four decisions to be
-                // compact. The width is what keeps them pressable — a
-                // phone button is full-width, so the target is 36 × 160
-                // and a thumb does not have to aim.
+                // 40px, the same height as the lane above: the only
+                // thing 390 changes is where the decisions sit, not how
+                // big they are.
                 compact={host}
-                // Full width on a phone: Prévenir and Installer are
-                // pressed one-handed at a host stand, and a 96px button
-                // beside a queue is a mis-tap waiting to happen.
-                className="flex-1 min-w-[8.5rem] md:flex-none justify-center"
+                // Half the lane, each of them, however many there are.
+                //
+                // They were `flex-1`, which is why a card with one
+                // decision drew it 318px wide and a card with two drew
+                // them at 155 — the same label at two widths, which is
+                // exactly what « the same width per label across all
+                // rows » rules out. A fixed half-lane basis gives every
+                // decision on every card the same 151px, and two per
+                // line, which is also the most a 358px lane holds
+                // without a button becoming a slot.
+                className="basis-[calc(50%-0.25rem)] grow-0 shrink-0 md:basis-auto justify-center"
               />
             ))}
           </div>

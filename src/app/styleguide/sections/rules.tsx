@@ -69,6 +69,8 @@ const RHYTHM: [string, string][] = [
   ["Champ → champ dans un groupe", "16"],
   ["Groupe → groupe", "32"],
   ["Carte → carte", "24"],
+  ["Réservation → réservation", "12"],
+  ["Bandeau de service", "24 au-dessus · 8 en dessous"],
   ["Section → section", "48"],
   ["Bord de page → contenu", "32 à 1440 · 16 à 390"],
 ];
@@ -76,11 +78,14 @@ const RHYTHM: [string, string][] = [
 const SCALE: [string, string][] = [
   ["Titre d'écran, salutation", "36 / 700 / 1,1"],
   ["Titre d'un groupe de cartes", "24 / 700 / 1,25"],
-  ["Heure et couverts d'une ligne", "22 / 700 / 1,1 · num"],
+  ["Heure et couverts d'une réservation", "22 / 700 / 1,1 · num"],
   ["Titre de carte", "18 / 700 / 1,3"],
-  ["Nom sur une ligne, libellé d'un champ", "18 / 600 / 1,3"],
+  ["Nom sur une réservation", "17 / 600 / 1,25"],
+  ["Libellé d'un champ", "18 / 600 / 1,3"],
   ["Texte courant, libellé de bouton", "16 / 500–600 / 1,5"],
-  ["Complément : détail, aide, horodatage", "13 / 500–600 / 1,45"],
+  ["Heure d'un bandeau de service", "15 / 600 / 1,3 · num"],
+  ["Contexte d'une réservation", "14 / 500 / 1,45 · encre 70 %"],
+  ["Complément : aide, horodatage", "13 / 500–600 / 1,45"],
 ];
 
 const ROLES: [string, string][] = [

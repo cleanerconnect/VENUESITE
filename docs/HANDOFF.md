@@ -492,13 +492,20 @@ the breakpoint.
 Two more rules the pass is held to:
 
 - **44px tap targets.** `[data-density="host"]` lifts controls to 44,
-  and the two documented exceptions are the book's decision buttons
-  (`button[data-compact]`, 36px, which the LYFE review asked for by
-  name) and the book-line button (`button[data-book-line]`, which has
-  no height of its own).
-- **The primary action and the main content in the first viewport, no
-  scrolling.** True on every screen at every width, with no exception
-  left. Inscription held the last two: steps 2 and 4 ask six questions
+  and the two documented exceptions are the booking's decision buttons
+  (`button[data-compact]`, 40px, which the LYFE review asked for by
+  name) and the card's own open-the-sheet region
+  (`button[data-book-line]`, which has no height of its own).
+- **The primary action in the first viewport, no scrolling.** True on
+  every screen at every width. The rule's second half — *and the main
+  content* — holds everywhere except the book, where the review has
+  since chosen a card over a line and bought the choice with the fold:
+  a booking is 83px tall, or 110 with a note, so five of a day's
+  twenty-six are above a 900px fold where the line-based book showed
+  about twenty. The whole book is 3080px at 1440 against 941 before.
+  That is the trade the card was asked for, written down rather than
+  discovered later; see « La carte d'une réservation » below.
+  Inscription held the last two exceptions to the first half: steps 2 and 4 ask six questions
   and offer four drop zones, and as long as « Continuer » was the last
   line of the card they measured 1035px and 1135px against a 844px
   phone. Two columns from 768 took them to 915 and 857, which is better
@@ -517,6 +524,47 @@ Two more rules the pass is held to:
   800 at 1280, 1007 of 1024 at 768 and 827 of 844 at 390, on all seven
   steps. `tools/verify/inscription.mjs` carries no ceilings any more —
   it asserts the rule itself, and it is run at six sizes.
+
+#### La carte d'une réservation
+
+A booking is a card again. It was a line in a book for one release —
+no border, no radius, one hairline between each — and that was chosen
+for a measured reason, which the fold bullet above now records as the
+price of changing back.
+
+The review's measurements, in one place, because they are the contract
+and `tools/verify/decisions.mjs` § 8 reads every one of them off the
+rendered page rather than off a class name:
+
+| | |
+|---|---|
+| the card | white, 12px radius, 1px of ink at 10 %, 16px of padding |
+| between two cards | 12px, and nothing else — no rule, no shared border |
+| the state | a 6px band **inside** the left edge, so the text starts at 22 and reads as 16 from it |
+| line one | the hour and the covers at 22px, the name at 17px beside them, the state's word at 13px in its tone |
+| line two | the telephone, the zone and how the booking arrived, 14px, ink at 70 % |
+| line three | the note when there is one, violet with its icon, 8px clear of the line above |
+| the decisions | 40px tall, right-aligned to the card's own padding, centred on the card, **one width per label** |
+| the hour's band | 32px of canvas-2, the hour at 15px semibold, the covers right-aligned, both in ink at 70 %, 24px above and 8px below |
+
+Two of those are easier to get wrong than they look.
+
+**The band inside the edge.** It is positioned against the card's
+padding box, so it starts just inside the hairline, and the card's
+`overflow-hidden` is what clips its corners into the card's own radius.
+Without that the band is a straight-edged bar poking out of a rounded
+corner.
+
+**One width per label.** « Check-in » measured 101px in a card with two
+decisions and 318px in a card with one, because the phone lane's
+buttons were `flex-1`: the same label at two widths, which is the thing
+the review rules out by name. Every control is `shrink-0` with its own
+label's width from 768 up, and exactly half the lane below it — 151px,
+two to a line, however many a card carries.
+
+Nothing about the card changes between 390, 768 and 1440 except where
+the decisions sit: on the card from 768 up, under it below that, the
+same 40px either way.
 
 Under Lot 1, `audience.mjs` reports that its screen is
 not registered and exits clean rather than failing on a 404 it asked for

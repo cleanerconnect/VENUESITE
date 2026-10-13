@@ -245,42 +245,45 @@ export function TokensSection() {
 
         <div className="mt-6">
           <div className="text-eyebrow text-ink-mute mb-3">
-            La ligne de réservation
+            La carte d&apos;une réservation
           </div>
           <p className="text-meta text-ink-mute mb-3 max-w-2xl">
             L&apos;heure et le nombre de couverts décident de ce qui se
             passe dans les dix minutes : ils passent en premier et en plus
-            gros. Le nom vient ensuite, parce que c&apos;est ce qu&apos;on
-            dit à voix haute. Le reste est du contexte. L&apos;état est une
-            bande sur le bord gauche <em>et</em> un mot — la couleur se lit
-            de loin, le mot survit à une impression en noir et blanc.
+            gros, à 22. Le nom vient ensuite, à 17, parce que c&apos;est ce
+            qu&apos;on dit à voix haute. Le téléphone, la salle et la
+            provenance prennent la deuxième ligne, à 14 en encre à 70 %.
+            L&apos;état est une bande <em>dans</em> le bord gauche
+            <em> et</em> un mot — la couleur se lit de loin, le mot survit
+            à une impression en noir et blanc. La carte : blanche, 12 de
+            rayon, un filet d&apos;encre à 10 %, 16 de retrait, 12 entre
+            deux.
           </p>
-          <div className="space-y-3 max-w-xl">
+          <div className="flex flex-col gap-3 max-w-xl">
             {HOST_BANDS.map((b) => (
               <div
                 key={b.label}
-                className="relative bg-surface border border-line rounded-[var(--radius-lg)] overflow-hidden"
+                className="relative bg-surface border border-ink/10 rounded-[12px] overflow-hidden"
               >
                 <span
                   aria-hidden
                   className={`absolute left-0 top-0 bottom-0 w-[6px] ${b.bar}`}
                 />
-                <div className="flex items-center gap-4 p-4 pl-6">
-                  <div className="shrink-0 text-right w-[104px]">
-                    <div className="text-host-lead text-ink">{b.time}</div>
-                    <div className="text-host-lead text-ink mt-0.5">
+                <div className="p-4 pl-[22px]">
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="text-host-lead text-ink">{b.time}</span>
+                    <span className="text-host-lead text-ink/70" aria-hidden>
+                      ·
+                    </span>
+                    <span className="text-host-lead text-ink/70">
                       {b.party}
-                    </div>
+                    </span>
+                    <span className="text-host-name text-ink">{b.name}</span>
+                    <span className={`text-meta font-semibold ${b.text}`}>
+                      {b.label}
+                    </span>
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-host-name text-ink">{b.name}</span>
-                      <span className={`text-host-detail font-semibold ${b.text}`}>
-                        {b.label}
-                      </span>
-                    </div>
-                    <div className="text-host-detail mt-1">{b.detail}</div>
-                  </div>
+                  <div className="text-host-detail mt-1">{b.detail}</div>
                 </div>
               </div>
             ))}
