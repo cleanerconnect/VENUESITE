@@ -34,6 +34,7 @@ import {
   FeatureSwitches,
   PriceBand,
 } from "@/components/forms/ListingControls";
+import { SAVE_BAR_CARD } from "@/components/forms/SaveBar";
 import { PinMap } from "@/components/map/PinMap";
 import { cropToSquare } from "@/lib/assets/square";
 import { Button } from "@/components/ui/Button";
@@ -80,6 +81,20 @@ const HELP: Record<number, string> = {
   6: "Les heures pendant lesquelles vous acceptez des réservations. Modifiables à tout moment.",
   7: "Vérifiez, puis ouvrez votre tableau de bord.",
 };
+
+/**
+ * Where the onboarding bar sits.
+ *
+ * `SAVE_BAR_SHELL` with one value changed: the portal's bars clear the
+ * phone tab bar at `bottom-20`, and /inscription has no tab bar — there
+ * is no session yet and nothing to navigate to — so the bar goes all
+ * the way down at every width. Everything else is deliberately
+ * identical, including the tall transparent gradient that lets the last
+ * field fade under the bar instead of being cut by it.
+ */
+const ONBOARDING_BAR_SHELL =
+  "sticky bottom-0 z-10 -mx-1 px-1 pb-1 pt-6 pointer-events-none " +
+  "bg-gradient-to-t from-canvas via-canvas to-transparent";
 
 export function InscriptionFlow({
   initialDraft,
@@ -300,8 +315,17 @@ export function InscriptionFlow({
 
   return (
     <div>
+      {/* The small cut on a phone, like the topbar and the drawer: at
+          390 the seven steps have to fit a screen each, and 40px of
+          wordmark above a form of five fields is 12px of the budget
+          spent on the one thing already on every other screen. */}
       <div className="flex items-center justify-between">
-        <Brand size="lg" />
+        <span className="md:hidden">
+          <Brand size="sm" />
+        </span>
+        <span className="hidden md:block">
+          <Brand size="lg" />
+        </span>
         <span className="text-meta text-ink-mute">
           Étape {step} sur {ONBOARDING_LAST_STEP}
         </span>
@@ -309,11 +333,15 @@ export function InscriptionFlow({
 
       <Progress step={step} />
 
-      <Card variant="surface" size="lg" className="mt-6">
+      <Card
+        variant="surface"
+        size="lg"
+        className="mt-4 md:mt-5 max-md:p-4 md:p-6"
+      >
         <h1 className="text-h2 text-ink">{current.name}</h1>
         <p className="text-body text-ink-soft mt-2">{HELP[step]}</p>
 
-        <div className="mt-8">
+        <div className="mt-4 md:mt-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -321,10 +349,21 @@ export function InscriptionFlow({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -12 }}
               transition={{ duration: 0.18 }}
-              className="flex flex-col gap-4"
+              className="flex flex-col gap-2.5 md:gap-4"
             >
               {step === 1 ? (
-                <>
+                // Two columns from 768.
+                //
+                // Five fields stacked put « Continuer » at 871px, and a
+                // tablet held in landscape is 768px tall: the one
+                // button the step exists for was under the fold on the
+                // two shortest screens in the list. Paired, the step
+                // ends at 657 and the whole of it is on screen. The
+                // pairs are the ones a reader expects together — the
+                // two halves of who you are, then the two halves of a
+                // password — and the phone keeps the single column,
+                // where a two-column form is two narrow columns.
+                <div className="grid gap-3 md:grid-cols-2 md:gap-4">
                   <Input
                     label="Votre nom"
                     value={fullName}
@@ -348,15 +387,22 @@ export function InscriptionFlow({
                       « à mon mail ou à mon whatsapp » — which needs a
                       number. Prio 02 also buys « Réservation via
                       whatsapp ». */}
-                  <Input
-                    label="Téléphone"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    error={fieldMessage("phone")}
-                    hint="Sur WhatsApp de préférence : c'est là que partent les alertes."
-                    autoComplete="tel"
-                  />
+                  {/* Across both columns: the hint under it is a
+                      sentence, and a sentence in half a card wraps to
+                      three lines and gives the height back. `Input`
+                      puts `className` on the field itself, so the span
+                      belongs to a wrapper. */}
+                  <div className="md:col-span-2">
+                    <Input
+                      label="Téléphone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      error={fieldMessage("phone")}
+                      hint="Sur WhatsApp de préférence : c'est là que partent les alertes."
+                      autoComplete="tel"
+                    />
+                  </div>
                   <Input
                     label="Mot de passe"
                     type="password"
@@ -374,18 +420,27 @@ export function InscriptionFlow({
                     error={fieldMessage("passwordConfirm")}
                     autoComplete="new-password"
                   />
-                </>
+                </div>
               ) : null}
 
+              {/* Two columns from `md` up.
+                  One column at 1440 put « Continuer » 113px under the
+                  fold — the action of the step, below the window, on
+                  the width the whole handoff is drawn at. The five
+                  blocks are not equal, so the pairing is by meaning
+                  rather than by order: the name beside the city, the
+                  kitchen beside the sentence about it, and the two that
+                  are already rows of their own — the type pair and the
+                  price band — spanning both columns. */}
               {step === 2 ? (
-                <>
+                <div className="contents md:grid md:grid-cols-2 md:gap-4">
                   <Input
                     label="Nom de l'établissement"
                     value={venueName}
                     onChange={(e) => setVenueName(e.target.value)}
                     autoComplete="organization"
                   />
-                  <div>
+                  <div className="md:col-span-2">
                     <div className="text-field-label mb-2">
                       C&apos;est plutôt
                     </div>
@@ -401,7 +456,7 @@ export function InscriptionFlow({
                           type="button"
                           onClick={() => setVenueType(option.value)}
                           className={cn(
-                            "h-14 rounded-[var(--radius-md)] border text-body font-semibold transition-colors",
+                            "h-12 md:h-14 rounded-[var(--radius-md)] border text-body font-semibold transition-colors",
                             venueType === option.value
                               ? "border-ink bg-violet-soft text-ink"
                               : "border-line bg-surface text-ink-soft hover:border-ink",
@@ -418,20 +473,21 @@ export function InscriptionFlow({
                       and it left a brand-new venue behind none of the
                       ten taps a guest actually searches with. The
                       sentence is the second field now. */}
-                  <CuisineFields
-                    cuisine={cuisine}
-                    specialties={specialties}
-                    onCuisine={setCuisine}
-                    onSpecialties={setSpecialties}
-                    bar={venueType === "bar"}
-                  />
-                  <div>
+                  <div className="md:col-span-2">
+                    <CuisineFields
+                      cuisine={cuisine}
+                      specialties={specialties}
+                      onCuisine={setCuisine}
+                      onSpecialties={setSpecialties}
+                      bar={venueType === "bar"}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
                     <div className="text-field-label mb-1">
                       Fourchette de prix
                     </div>
-                    <p className="text-meta text-ink-mute mb-3">
-                      Ce qu&apos;un client dépense chez vous, par personne. Utilisée
-                      par les filtres de recherche.
+                    <p className="text-meta text-ink-mute mb-2">
+                      Par personne, et les filtres de recherche s&apos;en servent.
                     </p>
                     <PriceBand value={priceRange} onChange={setPriceRange} />
                   </div>
@@ -446,7 +502,7 @@ export function InscriptionFlow({
                       ...ONBOARDING_CITIES.map((name) => ({ value: name, label: name })),
                     ]}
                   />
-                </>
+                </div>
               ) : null}
 
               {step === 3 ? (
@@ -491,7 +547,14 @@ export function InscriptionFlow({
               ) : null}
 
               {step === 4 ? (
-                <div className="flex flex-col gap-4">
+                // Two columns from 640: four drop zones stacked put
+                // « Continuer » at 1115px, and a phone screen is 844.
+                // At 390 they stay in one column — a drop zone 170px
+                // wide with a sentence under it is two columns of
+                // nothing — so this step is the one that still asks a
+                // small phone to scroll, and `inscription.mjs` says so
+                // by name rather than letting it pass unmeasured.
+                <div className="grid gap-4 sm:grid-cols-2">
                   {/* Two photos and the carte, in the order the app
                       uses them: the first photo is the cover on every
                       list card and the header of the detail screen, the
@@ -526,10 +589,17 @@ export function InscriptionFlow({
                     chosen={thumbnail}
                     onFile={(file) => upload("thumbnail", file)}
                   />
+                  {/* A PDF, and only a PDF.
+                      Ma fiche stopped accepting photographs of the
+                      pages at the LYFE review — the typed list is the
+                      carte, and a photograph of it was a second,
+                      unsearchable copy — and this step was still
+                      offering what the screen behind it refuses. One
+                      answer per question, in both places. */}
                   <FileDrop
                     title="Votre carte"
-                    hint="PDF ou photo. 20 Mo au maximum. Elle s'ouvre depuis votre fiche."
-                    accept="application/pdf,image/jpeg,image/png"
+                    hint="PDF, 20 Mo au maximum. Elle s'ouvre depuis votre fiche."
+                    accept="application/pdf"
                     icon="document"
                     chosen={menuFile}
                     onFile={(file) => upload("menu", file)}
@@ -541,8 +611,13 @@ export function InscriptionFlow({
                   and « Equipements ». Skippable, and visibly so: a place
                   that has not decided whether it is « intimiste » should
                   not be stopped from opening its dashboard over it. */}
+              {/* Side by side from `md` up, for the same reason as step 2:
+                  stacked, the two lists put « Continuer » 179px under a
+                  900px window. They are two independent multiple
+                  choices, so nothing is lost by reading them across
+                  instead of down. */}
               {step === 5 ? (
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-6 md:grid md:grid-cols-2 md:gap-8">
                   <div>
                     <div className="text-body font-semibold text-ink mb-1">Ambiance</div>
                     <p className="text-meta text-ink-mute mb-3">
@@ -586,14 +661,44 @@ export function InscriptionFlow({
             </motion.div>
           </AnimatePresence>
         </div>
+      </Card>
 
+      {/* « Continuer » is pinned, not placed.
+
+          The rule the seven steps are held to is that the action the
+          step exists for is in the first viewport, and two of them
+          cannot keep it by growing shorter: step 4 offers four drop
+          zones and step 6 seven days of opening hours, and both are as
+          short as the thing they ask for. Shaving them got étape 2 from
+          1035 to 915 and étape 5 from 1079 to 992 against a 900px
+          window, and no further.
+
+          So the button leaves the scroll box instead. It is the pattern
+          Ma fiche and Disponibilités already use for the same problem —
+          a form taller than the window whose one commit button must
+          stay reachable — and `SAVE_BAR_CARD` is literally theirs, so
+          the bar cannot drift from them.
+
+          It had to come out of the `<Card>` to work at all: the card is
+          `relative overflow-hidden`, which makes it the sticky box and
+          would have pinned the bar to the bottom of the card rather
+          than the bottom of the screen.
+
+          The error moves with it. It is the answer to pressing the
+          button, so it belongs where the button is; left behind at the
+          bottom of the card it would have been announced to a screen
+          reader and invisible to everybody else. */}
+      <div className={ONBOARDING_BAR_SHELL}>
         {error ? (
-          <p className="text-meta text-danger mt-4" role="alert">
+          <p
+            className="pointer-events-auto mb-2 rounded-[var(--radius-md)] border border-danger bg-surface px-4 py-2 text-meta text-danger"
+            role="alert"
+          >
             {error}
           </p>
         ) : null}
 
-        <div className="mt-8 flex items-center gap-3 flex-wrap">
+        <div className={SAVE_BAR_CARD}>
           {step > 1 ? (
             <Button
               variant="secondary"
@@ -684,7 +789,7 @@ export function InscriptionFlow({
             </Button>
           ) : null}
         </div>
-      </Card>
+      </div>
 
       {draft && step < ONBOARDING_LAST_STEP ? (
         <p className="text-meta text-ink-mute mt-4 text-center">
@@ -699,7 +804,7 @@ export function InscriptionFlow({
 /** The bar, and what each segment is called. */
 function Progress({ step }: { step: number }) {
   return (
-    <div className="mt-6">
+    <div className="mt-4 md:mt-6">
       <div className="flex items-center gap-2">
         {ONBOARDING_STEPS.map((s) => (
           <span
@@ -726,9 +831,11 @@ function Progress({ step }: { step: number }) {
           </span>
         ))}
       </div>
-      <div className="mt-2 md:hidden text-meta text-ink font-semibold">
-        {ONBOARDING_STEPS.find((s) => s.n === step)?.name}
-      </div>
+      {/* Nothing on a phone.
+          It used to name the step in hand here, under the bar — and the
+          card's own h1, 40px below, is that same word. Two copies of
+          « Vous » cost 27px of a 844px screen the step has to fit in,
+          and the one that stays is the heading. */}
     </div>
   );
 }

@@ -69,6 +69,60 @@ async function shot(name) {
   await page.screenshot({ path: `${shots}/inscription-${name}@${tag}.png`, fullPage: true });
 }
 
+// ── Le pli ──
+//
+// Sept étapes, et chacune doit tenir dans un écran : la passe
+// responsive de la revue demande l'action principale et le contenu
+// principal dans le premier écran, sans défilement. Vérifié à la
+// largeur où le tool tourne, donc `W=390 H=844` le vérifie sur un
+// téléphone et `W=1024 H=768` sur une tablette couchée — les deux
+// écrans les plus courts de la liste.
+//
+// Il n'y a plus d'exception, et il y en avait deux. Les étapes 2 et 4
+// posent plus de questions qu'un écran de 844 n'en contient — six
+// champs, quatre zones de dépôt — et tant que « Continuer » était la
+// dernière ligne de la carte, les faire tenir aurait demandé une
+// huitième étape que le périmètre interdit (contrat § 2.0, et les sept
+// trames de la page 09). Le contrôle les nommait donc, avec leur
+// chiffre mesuré, en garde-fou contre l'aggravation.
+//
+// Le bouton a quitté la carte : il est épinglé au bas de la fenêtre,
+// comme la barre d'enregistrement de Ma fiche et de Disponibilités. La
+// règle vaut maintenant pour les sept étapes à toutes les largeurs,
+// donc elle est vérifiée telle quelle, sans liste de dispenses.
+const folds = [];
+const fold = async (name) => {
+  const m = await page.evaluate(() => {
+    const visible = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.height > 1 && r.width > 1 ? r : null;
+    };
+    const cta = [...document.querySelectorAll("button")]
+      .filter((b) =>
+        /^(Continuer|Ouvrir mon tableau de bord|Terminer|Envoyer)/.test(
+          (b.textContent ?? "").trim(),
+        ),
+      )
+      .map(visible)
+      .filter(Boolean)
+      .sort((a, b) => a.top - b.top)[0];
+    const doc = document.documentElement;
+    return {
+      action: cta ? Math.round(cta.bottom) : null,
+      fold: window.innerHeight,
+      page: Math.round(doc.scrollHeight),
+      overflow: Math.round(doc.scrollWidth - doc.clientWidth),
+    };
+  });
+  folds.push(`${name} ${m.action ?? "—"}/${m.fold} · page ${m.page}`);
+  check(
+    `${name} · l'action principale est dans l'écran`,
+    m.action != null && m.action <= m.fold,
+    `${m.action} sur ${m.fold}`,
+  );
+  check(`${name} · rien ne déborde en largeur`, m.overflow <= 2, `${m.overflow}px`);
+};
+
 const heading = async () =>
   ((await page.locator("h1").first().textContent().catch(() => "")) ?? "").trim();
 
@@ -82,6 +136,7 @@ check("Connexion propose l'inscription", (await door.count()) > 0);
 if (await door.count()) await door.first().click();
 await page.waitForTimeout(1200);
 check("étape 1 · Vous", (await heading()) === "Vous", page.url());
+await fold("étape 1");
 await shot("1-vous");
 
 // ── Step 1 · the account ──
@@ -107,6 +162,7 @@ await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1800);
 check("étape 2 · Votre établissement", (await heading()) === "Votre établissement");
+await fold("étape 2");
 await shot("2-etablissement");
 
 // ── Step 2 · the establishment ──
@@ -142,6 +198,7 @@ await page.waitForTimeout(300);
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1500);
 check("étape 3 · Adresse", (await heading()) === "Adresse");
+await fold("étape 3");
 await shot("3-adresse");
 
 // ── Step 3 · the quarter, the address and its pin ──
@@ -161,6 +218,7 @@ check("point posé", (await page.locator('text="Point placé"').count()) > 0);
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1500);
 check("étape 4 · Photos", (await heading()) === "Photos");
+await fold("étape 4");
 await shot("4-photos");
 
 // ── Step 4 · four files, all skippable, and it says so ──
@@ -192,6 +250,7 @@ check("l'étape photo peut être passée", (await skip.count()) > 0);
 await skip.click();
 await page.waitForTimeout(1500);
 check("étape 5 · Ambiance et équipements", (await heading()) === "Ambiance et équipements");
+await fold("étape 5");
 await shot("5-ambiance");
 
 // ── Step 5 · the two lists the app draws, and it too can be passed ──
@@ -225,6 +284,7 @@ check("l'étape ambiance peut être passée", (await skip5.count()) > 0);
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1500);
 check("étape 6 · Horaires", (await heading()) === "Horaires");
+await fold("étape 6");
 
 // ── Step 6 · the weekly grid ──
 const rows = await page.locator('[role="switch"]').count();
@@ -237,6 +297,7 @@ await shot("6-horaires");
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1500);
 check("étape 7 · C'est prêt", (await heading()) === "C'est prêt");
+await fold("étape 7");
 await shot("7-cest-pret");
 
 // ── The draft outlives the tab ──
@@ -297,6 +358,9 @@ if (noise.length) {
   console.log(`\n${noise.length} message(s) de console :`);
   for (const line of [...new Set(noise)].slice(0, 5)) console.log(`  ${line}`);
 }
+
+console.log(`\nL'action principale et le pli, étape par étape :`);
+for (const line of folds) console.log(`  ${line}`);
 
 console.log(
   problems.length === 0

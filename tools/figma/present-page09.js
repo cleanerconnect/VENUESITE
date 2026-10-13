@@ -60,8 +60,12 @@ const WEIGHT = {
   800: "ExtraBold",
 };
 const ALIGN = ["LEFT", "CENTER", "RIGHT", "JUSTIFIED"];
-const DEVICE = { 1440: "Ordinateur", 390: "Téléphone" };
-const WIDTHS = [1440, 390];
+// Three shelves per screen since the responsive pass: the desktop, the
+// tablet held in portrait, and the phone. 1024 — the same tablet on its
+// side — is walked by `walk.mjs` rather than drawn: a shelf of the same
+// screens rotated is a second copy of them.
+const DEVICE = { 1440: "Ordinateur", 768: "Tablette", 390: "Téléphone" };
+const WIDTHS = [1440, 768, 390];
 const PAGE_MATCH = /^09 /;
 const KIT_PAGE_MATCH = /^02 /;
 
@@ -141,7 +145,11 @@ const SCREENS = [
     specLabel: "Contrat Lot 1 § 2.2 · Accueil",
     rows: [
       {
-        base: { name: "/restaurant · Accueil", phone: "/restaurant · Accueil · téléphone" },
+        base: {
+          name: "/restaurant · Accueil",
+          phone: "/restaurant · Accueil · téléphone",
+          tablet: "accueil",
+        },
         states: [
           {
             name: "/restaurant · Accueil · en attente de validation",
@@ -165,7 +173,11 @@ const SCREENS = [
     flow: "book",
     rows: [
       {
-        base: { name: "/restaurant/reservations · Réservations", phone: "/restaurant/reservations · Réservations · téléphone" },
+        base: {
+          name: "/restaurant/reservations · Réservations",
+          phone: "/restaurant/reservations · Réservations · téléphone",
+          tablet: "reservations",
+        },
         states: [
           { name: "/restaurant/reservations · Réservations · Déjeuner", phone: null, caption: "Service · Déjeuner" },
         ],
@@ -217,6 +229,7 @@ const SCREENS = [
         base: {
           name: "/restaurant/check-in · Check-in",
           phone: "/restaurant/check-in · Check-in · téléphone",
+          tablet: "check-in",
         },
         states: [
           {
@@ -387,6 +400,42 @@ function buildBrowserBar(figma) {
   return c;
 }
 
+/**
+ * The tablet, which is the phone's bezel at the tablet's proportions.
+ *
+ * One component rather than a variant of the phone: an instance is
+ * resized to the frame it wraps, and the two differ in the only two
+ * things a bezel says — the corner, which is softer on a tablet, and
+ * the notch, which a tablet does not have. The home bar stays, because
+ * it is what tells a reader this is a device and not a window.
+ */
+function buildTabletShell(figma) {
+  const c = figma.createComponent();
+  c.name = "Shell / Tablette";
+  c.resizeWithoutConstraints(768 + BEZEL * 2, 1024 + BEZEL * 2);
+  c.fills = solid(INK);
+  c.cornerRadius = 32;
+  c.clipsContent = false;
+  const camera = figma.createEllipse();
+  camera.name = "capteur";
+  camera.resize(8, 8);
+  camera.x = (768 + BEZEL * 2 - 8) / 2;
+  camera.y = (BEZEL - 8) / 2;
+  camera.fills = solid(CANVAS, 0.3);
+  camera.constraints = { horizontal: "CENTER", vertical: "MIN" };
+  c.appendChild(camera);
+  const home = figma.createFrame();
+  home.name = "barre d'accueil";
+  home.resizeWithoutConstraints(180, 5);
+  home.x = (768 + BEZEL * 2 - 180) / 2;
+  home.y = 1024 + BEZEL * 2 - 11;
+  home.cornerRadius = 3;
+  home.fills = solid(CANVAS, 0.5);
+  home.constraints = { horizontal: "CENTER", vertical: "MAX" };
+  c.appendChild(home);
+  return c;
+}
+
 function buildPhoneShell(figma) {
   const c = figma.createComponent();
   c.name = "Shell / Téléphone";
@@ -501,6 +550,7 @@ async function ensureKit(figma) {
   const want = {
     "Shell / Navigateur": buildBrowserBar,
     "Shell / Téléphone": buildPhoneShell,
+    "Shell / Tablette": buildTabletShell,
     Annotation: buildAnnotation,
     "Bloc / En-tête d'écran": buildSectionHeader,
   };
@@ -689,16 +739,19 @@ async function redrawCaptured(figma, page, doc, report) {
 
 /** A frame in its device: a browser bar over it, or a phone around it. */
 function dress(figma, kit, frame, width) {
-  const phone = width <= 480;
+  // A bezel below 1024, a browser bar at and above it: 768 is a tablet
+  // in somebody's hands and 1440 is a window on a desk.
+  const held = width < 1024;
+  const device = DEVICE[width] ?? (held ? "Téléphone" : "Ordinateur");
   const wrapper = figma.createFrame();
-  wrapper.name = `${phone ? "Téléphone" : "Ordinateur"} · ${frame.name}`;
+  wrapper.name = `${device} · ${frame.name}`;
   wrapper.fills = [];
   wrapper.clipsContent = false;
   wrapper.setSharedPluginData(NS, "dressed", "1");
 
-  if (phone) {
+  if (held) {
     wrapper.resizeWithoutConstraints(width + BEZEL * 2, frame.height + BEZEL * 2);
-    const shell = kit["Shell / Téléphone"].createInstance();
+    const shell = kit[width >= 600 ? "Shell / Tablette" : "Shell / Téléphone"].createInstance();
     shell.resize(width + BEZEL * 2, frame.height + BEZEL * 2);
     shell.x = 0;
     shell.y = 0;
@@ -835,6 +888,11 @@ function coverBoard(figma, doc, version) {
 function resolve(ref, width, drawn, named) {
   if (!ref) return null;
   if (ref.key) return drawn[`${ref.key}@${width}`] ?? null;
+  // The three adopted screens are named rather than keyed at 1440 and
+  // 390, because the page draws them by hand there. At 768 they are
+  // captured under a key of their own, so the tablet shelf takes that
+  // and never dresses the desktop frame in a tablet bezel.
+  if (width === 768) return ref.tablet ? drawn[`${ref.tablet}@768`] ?? null : null;
   const name = width <= 480 ? ref.phone : ref.name;
   if (!name) return null;
   return named[name] ?? null;
@@ -916,7 +974,13 @@ async function presentPage09(figma, options = {}) {
   for (const node of kitPage.children) {
     if (node.type === "COMPONENT") kit[node.name] = node;
   }
-  for (const name of ["Shell / Navigateur", "Shell / Téléphone", "Annotation", "Bloc / En-tête d'écran"]) {
+  for (const name of [
+    "Shell / Navigateur",
+    "Shell / Téléphone",
+    "Shell / Tablette",
+    "Annotation",
+    "Bloc / En-tête d'écran",
+  ]) {
     if (!kit[name]) throw new Error(`composant absent : ${name} — lancer ensureKit d'abord`);
   }
 
@@ -991,7 +1055,16 @@ async function presentPage09(figma, options = {}) {
       for (const row of screen.rows) {
         const base = resolve(row.base, width, drawn, named);
         if (!base) {
-          if (row.base && (row.base.key || (width > 480 ? row.base.name : row.base.phone))) {
+          // A row only counts as missing when it named a frame for
+          // this width. The states and the day-and-service frames of
+          // the book have no phone and no tablet copy, and a shelf
+          // without them is the drawing, not a hole in it.
+          const named_here = row.base
+            ? width === 768
+              ? row.base.tablet
+              : row.base.key || (width > 480 ? row.base.name : row.base.phone)
+            : null;
+          if (named_here) {
             missing.push(`${screen.section} · ${width} · ${row.base.key ?? row.base.name ?? row.base.phone}`);
           }
           continue;

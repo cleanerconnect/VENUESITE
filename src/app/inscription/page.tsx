@@ -34,9 +34,9 @@ export default async function InscriptionPage() {
 
   return (
     <div data-density="host" className="min-h-screen bg-canvas">
-      <div className="mx-auto w-full max-w-[720px] px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto w-full max-w-[720px] px-4 py-5 md:px-8 md:py-8">
         <InscriptionFlow initialDraft={draft} />
-        <p className="text-meta text-ink-mute mt-8 text-center">
+        <p className="text-meta text-ink-mute mt-3 md:mt-6 text-center">
           Vous avez déjà un compte ?{" "}
           <Link
             href="/login"

@@ -75,6 +75,12 @@ const NS = "lyfe.page09";
 /** Which section each captured key belongs in, and in what order. */
 const HOME = {
   "connexion": ["1 · Connexion", 0],
+  // The three the page adopts at 1440 and at 390, captured at 768 only:
+  // new keys, so the replay creates them and the frames the prototype
+  // lives on are not touched. See `capture-frames.mjs`.
+  "accueil": ["2 · Accueil", 0],
+  "reservations": ["3 · Réservations", 0],
+  "check-in": ["4 · Check-in", 0],
   "ma-fiche-identite": ["5 · Ma fiche", 0],
   "ma-fiche-details": ["5 · Ma fiche", 1],
   "ma-fiche-enregistre": ["5 · Ma fiche", 2],
@@ -154,7 +160,10 @@ const WEIGHT = {
   800: "ExtraBold",
 };
 const ALIGN = ["LEFT", "CENTER", "RIGHT", "JUSTIFIED"];
-const DEVICE = { 1440: "Ordinateur", 390: "Téléphone" };
+// The shelf each width lives in. 768 joined them with the responsive
+// pass: a tablet in portrait is the width where the navigation used to
+// take a third of the page, and the page had no frame to show it.
+const DEVICE = { 1440: "Ordinateur", 768: "Tablette", 390: "Téléphone" };
 const PAD = 80; // a frame's inset inside its shelf
 const GAP = 120; // between two frames with no history to go on
 
@@ -254,10 +263,23 @@ async function replayPage09(figma, only, given) {
   const shelfFor = (sectionName, width) => {
     const outer = sections.find((s) => s.name === sectionName);
     if (!outer) throw new Error(`section absente : ${sectionName}`);
-    const inner = outer.children.find(
+    let inner = outer.children.find(
       (s) => s.type === "SECTION" && s.name === DEVICE[width],
     );
-    if (!inner) throw new Error(`${sectionName} · ${DEVICE[width]} absent`);
+    // A shelf for a width the page has never carried is created rather
+    // than refused. It used to throw, which was right while the widths
+    // were fixed at two: a missing « Téléphone » meant somebody had
+    // deleted it. 768 arrives with the responsive pass, so on the first
+    // run after it every section is missing one — and a replay that
+    // cannot put a frame down because the shelf is new is a replay that
+    // has to wait for the presentation to run first. `present-page09.js`
+    // makes them the same way.
+    if (!inner) {
+      inner = figma.createSection();
+      inner.name = DEVICE[width];
+      outer.appendChild(inner);
+      report.push(`étagère créée ${sectionName} · ${DEVICE[width]}`);
+    }
     return { outer, inner };
   };
 
@@ -329,13 +351,27 @@ async function replayPage09(figma, only, given) {
     // borrows a clone from a frame of the same width in the same
     // section: every phone frame of Ma fiche shows the same tab as
     // active, and every desktop frame the same sidebar item.
+    //
+    // Which pieces it should carry is the product's answer, not the
+    // shelf's: since the responsive pass the portal shows the bottom
+    // bar below 1024 and the column at and above it, so a tablet frame
+    // wants the tabs and no sidebar. And a shelf that is new — every
+    // « Tablette » shelf is, on the first run — has no sibling to
+    // borrow from at all, so the search widens to the page.
+    const wants = (name) =>
+      job.width >= 1024
+        ? /Sidebar|Topbar/.test(name)
+        : /BottomTabs/.test(name);
     let chromeFrom = old;
     if (!chromeFrom && f.chrome === "dashboard") {
-      for (const item of shelf.seq) {
-        const node = item.node;
-        if (node.removed || node.type !== "FRAME") continue;
+      const sources = [
+        ...shelf.seq.map((item) => item.node),
+        ...page.findAll((n) => n.type === "FRAME"),
+      ];
+      for (const node of sources) {
+        if (!node || node.removed || node.type !== "FRAME") continue;
         const has = node.children.filter(
-          (c) => c.type === "INSTANCE" && /^Chrome \//.test(c.name),
+          (c) => c.type === "INSTANCE" && /^Chrome \//.test(c.name) && wants(c.name),
         );
         if (has.length) {
           chromeFrom = { children: has.map((c) => c.clone()) };
@@ -362,7 +398,9 @@ async function replayPage09(figma, only, given) {
           piece.resize(pw, Math.max(1, f.h));
         } else if (/BottomTabs/.test(piece.name)) {
           piece.y = Math.max(0, f.h - ph);
-          piece.resize(pw, ph);
+          // The bar runs the width of the screen, and a clone borrowed
+          // from the phone shelf is 390 wide.
+          piece.resize(job.width, ph);
         } else {
           piece.y = 0;
           piece.resize(pw, ph);

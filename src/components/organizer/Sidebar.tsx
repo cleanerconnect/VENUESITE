@@ -82,8 +82,23 @@ export function Sidebar({
     .filter((group) => group.items.length > 0);
 
   return (
-    <aside className="hidden md:flex flex-col w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen">
+    // 80px of rail from 1024, the full column from 1280.
+    //
+    // The boundary used to be 768, which is a tablet held in portrait:
+    // the column appeared and left 508px of page beside it, and the
+    // booking row — the widest thing in the product — had to fold its
+    // decisions onto a second line to fit. A tablet is a screen you
+    // read the book on, so below 1280 the navigation gives the page its
+    // width back: the bottom bar below 1024, and between 1024 and 1280
+    // the icons without their words. `rail` is a prop rather than a
+    // breakpoint inside the body, because the same body is the phone
+    // drawer and a drawer is 300px wide at every width.
+    <aside
+      className="hidden lg:flex flex-col w-20 xl:w-[260px] shrink-0 bg-canvas-2 border-r border-line-soft sticky top-0 h-screen"
+      data-nav="rail"
+    >
       <SidebarBody
+        rail
         pathname={pathname}
         role={role}
         profile={profile}
@@ -124,7 +139,7 @@ export function MobileSidebarDrawer() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.18 }}
-                className="fixed inset-0 z-50 bg-ink/30 backdrop-blur-sm md:hidden"
+                className="fixed inset-0 z-50 bg-ink/30 backdrop-blur-sm lg:hidden"
               />
             </RadixDialog.Overlay>
             <RadixDialog.Content asChild>
@@ -133,7 +148,7 @@ export function MobileSidebarDrawer() {
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="fixed top-0 left-0 bottom-0 z-50 w-[300px] max-w-[88vw] bg-canvas border-r border-line-soft shadow-deep flex flex-col md:hidden"
+                className="fixed top-0 left-0 bottom-0 z-50 w-[300px] max-w-[88vw] bg-canvas border-r border-line-soft shadow-deep flex flex-col lg:hidden"
                 aria-label="Navigation principale"
               >
                 <RadixDialog.Title className="sr-only">
@@ -175,6 +190,7 @@ function useCloseOnPathChange(
 // the mobile drawer surface. Pure presentation; all state + handlers
 // flow in via props so the surfaces stay decoupled.
 function SidebarBody({
+  rail = false,
   pathname,
   role,
   profile,
@@ -187,6 +203,15 @@ function SidebarBody({
   viewerRole,
   handleLogout,
 }: {
+  /**
+   * Whether this body is the narrow column between 1024 and 1280.
+   *
+   * Set by `<Sidebar>` and left off by the drawer. Every rule it turns
+   * on is an `xl:` one, so the full column at 1280 and the drawer at
+   * any width read exactly as before: what `rail` adds is the window
+   * where the words come off and the icons stay.
+   */
+  rail?: boolean;
   pathname: string | null;
   role: Role | null;
   profile: ReturnType<typeof useProfile>;
@@ -220,7 +245,7 @@ function SidebarBody({
           asks for: 24 on every side. It was px-6 pt-7 pb-5 — 24, 28 and
           20, three numbers for one rule, two of them off the spacing
           scale, and none of them the 24 that Connexion used. */}
-      <div className="p-6">
+      <div className={cn("p-6", rail && "hidden xl:block")}>
         <Brand size="lg" />
         {/* The caption names which of the two spaces you are in —
             "organisateur" or "établissement" — and it says it in the
@@ -231,11 +256,22 @@ function SidebarBody({
           {workspace.caption}
         </div>
       </div>
+      {/* The rail's header: the small cut of the same mark, which is the
+          one Brand declares for a bar that carries the mark among other
+          things. 40px of wordmark does not fit in 80px of rail, and the
+          alternative to shrinking it is no mark at all between 1024 and
+          1280 — the topbar's own copy is the phone's. The caption goes:
+          it names a space you are already looking at the icons of. */}
+      {rail ? (
+        <div className="xl:hidden px-2 pt-5 pb-4 flex justify-center">
+          <Brand size="sm" />
+        </div>
+      ) : null}
 
       {/* Venue switcher on the venue side, organisation switcher on the
           event side. Either way, a link to the other workspace appears
           only when the account holds it. */}
-      <div className="px-4 mb-3">
+      <div className={cn("mb-3", rail ? "px-2 xl:px-4" : "px-4")}>
         {venues.length > 0 && workspace.id === "restaurant" ? (
           // The link to the other space used to sit under the card as a
           // row of its own. On the event side the same switch is an item
@@ -243,6 +279,7 @@ function SidebarBody({
           // menu too — one identity card per sidebar, and it is the
           // thing you press to go anywhere else.
           <VenueSwitcher
+            rail={rail}
             venues={venues}
             activeVenueId={activeVenueId}
             // Lot 1 is the venue dashboard of Prio 02 and nothing else.
@@ -264,14 +301,20 @@ function SidebarBody({
         ) : (
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button className="w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow">
+              <button
+                className={cn(
+                  "w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] text-left hover:shadow-soft transition-shadow",
+                  rail ? "justify-center p-2 xl:justify-start xl:p-3" : "p-3",
+                )}
+                title={rail ? entity.shortName : undefined}
+              >
                 <div
                   className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-nav shrink-0"
                   style={{ background: "var(--color-violet-soft)" }}
                 >
                   {entity.initials}
                 </div>
-                <div className="min-w-0 flex-1">
+                <div className={cn("min-w-0 flex-1", rail && "hidden xl:block")}>
                   <div className="text-nav text-ink truncate">
                     {entity.shortName}
                   </div>
@@ -279,7 +322,10 @@ function SidebarBody({
                     {entity.subline}
                   </div>
                 </div>
-                <ChevronRight size={20} className="text-ink-mute shrink-0" />
+                <ChevronRight
+                  size={20}
+                  className={cn("text-ink-mute shrink-0", rail && "hidden xl:block")}
+                />
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
@@ -312,7 +358,12 @@ function SidebarBody({
 
       {/* Groups render with a hairline between them and no spelled-out
           labels — the grouping reads visually. Any number of groups. */}
-      <nav className="flex-1 px-3 overflow-y-auto scroll-thin">
+      <nav
+        className={cn(
+          "flex-1 overflow-y-auto scroll-thin",
+          rail ? "px-2 xl:px-3" : "px-3",
+        )}
+      >
         {/* Ten named groups on the venue side under Lot 2: the label is
             what makes thirty links readable, and an unlabelled list of
             thirty is a list nobody scans. Six links do not need them,
@@ -325,18 +376,33 @@ function SidebarBody({
               <div aria-hidden className="my-3 mx-3 h-px bg-line-soft" />
             ) : null}
             {labelGroups ? (
-              <p className="px-3 pt-1 pb-2 text-meta font-semibold text-ink-mute">
+              <p
+                className={cn(
+                  "px-3 pt-1 pb-2 text-meta font-semibold text-ink-mute",
+                  rail && "hidden xl:block",
+                )}
+              >
                 {group.label}
               </p>
             ) : null}
-            <NavGroup items={group.items} pathname={pathname} home={workspace.home} />
+            <NavGroup
+              rail={rail}
+              items={group.items}
+              pathname={pathname}
+              home={workspace.home}
+            />
           </div>
         ))}
       </nav>
 
       {/* User card with kebab dropdown for account actions (logout). */}
-      <div className="p-3 border-t border-line-soft">
-        <div className="w-full flex items-center gap-3 px-2.5 py-2 rounded-[10px] hover:bg-ink/[0.04] transition-colors">
+      <div className={cn("border-t border-line-soft", rail ? "p-2 xl:p-3" : "p-3")}>
+        <div
+          className={cn(
+            "w-full flex items-center gap-3 py-2 rounded-[10px] hover:bg-ink/[0.04] transition-colors",
+            rail ? "justify-center px-0 xl:justify-start xl:px-2.5" : "px-2.5",
+          )}
+        >
           <div
             className="h-9 w-9 rounded-full flex items-center justify-center text-ink font-bold text-nav shrink-0"
             style={{ background: "var(--color-tint-peach)" }}
@@ -348,7 +414,7 @@ function SidebarBody({
               .map((w) => w[0])
               .join("")}
           </div>
-          <div className="min-w-0 flex-1">
+          <div className={cn("min-w-0 flex-1", rail && "hidden xl:block")}>
             <div className="text-nav text-ink truncate">
               {viewerName || user?.name}
             </div>
@@ -375,7 +441,12 @@ function SidebarBody({
             <DropdownMenu.Trigger asChild>
               <button
                 aria-label="Options du compte"
-                className="h-8 w-8 rounded-full hover:bg-ink/[0.06] flex items-center justify-center text-ink-mute transition-colors"
+                className={cn(
+                  // 44, like every other control: it was 32, which is
+                  // the one target in the chrome a thumb missed.
+                  "h-11 w-11 rounded-full hover:bg-ink/[0.06] flex items-center justify-center text-ink-mute transition-colors",
+                  rail && "hidden xl:flex",
+                )}
               >
                 <MoreVertical size={16} strokeWidth={2} />
               </button>
@@ -410,10 +481,12 @@ function NavGroup({
   items,
   pathname,
   home,
+  rail = false,
 }: {
   items: NavItem[];
   pathname: string | null;
   home: string;
+  rail?: boolean;
 }) {
   return (
     <div>
@@ -423,10 +496,23 @@ function NavGroup({
           <Link
             key={item.href}
             href={item.href}
+            // The rail has no words, so the native tooltip carries the
+            // label — and `aria-label` carries it to a screen reader,
+            // which cannot read a `hidden` span either.
+            title={rail ? item.label : undefined}
+            aria-label={rail ? item.label : undefined}
             className={cn(
               // `sidebar-item` is the hook host density resizes; the
               // sizes here stay the Lot 2 ones.
-              "sidebar-item relative flex items-center gap-3 px-3 h-10 rounded-[10px] text-nav font-medium",
+              // 44px, on both products.
+              //
+              // It was 40 — « sized once: whatever the event sidebar
+              // does », which is still the rule — and 40 is under the
+              // floor the rest of the portal keeps. So the shared
+              // chrome moves to the floor rather than away from it, and
+              // the two sidebars stay the same height as each other.
+              "sidebar-item relative flex items-center gap-3 h-11 rounded-[10px] text-nav font-medium",
+              rail ? "justify-center px-0 xl:justify-start xl:px-3" : "px-3",
               "transition-colors duration-150",
               active
                 ? "text-ink"
@@ -450,7 +536,14 @@ function NavGroup({
                 active ? "text-ink" : "text-ink-mute",
               )}
             />
-            <span className="relative z-10 flex-1 truncate">{item.label}</span>
+            <span
+              className={cn(
+                "relative z-10 flex-1 truncate",
+                rail && "hidden xl:block",
+              )}
+            >
+              {item.label}
+            </span>
             {item.pulse && active ? (
               <span className="relative z-10 live-pulse" aria-hidden />
             ) : null}

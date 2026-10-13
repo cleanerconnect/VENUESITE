@@ -5,6 +5,7 @@ import { useState } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import Link from "next/link";
 import { ArrowLeftRight, Check, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 // The venue switcher.
 //
@@ -28,9 +29,16 @@ export function VenueSwitcher({
   activeVenueId,
   eventSpaceHref,
   switchable = true,
+  rail = false,
 }: {
   venues: SwitchableVenue[];
   activeVenueId: string;
+  /**
+   * Whether the card is in the narrow column between 1024 and 1280,
+   * where it is the establishment's initials and nothing else. Set by
+   * `<Sidebar>`; left off by the phone drawer, which has the width.
+   */
+  rail?: boolean;
   /** Set when the account also holds the event space. */
   eventSpaceHref?: string;
   /**
@@ -66,7 +74,7 @@ export function VenueSwitcher({
   const identity = (
     <>
       <Avatar initials={active.initials} />
-      <div className="min-w-0 flex-1">
+      <div className={cn("min-w-0 flex-1", rail && "hidden xl:block")}>
         <div className="text-nav font-semibold text-ink truncate">
           {active.shortName}
         </div>
@@ -78,7 +86,13 @@ export function VenueSwitcher({
   // One establishment, one account, no door out: the card is a label.
   if (!switchable) {
     return (
-      <div className="w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] p-3">
+      <div
+        className={cn(
+          "w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)]",
+          rail ? "justify-center p-2 xl:justify-start xl:p-3" : "p-3",
+        )}
+        title={rail ? active.shortName : undefined}
+      >
         {identity}
       </div>
     );
@@ -94,11 +108,17 @@ export function VenueSwitcher({
       <DropdownMenu.Trigger asChild>
         <button
           disabled={busy}
-          className="w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] p-3 text-left hover:shadow-soft transition-shadow disabled:opacity-60"
+          className={cn(
+            "w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] text-left hover:shadow-soft transition-shadow disabled:opacity-60",
+            rail ? "justify-center p-2 xl:justify-start xl:p-3" : "p-3",
+          )}
           aria-label={`Lieu actif : ${active.shortName}. Changer de lieu.`}
         >
           {identity}
-          <ChevronRight size={20} className="text-ink-mute shrink-0" />
+          <ChevronRight
+            size={20}
+            className={cn("text-ink-mute shrink-0", rail && "hidden xl:block")}
+          />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

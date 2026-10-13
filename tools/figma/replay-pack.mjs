@@ -41,6 +41,11 @@ const SECTIONS = (process.env.SECTIONS ?? "5 · Ma fiche").split("|");
 // the shelf where it stands, which is what `replay-dry-run.mjs` is for
 // checking.
 const KEYS = process.env.KEYS ? process.env.KEYS.split("|") : null;
+// `WIDTHS=768` narrows a section to one shelf, which is what a pass
+// that only added the tablet frames needs.
+const WIDTHS = process.env.WIDTHS
+  ? process.env.WIDTHS.split(",").map((n) => Number(n.trim()))
+  : null;
 const ESBUILD = "./node_modules/.bin/esbuild";
 // `use_figma` refuses code longer than this, and a call that is refused
 // after the frames were trimmed is a trim that has to be done again.
@@ -48,6 +53,34 @@ const CEILING = 50000;
 
 const src = readFileSync(SRC, "utf8");
 const doc = JSON.parse(readFileSync(CAPTURE, "utf8"));
+
+// `CHUNKS=1` writes the call that replays the whole file from the
+// capture stored on the page — the two-step path, for a pass that
+// changed every frame rather than one section's. No frames in the call,
+// so no hash either: `pack-frames.mjs --call` checks the transfer on
+// its way in, which is the only place it can go wrong.
+if (process.env.CHUNKS === "1") {
+  mkdirSync("build", { recursive: true });
+  writeFileSync(
+    "build/replay-entry.js",
+    `${src}\nexport { replayPage09 };\n`,
+  );
+  execFileSync(ESBUILD, [
+    "build/replay-entry.js",
+    "--bundle",
+    "--minify",
+    "--target=es2020",
+    "--format=iife",
+    "--global-name=R",
+    "--outfile=build/replay-min.js",
+    "--log-level=warning",
+  ]);
+  const bundle = readFileSync("build/replay-min.js", "utf8").trim();
+  const script = `${bundle}\nreturn await R.replayPage09(figma);\n`;
+  writeFileSync(OUT, script);
+  console.log(`${OUT} · ${script.length} caractères · les ${doc.frames.length} cadres, lus sur la page`);
+  process.exit(script.length > CEILING ? 1 : 0);
+}
 
 // Which section a key belongs to is the replay's own business, so the
 // table is read out of it rather than copied here — a second copy is a
@@ -65,6 +98,7 @@ const slug = (key) => key.slice(0, key.lastIndexOf("@"));
 const wanted = doc.frames.filter((f) => {
   const home = HOME[slug(f.k)];
   if (!home || !SECTIONS.includes(home[0])) return false;
+  if (WIDTHS && !WIDTHS.includes(Number(f.k.slice(f.k.lastIndexOf("@") + 1)))) return false;
   return !KEYS || KEYS.includes(f.k);
 });
 if (KEYS) {

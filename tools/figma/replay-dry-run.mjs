@@ -130,6 +130,7 @@ const CHROME = {
     ["Chrome / Sidebar · Dashboard basique", 0, 0, 260],
     ["Chrome / Topbar", 260, 0, 1180],
   ],
+  768: [["Chrome / BottomTabs · Dashboard basique", 0, -76, 768]],
   390: [["Chrome / BottomTabs · Dashboard basique", 0, -76, 390]],
 };
 
@@ -147,13 +148,19 @@ const shelf = (sectionName, width) => {
     desk.y = 100;
     desk.width = 1600;
     outer.appendChild(desk);
+    const tablet = node("SECTION");
+    tablet.name = "Tablette";
+    tablet.x = 1940;
+    tablet.y = 100;
+    tablet.width = 928;
+    outer.appendChild(tablet);
     const phone = node("SECTION");
     phone.name = "Téléphone";
-    phone.x = 1940;
+    phone.x = 3100;
     phone.y = 100;
     phone.width = 550;
     outer.appendChild(phone);
-    shelves.set(sectionName, { outer, 1440: desk, 390: phone });
+    shelves.set(sectionName, { outer, 1440: desk, 768: tablet, 390: phone });
   }
   return shelves.get(sectionName)[width];
 };
@@ -199,6 +206,26 @@ const caption = (inner, text) => {
   return label;
 };
 
+// The eight sections, built before anything is placed.
+//
+// `ADOPT` only names the frames the capture adopted, so the three
+// screens the page draws by hand — Accueil, Réservations, Check-in —
+// used to have no section in this stub at all. They have captured
+// frames at 768 since the responsive pass, and a section that is not
+// there is the one thing `shelfFor` still refuses.
+for (const name of [
+  "0 · Inscription",
+  "1 · Connexion",
+  "2 · Accueil",
+  "3 · Réservations",
+  "4 · Check-in",
+  "5 · Ma fiche",
+  "6 · Disponibilités",
+  "7 · Notifications",
+]) {
+  shelf(name, 1440);
+}
+
 // Frames in the order the real page has them, so the gaps the replay
 // reads are the gaps the real page would give it.
 const ordered = Object.keys(ADOPT).sort((a, b) => {
@@ -238,7 +265,7 @@ caption(shelf("5 · Ma fiche", 390), "État lié · l'enregistrement");
 
 const before = new Map();
 for (const [, s] of shelves) {
-  for (const width of [1440, 390]) {
+  for (const width of [1440, 768, 390]) {
     for (const kid of s[width].children) before.set(kid.id, kid.name);
   }
 }
@@ -268,7 +295,7 @@ say("");
 
 const claims = new Map();
 for (const [name, s] of shelves) {
-  for (const width of [1440, 390]) {
+  for (const width of [1440, 768, 390]) {
     const inner = s[width];
     const kids = inner.children.slice().sort((a, b) => a.y - b.y);
     say(`${name} · ${width}  ${Math.round(inner.width)}×${Math.round(inner.height)}`);
@@ -359,6 +386,6 @@ for (const [id, name] of before) {
 say(
   problems
     ? `${asked.length} cadres · ${problems} problème(s)`
-    : `${asked.length} cadres posés, ${before.size - asked.length} éléments intacts, aucun chevauchement`,
+    : `${asked.length} cadres posés, ${Math.max(0, before.size - claims.size)} éléments intacts, aucun chevauchement`,
 );
 process.exit(problems ? 1 : 0);

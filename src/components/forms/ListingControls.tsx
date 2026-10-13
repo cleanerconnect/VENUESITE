@@ -73,7 +73,11 @@ export function CuisineFields({
 }) {
   const left = Math.max(0, SPECIALTIES_MAX - specialties.length);
   return (
-    <div className="flex flex-col gap-4">
+    // Side by side from `md` up, stacked under it. The two are one
+    // question asked twice — the list the app filters on, and the
+    // sentence under it — and on a wide card they read as one line
+    // rather than two thirds of the fold.
+    <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-4">
       <Select
         label="Type de cuisine"
         value={cuisine}

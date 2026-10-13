@@ -258,6 +258,13 @@ export function SignInPanel() {
         ) : stage.name === "choose_venue" ? (
           <motion.div
             key="choose"
+            // Named, so a tool can tell this stage from the form it
+            // replaces. `edges.mjs` asserts that an owner of one
+            // establishment is never asked which one, and it used to
+            // read « the e-mail box is gone and some button is
+            // showing » as this panel — which is also true for the one
+            // frame between a successful sign-in and the redirect.
+            data-stage="choose-venue"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
