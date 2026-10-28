@@ -142,7 +142,7 @@ le mode de gestion ensuite.
 | Étape 5 · Grille des horaires | ligne 39 : « Création de Venue » — sans horaires, rien n'est réservable | Contractuel | Garder |
 | Confirmation « Votre compte est créé » | aucune | Ajout LYFE | Garder — c'est l'ancien récapitulatif « C'est prêt », déplacé sur le compte, qui est ce qu'il annonce désormais |
 | `/choisir` · trois cartes, « Que voulez-vous gérer sur LYFE ? » | DigiNegoce, 27 octobre | Contractuel | Garder — remplace la destination que la connexion devinait, et c'est le seul écran qui peut dire à un restaurateur que le tableau de bord bar existe |
-| `/choisir` · « Actif · ouvrir » / « Ajouter » | DigiNegoce, 27 octobre | Contractuel | Garder |
+| `/choisir` · badge « Actif » + bouton « Ouvrir » / bouton « Ajouter », un seul gabarit | DigiNegoce, 27 octobre | Contractuel | Garder — même géométrie pour les trois, le poids seul distingue l'espace déjà utilisé |
 | Accueil à l'état vide, « Créer mon établissement » | DigiNegoce, 27 octobre | Contractuel | Garder — un tableau de bord sans salle était inatteignable avant, et le code le disait en plantant |
 | Création · étape 1 · « Mode de gestion des réservations », trois cartes radio | DigiNegoce, 27 octobre | Contractuel | Garder. **Rien dans le Lot 1 ne branche sur la valeur** : elle est stockée (`venues.management_mode`) et servie, pour que le routage des réservations soit écrit contre une donnée déjà collectée |
 | Barre de progression, deux segments puis six | aucune | Ajout LYFE | Garder |

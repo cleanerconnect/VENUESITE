@@ -1029,8 +1029,8 @@ await shot("check-in");
 // Yassine is the account that shows it. Under Lot 1 he holds an
 // organisation and no establishment: signing in takes him to the event
 // dashboard, because one space is nothing to choose — and opening the
-// chooser from there has to show all three anyway, one Actif and two
-// Ajouter. Under Lot 2 the seed gives him venues as well, so he holds
+// chooser from there has to show all three anyway, one « Ouvrir » and
+// two « Ajouter ». Under Lot 2 the seed gives him venues as well, so he holds
 // two spaces, the sign-in itself lands on the chooser, and the counts
 // move with what he holds.
 await context.clearCookies();
@@ -1078,7 +1078,7 @@ check("trois cartes, toujours", heldCount + offeredCount === 3, `${heldCount} + 
 // rather than guessed.
 if (LOT === 1) {
   check(
-    "1 « Actif · ouvrir » et 2 « Ajouter »",
+    "1 « Ouvrir » et 2 « Ajouter »",
     heldCount === 1 && offeredCount === 2,
     `${heldCount} actives, ${offeredCount} à ajouter`,
   );
@@ -1090,17 +1090,121 @@ if (LOT === 1) {
   );
 }
 check(
-  "les cartes tenues disent « Actif · ouvrir »",
-  (await held.allTextContents()).every((t) => t.trim() === "Actif · ouvrir"),
+  "les cartes tenues disent « Ouvrir »",
+  (await held.allTextContents()).every((t) => t.trim() === "Ouvrir"),
   (await held.allTextContents()).join(" · "),
 );
-// A primary button, not a word: adding a space is six steps, and it
-// earns a control that looks like one.
 check(
-  "les autres portent un bouton « Ajouter »",
+  "les autres disent « Ajouter »",
   (await offered.allTextContents()).every((t) => t.trim() === "Ajouter"),
   (await offered.allTextContents()).join(" · "),
 );
+
+// « Actif » left the button and became a badge beside the title. It is
+// a state, and a state folded into the label of a control makes the
+// partner read two things to find the one word they can press. One
+// badge per held card, none anywhere else — the second half is what
+// would catch it drifting back into the button.
+const badge = page.locator("[data-space-state]");
+check(
+  "un badge « Actif » par carte tenue, et pas ailleurs",
+  (await badge.count()) === heldCount &&
+    (await badge.allTextContents()).every((t) => t.trim() === "Actif"),
+  `${await badge.count()} badge(s) pour ${heldCount} carte(s) tenue(s)`,
+);
+// « Beside the title » is geometry, so it is measured: the badge shares
+// the label's line and sits to its right.
+if (heldCount > 0) {
+  const beside = await page.evaluate(() => {
+    const out = [];
+    for (const pill of document.querySelectorAll("[data-space-state]")) {
+      const id = pill.getAttribute("data-space-state");
+      const label = document.querySelector(`[data-space-label="${id}"]`);
+      if (!label) continue;
+      const a = label.getBoundingClientRect();
+      const b = pill.getBoundingClientRect();
+      out.push({
+        id,
+        right: Math.round(b.left - a.right),
+        sameLine: b.top < a.bottom && a.top < b.bottom,
+      });
+    }
+    return out;
+  });
+  check(
+    "le badge est sur la ligne du titre, à sa droite",
+    beside.length === heldCount &&
+      beside.every((b) => b.sameLine && b.right >= 0 && b.right <= 24),
+    beside.map((b) => `${b.id} +${b.right}px${b.sameLine ? "" : " (autre ligne)"}`).join(" · "),
+  );
+}
+
+// **One layout for the three.** The cards used to disagree about their
+// own shape — one a link with a word floated right, the other a row
+// that broke into a column under 640 — and the thing that proves they
+// agree now is geometry, not markup: three action controls, each the
+// width of the card that holds it, so they are all the same width as
+// each other.
+const actions = page.locator("[data-card] a:has([data-dashboard])");
+const cardBoxes = await page.locator("[data-card]").evaluateAll((nodes) =>
+  nodes.map((n) => {
+    const link = n.querySelector("a:has([data-dashboard])");
+    const button = link ? link.getBoundingClientRect() : null;
+    // `clientWidth`, not the rect: box-sizing is border-box here, so
+    // the rect carries the card's two hairlines and a full-width child
+    // measures two pixels short of it. The content box is what
+    // « pleine largeur » means.
+    const css = getComputedStyle(n);
+    const pad =
+      (parseFloat(css.paddingLeft) || 0) + (parseFloat(css.paddingRight) || 0);
+    return button
+      ? {
+          inner: Math.round(n.clientWidth - pad),
+          button: Math.round(button.width),
+          height: Math.round(button.height),
+        }
+      : null;
+  }),
+);
+const laid = cardBoxes.filter(Boolean);
+check(
+  "trois cartes, un seul gabarit",
+  (await actions.count()) === 3 &&
+    laid.length === 3 &&
+    // Full-width: the control fills its card between the paddings.
+    laid.every((b) => Math.abs(b.button - b.inner) <= 1) &&
+    // And the three are the same control, so the same height.
+    new Set(laid.map((b) => b.height)).size === 1,
+  laid.map((b) => `${b.button}/${b.inner}×${b.height}`).join(" · "),
+);
+
+// The held space is the easiest tap on the page. Not a claim about
+// pixels alone — it is the primary, in violet, while the offers are
+// secondary on the surface — but the pixels are what a tool can read,
+// and a word floated to the right of a card was 90 of them.
+if (heldCount > 0) {
+  const paint = await page
+    .locator('a:has([data-dashboard][data-active="1"])')
+    .first()
+    .evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        area: Math.round(r.width * r.height),
+        bg: getComputedStyle(el).backgroundColor,
+      };
+    });
+  const offers = offeredCount
+    ? await page
+        .locator('a:has([data-dashboard][data-active="0"])')
+        .first()
+        .evaluate((el) => getComputedStyle(el).backgroundColor)
+    : "";
+  check(
+    "l'espace déjà utilisé est le bouton principal, pleine largeur",
+    paint.area >= 2000 && paint.bg !== offers,
+    `${paint.area} px² · ${paint.bg}${offers ? ` vs ${offers}` : " (aucune offre)"}`,
+  );
+}
 check(
   "le sous-titre ne salue personne par son prénom",
   /Un espace par activité\. Vous pourrez en ajouter d'autres plus tard\./.test(

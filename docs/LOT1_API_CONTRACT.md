@@ -195,20 +195,31 @@ pour cet écran — ce qui est la raison pour laquelle il peut être un
 | Bar ou lounge | une `venue` de type `drinks` | `/restaurant?etablissement={id}` | `/restaurant/etablissement/nouveau?type=bar` |
 | Événements | une `organization` | `/dashboard` | `/onboarding` |
 
-Une carte que le compte tient porte **« Actif · ouvrir »** et ouvre le
-tableau de bord ; une carte qu'il ne tient pas porte **« Ajouter »** et
-ouvre le parcours qui le crée. Les trois sont toujours affichées :
-cacher ce qu'on n'a pas, c'est un écran incapable de dire à un
-restaurateur que le tableau de bord bar existe, ce qui est la seule
-chose qu'il est en position de faire.
+Une carte que le compte tient ouvre le tableau de bord ; une carte
+qu'il ne tient pas ouvre le parcours qui le crée. Les trois sont
+toujours affichées : cacher ce qu'on n'a pas, c'est un écran incapable
+de dire à un restaurateur que le tableau de bord bar existe, ce qui est
+la seule chose qu'il est en position de faire.
 
-Une carte tenue est un **lien** — toute la carte ouvre le tableau de
-bord, et « Actif · ouvrir » est un mot plutôt qu'un bouton, parce qu'un
-bouton dans un lien fait deux choses à presser pour une destination.
-Une carte à ajouter n'est pas un lien : elle porte un **bouton
-principal « Ajouter »**. Ajouter un espace, c'est six étapes pour une
-salle et quatre pour une organisation, et cela mérite un contrôle qui
-en a l'air.
+**Un seul gabarit pour les trois.** Icône à côté du titre, la phrase
+sous le titre, et un bouton pleine largeur au pied de la carte — la
+même géométrie que l'espace soit tenu ou proposé. Ce qui change est le
+poids, pas la forme :
+
+| | Badge | Bouton | Bordure |
+|---|---|---|---|
+| espace tenu | **« Actif »**, près du titre | **« Ouvrir »**, principal, pleine largeur | `violet/40` |
+| espace à ajouter | aucun | **« Ajouter »**, secondaire, pleine largeur | `line` |
+
+Un partenaire sur cet écran est presque toujours venu retourner au
+travail, donc l'espace qu'il utilise déjà est le bouton principal : la
+chose la plus facile à atteindre de la page, et au premier regard celle
+que la page désigne. « Actif » est un **badge** et non un mot du
+bouton, parce que c'est un état : plié dans le libellé d'un contrôle,
+il fait lire deux choses pour trouver le seul mot qu'on peut presser.
+Aucune carte n'est un lien dans son ensemble — un bouton pleine largeur
+*est* la zone de frappe de la carte, et un lien enroulé autour d'un
+bouton fait deux cibles pour une destination.
 
 **C'est aussi le sélecteur d'espace.** La carte d'identité au-dessus de
 la navigation, dans les deux barres latérales, ouvre cet écran — c'est
