@@ -213,6 +213,25 @@ export interface AnalyticsInput {
 }
 
 /**
+ * Why a password write was refused, in the few words the screen needs.
+ *
+ * `no_service` is the one that is not a mistake by the person typing:
+ * it is a driver with nothing behind it saying so, the same answer
+ * `requestPasswordReset` gives with `sent: false`. The screen then
+ * offers « Nous contacter » rather than a field to retype.
+ */
+export type PasswordRefusal =
+  | "bad_current"
+  | "bad_token"
+  | "weak_password"
+  | "no_service";
+
+export interface PasswordResult {
+  ok: boolean;
+  reason?: PasswordRefusal;
+}
+
+/**
  * Mutations return the authoritative payload so the client can reconcile
  * its optimistic copy against what actually happened. A void return would
  * force a second fetch and leave a window where the two disagree.
@@ -333,6 +352,39 @@ export interface RestaurantRepository extends VenueOperationsRepository {
   // whether the address is known — the form must not be usable to find
   // out who has an account.
   requestPasswordReset(email: string): Promise<{ sent: boolean }>;
+
+  /**
+   * The other end of that link: a token and the password it buys.
+   *
+   * `Détail Sprint ` ligne 53 buys both halves of « récupérer mon mot
+   * de passe ou le changer » for the organiser, so the portal now
+   * serves the screen the link lands on — `/reinitialiser` — instead of
+   * leaving it to a service nobody has seen.
+   *
+   * The token is opaque here and minted by whoever sent the mail. Its
+   * lifetime, its single use and what it is a token *for* are the
+   * service's to decide; the portal hands it back with a password and
+   * reads one of two answers.
+   */
+  resetPassword(token: string, password: string): Promise<PasswordResult>;
+
+  /**
+   * Réglages → « Changer mon mot de passe », for someone who knows it.
+   *
+   * The current password is part of the input and not a formality: the
+   * portal keeps a session for thirty days, so without it a screen left
+   * unlocked on a stand is one form away from being someone else's
+   * account.
+   *
+   * `userId` is the signed-in account, resolved server-side from the
+   * session — never read from the form, or the field would be a way to
+   * change a colleague's password.
+   */
+  changePassword(
+    userId: string,
+    current: string,
+    next: string,
+  ): Promise<PasswordResult>;
 
   // ── LYFE's review of a listing ──
   //

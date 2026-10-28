@@ -26,6 +26,7 @@ import {
 import { COPY } from "@/lib/copy/fr";
 import { allowAttempt, clearAttempts } from "@/lib/auth/rate-limit";
 import { getRestaurantRepository } from "@/lib/data";
+import type { PasswordRefusal } from "@/lib/data/repository";
 import {
   clearCookie,
   identityCookie,
@@ -187,6 +188,129 @@ export async function requestPasswordReset(
     // address exists either, so it reads as the service being
     // unreachable rather than as a verdict on the address.
     return { sent: false, message: COPY.auth.forgotFailed };
+  }
+}
+
+/**
+ * The other end of the link: `/reinitialiser`.
+ *
+ * The token comes from the query string of the mail's link and is
+ * opaque to the portal. The two password rules are the inscription's,
+ * word for word — eight characters, typed twice — because a product
+ * with two password policies has one of them written down somewhere.
+ *
+ * The refusal is named rather than described, so the screen can decide
+ * which field to point at; the sentences live in `COPY.password`.
+ */
+export async function resetPassword(input: {
+  token: string;
+  password: string;
+  passwordConfirm: string;
+}): Promise<{ ok: boolean; field?: "password" | "passwordConfirm"; message: string }> {
+  if (!input.token.trim()) {
+    return { ok: false, message: COPY.password.resetNoToken };
+  }
+  if (input.password.length < 8) {
+    return { ok: false, field: "password", message: COPY.password.tooShort };
+  }
+  if (input.password !== input.passwordConfirm) {
+    return {
+      ok: false,
+      field: "passwordConfirm",
+      message: COPY.password.mismatch,
+    };
+  }
+  // Same throttle as the request half: this endpoint takes a token and
+  // answers, which is enough to walk a token space with.
+  const gate = allowAttempt(`reset-confirm:${input.token}`);
+  if (!gate.allowed) {
+    return {
+      ok: false,
+      message: `Trop de tentatives. Réessayez dans ${gate.retryInSeconds} secondes.`,
+    };
+  }
+  try {
+    const result = await getRestaurantRepository().resetPassword(
+      input.token,
+      input.password,
+    );
+    if (result.ok) return { ok: true, message: COPY.password.resetDone };
+    return { ok: false, message: refusal(result.reason) };
+  } catch {
+    return { ok: false, message: COPY.password.failed };
+  }
+}
+
+/**
+ * Réglages → « Changer mon mot de passe ».
+ *
+ * The account is the session's, read here and never taken from the
+ * form. Without that rule the three fields would be a way to change
+ * someone else's password by knowing their id, and ids are in the URL
+ * of half the screens.
+ */
+export async function changePassword(input: {
+  current: string;
+  password: string;
+  passwordConfirm: string;
+}): Promise<{
+  ok: boolean;
+  field?: "current" | "password" | "passwordConfirm";
+  message: string;
+}> {
+  const session = await resolveSession();
+  if (!session) return { ok: false, message: COPY.auth.expired };
+
+  if (input.password.length < 8) {
+    return { ok: false, field: "password", message: COPY.password.tooShort };
+  }
+  if (input.password !== input.passwordConfirm) {
+    return {
+      ok: false,
+      field: "passwordConfirm",
+      message: COPY.password.mismatch,
+    };
+  }
+  const gate = allowAttempt(`password-change:${session.userId}`);
+  if (!gate.allowed) {
+    return {
+      ok: false,
+      message: `Trop de tentatives. Réessayez dans ${gate.retryInSeconds} secondes.`,
+    };
+  }
+  try {
+    const result = await getRestaurantRepository().changePassword(
+      session.userId,
+      input.current,
+      input.password,
+    );
+    if (result.ok) {
+      clearAttempts(`password-change:${session.userId}`);
+      return { ok: true, message: COPY.password.changeDone };
+    }
+    return {
+      ok: false,
+      field: result.reason === "bad_current" ? "current" : undefined,
+      message: refusal(result.reason),
+    };
+  } catch {
+    return { ok: false, message: COPY.password.failed };
+  }
+}
+
+/** One sentence per named refusal, and the vague one for none. */
+function refusal(reason?: PasswordRefusal): string {
+  switch (reason) {
+    case "bad_current":
+      return COPY.password.badCurrent;
+    case "bad_token":
+      return COPY.password.resetBadToken;
+    case "weak_password":
+      return COPY.password.tooShort;
+    case "no_service":
+      return COPY.password.noService;
+    default:
+      return COPY.password.failed;
   }
 }
 

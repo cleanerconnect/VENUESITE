@@ -496,6 +496,8 @@ créé.
 | `GET /api/business/venues/pending` | oui, non observé | 0,5 |
 | `PUT /api/business/venues/{id}/validation` | oui, non observé | 0,5 |
 | `POST /api/business/auth/password-reset` | oui, non observé | 1 |
+| `POST /api/business/auth/password-reset/confirm` | oui, **observé** (`tools/verify/password.mjs`) | 0,5 |
+| `POST /api/business/auth/password` | oui, **observé** (`tools/verify/password.mjs`) | 0,5 |
 | `PUT /api/business/zones/{zoneId}?venue_id=` | oui, non observé | 0,25 |
 | `GET /api/business/venues/{id}/notification-preferences` | **oui, observé** | 0,25 |
 | `PUT /api/business/venues/{id}/notification-preferences` | **oui, observé** | 0,25 |
@@ -510,9 +512,24 @@ Ces deux-là relèvent de `Détail Sprint ` ligne 55, `SP-Prio 03` — pas de
 
 **Le mot de passe oublié a trois règles** : la même réponse pour une
 adresse connue et inconnue (`204` dans les deux cas), `422` seulement si
-ce n'est pas une adresse, et le lien — sa durée de vie, son usage
-unique, l'écran qui accepte le nouveau mot de passe — est à vous. Le
-portail ne sert pas cet écran en Lot 1.
+ce n'est pas une adresse, et le lien — sa durée de vie, son usage unique
+— est à vous.
+
+**L'écran sur lequel il atterrit, lui, est maintenant rendu par le
+portail**, et c'est ce que `Détail Sprint ` ligne 53 a acheté :
+« récupérer mon mot de passe **ou le changer** en cas d'oubli ». Deux
+endpoints de plus, tous deux en `204`, décrits au § 5.1 ter du contrat :
+
+| Endpoint | Ce qu'il reçoit | Ce qu'il doit refuser |
+|---|---|---|
+| `POST /api/business/auth/password-reset/confirm` | `{ token, password }` | `410` pour un jeton expiré ou déjà servi, `422` sous huit caractères |
+| `POST /api/business/auth/password` | `{ userId, currentPassword, newPassword }` | `401` si l'actuel est faux, `422` sous huit caractères |
+
+Le jeton reste le vôtre de bout en bout : le portail le prend dans
+`?jeton=`, ne le lit pas et vous le rend tel quel. Et `userId` est le
+compte de la session — vérifiez-le contre le porteur du jeton de service
+plutôt que de faire confiance au corps, sinon ce champ est un moyen de
+changer le mot de passe d'un collègue.
 
 **Les préférences de notification** : un tableau de canaux par alerte,
 vide pour « aucun ». Le lot 1 **stocke** `guestReminder` sans l'envoyer

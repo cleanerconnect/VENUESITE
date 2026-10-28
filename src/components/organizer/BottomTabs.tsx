@@ -23,6 +23,13 @@ const FULLSCREEN_ROUTES = [
   "/scanner",
   "/scanner-fullscreen",
   "/onboarding",
+  // The event wizard, for the same reason as `/onboarding`: it fixes
+  // its own Retour / Continuer bar to `bottom-0` at the same `z-30` as
+  // this one, and below `lg` the two landed on top of each other — the
+  // tab bar won on DOM order, so « Continuer » could not be pressed on
+  // a phone at all. Found by `tools/verify/paiement.mjs` at 390, where
+  // the click was intercepted by the « Audiences » tab.
+  "/events/new",
 ];
 
 export function BottomTabs() {

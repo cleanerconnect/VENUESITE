@@ -83,6 +83,68 @@ export const COPY = {
       "Un membre de l'équipe LYFE finalise votre inscription. Vous recevrez un e-mail dès que votre espace sera prêt.",
   },
 
+  /**
+   * Récupérer, puis changer.
+   *
+   * `Détail Sprint ` ligne 53 — « En tant qu'organisateur, je dois
+   * pouvoir récupérer mon mot de passe ou le changer en cas d'oubli ».
+   * Deux verbes, trois écrans : demander le lien, poser le nouveau mot
+   * de passe, et le changer depuis Réglages quand on le connaît encore.
+   *
+   * La phrase de confirmation est volontairement neutre — « si un compte
+   * existe » — et c'est la même qu'au lien de connexion : un formulaire
+   * qui répond différemment selon que l'adresse est connue est un
+   * annuaire des partenaires de LYFE.
+   */
+  password: {
+    forgotTitle: "Mot de passe oublié",
+    forgotBody:
+      "Indiquez l'adresse de votre compte. Nous envoyons un lien qui permet d'en choisir un nouveau.",
+    forgotSubmit: "Envoyer le lien",
+    forgotSubmitting: "Envoi…",
+    backToSignIn: "Revenir à la connexion",
+
+    resetTitle: "Nouveau mot de passe",
+    resetBody:
+      "Choisissez un mot de passe. Vous serez reconnecté avec celui-ci.",
+    resetSubmit: "Enregistrer le mot de passe",
+    resetSubmitting: "Enregistrement…",
+    resetDone:
+      "Mot de passe enregistré. Connectez-vous avec le nouveau mot de passe.",
+    resetNoToken:
+      "Ce lien est incomplet. Redemandez-en un depuis « Mot de passe oublié ? ».",
+    resetBadToken:
+      "Ce lien a expiré ou a déjà servi. Redemandez-en un depuis « Mot de passe oublié ? ».",
+
+    changeTitle: "Changer mon mot de passe",
+    changeBody:
+      "Le mot de passe actuel est demandé : c'est ce qui empêche un écran laissé ouvert de devenir un compte perdu.",
+    current: "Mot de passe actuel",
+    next: "Nouveau mot de passe",
+    confirm: "Confirmer le nouveau mot de passe",
+    changeSubmit: "Changer le mot de passe",
+    changeSubmitting: "Changement…",
+    changeDone: "Mot de passe changé.",
+    badCurrent: "Le mot de passe actuel est incorrect.",
+
+    /** La même règle qu'à l'inscription, et le même message. */
+    tooShort: "Huit caractères au minimum.",
+    mismatch: "Les deux mots de passe ne sont pas identiques.",
+    /**
+     * Dit par un pilote qui n'a pas de service derrière lui.
+     *
+     * Le jeu statique est une capture : il ne peut ni vérifier un lien
+     * ni remplacer un mot de passe. Le pilote `db` change vraiment
+     * celui d'un compte de `partner_accounts` — le semis les y écrit,
+     * hachés — et répond ceci pour un compte qu'il ne détient pas, et
+     * pour un lien de réinitialisation, qu'aucun des deux n'a émis.
+     * Prétendre le contraire serait pire que de le dire.
+     */
+    noService:
+      "Cette instance n'est pas reliée au service des comptes. Écrivez-nous depuis « Nous contacter » et nous changeons le mot de passe.",
+    failed: "Le service ne répond pas pour l'instant. Réessayez dans un moment.",
+  },
+
   /** The visible state of a form. */
   form: {
     saved: "Enregistré",

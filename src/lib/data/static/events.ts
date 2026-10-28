@@ -55,6 +55,9 @@ export function getAllEvents(): LyfeEvent[] {
         saleEnd: offsetDays(280),
         maxPerOrder: 6,
         transferable: true,
+        partialPayment: false,
+        appAmountMad: 0,
+        onSiteMessage: "",
       },
     ],
   };
@@ -129,6 +132,9 @@ export function getAllEvents(): LyfeEvent[] {
         saleEnd: offsetDays(2),
         maxPerOrder: 4,
         transferable: true,
+        partialPayment: false,
+        appAmountMad: 0,
+        onSiteMessage: "",
       },
     ],
   };
@@ -163,6 +169,9 @@ export function getAllEvents(): LyfeEvent[] {
         saleEnd: offsetDays(310),
         maxPerOrder: 4,
         transferable: false,
+        partialPayment: false,
+        appAmountMad: 0,
+        onSiteMessage: "",
       },
     ],
   };
@@ -201,6 +210,9 @@ export function getAllEvents(): LyfeEvent[] {
         saleEnd: offsetDays(295),
         maxPerOrder: 6,
         transferable: true,
+        partialPayment: false,
+        appAmountMad: 0,
+        onSiteMessage: "",
       },
     ],
   };

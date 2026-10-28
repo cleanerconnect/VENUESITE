@@ -8,6 +8,7 @@ import { Pill } from "@/components/ui/Pill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { LivePulse } from "@/components/motion/LivePulse";
 import { RevenueChart } from "./RevenueChart";
+import { splitLabel } from "@/lib/event/partial-payment";
 import { formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 import { useEventQuery } from "@/lib/data/useQuery";
@@ -133,7 +134,23 @@ export function SalesTab({ event }: { event: LyfeEvent }) {
                         <ProgressBar value={t.sold} max={t.quantity} tone="violet" size="xs" />
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right num">{formatMAD(t.faceValueMad)}</td>
+                    {/* The price, and the split under it when there
+                        is one — ligne 45. Two amounts on the row rather
+                        than a pill saying « partiel »: what an
+                        organiser checks here is how much of the ticket
+                        the door is still collecting, and that is a
+                        number, not a state. */}
+                    <td className="px-6 py-4 text-right num">
+                      {formatMAD(t.faceValueMad)}
+                      {t.partialPayment ? (
+                        <div
+                          data-tier-split
+                          className="text-meta text-ink-mute mt-1 whitespace-nowrap"
+                        >
+                          {splitLabel(t)}
+                        </div>
+                      ) : null}
+                    </td>
                     <td className="px-6 py-4 text-right num font-bold text-ink">
                       {t.sold}
                     </td>

@@ -98,7 +98,9 @@ Three nouns in the sprint row, and the word that decides the rest:
 *uniquement*. Seven screens, plus the onboarding flow — « Création de
 Venue » is one of the three nouns and had no screen at all until now.
 Since DigiNegoce's 27 October decision that flow is two walks with a
-choice between them, so the door is three rows rather than one.
+choice between them, and `Détail Sprint ` ligne 53 added the way back in
+when a password is forgotten — so the door is five rows rather than
+one.
 
 | # | Screen | Route | Which noun | What Lot 1 buys |
 |---:|---|---|---|---|
@@ -106,6 +108,8 @@ choice between them, so the door is three rows rather than one.
 | 0 bis | Choisir un espace | `/choisir` | Création de Venue | « Que voulez-vous gérer sur LYFE ? ». Three cards, always three — Restaurant, Bar ou lounge, Événements — each marked « Actif · ouvrir » or « Ajouter ». An account holding exactly one skips it. No call: it reads the session. |
 | 0 ter | Créer mon établissement | `/restaurant/etablissement/nouveau` | Création de Venue | Six steps, inside the dashboard they build for: the management mode, then the establishment, the address, the photos, the ambience, the weekly hours. The draft is saved on the seam after every step, so a closed tab loses nothing, and step 6 creates the venue. Until it does, Accueil holds the empty-state card and the sidebar is reduced to it. |
 | 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. Its line for non-partners now opens the flow above instead of offering an e-mail address. |
+| 1 bis | Mot de passe oublié | `/mot-de-passe-oublie` | Authentification | One field, and a confirmation that never says whether the address is on file. The link under Connexion used to answer in place — the address was read from the sign-in form and a sentence appeared over a form nobody was filling. `Détail Sprint ` ligne 53 buys the screen. Nothing is claimed that was not sent: a driver with no mail service says so and points at « Nous contacter ». |
+| 1 ter | Nouveau mot de passe | `/reinitialiser` | Authentification | Where the mail's link lands: the new password, typed twice, eight characters, the inscription's own rule. The token arrives in `?jeton=` and the portal never reads it — its lifetime and its single use belong to whoever minted it. No session is opened here. |
 | 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. Three closed lists since 12 October: **Catégorie** is ten values and an « Autre » with its own line, **Photos** is one principale and five in a carousel, and **Menu** is the item list plus one optional PDF. |
 | 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Two blocks since 5 October: online booking on or off, and the services — days, hours, last booking taken, capacity, open or closed. The pacing rules, the advanced settings, the closed days and the choice of grid left the lot that day. A service is added by naming which one it is, and its hours come with the name: **Petit-déjeuner 7h30–11h00**, Déjeuner 12h00–15h00, Dîner 19h00–23h30. |
 | 4 | Accueil | `/restaurant` | Gestion des réservations | Figures, and no list. Six for today — bookings, covers, to confirm, arrived, absent, the fill rate of the service in hand — eight for the last thirty days, each with its movement against the period before, and bookings per day in bars. Every one of them is counted off `reservations` when the screen is built. « À confirmer » opens the book filtered on the requests; the rows and the decisions are on Réservations. |
@@ -342,7 +346,7 @@ minimum group size on Audience.
 
 ### Before you trust a change, walk it
 
-Eleven browser checks and one recorder are committed under
+Thirteen browser checks and one recorder are committed under
 `tools/verify/`, kept out of `package.json` deliberately — they need a
 running server and a browser binary, and a check that pretends to be a
 unit test is a check that gets skipped in CI and then deleted.
@@ -358,6 +362,8 @@ node tools/verify/states.mjs          # ?etat= forceable on every venue route in
 node tools/verify/configuration.mjs   # restaurant vs lounge, and no « couverts » on a bar's screens
 node tools/verify/audience.mjs        # the minimum group of ten, both configurations
 node tools/verify/inscription.mjs     # the two account steps, and the chooser behind them
+node tools/verify/password.mjs        # the three password screens — and the three things they must never say
+node tools/verify/paiement.mjs        # the partial payment: the switch, the computed remainder, the sentence the client reads
 node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
 node tools/verify/edges.mjs           # the paths taken by accident — see below
 node tools/verify/decisions.mjs       # LYFE's review, what each state allows, the cancellation, the search, the guest
@@ -957,9 +963,9 @@ follow.
 | `00 Lisez-moi` | this document and `docs/TARGET_SPEC.md` | — |
 | `01 Fondations` | `src/app/globals.css` | the token block, 1:1 |
 | `02 Composants` | `src/components/ui/` | 29 components, 175 variants; a component is named for its file |
-| `03 Entrée` | `/login`, `/splash`, `/contact` | built without the shell, as the code renders them |
+| `03 Entrée` | `/login`, `/splash`, `/contact` | built without the shell, as the code renders them. The two password screens are drawn on `05` instead, beside the Réglages card they belong with — all three are one user story, and splitting them across two pages would be splitting the review |
 | `04 Espace partenaire` | the 31 venue screens | structure, in ten Sections named for the ten nav groups of `src/lib/nav/workspaces.ts`. Every screen frame carries its lot in the frame name — `[lot 1]` or `[lot 2]`, 6 and 25 |
-| `05 Espace organisateur` | the 16 event screens | structure, in two Sections |
+| `05 Espace organisateur` | the 16 event screens, plus the four V2 frames of Prio 02 | structure, in two Sections. Each V2 frame sits under the screen it changes and is named for the planning row that bought it — `[V2 · ligne 45]`, `[V2 · ligne 53]`, `[V2 · ligne 54]` — with a margin note quoting that row's `User Story (US)` verbatim |
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
@@ -1445,27 +1451,29 @@ does not exist cannot be written.
 
 ## 7. The route index
 
-`src/lib/nav/routes.ts` is the one list of what the portal ships — 55
-rows: 31 venue, 16 event, 4 entry, 3 shared, 1 admin. The styleguide's
+`src/lib/nav/routes.ts` is the one list of what the portal ships — 59
+rows: 32 venue, 16 event, 7 entry, 3 shared, 1 admin. The styleguide's
 `Écrans` section renders it, linked, with roles, status and lot.
 
-**Every row carries a `lot`.** 30 rows are lot 1 — the six venue screens
+**Every row carries a `lot`.** 34 rows are lot 1 — the six venue screens
 of §1, the entry flow, the styleguide, the LYFE validation queue and the
 whole event workspace, none of which the split touches — and 25 are lot
 2, the venue screens a Lot 1 deployment does not register. The gate reads this field,
 so the table the styleguide prints and the routes the router serves
 cannot disagree. Three statuses:
 
-- **`built`** (41) — complete.
+- **`built`** (45) — complete.
 - **`partial`** (6) — work *this repo* owes: `/events/new`,
   `/events/:id/edit`, `/visibilite`, `/promo-codes`, `/scanner`,
   `/team`. All six are the event side's missing write path (§11, gap 1).
-- **`service`** (6) — nothing is missing from the portal; a third party
+- **`service`** (8) — nothing is missing from the portal; a third party
   is not connected. Each row carries its dependency verbatim, so nobody
   goes looking for a bug that is not there.
 
 | Route | What waits, and on what |
 |---|---|
+| `/mot-de-passe-oublie` | The **mail service** that sends the link. The portal asks through the seam and reads the answer; a driver with none says so and the screen offers « Nous contacter » rather than an inbox to watch. |
+| `/reinitialiser` | The **account service that minted the token**. The screen renders and validates on every driver; only a service that issued the link can say whether it is still good, so `db` and `static` refuse it rather than accept a token they would have had to invent. |
 | `/restaurant/menu` | Assisted PDF-to-articles import awaits an **extraction service**. The PDF upload itself works — the file card is published on the listing. |
 | `/restaurant/avis` | Public replies and redirection to Google or Tripadvisor await **those platforms being connected**. The survey, the links and the redirect threshold all save. |
 | `/restaurant/acomptes` | **Payzone** is not connected, and the specification leaves the direction of the flow open: the venue collects directly, or LYFE collects and remits. Both paths use the same idempotency key, so the choice does not change this screen. |

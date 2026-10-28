@@ -41,6 +41,7 @@ import {
   type ReviewReplyInput,
   type OnboardingDraftPatch,
   type OnboardingSignUpInput,
+  type PasswordResult,
   type VenueListingPatch,
   type VenueProfilePatch,
 } from "./repository";
@@ -232,6 +233,50 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     // address, so reaching here means the request was accepted, not
     // that an account exists.
     return { sent: true };
+  }
+
+  /**
+   * The two writes behind `/reinitialiser` and Réglages.
+   *
+   * Both read the refusal off the status rather than off a sentence:
+   * `401` is the wrong current password, `410` or `404` a link that has
+   * expired or already served, `422` a password under the floor.
+   * Anything else is the service being unreachable, which is not a
+   * verdict on what was typed and must not be shown as one.
+   */
+  async resetPassword(token: string, password: string) {
+    return this.password("/api/business/auth/password-reset/confirm", {
+      token,
+      password,
+    });
+  }
+
+  async changePassword(userId: string, current: string, next: string) {
+    return this.password("/api/business/auth/password", {
+      userId,
+      currentPassword: current,
+      newPassword: next,
+    });
+  }
+
+  private async password(
+    path: string,
+    body: Record<string, string>,
+  ): Promise<PasswordResult> {
+    try {
+      await this.request<void>("POST", path, body);
+      return { ok: true };
+    } catch (error) {
+      const status = error instanceof RepositoryError ? error.status : 0;
+      if (status === 401 || status === 403) {
+        return { ok: false, reason: "bad_current" };
+      }
+      if (status === 404 || status === 410) {
+        return { ok: false, reason: "bad_token" };
+      }
+      if (status === 422) return { ok: false, reason: "weak_password" };
+      throw error;
+    }
   }
 
   // ── Onboarding ──

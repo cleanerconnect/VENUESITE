@@ -99,6 +99,35 @@ export interface Tier {
   saleEnd: string;
   maxPerOrder: number;
   transferable: boolean;
+  /**
+   * `Détail Sprint ` ligne 45 — « paramétrer le montant a payer sur
+   * l'appli et le montant à payer sur place pour les evenement à
+   * paiment partiel ».
+   *
+   * Off for every tier that existed before this, and off by default for
+   * a new one: a tier with no partial payment is a tier whose whole
+   * price is paid on the application, which is what every event in this
+   * repository was selling.
+   *
+   * Two amounts are stored and the third is not. `faceValueMad` is the
+   * ticket in full and `appAmountMad` is the part the client pays in the
+   * application; what is left is the subtraction, computed everywhere it
+   * is shown rather than written down, because a stored remainder is a
+   * third number that can disagree with the other two.
+   */
+  partialPayment: boolean;
+  /** What the client pays in the application. 0 when the switch is off. */
+  appAmountMad: number;
+  /**
+   * The sentence the client reads about the rest, 120 characters.
+   *
+   * `Détail Sprint ` ligne 54 asks that the application's booking
+   * screen state « le complément à payer ». The organiser writes it —
+   * the amount alone does not say *when* or *to whom* — and the editor
+   * fills it in from the two amounts so that leaving it untouched still
+   * produces a true sentence rather than an empty one.
+   */
+  onSiteMessage: string;
 }
 
 /**
@@ -353,6 +382,10 @@ export interface DraftTier {
   saleEnd: string;
   maxPerOrder: number;
   transferable: boolean;
+  /** The split of `Détail Sprint ` lignes 45 and 54. See `Tier`. */
+  partialPayment: boolean;
+  appAmountMad: number;
+  onSiteMessage: string;
 }
 
 export interface DraftEvent {

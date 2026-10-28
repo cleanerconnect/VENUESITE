@@ -292,6 +292,34 @@ export class MockRestaurantRepository implements RestaurantRepository {
     return { sent: false };
   }
 
+  /**
+   * No link can be checked here either, for the same reason.
+   *
+   * A reset token is minted by whatever sent the mail, and nothing on
+   * this driver sends one — `requestPasswordReset` above says so. A
+   * token this driver accepted would therefore be a token it invented,
+   * which is a way into every account rather than a feature.
+   */
+  async resetPassword(_token: string, _password: string) {
+    return { ok: false, reason: "no_service" as const };
+  }
+
+  /**
+   * This one is real: `partner_accounts` holds the hash, so the current
+   * password can be checked and the new one written.
+   *
+   * It answers `no_service` for an account with no row in that table.
+   * The demonstration partners have one — `db/seed.mjs` writes all seven
+   * with a salted scrypt hash, which is the whole reason the documented
+   * walkthrough can change a password and sign in again — so what is
+   * left is an account this database does not hold, and a driver that
+   * pretended to change *that* password would be lying about the one
+   * thing this screen exists to do.
+   */
+  async changePassword(userId: string, current: string, next: string) {
+    return onboarding.changePartnerPassword(userId, current, next);
+  }
+
   async startOnboarding(input: OnboardingSignUpInput) {
     try {
       const account = await onboarding.createPartnerAccount(input);

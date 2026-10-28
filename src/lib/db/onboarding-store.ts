@@ -128,6 +128,50 @@ export async function verifyPartnerPassword(
   };
 }
 
+/**
+ * Réglages → « Changer mon mot de passe ».
+ *
+ * The current password is checked against the stored hash before the
+ * new one replaces it, in the same constant-time way as signing in, and
+ * the new hash gets a new salt — reusing the old one would leak that
+ * two accounts had the same password.
+ *
+ * Three answers, and the third is the interesting one. `no_service` is
+ * an account with no row in this table — not the demonstration
+ * partners, who have one: `db/seed.mjs` writes all seven with a salted
+ * hash of `LYFE_SEED_PASSWORD`, through this same `hash()`, so changing
+ * their password here is a real change that the next sign-in reads. It
+ * is an account this database does not hold at all, which is a fact
+ * about the driver rather than about the person typing.
+ */
+export async function changePartnerPassword(
+  userId: string,
+  current: string,
+  next: string,
+): Promise<{ ok: boolean; reason?: "bad_current" | "weak_password" | "no_service" }> {
+  if (next.length < 8) return { ok: false, reason: "weak_password" };
+
+  const r = await one(
+    "SELECT password_hash FROM partner_accounts WHERE user_id = ?",
+    userId,
+  );
+  if (!r) return { ok: false, reason: "no_service" };
+
+  const [salt] = String(r.password_hash).split(":");
+  const expected = Buffer.from(String(r.password_hash));
+  const actual = Buffer.from(hash(current, salt));
+  if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
+    return { ok: false, reason: "bad_current" };
+  }
+
+  await run(
+    "UPDATE partner_accounts SET password_hash = ? WHERE user_id = ?",
+    hash(next),
+    userId,
+  );
+  return { ok: true };
+}
+
 // ── Drafts ───────────────────────────────────────────────────
 
 /** A JSON column, or an empty list. A draft never fails to open. */
