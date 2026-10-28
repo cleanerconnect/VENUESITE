@@ -35,6 +35,7 @@ import "server-only";
 // `/api/health` reports which state the deployment is in.
 
 import { directory, type DirectoryMembership } from "./directory";
+import { onlySpace } from "@/lib/nav/dashboards";
 import { dataMode } from "@/lib/data/mode";
 import { activeLot } from "@/lib/lot";
 import { PROFILES } from "./static/profiles";
@@ -232,44 +233,59 @@ export async function resolveAccount(
 }
 
 /**
- * Where a resolved account lands, and whether it has to choose first.
+ * Where a resolved account lands at sign-in, and whether it has to
+ * choose first.
  *
- * Since DigiNegoce's 27 October decision this is one rule rather than
- * three: a signed-in account goes to `/choisir`, and that screen
- * decides. It redirects itself when the account holds exactly one
- * dashboard, which is the case the old rule spent most of its lines on
- * — events if you held an organisation, your venue otherwise, and an
- * account holding both silently got the first of the two.
+ * **Signing in is the only moment the chooser may be skipped**, and it
+ * is skipped for one reason: an account holding exactly one space has
+ * nothing to choose, and a screen with one live card and two offers
+ * would make it press twice to reach the only thing it has.
  *
- * What is left here is the one thing the chooser cannot do: pick
- * *which* establishment, when an account holds several of the same
- * kind. That question is about venues, not about dashboards, and the
- * login form's own chooser still answers it.
+ * That rule used to live inside `/choisir`, which redirected on itself
+ * — and a screen that redirects cannot be opened on purpose. It is the
+ * switcher now: the sidebar card goes there, and from there it always
+ * renders. So the skip belongs here, where arriving is decided, and
+ * happens once.
  *
- * An account holding nothing now goes to `/choisir` as well, where it
- * can add something. It used to be told it had nowhere to go, which
- * was true of a portal where the only way to get a dashboard was to
- * walk /inscription from the start.
+ * Two spaces means the chooser, and that is the case the 27 October
+ * decision was about: an account holding a venue **and** an
+ * organisation lands on `/choisir`, not on whichever of the two the old
+ * rule happened to name first.
+ *
+ * An account holding nothing goes there as well, where it can add
+ * something. It used to be told it had nowhere to go, which was true of
+ * a portal where the only way to get a dashboard was to walk
+ * /inscription from the start.
  */
 export function destinationFor(account: ResolvedAccount): {
   workspace: Workspace | null;
   href: string | null;
   needsVenueChoice: boolean;
 } {
-  // Several establishments of the same kind is the one choice the
-  // dashboard chooser cannot make for a partner: « Restaurant » is one
-  // card whether you hold one table or four. Under Lot 1 this is
-  // always false — `directory()` narrows an account to the
+  const only = onlySpace(account);
+
+  // None, or more than one: the screen that names them.
+  if (!only) {
+    return { workspace: "venue", href: "/choisir", needsVenueChoice: false };
+  }
+
+  // Exactly one space, held several times over: « Restaurant » is one
+  // card whether you hold one table or four, so the card cannot say
+  // *which*. That question is about venues rather than about spaces,
+  // and the login form's own list still answers it. Under Lot 1 this
+  // never happens — `directory()` narrows an account to the
   // establishment it owns, because the lot ships no switcher to change
   // your mind with afterwards.
-  if (account.venues.length > 1) {
+  if (only.id !== "events" && account.venues.length > 1) {
     return { workspace: "venue", href: "/choisir", needsVenueChoice: true };
   }
 
-  // Everything else: the chooser. It names what the account holds and
-  // what it does not, and it redirects itself when there is only one
-  // answer — see `skipsChooser`.
-  return { workspace: "venue", href: "/choisir", needsVenueChoice: false };
+  // One space, one way in. Straight there.
+  return {
+    workspace: only.id === "events" ? "event" : "venue",
+    href: only.href,
+    needsVenueChoice: false,
+  };
 }
 
 export type SignInFailure = "unknown_account" | "bad_password";

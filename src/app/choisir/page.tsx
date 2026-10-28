@@ -3,9 +3,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { resolveSession } from "@/lib/auth/server-session";
 import { resolveAccount } from "@/lib/auth/accounts";
-import { dashboardsFor, skipsChooser } from "@/lib/nav/dashboards";
+import { CHOOSER_LINE, dashboardsFor } from "@/lib/nav/dashboards";
 import { Brand } from "@/components/organizer/Brand";
 import { Card } from "@/components/ui/Card";
+import { buttonClass } from "@/components/ui/button-style";
 import { resolveIcon } from "@/lib/dashboard/icons";
 import { cn } from "@/lib/utils/cn";
 
@@ -22,11 +23,16 @@ import { cn } from "@/lib/utils/cn";
 // because picking one is what it is for. A sidebar here would have to
 // show the navigation of a product the partner has not chosen yet.
 //
-// Three cards, always three. A dashboard the account holds reads
-// « Actif · ouvrir » and opens; one it does not reads « Ajouter » and
-// starts the flow that creates it. The alternative — hiding what you
-// do not have — is a screen that cannot tell a partner the bar
-// dashboard exists, which is the one thing it is in a position to do.
+// Three cards, always three. A space the account holds reads
+// « Actif · ouvrir » and the whole card opens it; one it does not
+// carries a primary « Ajouter » button that starts the flow which
+// creates it. The alternative — hiding what you do not have — is a
+// screen that cannot tell a partner the bar space exists, which is the
+// one thing it is in a position to do.
+//
+// It is also the **switcher**: the identity card in both sidebars opens
+// it. So it renders every time it is opened, and only the sign-in ever
+// skips it — see `destinationFor`.
 
 export const dynamic = "force-dynamic";
 
@@ -39,11 +45,12 @@ export default async function ChoisirPage() {
   const account = await resolveAccount(session.userId);
   if (!account) redirect("/login?expired=1");
 
-  // One dashboard, nothing to choose. The rule the old `destinationFor`
-  // was reaching for, now said once and in the open.
-  const only = skipsChooser(account);
-  if (only) redirect(only.href);
-
+  // **No redirect.** This screen used to send an account holding one
+  // space straight to it, which made it impossible to open on purpose:
+  // the sidebar card leads here, and a partner who came looking for the
+  // bar card was bounced to their carnet before the page painted. The
+  // skip belongs to the sign-in, happens once, and lives in
+  // `destinationFor`.
   const cards = dashboardsFor(account);
 
   return (
@@ -59,26 +66,21 @@ export default async function ChoisirPage() {
         <h1 className="text-h2 text-ink mt-6 md:mt-8">
           Que voulez-vous gérer sur LYFE&nbsp;?
         </h1>
+        {/* No first name.
+            « Rachid, un espace par activité » greets a partner who is
+            here to switch spaces for the fourth time today, and the
+            screen is the switcher now rather than the first thing a new
+            account sees. The sentence says what the screen is for and
+            stops. */}
         <p className="text-body text-ink-soft mt-2">
-          {session.firstName}, un espace par activité. Vous pourrez en ajouter
-          d&apos;autres plus tard.
+          {CHOOSER_LINE}
         </p>
 
         <div className="mt-6 flex flex-col gap-3 md:mt-8">
           {cards.map((card) => {
             const Glyph = resolveIcon(card.icon);
-            return (
-            <Link key={card.id} href={card.href} className="block">
-              <Card
-                variant="surface"
-                size="md"
-                className={cn(
-                  "flex items-center gap-4 transition-colors",
-                  card.active
-                    ? "border-ink/20 hover:border-ink/40"
-                    : "hover:border-ink/40",
-                )}
-              >
+            const face = (
+              <>
                 <span
                   aria-hidden
                   className={cn(
@@ -96,21 +98,63 @@ export default async function ChoisirPage() {
                     {card.line}
                   </span>
                 </span>
-                {/* The word, not a button: the whole card is the target,
-                    and a button inside a link is two things to press
-                    for one destination. */}
-                <span
-                  className={cn(
-                    "text-meta font-semibold shrink-0",
-                    card.active ? "text-success" : "text-violet-deep",
-                  )}
-                  data-dashboard={card.id}
-                  data-active={card.active ? "1" : "0"}
-                >
-                  {card.action}
+              </>
+            );
+
+            // A space already held: the whole card is the target, and
+            // « Actif · ouvrir » is a word rather than a button —
+            // a button inside a link is two things to press for one
+            // destination.
+            if (card.active) {
+              return (
+                <Link key={card.id} href={card.href} className="block">
+                  <Card
+                    variant="surface"
+                    size="md"
+                    className="flex items-center gap-4 border-ink/20 transition-colors hover:border-ink/40"
+                  >
+                    {face}
+                    <span
+                      className="text-meta font-semibold shrink-0 text-success"
+                      data-dashboard={card.id}
+                      data-active="1"
+                    >
+                      {card.action}
+                    </span>
+                  </Card>
+                </Link>
+              );
+            }
+
+            // A space to add: the card is not a link, and the primary
+            // button is the thing you press. Adding a space is a
+            // commitment — six steps for a venue, four for an
+            // organisation — and it earns a button that looks like one
+            // rather than a word that happens to be clickable.
+            return (
+              <Card
+                key={card.id}
+                variant="surface"
+                size="md"
+                className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
+              >
+                <span className="flex min-w-0 flex-1 items-center gap-4">
+                  {face}
                 </span>
+                <Link
+                  href={card.href}
+                  className={cn(buttonClass("primary", "md"), "shrink-0 max-sm:w-full")}
+                >
+                  {/* The marker sits on the word in both states — on a
+                      span inside the link here, on a span inside the
+                      card above — so one selector reads the action
+                      whichever shape the card took, and the thing a
+                      tool clicks is the link either way. */}
+                  <span data-dashboard={card.id} data-active="0">
+                    {card.action}
+                  </span>
+                </Link>
               </Card>
-            </Link>
             );
           })}
         </div>

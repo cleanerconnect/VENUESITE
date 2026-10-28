@@ -13,12 +13,15 @@
 // address, and the step that collects them says so.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { cityCentre } from "@/lib/types/onboarding";
 import type { Map as LeafletMap, Marker } from "leaflet";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import "leaflet/dist/leaflet.css";
 
-/** Jemaa el-Fna. A map has to open somewhere. */
+/** Jemaa el-Fna. A map has to open somewhere, and this is where it
+ *  opens when the venue has no coordinates *and* no city — a fiche
+ *  saved before the city list was closed, or the styleguide. */
 const FALLBACK: [number, number] = [31.6295, -7.9811];
 
 /** A transparent pixel, so an unreachable tile server draws nothing
@@ -53,6 +56,20 @@ export function PinMap({
   const notify = useRef(onChange);
   notify.current = onChange;
 
+  // Where the map opens, fixed at the first render.
+  //
+  // A ref, because the map is built once in an effect with no
+  // dependencies: reading the props inside it would read whatever they
+  // were when that effect ran, and the lint rule that catches it is
+  // right. The step that mounts this has already asked for the city —
+  // it is the step before — so the first render knows it. A city chosen
+  // *after* that is handled by the effect below, which follows it.
+  const openingCentre = useRef<[number, number]>(
+    latitude != null && longitude != null
+      ? [latitude, longitude]
+      : (cityCentre(city) ?? FALLBACK),
+  );
+
   useEffect(() => {
     let cancelled = false;
     let instance: LeafletMap | null = null;
@@ -62,10 +79,13 @@ export function PinMap({
       if (cancelled || !holder.current || map.current) return;
 
       instance = L.map(holder.current, {
-        center:
-          latitude != null && longitude != null
-            ? [latitude, longitude]
-            : FALLBACK,
+        // The point if there is one, the chosen city if there is not,
+        // and Marrakech only when there is neither. Centring on the
+        // city costs nothing and happens *before* any geocoding: the
+        // city was answered one step earlier, and a partner in Tanger
+        // being shown Jemaa el-Fna has to pan across the country before
+        // the map is any use to them.
+        center: openingCentre.current,
         zoom: latitude != null && longitude != null ? 16 : 12,
         // A map inside a form should not eat the page's scroll.
         scrollWheelZoom: false,
@@ -104,7 +124,7 @@ export function PinMap({
       const marker = L.marker(
         latitude != null && longitude != null
           ? [latitude, longitude]
-          : FALLBACK,
+          : openingCentre.current,
         {
           draggable: true,
           icon,
@@ -150,10 +170,20 @@ export function PinMap({
   }, []);
 
   // Coordinates changed from outside — a geocode, or a draft reopening.
+  //
+  // With nothing placed, the city is what the view follows: a partner
+  // who goes back a step and changes Casablanca for Agadir finds the
+  // map already there when they return, rather than having to press
+  // « Trouver sur la carte » to discover it moved.
   useEffect(() => {
     if (!ready || !map.current || !pin.current) return;
     if (latitude == null || longitude == null) {
       pin.current.setOpacity(0.45);
+      const centre = cityCentre(city);
+      if (centre) {
+        pin.current.setLatLng(centre);
+        map.current.setView(centre, 12);
+      }
       return;
     }
     pin.current.setLatLng([latitude, longitude]);
@@ -162,7 +192,7 @@ export function PinMap({
       [latitude, longitude],
       Math.max(map.current.getZoom(), 16),
     );
-  }, [latitude, longitude, ready]);
+  }, [latitude, longitude, city, ready]);
 
   const locate = useCallback(async () => {
     const query = [address, city, "Maroc"].filter(Boolean).join(", ");

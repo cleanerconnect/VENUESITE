@@ -567,11 +567,19 @@ if (LOT === 1) {
   );
 
   const body = ((await solo.innerText("body").catch(() => "")) ?? "").replace(/\s+/g, " ");
+  // Two halves, and only one of them is drawn at every width. The name
+  // of the establishment is on the sidebar's card, which a phone does
+  // not draw — same reason as the bar's vocabulary further up. What the
+  // phone can still say is that the *other* establishment is not here,
+  // and that is the half this case is about.
   check(
-    "et c'est Dar Zellij, pas le Nomad",
-    /Dar Zellij/.test(body) && !/Nomad/.test(body),
+    "et le Nomad n'est pas là",
+    !/Nomad/.test(body),
     body.slice(0, 70),
   );
+  if (!phone) {
+    check("et c'est bien Dar Zellij", /Dar Zellij/.test(body), body.slice(0, 70));
+  }
 
   // La bascule, par l'API plutôt que par un bouton : le lot 1 n'affiche
   // pas de sélecteur, donc la seule façon de poser la question est

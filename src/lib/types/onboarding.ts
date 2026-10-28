@@ -211,6 +211,43 @@ export const ONBOARDING_CITIES = [
 
 export type OnboardingCity = (typeof ONBOARDING_CITIES)[number];
 
+/**
+ * Where each of the five cities is, so the map can open on the one the
+ * partner picked.
+ *
+ * The map used to open on Jemaa el-Fna whatever the answer at the step
+ * before: a partner in Tanger was shown Marrakech and asked to place a
+ * point on it, which is a map you have to pan across the country before
+ * it is any use. Centring needs no geocoder — the city is already
+ * answered, and a city is a coordinate — so it happens first, and the
+ * geocoder is left for the street.
+ *
+ * City centres, to four decimals, which is about ten metres and far
+ * finer than a city needs. Zoom 12 shows the whole of each of them.
+ */
+export const CITY_CENTRE: Record<OnboardingCity, [number, number]> = {
+  Casablanca: [33.5731, -7.5898],
+  Marrakech: [31.6295, -7.9811],
+  Rabat: [34.0209, -6.8416],
+  Tanger: [35.7595, -5.834],
+  Agadir: [30.4278, -9.5981],
+};
+
+/**
+ * The centre for a city name, or null for anything that is not one of
+ * the five.
+ *
+ * Takes a plain string because the callers have one: a venue's `city`
+ * column is whatever was stored, and a fiche saved before the list was
+ * closed can hold something else. Null means « I have no opinion »,
+ * and the caller falls back to its own.
+ */
+export function cityCentre(city: string | undefined | null): [number, number] | null {
+  if (!city) return null;
+  const trimmed = city.trim();
+  return isOnboardingCity(trimmed) ? CITY_CENTRE[trimmed] : null;
+}
+
 export function isOnboardingCity(value: string): value is OnboardingCity {
   return (ONBOARDING_CITIES as readonly string[]).includes(value);
 }

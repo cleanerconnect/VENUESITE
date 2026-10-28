@@ -110,8 +110,14 @@ export async function signIn(
     };
   }
 
-  // A single venue is selected here rather than left to the session's
-  // default, so the cookie always says what the partner actually chose.
+  // The venue the session opens on, written here rather than left to
+  // the session's default so the cookie always names one.
+  //
+  // With several, this is the first — and the chooser's own card
+  // overrides it on the way out, because an active venue card carries
+  // `?etablissement=` precisely so that an account holding a restaurant
+  // and a bar lands on the one it pressed. The cookie is the floor, not
+  // the answer.
   if (destination.workspace === "venue" && account.venues[0]) {
     jar.set(VENUE_COOKIE, sign(account.venues[0].id), identityCookie(remember));
   }

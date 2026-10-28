@@ -136,7 +136,17 @@ export function InscriptionFlow({
         <p className="text-body text-ink-soft mt-2">{HELP[step]}</p>
 
         <div className="mt-4 md:mt-6">
-          <AnimatePresence mode="wait">
+          {/* `initial={false}` — the fields have to be *visible* on the
+              first paint, not merely present in the HTML.
+              `motion.div` writes its `initial` into the server-rendered
+              markup, so `opacity: 0` shipped in the document and the
+              step's content was painted invisible until JavaScript
+              arrived and animated it in. On a fast machine that is a
+              flicker; on 3G it is a card with a title, a sentence and
+              several hundred pixels of nothing, for as long as the
+              bundle takes. The step-to-step transition still animates —
+              this disables the enter animation on mount only. */}
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={step}
               initial={{ opacity: 0, x: 12 }}

@@ -105,7 +105,7 @@ one.
 | # | Screen | Route | Which noun | What Lot 1 buys |
 |---:|---|---|---|---|
 | 0 | Inscription | `/inscription` | Création de Venue | Two steps, and they create an account: themselves, then the confirmation. No venue — the old road asked a partner to describe a room before they had a session to come back to, and asked « restaurant or bar » of an account that can hold both. |
-| 0 bis | Choisir un espace | `/choisir` | Création de Venue | « Que voulez-vous gérer sur LYFE ? ». Three cards, always three — Restaurant, Bar ou lounge, Événements — each marked « Actif · ouvrir » or « Ajouter ». An account holding exactly one skips it. No call: it reads the session. |
+| 0 bis | Choisir un espace | `/choisir` | Création de Venue | « Que voulez-vous gérer sur LYFE ? ». Three cards, always three — Restaurant, Bar ou lounge, Événements — each either « Actif · ouvrir » or a primary « Ajouter » button. **It is also the space switcher**: the identity card in both sidebars opens it, so it renders every time it is opened. Only the sign-in skips it, and only for an account holding exactly one space — the rule lives in `destinationFor`, not in the screen, because a screen that redirects cannot be opened on purpose. No call: it reads the session. |
 | 0 ter | Créer mon établissement | `/restaurant/etablissement/nouveau` | Création de Venue | Six steps, inside the dashboard they build for: the management mode, then the establishment, the address, the photos, the ambience, the weekly hours. The draft is saved on the seam after every step, so a closed tab loses nothing, and step 6 creates the venue. Until it does, Accueil holds the empty-state card and the sidebar is reduced to it. |
 | 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. Its line for non-partners now opens the flow above instead of offering an e-mail address. |
 | 1 bis | Mot de passe oublié | `/mot-de-passe-oublie` | Authentification | One field, and a confirmation that never says whether the address is on file. The link under Connexion used to answer in place — the address was read from the sign-in form and a sentence appeared over a form nobody was filling. `Détail Sprint ` ligne 53 buys the screen. Nothing is claimed that was not sent: a driver with no mail service says so and points at « Nous contacter ». |
@@ -149,8 +149,9 @@ and drops the group names with them: a label earns its place over ten
 groups, not over two, and the event sidebar labels neither of its own.
 Structurally it is now that sidebar entry for entry: the wordmark, the
 workspace caption (`établissement` against `organisateur`), the identity
-card — which opens the switcher in Lot 2 and simply names the
-establishment in Lot 1 — the entries at 13.5 px on 40 px rows with
+card — which names the space you are in and opens `/choisir`, on both
+sidebars and in both lots; with no establishment yet it reads « Aucun
+établissement » and carries the chooser's own sentence — the entries at 13.5 px on 40 px rows with
 an 18 px icon each, and a footer card carrying the signed-in person,
 their role and a kebab holding Se déconnecter.
 

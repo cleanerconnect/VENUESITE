@@ -26,6 +26,7 @@
 import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { DEMO_CLOCK, LOT, LOT_LABEL, clockLine, requireWrites, signIn } from "./lot.mjs";
+import { CITY_CENTRE } from "../../src/lib/types/onboarding.ts";
 
 const chromium = await chromiumOrExplain();
 
@@ -54,6 +55,16 @@ const context = await browser.newContext({
   timezoneId: "Africa/Casablanca",
 });
 const page = await context.newPage();
+
+// Every map tile the page asks for, so a check can read where the map
+// opened. Registered once, for the whole run.
+const tiles = [];
+page.on("request", (request) => {
+  const m = /\/(\d+)\/(\d+)\/(\d+)\.png(?:\?|$)/.exec(request.url());
+  if (m && /tile|openstreetmap/i.test(request.url())) {
+    tiles.push({ z: Number(m[1]), x: Number(m[2]), y: Number(m[3]) });
+  }
+});
 
 const problems = [];
 const noise = new Set();
@@ -169,9 +180,9 @@ const lot1Only = (label) => {
 // ── 1. A partner who has no account ─────────────────────────
 const stamp = Date.now().toString(36);
 const email = `parcours.${stamp}@lyfe-verify.ma`;
-const venueName = `Riad Zitoun n°${stamp.slice(-3)}`;
+const venueName = `Dar Malabata n°${stamp.slice(-3)}`;
 const owner = "Amine El Fassi-Ouazzani";
-const address = "12, Derb Sidi Bouloukat, Médina";
+const address = "7, rue Ibn Battouta, Malabata";
 
 await go("/login");
 await rendersFine("Connexion");
@@ -236,6 +247,81 @@ check(
   "la barre de progression a six segments",
   (await page.locator("[data-progress]").first().getAttribute("data-progress")) === "6",
 );
+
+// ── 3 bis. The first step, on a slow line ───────────────────
+//
+// The fields have to be in the document and **visible** when it paints,
+// not assembled once the bundle lands. They were in the document all
+// along: `motion.div` writes its `initial` into the server markup, so
+// `opacity: 0` shipped with them and the step was painted invisible
+// until JavaScript arrived and animated it in. On this machine that is
+// a flicker. On the line a partner opens the portal on, it is a card
+// with a title, a sentence and six hundred pixels of nothing.
+//
+// Two assertions, and they are different claims. The first is about the
+// document: fetched with no JavaScript at all, through the session's own
+// cookies, it has to contain the three radio cards. The second is about
+// the paint: throttled to 3G, the group has to be *visible* long before
+// a 200 kB bundle could have arrived.
+{
+  const raw = await context.request.get(
+    `${BASE}/restaurant/etablissement/nouveau`,
+  );
+  const html = await raw.text();
+  check(
+    "le document porte les champs de l'étape 1",
+    /role="radiogroup"/.test(html) &&
+      /Dashboard LYFE/.test(html) &&
+      /WhatsApp/.test(html),
+    `${html.length} caractères`,
+  );
+  check(
+    "et rien ne les peint invisibles",
+    !/opacity:0/.test(html),
+    (html.match(/opacity:0[^;"]*/) ?? ["aucun"])[0],
+  );
+
+  // 400 kbit/s down, 400 ms of latency: Chrome's own « Slow 3G » is
+  // 400/400 kbit and 2 s, which is slower than anything a Casablanca
+  // rooftop sees; this is the fast end of 3G, so an assertion that
+  // holds here holds there.
+  const cdp = await context.newCDPSession(page);
+  await cdp.send("Network.emulateNetworkConditions", {
+    offline: false,
+    latency: 400,
+    downloadThroughput: (400 * 1024) / 8,
+    uploadThroughput: (400 * 1024) / 8,
+  });
+  const started = Date.now();
+  await page.goto(`${BASE}/restaurant/etablissement/nouveau`, {
+    // The response, not the load: waiting for `load` would wait for the
+    // very bundle this is measuring against.
+    waitUntil: "commit",
+  });
+  let painted = -1;
+  try {
+    await page
+      .locator('[role="radiogroup"]')
+      .first()
+      .waitFor({ state: "visible", timeout: 6000 });
+    painted = Date.now() - started;
+  } catch {
+    painted = -1;
+  }
+  check(
+    "en 3G, les trois cartes sont peintes avant le bundle",
+    painted >= 0,
+    painted >= 0 ? `${painted} ms` : "jamais visibles en 6 s",
+  );
+  await cdp.send("Network.emulateNetworkConditions", {
+    offline: false,
+    latency: 0,
+    downloadThroughput: -1,
+    uploadThroughput: -1,
+  });
+  await cdp.detach();
+  await settle(1200);
+}
 
 // ── 4. The establishment, step by step ──────────────────────
 // Alternating the type across passes is how the bar vocabulary gets
@@ -310,7 +396,10 @@ await page
   .locator('[role="radiogroup"][aria-label="Fourchette de prix"] [role="radio"]')
   .nth(2)
   .click();
-await page.getByLabel("Ville").selectOption("Marrakech");
+// Tanger, and not Marrakech, for one reason: Marrakech's centre is
+// the coordinate the map used to fall back to, so a flow that picked it
+// could not tell a map that follows the city from a map that ignores it.
+await page.getByLabel("Ville").selectOption("Tanger");
 await settle(400);
 await shot("creation-etape2");
 await page.locator('button:has-text("Continuer")').first().click();
@@ -319,10 +408,47 @@ check("étape 3 · Adresse", (await stepName()) === "Adresse", await stepName())
 
 // The quarter comes before the address: the app's header reads
 // « quartier, ville », in that order.
-await page.getByLabel("Quartier").fill("Guéliz");
+await page.getByLabel("Quartier").fill("Malabata");
 await page.getByLabel("Adresse", { exact: true }).fill(address);
 const carte = page.locator(".leaflet-container");
 check("la carte s'affiche", (await carte.count()) > 0);
+
+// The map opens on the city that was answered one step earlier, before
+// any geocoding — it used to open on Jemaa el-Fna whatever the answer,
+// so a partner in Tanger was handed a map of Marrakech and asked to
+// place a point on it.
+//
+// Read off the tiles, because that is the only thing the page exposes:
+// Leaflet asks for `{z}/{x}/{y}.png`, and the tile a city falls in is
+// arithmetic. Within two tiles of the centre, since a 240px-tall map at
+// zoom 12 spans a few of them. The tile server itself is unreachable
+// from a sandboxed runner, which does not matter — the *request* is
+// the evidence.
+{
+  const z = 12;
+  const [lat, lon] = CITY_CENTRE.Tanger;
+  const wantX = Math.floor(((lon + 180) / 360) * 2 ** z);
+  const rad = (lat * Math.PI) / 180;
+  const wantY = Math.floor(
+    ((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * 2 ** z,
+  );
+  const near = tiles.filter(
+    (t) => t.z === z && Math.abs(t.x - wantX) <= 2 && Math.abs(t.y - wantY) <= 2,
+  );
+  check(
+    "la carte s'ouvre sur la ville choisie, avant tout géocodage",
+    near.length > 0,
+    near.length > 0
+      ? `${near.length} tuile(s) autour de ${wantX}/${wantY}`
+      : `attendu ~${wantX}/${wantY}, demandé ${
+          tiles
+            .filter((t) => t.z === z)
+            .slice(0, 3)
+            .map((t) => `${t.x}/${t.y}`)
+            .join(", ") || "aucune tuile"
+        }`,
+  );
+}
 if (await carte.count()) {
   await carte.click({ position: { x: 150, y: 110 } });
   await settle(600);
@@ -475,7 +601,7 @@ check(
 );
 check(
   "Ma fiche porte l'adresse saisie",
-  (await fieldValue("Adresse")).includes("Derb Sidi Bouloukat"),
+  (await fieldValue("Adresse")).includes("rue Ibn Battouta"),
   await fieldValue("Adresse"),
 );
 // A Moroccan number keeps its shape: +212, a space-grouped mobile.
@@ -891,6 +1017,198 @@ if (await byName.count()) {
   check("le check-in par nom trouve la table", /Salma/.test(await body()));
 }
 await shot("check-in");
+
+// ── 8. The chooser, opened on purpose ───────────────────────
+//
+// `/choisir` is the switcher, not a destination, and the difference is
+// this station. It used to redirect an account holding one space
+// straight to that space — so the sidebar card that leads here was a
+// card you could press and stay where you were, and the two spaces a
+// partner does *not* hold were unreachable and unmentioned.
+//
+// Yassine is the account that shows it. Under Lot 1 he holds an
+// organisation and no establishment: signing in takes him to the event
+// dashboard, because one space is nothing to choose — and opening the
+// chooser from there has to show all three anyway, one Actif and two
+// Ajouter. Under Lot 2 the seed gives him venues as well, so he holds
+// two spaces, the sign-in itself lands on the chooser, and the counts
+// move with what he holds.
+await context.clearCookies();
+const yassine = await signIn(page, BASE, { email: "yassine@darzellij.ma" });
+const landedOn = typeof yassine === "string" ? new URL(yassine).pathname : "";
+check(
+  "yassine se connecte",
+  typeof yassine === "string",
+  typeof yassine === "string" ? landedOn : JSON.stringify(yassine),
+);
+if (LOT === 1) {
+  // One space: the sign-in is the one moment the chooser is skipped.
+  check(
+    "une seule activité : la connexion saute l'écran de choix",
+    landedOn === "/dashboard",
+    landedOn,
+  );
+} else {
+  // A venue *and* an organisation: the case the 27 October decision was
+  // about, and the one the old rule resolved by naming the first of the
+  // two without saying so.
+  check(
+    "un lieu et une organisation : la connexion mène à l'écran de choix",
+    landedOn === "/choisir",
+    landedOn,
+  );
+}
+
+await go("/choisir");
+check(
+  "ouvert exprès, l'écran se rend au lieu de rediriger",
+  new URL(page.url()).pathname === "/choisir",
+  page.url(),
+);
+const held = page.locator('[data-dashboard][data-active="1"]');
+const offered = page.locator('[data-dashboard][data-active="0"]');
+const heldCount = await held.count();
+const offeredCount = await offered.count();
+check("trois cartes, toujours", heldCount + offeredCount === 3, `${heldCount} + ${offeredCount}`);
+// The shape the review asked for, at the lot it asked for it in: under
+// Lot 1 Yassine holds the organisation and nothing else, so one card is
+// live and two are offers. Under Lot 2 the seed gives him both venues
+// as well and all three are live — which is not a different rule, it is
+// the same rule over a different account, so the count is reported
+// rather than guessed.
+if (LOT === 1) {
+  check(
+    "1 « Actif · ouvrir » et 2 « Ajouter »",
+    heldCount === 1 && offeredCount === 2,
+    `${heldCount} actives, ${offeredCount} à ajouter`,
+  );
+} else {
+  check(
+    "les cartes tenues sont celles du compte",
+    heldCount === 3 && offeredCount === 0,
+    `${heldCount} actives, ${offeredCount} à ajouter`,
+  );
+}
+check(
+  "les cartes tenues disent « Actif · ouvrir »",
+  (await held.allTextContents()).every((t) => t.trim() === "Actif · ouvrir"),
+  (await held.allTextContents()).join(" · "),
+);
+// A primary button, not a word: adding a space is six steps, and it
+// earns a control that looks like one.
+check(
+  "les autres portent un bouton « Ajouter »",
+  (await offered.allTextContents()).every((t) => t.trim() === "Ajouter"),
+  (await offered.allTextContents()).join(" · "),
+);
+check(
+  "le sous-titre ne salue personne par son prénom",
+  /Un espace par activité\. Vous pourrez en ajouter d'autres plus tard\./.test(
+    await body(),
+  ),
+);
+await shot("choisir-switcher");
+
+// ── 9. A second space, from the sidebar card ────────────────
+//
+// The card above the navigation is the way to the chooser from inside
+// a dashboard. It used to be a menu — the account's establishments on
+// one side, the two workspaces on the other — which could not offer a
+// space the account did not hold, which is the only thing worth
+// pressing it for.
+//
+// Not on a phone: the sidebar is `hidden lg:flex` there, and the
+// identity lives behind the Plus tab. The card is what this station is
+// about, so it runs where the card is drawn.
+if (phone) {
+  console.log("  —    la carte d'espace vit dans la barre latérale, absente à 390");
+} else {
+  await context.clearCookies();
+  // Rachid holds one establishment under Lot 1 and two under Lot 2 — a
+  // restaurant and a lounge, which is **two spaces**, so under Lot 2 the
+  // sign-in now lands him on the chooser rather than picking one for
+  // him. That is the fix, not a detour: the card he presses decides.
+  const inVenue = await signIn(page, BASE, { venue: "Dar Zellij" });
+  check(
+    "le partenaire se connecte",
+    typeof inVenue === "string",
+    typeof inVenue === "string" ? inVenue : JSON.stringify(inVenue),
+  );
+  if (new URL(page.url()).pathname === "/choisir") {
+    check(
+      "deux espaces : la connexion mène à l'écran de choix",
+      true,
+      page.url(),
+    );
+    await page
+      .locator('a:has([data-dashboard="restaurant"][data-active="1"])')
+      .first()
+      .click();
+    await settle(2400);
+  }
+  check(
+    "et ouvre un tableau de bord de salle",
+    new URL(page.url()).pathname.startsWith("/restaurant"),
+    page.url(),
+  );
+  const card = page.locator("[data-space-card]").first();
+  check("la barre latérale porte la carte d'espace", (await card.count()) > 0);
+  if (await card.count()) {
+    check(
+      "elle nomme l'établissement en cours",
+      /Dar Zellij/.test((await card.innerText()) ?? ""),
+      ((await card.innerText()) ?? "").replace(/\s+/g, " ").slice(0, 60),
+    );
+    await card.click();
+    await settle(2200);
+    check(
+      "elle ouvre l'écran de choix",
+      new URL(page.url()).pathname === "/choisir",
+      page.url(),
+    );
+    // The space he does not hold, added from here. « Bar ou lounge »
+    // under Lot 1, where he owns one restaurant; under Lot 2 the seed
+    // gives him the lounge too, so the one left is Événements.
+    const add = page.locator('[data-dashboard][data-active="0"]').first();
+    if ((await add.count()) === 0) {
+      // Nothing left to add, which is a fact about the seed rather than
+      // about the screen: under Lot 2 the owner of Dar Zellij holds the
+      // lounge and the organisation as well, so all three cards are
+      // live. The half of this station that adds a space is exercised
+      // under Lot 1, where the same account holds one restaurant.
+      console.log(
+        "  —    ce compte tient les trois espaces : rien à ajouter depuis la carte",
+      );
+    } else {
+      const which = await add.getAttribute("data-dashboard");
+      await add.click();
+      await settle(2600);
+      const where = new URL(page.url()).pathname;
+      check(
+        `« Ajouter » ouvre le parcours de création (${which})`,
+        which === "events"
+          ? where === "/onboarding"
+          : where === "/restaurant/etablissement/nouveau",
+        where,
+      );
+      if (which !== "events") {
+        // The card's hint travels, and the first step is the one the
+        // 27 October decision put in front of the others.
+        check(
+          "le type de la carte voyage dans l'URL",
+          page.url().includes(`type=${which}`),
+          page.url(),
+        );
+        check(
+          "et la création s'ouvre sur le mode de gestion",
+          (await stepName()) === "Mode de gestion des réservations",
+          await stepName(),
+        );
+      }
+    }
+  }
+  await shot("second-espace");
+}
 
 await browser.close();
 
