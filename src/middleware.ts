@@ -29,6 +29,11 @@ const PUBLIC_PATHS = new Set([
   // Signing up happens before there is a session to gate on. The flow's
   // own draft cookie is what carries it from step to step.
   "/inscription",
+  // Recovering a password is what someone with no session does. Gating
+  // either of these behind a session would mean the way back in is only
+  // open to whoever is already in.
+  "/mot-de-passe-oublie",
+  "/reinitialiser",
   "/contact",
   // The styleguide holds no venue data — it renders from literal props —
   // so it stays reachable without a session. That is the point: a

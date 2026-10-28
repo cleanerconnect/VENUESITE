@@ -20,9 +20,9 @@
 //
 // Two affordances a partner expects of any login and had to be added:
 // revealing the password, because a host types it on a stand with one
-// hand; and asking for a reset link, which answers the same way whether
-// or not the address is known, for the same reason the failure message
-// is single.
+// hand; and a way out of a forgotten one. The second used to answer in
+// place, on this form; it is now a link to `/mot-de-passe-oublie`, the
+// screen `Détail Sprint ` ligne 53 buys.
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -34,18 +34,13 @@ import {
   Eye,
   EyeOff,
   Info,
-  Mail,
   TriangleAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import {
-  chooseVenue,
-  requestPasswordReset,
-  signIn,
-  type VenueChoice,
-} from "@/app/actions/auth";
+import { chooseVenue, signIn, type VenueChoice } from "@/app/actions/auth";
+import { Notice } from "@/components/auth/Notice";
 import { COPY } from "@/lib/copy/fr";
 import { cn } from "@/lib/utils/cn";
 
@@ -66,7 +61,6 @@ export function SignInPanel() {
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [remember, setRemember] = useState(true);
-  const [notice, setNotice] = useState<string | null>(null);
   const [stage, setStage] = useState<Stage>({ name: "form" });
   const [pending, startTransition] = useTransition();
 
@@ -74,7 +68,6 @@ export function SignInPanel() {
     e.preventDefault();
     if (pending) return;
     setError(null);
-    setNotice(null);
 
     startTransition(async () => {
       const result = await signIn(email, password, remember);
@@ -97,18 +90,6 @@ export function SignInPanel() {
       setStage({ name: "no_workspace", fullName: result.fullName });
     });
   };
-
-  // Through the seam, like every other write. The answer is the same
-  // sentence whether or not the address is on file — the form must not
-  // be usable to find out who has an account — but which sentence
-  // depends on whether a service was actually asked: this used to
-  // promise a link on an instance that had nothing to send one with.
-  const forgot = () =>
-    startTransition(async () => {
-      setError(null);
-      const result = await requestPasswordReset(email);
-      setNotice(result.message);
-    });
 
   const pick = (venueId: string) =>
     startTransition(async () => {
@@ -141,12 +122,6 @@ export function SignInPanel() {
             {expired ? (
               <Notice tone="info" icon={<Clock size={15} strokeWidth={1.8} />}>
                 {COPY.auth.expired}
-              </Notice>
-            ) : null}
-
-            {notice ? (
-              <Notice tone="info" icon={<Mail size={15} strokeWidth={1.8} />}>
-                {notice}
               </Notice>
             ) : null}
 
@@ -220,14 +195,26 @@ export function SignInPanel() {
                     {COPY.auth.remember}
                   </span>
                 </label>
-                <button
-                  type="button"
-                  onClick={forgot}
-                  disabled={pending}
-                  className="text-meta text-ink-soft underline underline-offset-2 hover:text-ink transition-colors disabled:opacity-50"
+                {/* A link, not a button that answers in place.
+                    Asking for the link used to happen here: the field
+                    above was read, the seam was called, and the answer
+                    appeared as a notice over a form the partner was no
+                    longer filling. `Détail Sprint ` ligne 53 buys the
+                    screen, so the link opens it — and the address is
+                    typed on the screen that asks for it, where it is
+                    the only field. The one typed here travels, so a
+                    partner who got as far as their address does not
+                    retype it. */}
+                <Link
+                  href={
+                    email.includes("@")
+                      ? `/mot-de-passe-oublie?email=${encodeURIComponent(email)}`
+                      : "/mot-de-passe-oublie"
+                  }
+                  className="text-meta text-ink-soft underline underline-offset-2 hover:text-ink transition-colors"
                 >
                   {COPY.auth.forgot}
-                </button>
+                </Link>
               </div>
 
               <Button
@@ -347,33 +334,6 @@ export function SignInPanel() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-  );
-}
-
-function Notice({
-  tone,
-  icon,
-  children,
-}: {
-  tone: "info" | "danger";
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      role="status"
-      className={cn(
-        "mt-5 flex items-start gap-2.5 rounded-[var(--radius-sm)] px-3.5 py-3 text-[13px]",
-        tone === "info"
-          ? "bg-violet-soft text-violet-deep"
-          : "bg-tint-rose text-danger",
-      )}
-    >
-      <span aria-hidden className="mt-[1px] shrink-0">
-        {icon}
-      </span>
-      <span className="text-ink">{children}</span>
     </div>
   );
 }

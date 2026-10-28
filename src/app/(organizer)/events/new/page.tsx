@@ -97,6 +97,12 @@ function CreateEventInner() {
               saleEnd: "",
               maxPerOrder: t.maxPerOrder,
               transferable: t.transferable,
+              // The split travels with the price. A copy of a tier
+              // whose Carré Or is half paid at the door is not the
+              // same tier once the whole price moves online.
+              partialPayment: t.partialPayment,
+              appAmountMad: t.appAmountMad,
+              onSiteMessage: t.onSiteMessage,
             }))
           : [emptyTier()],
     };

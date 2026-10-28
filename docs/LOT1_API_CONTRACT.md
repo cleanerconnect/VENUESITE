@@ -424,6 +424,12 @@ connexion réussie mène à `/choisir` (§ 2.0 bis), qui décide à partir du
 même tableau `venues` — et saute de lui-même si le compte ne tient
 qu'un espace.
 
+**« Mot de passe oublié ? » est un lien, plus une réponse sur place.**
+Il ouvre `/mot-de-passe-oublie`, où l'adresse est le seul champ, et
+l'adresse déjà saisie ici voyage dans l'URL. Les deux écrans de la
+ligne 53 — celui qui demande le lien et celui sur lequel il atterrit —
+sont aux § 5.1 bis et 5.1 ter.
+
 `GET /api/business/account` existe aussi dans le pilote et rend le
 `BusinessAccount` de la colonne K de la ligne 39 :
 
@@ -1547,12 +1553,80 @@ Trois règles, et elles comptent :
    au partenaire de passer par « Nous contacter » plutôt que de le
    laisser attendre un e-mail qui n'arrivera pas.
 
-Le lien lui-même — sa durée de vie, son usage unique, l'écran qui
-accepte le nouveau mot de passe — appartient au service. Le portail ne
-sert pas d'écran de réinitialisation en Lot 1 : `Planning V3` ligne 39
-ne prévoit le bouton « mot de passe oublié » que pour l'organisateur
-côté Events, et le prévoir ici tient de l'anticipation raisonnable, pas
-du périmètre acheté.
+Le lien lui-même — sa durée de vie, son usage unique — appartient au
+service. **L'écran sur lequel il atterrit est désormais rendu par le
+portail**, et c'est le changement de `Détail Sprint ` ligne 53 :
+
+> En tant qu'organisateur, je dos pouvoir récupérer mon mot de passe ou
+> le changer en cas d'oubli pour organisateur
+
+Cette ligne achète les deux verbes. Ce paragraphe disait le contraire —
+« le portail ne sert pas d'écran de réinitialisation en Lot 1 » — parce
+que `Planning V3` ligne 39 ne prévoyait que le *bouton* ; la ligne 53 en
+achète la suite, et le § 5.1 ter la décrit.
+
+Une dernière chose a changé de place. Le lien sous le formulaire de
+connexion répondait *sur place* : l'adresse était lue dans le champ de
+la connexion, le pilote était appelé, et la phrase s'affichait au-dessus
+d'un formulaire que plus personne ne remplissait. Il ouvre maintenant
+`/mot-de-passe-oublie`, qui ne porte que ce champ-là — et l'adresse déjà
+saisie voyage dans l'URL, pour ne pas être retapée.
+
+### 5.1 ter Le nouveau mot de passe, et le changement depuis Réglages
+
+Trois écrans pour la ligne 53, deux endpoints de plus.
+
+| Méthode | Chemin | Requête | Réponse |
+|---|---|---|---|
+| `POST` | `/api/business/auth/password-reset/confirm` | `{ token, password }` | `204` |
+| `POST` | `/api/business/auth/password` | `{ userId, currentPassword, newPassword }` | `204` |
+
+**`/reinitialiser` — où le lien atterrit.** Le jeton arrive en
+`?jeton=` et le portail ne le lit pas : il le rend tel quel. Sa durée de
+vie, son usage unique et le compte qu'il désigne sont des faits que seul
+le service émetteur détient, et un portail qui jugerait de sa forme
+refuserait un bon lien ou accepterait un lien déjà servi. Quatre règles :
+
+1. **`410` pour un jeton expiré ou déjà utilisé** — affiché comme « ce
+   lien a expiré ou a déjà servi », avec le moyen d'en redemander un.
+   `404` est traité de la même façon.
+2. **La longueur est vérifiée aussi par le service.** Huit caractères,
+   la même règle qu'à l'inscription : un client qui n'est pas passé par
+   l'écran ne doit pas pouvoir poser « 1 ».
+3. **Aucune session n'est ouverte par cet appel.** Le partenaire se
+   reconnecte ; un lien qui connecte aussi est une session distribuée à
+   qui lit la boîte mail.
+4. **Un jeton absent est la seule chose que l'écran juge seul**, et il
+   le dit avant les deux champs plutôt qu'après.
+
+**Réglages → « Changer mon mot de passe » — pour qui le connaît
+encore.** Trois champs : l'actuel, le nouveau, sa confirmation. La
+confirmation est vérifiée par le portail et n'arrive pas au service.
+
+1. **Le mot de passe actuel est demandé et n'est pas une formalité.** La
+   session dure trente jours : sans lui, un écran laissé ouvert sur un
+   comptoir est à un formulaire de devenir le compte de quelqu'un
+   d'autre.
+2. **`userId` est le compte de la session**, résolu côté serveur et
+   jamais lu du formulaire — sinon le champ serait un moyen de changer
+   le mot de passe d'un collègue. Le service doit le vérifier contre le
+   porteur du jeton plutôt que de faire confiance au corps.
+3. **`401` quand l'actuel est faux**, et le portail désigne ce champ-là.
+
+**Ce que les pilotes locaux répondent.** Le pilote `db` change vraiment
+le mot de passe : la table `partner_accounts` porte le `password_hash`,
+l'actuel est comparé en temps constant et le nouveau est resalé. Les
+sept partenaires de démonstration y ont une ligne — `db/seed.mjs` les
+écrit hachés, par le même code que `/inscription` — donc la
+démonstration change un mot de passe et se reconnecte avec. Il répond
+`no_service` pour un compte que cette base ne détient pas. Le pilote
+`static` répond `no_service` aux deux : le jeu est une capture.
+
+Et **aucun des deux n'accepte de jeton de réinitialisation**, pour une
+raison qui n'est pas de la paresse : ni l'un ni l'autre n'envoie de
+mail, donc un jeton qu'ils accepteraient serait un jeton qu'ils ont
+inventé, c'est-à-dire une porte sur tous les comptes. L'écran se rend,
+et dit où écrire.
 
 ### 5.2 Les cinq décisions partent
 

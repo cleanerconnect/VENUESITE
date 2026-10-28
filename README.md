@@ -97,6 +97,7 @@ src/
 │  │  ├─ dashboard/ events/ audiences/ …    event workspace
 │  │  └─ restaurant/                        venue workspace
 │  ├─ login/ splash/ contact/ styleguide/   outside the shell
+│  ├─ mot-de-passe-oublie/ reinitialiser/   the two screens in front of it
 │  ├─ actions/            server actions (auth, venue, check-in)
 │  └─ api/                assistant (SSE), assets, webhooks, health
 ├─ components/

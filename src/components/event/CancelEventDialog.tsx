@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
+import { appAmount } from "@/lib/event/partial-payment";
 import { formatMAD } from "@/lib/utils/format";
 import type { LyfeEvent } from "@/lib/types/domain";
 
@@ -29,10 +30,14 @@ export function CancelEventDialog({
   const [reason, setReason] = useState("");
 
   const sold = event.tiers.reduce((s, t) => s + t.sold, 0);
-  // Customer-facing total = face value + 5.8% Moroccan service fee. This
-  // is what gets refunded if the organizer cancels.
+  // Customer-facing total = what the application charged + 5.8%
+  // Moroccan service fee. This is what gets refunded if the organizer
+  // cancels — and with a partial payment (ligne 45) the application
+  // charged its part only. The balance was handed over at the door and
+  // never passed through LYFE, so refunding it here would be promising
+  // a client money the platform does not hold.
   const refundTotalMad = event.tiers.reduce(
-    (s, t) => s + Math.round(t.sold * t.faceValueMad * 1.058),
+    (s, t) => s + Math.round(t.sold * appAmount(t) * 1.058),
     0,
   );
 

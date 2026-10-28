@@ -105,6 +105,28 @@ export const ROUTES: RouteEntry[] = [
     status: "built",
   },
   {
+    path: "/mot-de-passe-oublie",
+    lot: 1,
+    label: "Mot de passe oublié",
+    purpose:
+      "Une adresse, et une confirmation qui ne dit jamais si le compte existe. Le lien part du service ; sans service connecté, l'écran le dit et renvoie vers « Nous contacter ».",
+    workspace: "entry",
+    // `Détail Sprint ` ligne 53 for the organiser. The portal asks; the
+    // mail is the service's to send, and a driver with none says so.
+    status: "service",
+    dependsOn: "le service qui envoie les e-mails",
+  },
+  {
+    path: "/reinitialiser",
+    lot: 1,
+    label: "Nouveau mot de passe",
+    purpose:
+      "Où le lien du mail atterrit : le nouveau mot de passe, saisi deux fois. Le jeton arrive en `?jeton=` et n'est jamais lu par le portail — sa durée de vie et son usage unique appartiennent au service.",
+    workspace: "entry",
+    status: "service",
+    dependsOn: "le service des comptes, qui a émis le jeton",
+  },
+  {
     path: "/contact",
     lot: 1,
     label: "Nous contacter",

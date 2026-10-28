@@ -3,6 +3,7 @@
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDown, Pencil } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { appAmount, splitLabel } from "@/lib/event/partial-payment";
 import { computeCustomerPrice, formatMAD } from "@/lib/utils/format";
 import type { DraftEvent } from "@/lib/types/domain";
 import { PhonePreview } from "./PhonePreview";
@@ -89,7 +90,10 @@ export function StepReview({
                 </thead>
                 <tbody>
                   {draft.tiers.map((t) => {
-                    const customer = computeCustomerPrice(t.faceValueMad);
+                    // What the card is charged, which with a split
+                    // is the application's part — the same rule as the
+                    // editor's own preview, two steps earlier.
+                    const customer = computeCustomerPrice(appAmount(t));
                     return (
                       <tr
                         key={t.id}
@@ -97,6 +101,11 @@ export function StepReview({
                       >
                         <td className="px-5 py-2.5 text-ink font-semibold">
                           {t.name || "·"}
+                          {t.partialPayment ? (
+                            <div className="text-meta text-ink-mute font-normal mt-0.5">
+                              {splitLabel(t)}
+                            </div>
+                          ) : null}
                         </td>
                         <td className="px-5 py-2.5 text-right">
                           {formatMAD(t.faceValueMad)}

@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import type { DraftEvent } from "@/lib/types/domain";
+import { appAmount } from "@/lib/event/partial-payment";
 import { computeCustomerPrice, formatMAD } from "@/lib/utils/format";
 
 const VENUE_NAMES: Record<string, string> = {
@@ -34,9 +35,12 @@ const CATEGORY_LABEL: Record<string, string> = {
 export function PhonePreview({ draft }: { draft: DraftEvent }) {
   const venue = VENUE_NAMES[draft.venueId] ?? "Lieu";
   const city = VENUE_CITIES[draft.venueId] ?? "";
+  // « à partir de » is what the application asks for first, so the
+  // cheapest *entry* and not the cheapest ticket: a Carré Or at 1 200
+  // with 400 paid online is a cheaper first screen than a 590 pass.
   const lowestTier = draft.tiers
-    .filter((t) => t.faceValueMad > 0)
-    .sort((a, b) => a.faceValueMad - b.faceValueMad)[0];
+    .filter((t) => appAmount(t) > 0)
+    .sort((a, b) => appAmount(a) - appAmount(b))[0];
 
   return (
     <div className="lg:sticky lg:top-[180px]">
@@ -121,28 +125,43 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
             {draft.tiers.length > 0 ? (
               <div className="mt-5 space-y-2">
                 {draft.tiers.map((t) => {
-                  const customer = t.faceValueMad
-                    ? formatMAD(computeCustomerPrice(t.faceValueMad).customerPaysMad)
+                  // The application charges the card for its own part,
+                  // so with a split this is the app amount and not the
+                  // ticket — the same figure the editor previews.
+                  const customer = appAmount(t)
+                    ? formatMAD(computeCustomerPrice(appAmount(t)).customerPaysMad)
                     : "·";
                   return (
                     <div
                       key={t.id}
-                      className="bg-canvas-2/70 rounded-[10px] px-3 py-2.5 flex items-center justify-between gap-3"
+                      className="bg-canvas-2/70 rounded-[10px] px-3 py-2.5"
                     >
-                      <div className="min-w-0">
-                        <div
-                          className="text-[12px] font-semibold text-violet-deep truncate"
-                          style={{ fontFamily: "var(--font-serif)" }}
-                        >
-                          {t.name || "Tarif sans nom"}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div
+                            className="text-[12px] font-semibold text-violet-deep truncate"
+                            style={{ fontFamily: "var(--font-serif)" }}
+                          >
+                            {t.name || "Tarif sans nom"}
+                          </div>
+                          <div className="text-[10px] text-ink-mute mt-0.5 num">
+                            {t.quantity > 0 ? `${t.quantity} dispo` : "·"}
+                          </div>
                         </div>
-                        <div className="text-[10px] text-ink-mute mt-0.5 num">
-                          {t.quantity > 0 ? `${t.quantity} dispo` : "·"}
+                        <div className="text-[12px] font-bold text-ink num shrink-0">
+                          {customer}
                         </div>
                       </div>
-                      <div className="text-[12px] font-bold text-ink num shrink-0">
-                        {customer}
-                      </div>
+                      {/* `Détail Sprint ` ligne 54: the client is told
+                          about the balance on the booking screen. This
+                          is a picture of that screen, so the organiser
+                          reads their own sentence where the client will
+                          read it, while they are still writing it. */}
+                      {t.partialPayment && t.onSiteMessage ? (
+                        <div className="text-[10px] text-ink-soft mt-1.5 leading-snug border-t border-line-soft pt-1.5">
+                          {t.onSiteMessage}
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}
@@ -161,7 +180,7 @@ export function PhonePreview({ draft }: { draft: DraftEvent }) {
             >
               {lowestTier
                 ? `Réserver, à partir de ${formatMAD(
-                    computeCustomerPrice(lowestTier.faceValueMad).customerPaysMad,
+                    computeCustomerPrice(appAmount(lowestTier)).customerPaysMad,
                   )}`
                 : "Réserver"}
             </div>

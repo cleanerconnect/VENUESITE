@@ -1,8 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  RotateCcw,
+  Sparkles,
+  Trash2,
+  TriangleAlert,
+} from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -13,6 +21,8 @@ import { Pill } from "@/components/ui/Pill";
 import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
 import { useProfile } from "@/lib/auth/role";
+import { changePassword } from "@/app/actions/auth";
+import { COPY } from "@/lib/copy/fr";
 import { resetOnboarding } from "@/lib/auth/onboarding";
 import type { OrganizerProfile } from "@/lib/types/domain";
 import { cn } from "@/lib/utils/cn";
@@ -89,7 +99,18 @@ export default function SettingsPage() {
         </aside>
 
         <div className="min-w-0">
-          {active === "profile" ? <ProfileSection profile={profile} /> : null}
+          {active === "profile" ? (
+            <div className="space-y-5">
+              <ProfileSection profile={profile} />
+              {/* `Détail Sprint ` ligne 53, second half: « ou le
+                  changer ». It sits in Profil rather than in a tab of
+                  its own because this tab is already the account — the
+                  name and the contact address are here — and a « Mot de
+                  passe » tab holding one card is a tab a partner has to
+                  find. */}
+              <ChangePasswordCard />
+            </div>
+          ) : null}
           {active === "venue" && profile?.type === "venue" ? (
             <VenueSection />
           ) : null}
@@ -206,6 +227,145 @@ function ProfileSection({ profile }: { profile: OrganizerProfile | null }) {
           Enregistrer
         </Button>
       </div>
+    </Card>
+  );
+}
+
+/**
+ * « Changer mon mot de passe » — three fields, through the seam.
+ *
+ * The current password is asked for and is not a formality: the session
+ * cookie lasts thirty days, so without it a screen left open on a stand
+ * is one form away from being someone else's account.
+ *
+ * Both failures a driver can report are shown as they are. `no_service`
+ * is the honest one — the demonstration accounts' passwords are
+ * literals in `src/lib/auth/accounts.ts`, a fixture with no production
+ * counterpart, and a card that toasted « Mot de passe changé » over a
+ * driver that changed nothing would be lying about the only thing it
+ * does.
+ */
+function ChangePasswordCard() {
+  const { toast } = useToast();
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [revealed, setRevealed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [field, setField] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const filled =
+    current.length > 0 && next.length > 0 && confirm.length > 0;
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    startTransition(async () => {
+      setError(null);
+      setField(null);
+      const result = await changePassword({
+        current,
+        password: next,
+        passwordConfirm: confirm,
+      });
+      if (result.ok) {
+        setCurrent("");
+        setNext("");
+        setConfirm("");
+        toast({ tone: "success", title: result.message });
+        return;
+      }
+      setField(result.field ?? null);
+      setError(result.message);
+    });
+  };
+
+  return (
+    <Card variant="surface" size="lg" data-change-password>
+      <h2 className="text-h2 text-ink">{COPY.password.changeTitle}</h2>
+      <p className="text-body text-ink-soft mt-1.5">
+        {COPY.password.changeBody}
+      </p>
+
+      {error ? (
+        <div
+          role="status"
+          className="mt-5 flex items-start gap-2.5 rounded-[var(--radius-sm)] bg-tint-rose px-3.5 py-3 text-[13px] text-ink"
+        >
+          <TriangleAlert
+            size={15}
+            strokeWidth={1.8}
+            aria-hidden
+            className="mt-[1px] shrink-0 text-danger"
+          />
+          <span>{error}</span>
+        </div>
+      ) : null}
+
+      <form onSubmit={submit} className="mt-7">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Input
+            label={COPY.password.current}
+            type={revealed ? "text" : "password"}
+            value={current}
+            onChange={(e) => setCurrent(e.target.value)}
+            autoComplete="current-password"
+            invalid={field === "current"}
+            disabled={pending}
+            required
+          />
+          {/* The reveal is on the new password, where a typo costs a
+              reset link, and not on the current one, which a partner
+              either knows or does not. */}
+          <Input
+            label={COPY.password.next}
+            type={revealed ? "text" : "password"}
+            value={next}
+            onChange={(e) => setNext(e.target.value)}
+            autoComplete="new-password"
+            invalid={field === "password"}
+            hint={COPY.password.tooShort}
+            disabled={pending}
+            required
+            suffix={
+              <button
+                type="button"
+                onClick={() => setRevealed((v) => !v)}
+                aria-label={
+                  revealed ? COPY.auth.hidePassword : COPY.auth.showPassword
+                }
+                aria-pressed={revealed}
+                className="h-11 w-11 rounded-[var(--radius-sm)] flex items-center justify-center text-ink-mute hover:text-ink hover:bg-canvas-2 transition-colors"
+              >
+                {revealed ? (
+                  <EyeOff size={16} strokeWidth={1.8} />
+                ) : (
+                  <Eye size={16} strokeWidth={1.8} />
+                )}
+              </button>
+            }
+          />
+        </div>
+        <div className="mt-4 sm:max-w-[calc(50%-8px)]">
+          <Input
+            label={COPY.password.confirm}
+            type={revealed ? "text" : "password"}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            autoComplete="new-password"
+            invalid={field === "passwordConfirm"}
+            disabled={pending}
+            required
+          />
+        </div>
+        <div className="mt-7 flex justify-end">
+          <Button type="submit" disabled={pending || !filled}>
+            {pending
+              ? COPY.password.changeSubmitting
+              : COPY.password.changeSubmit}
+          </Button>
+        </div>
+      </form>
     </Card>
   );
 }

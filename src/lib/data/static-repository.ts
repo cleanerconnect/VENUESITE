@@ -272,6 +272,19 @@ export class StaticRestaurantRepository implements RestaurantRepository {
     return { sent: false };
   }
 
+  // Neither half can be done against a committed capture: there is no
+  // mail service to mint a link, and the snapshot's accounts hold no
+  // password to replace. Saying so is the implementation — the screen
+  // then points the partner at « Nous contacter » instead of reporting
+  // a change that did not happen.
+  async resetPassword(_token: string, _password: string) {
+    return { ok: false, reason: "no_service" as const };
+  }
+
+  async changePassword(_userId: string, _current: string, _next: string) {
+    return { ok: false, reason: "no_service" as const };
+  }
+
   async startOnboarding(input: OnboardingSignUpInput) {
     const userId = `usr_${Math.random().toString(36).slice(2, 10)}`;
     const draft: OnboardingDraft = {

@@ -12,6 +12,7 @@ import { InvitationsTab } from "@/components/event/InvitationsTab";
 import { RefundsTab } from "@/components/event/RefundsTab";
 import { RegieTab } from "@/components/event/RegieTab";
 import { PromoteTab } from "@/components/event/PromoteTab";
+import { splitLabel } from "@/lib/event/partial-payment";
 import { formatDateTimeFR, formatMAD } from "@/lib/utils/format";
 import type { TabDef } from "@/components/ui/Tabs";
 import type { LyfeEvent } from "@/lib/types/domain";
@@ -127,6 +128,28 @@ function EventDetailInner() {
             <Pill tone="neutral" className="!bg-canvas/15 !text-canvas">
               {event.agePolicy.toUpperCase()}
             </Pill>
+            {/* « Paiement partiel », with the two amounts — ligne 45.
+                On the header rather than only on Ventes because it
+                changes what the door has to collect, and a régisseur
+                reading this screen on the day is not going to open a
+                tab to find out. Several tiers with different splits
+                each get their own pill: averaging them would state an
+                amount no ticket is sold at. */}
+            {/* Not a `Pill`: that component is 10px uppercase with
+                0.12em of tracking, which is right for a four-letter
+                state and wrong for « 400 MAD sur l'appli · 800 MAD sur
+                place ». Same surface, read as a sentence. */}
+            {event.tiers
+              .filter((t) => t.partialPayment)
+              .map((t) => (
+                <span
+                  key={t.id}
+                  data-partial-pill
+                  className="inline-flex items-center h-6 px-2.5 rounded-full bg-canvas/15 text-canvas text-[11px] font-semibold num whitespace-nowrap"
+                >
+                  {t.name} · {splitLabel(t)}
+                </span>
+              ))}
           </div>
 
           <h1

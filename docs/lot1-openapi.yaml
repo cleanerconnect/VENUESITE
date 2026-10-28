@@ -214,9 +214,9 @@ paths:
       description: |
         **La même réponse pour une adresse connue et une adresse inconnue** — un `404` sur une adresse absente transformerait ce formulaire en annuaire. `422` uniquement quand la chaîne n'est pas une adresse.
 
-        Le portail n'affiche « un lien vient d'être envoyé » qu'après avoir reçu le `204`. Le lien, sa durée de vie, son usage unique et l'écran qui accepte le nouveau mot de passe appartiennent au service : le lot 1 ne les rend pas.
+        Le portail n'affiche « un lien vient d'être envoyé » qu'après avoir reçu le `204`. Le lien, sa durée de vie et son usage unique appartiennent au service ; l'écran sur lequel il atterrit est maintenant rendu par le portail — `/reinitialiser`, et `POST /api/business/auth/password-reset/confirm` ci-dessous.
 
-        Non observé pendant la passe : aucun outil du lot 1 ne déclenche cet appel. La forme vient des types TypeScript que le pilote impose (`src/lib/types/`).
+        Appelé depuis `/mot-de-passe-oublie`, qui ne porte que ce champ. Le lien sous le formulaire de connexion ouvre cet écran au lieu de répondre sur place (`Détail Sprint ` ligne 53).
       requestBody:
         required: true
         content:
@@ -240,6 +240,124 @@ paths:
                 $ref: '#/components/schemas/Erreur'
         '429':
           description: Trop de requêtes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/auth/password-reset/confirm:
+    post:
+      tags:
+      - Authentification
+      summary: Poser le nouveau mot de passe — l'autre bout du lien
+      operationId: confirmPasswordReset
+      description: |
+        `Détail Sprint ` ligne 53 — « récupérer mon mot de passe ou le changer en cas d'oubli ». Le lot 1 ne rendait pas cet écran ; il le rend depuis cette ligne, et le jeton reste au service.
+
+        **Le portail ne lit pas le jeton.** Il le prend dans `?jeton=` et le rend tel quel : sa durée de vie, son usage unique et le compte qu'il désigne sont des faits que seul le service qui l'a émis détient. Un portail qui jugerait de sa forme refuserait un bon lien ou accepterait un lien déjà servi.
+
+        Trois règles :
+
+        1. **`410` pour un jeton expiré ou déjà utilisé** — le portail l'affiche comme « ce lien a expiré ou a déjà servi », avec le moyen d'en redemander un. `404` est accepté et traité de la même façon.
+        2. **La longueur est vérifiée aussi par le service.** Huit caractères, la même règle qu'à l'inscription : un client qui n'est pas passé par l'écran ne doit pas pouvoir poser « 1 ».
+        3. **Aucune session n'est ouverte par cet appel.** Le partenaire se reconnecte avec le nouveau mot de passe ; un lien qui connecte aussi est une session distribuée à qui lit la boîte mail.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - token
+              - password
+              properties:
+                token:
+                  type: string
+                  description: Le jeton du lien, opaque au portail.
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '204':
+          description: Mot de passe enregistré.
+        '410':
+          description: Jeton expiré ou déjà utilisé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Mot de passe sous le minimum.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '429':
+          description: Trop de tentatives.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+  /api/business/auth/password:
+    post:
+      tags:
+      - Authentification
+      summary: Changer son mot de passe en le connaissant
+      operationId: changePassword
+      description: |
+        La seconde moitié de `Détail Sprint ` ligne 53, depuis Réglages. Trois champs : l'actuel, le nouveau, sa confirmation — la confirmation est vérifiée par le portail et n'arrive pas ici.
+
+        **Le mot de passe actuel est demandé et n'est pas une formalité.** La session du portail dure trente jours : sans lui, un écran laissé ouvert sur un comptoir est à un formulaire de devenir le compte de quelqu'un d'autre.
+
+        `userId` est le compte de la session, résolu côté serveur. Le portail ne le lit jamais du formulaire — sinon le champ serait un moyen de changer le mot de passe d'un collègue — et le service doit le vérifier contre le porteur du jeton plutôt que de faire confiance au corps.
+
+        `401` quand l'actuel est faux : le portail désigne ce champ-là, et pas les deux autres.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - userId
+              - currentPassword
+              - newPassword
+              properties:
+                userId:
+                  type: string
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+                  minLength: 8
+      responses:
+        '204':
+          description: Mot de passe changé.
+        '401':
+          description: Mot de passe actuel incorrect, ou session inconnue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '422':
+          description: Nouveau mot de passe sous le minimum.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '429':
+          description: Trop de tentatives.
           content:
             application/json:
               schema:

@@ -73,6 +73,9 @@ const upcomingEvents: LyfeEvent[] = [
         saleEnd: offsetMin(60 * 24 * 60),
         maxPerOrder: 6,
         transferable: true,
+        partialPayment: false,
+        appAmountMad: 0,
+        onSiteMessage: "",
       },
       {
         id: "t_robbie_gen",
@@ -84,7 +87,16 @@ const upcomingEvents: LyfeEvent[] = [
         saleEnd: futureDays(67),
         maxPerOrder: 6,
         transferable: true,
+        partialPayment: false,
+        appAmountMad: 0,
+        onSiteMessage: "",
       },
+      // The one tier with a split, so the three amounts of `Détail
+      // Sprint ` ligne 45 have somewhere to be read: the editor writes
+      // them, the row on Ventes and the event's header show them, and
+      // the payload carries them to the application's booking screen
+      // (ligne 54). A Carré Or with a deposit online and the balance at
+      // the door is how a table is actually held at a festival.
       {
         id: "t_robbie_carre",
         name: "Carré Or",
@@ -95,6 +107,10 @@ const upcomingEvents: LyfeEvent[] = [
         saleEnd: futureDays(67),
         maxPerOrder: 4,
         transferable: false,
+        partialPayment: true,
+        appAmountMad: 400,
+        onSiteMessage:
+          "Il reste 800 MAD à régler à l'entrée du Carré Or, le soir du concert.",
       },
     ],
   },
@@ -130,6 +146,9 @@ const upcomingEvents: LyfeEvent[] = [
         saleEnd: futureDays(73),
         maxPerOrder: 4,
         transferable: true,
+        partialPayment: false,
+        appAmountMad: 0,
+        onSiteMessage: "",
       },
     ],
   },
@@ -160,6 +179,9 @@ const upcomingEvents: LyfeEvent[] = [
         saleEnd: futureDays(76),
         maxPerOrder: 6,
         transferable: true,
+        partialPayment: false,
+        appAmountMad: 0,
+        onSiteMessage: "",
       },
     ],
   },

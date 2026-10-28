@@ -54,6 +54,43 @@ const PORT = Number(process.env.PORT ?? 3311);
 const TOKEN = process.env.MOCK_API_TOKEN ?? "";
 const PASSWORD = process.env.MOCK_API_PASSWORD ?? "demo";
 
+// ── Passwords, and the links that replace them ───────────────
+//
+// `Détail Sprint ` ligne 53 — « récupérer mon mot de passe ou le
+// changer ». Both halves are served here, so the portal's two screens
+// have something to be right or wrong against.
+//
+// The double starts with one password for every account, as it always
+// did; a change writes an override for that account alone, and the
+// session route reads through it. So a walk can change a password and
+// then sign in with the new one, which is the only way to tell a
+// change that was applied from one that was reported.
+//
+// A reset link is minted by the request half and **printed to this
+// process's console**, because a test double with no mail service has
+// nowhere else honest to put it: `POST /password-reset` answers 204
+// whatever happens, exactly as the contract requires, and the link
+// appears in the log the way it would appear in an inbox. One fixed
+// token is accepted beside the minted ones — `MOCK_RESET_TOKEN`,
+// « jeton-demo » by default — so a tool can exercise the confirm
+// without scraping a log.
+//
+// Tokens are single-use and last thirty minutes, the two rules the
+// contract states; a spent or expired one answers 410, which is what
+// the portal turns into « ce lien a expiré ou a déjà servi ».
+const passwords = new Map();
+const resetTokens = new Map();
+const FIXED_RESET_TOKEN = process.env.MOCK_RESET_TOKEN ?? "jeton-demo";
+// Where the printed link points. Only ever a hint in a log line: this
+// process does not know which port the portal is on, and nothing reads
+// the value back.
+const PORTAL_HINT = process.env.MOCK_PORTAL_URL ?? "http://localhost:3210";
+const RESET_TTL_MS = 30 * 60 * 1000;
+
+function passwordFor(userId) {
+  return passwords.get(userId) ?? PASSWORD;
+}
+
 // ── The dataset ──────────────────────────────────────────────
 //
 // Rebased on load exactly as `static/venue-data.ts` rebases it, so a
@@ -266,7 +303,7 @@ const ROUTES = [
     const user = db.users.find((u) => u.email.toLowerCase() === email);
     // One answer for an unknown address and a wrong password, so the
     // form cannot be used to find out which partners have accounts.
-    if (!user || String(body?.password ?? "") !== PASSWORD) {
+    if (!user || String(body?.password ?? "") !== passwordFor(user.userId)) {
       throw new Refused(401, "bad_credentials");
     }
     return accountFor(user);
@@ -282,6 +319,62 @@ const ROUTES = [
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       throw new Refused(422, "invalid_email", "Adresse e-mail invalide.");
     }
+    // A link is only minted for an address that has an account — but
+    // the answer is 204 either way, so the caller cannot tell which
+    // happened. That is the whole point of the rule.
+    const user = db.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    if (user) {
+      const token = `rst_${randomUUID().slice(0, 16)}`;
+      resetTokens.set(token, { userId: user.userId, at: Date.now() });
+      console.log(
+        `  ↳ « mail » pour ${user.email} : ` +
+          `${PORTAL_HINT}/reinitialiser?jeton=${token}`,
+      );
+    }
+    return null;
+  }],
+
+  // The other end of that link — `/reinitialiser`.
+  ["POST", /^\/api\/business\/auth\/password-reset\/confirm$/, (_m, _q, body) => {
+    const token = String(body?.token ?? "").trim();
+    const password = String(body?.password ?? "");
+    // The length rule belongs to the service, not only to the form: a
+    // client that skipped the screen must not be able to set « 1 ».
+    if (password.length < 8) {
+      throw new Refused(422, "weak_password", "Huit caractères au minimum.");
+    }
+    if (token === FIXED_RESET_TOKEN) {
+      // The fixed token is not bound to an account, so it changes the
+      // password every account falls back to. Only this double has such
+      // a thing; a real service has no token that is not someone's.
+      for (const user of db.users) passwords.set(user.userId, password);
+      return null;
+    }
+    const held = resetTokens.get(token);
+    if (!held || Date.now() - held.at > RESET_TTL_MS) {
+      throw new Refused(410, "token_spent", "Lien expiré ou déjà utilisé.");
+    }
+    resetTokens.delete(token);
+    passwords.set(held.userId, password);
+    return null;
+  }],
+
+  // Réglages → « Changer mon mot de passe ». The current password is
+  // checked, and a wrong one is a 401 — the portal points at that field
+  // rather than at the two new ones.
+  ["POST", /^\/api\/business\/auth\/password$/, (_m, _q, body) => {
+    const userId = String(body?.userId ?? "").trim();
+    const current = String(body?.currentPassword ?? "");
+    const next = String(body?.newPassword ?? "");
+    const user = db.users.find((u) => u.userId === userId);
+    if (!user) throw new Refused(401, "no_account", "Session inconnue.");
+    if (next.length < 8) {
+      throw new Refused(422, "weak_password", "Huit caractères au minimum.");
+    }
+    if (current !== passwordFor(userId)) {
+      throw new Refused(401, "bad_current", "Mot de passe actuel incorrect.");
+    }
+    passwords.set(userId, next);
     return null;
   }],
 
