@@ -100,7 +100,7 @@ export const ROUTES: RouteEntry[] = [
     lot: 1,
     label: "Choisir un espace",
     purpose:
-      "« Que voulez-vous gérer sur LYFE ? ». Trois cartes — Restaurant, Bar ou lounge, Événements — chacune « Actif · ouvrir », ou un bouton « Ajouter ». C'est aussi le sélecteur d'espace : la carte d'identité des deux barres latérales l'ouvre. Seule la connexion la saute, et seulement quand le compte ne tient qu'un espace.",
+      "« Que voulez-vous gérer sur LYFE ? ». Trois cartes — Restaurant, Bar ou lounge, Événements — un seul gabarit : icône à côté du titre, la phrase dessous, un bouton pleine largeur au pied. L'espace tenu porte un badge « Actif » près du titre et un bouton principal « Ouvrir » ; les autres un bouton secondaire « Ajouter ». C'est aussi le sélecteur d'espace : la carte d'identité des deux barres latérales l'ouvre. Seule la connexion la saute, et seulement quand le compte ne tient qu'un espace.",
     workspace: "entry",
     status: "built",
   },

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils/cn";
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 import type { EventState, LifecycleStatus } from "@/lib/types/domain";
 
 // Pill = status badges and filter chips. 10% bg / full text colour, uppercase
@@ -68,14 +68,16 @@ export function Pill({
   children,
   dot = false,
   className,
+  ...rest
 }: {
   tone: Tone;
   children?: ReactNode;
   dot?: boolean;
   className?: string;
-}) {
+} & Omit<HTMLAttributes<HTMLSpanElement>, "className" | "children">) {
   return (
     <span
+      {...rest}
       className={cn(
         "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full",
         "text-[10px] font-bold uppercase tracking-[0.12em] whitespace-nowrap",

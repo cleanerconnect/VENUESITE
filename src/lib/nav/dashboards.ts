@@ -47,8 +47,16 @@ export interface DashboardCard {
   active: boolean;
   /** Where the card goes: the dashboard, or the flow that makes one. */
   href: string;
-  /** What the card's button says — the two words the review asked for. */
-  action: "Actif · ouvrir" | "Ajouter";
+  /**
+   * What the card's button says.
+   *
+   * One verb each, because the three cards now carry the same control:
+   * a full-width button at the foot of the card. « Actif » left the
+   * word and became a badge beside the title — it is a *state*, and a
+   * state inside the label of a button makes the partner read two
+   * things to find the one they can press.
+   */
+  action: "Ouvrir" | "Ajouter";
 }
 
 const COPY: Record<DashboardId, { label: string; line: string; icon: IconKey }> = {
@@ -116,7 +124,7 @@ export function dashboardsFor(account: ResolvedAccount): DashboardCard[] {
         : id === "events"
           ? "/onboarding"
           : `/restaurant/etablissement/nouveau?type=${id === "bar" ? "bar" : "restaurant"}`,
-      action: active ? "Actif · ouvrir" : "Ajouter",
+      action: active ? "Ouvrir" : "Ajouter",
     };
   });
 }

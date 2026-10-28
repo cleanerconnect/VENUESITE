@@ -213,9 +213,9 @@ const chooser = await page.innerText("body");
 for (const label of ["Restaurant", "Bar ou lounge", "Événements"]) {
   check(`carte « ${label} »`, chooser.includes(label));
 }
-// A brand new account holds nothing, so all three are offers. « Actif ·
-// ouvrir » here would mean the screen is reading something other than
-// the session.
+// A brand new account holds nothing, so all three are offers. An
+// « Ouvrir » here, or an « Actif » badge, would mean the screen is
+// reading something other than the session.
 const actions = await cards.allTextContents();
 check(
   "les trois sont proposées, aucune active",
@@ -223,7 +223,12 @@ check(
   actions.join(" · "),
 );
 const actives = await page.locator('[data-active="1"]').count();
-check("et aucune n'est marquée active", actives === 0, `${actives}`);
+const badges = await page.locator("[data-space-state]").count();
+check(
+  "et aucune n'est marquée active",
+  actives === 0 && badges === 0,
+  `${actives} active(s), ${badges} badge(s)`,
+);
 
 // Each card goes where the flow that creates it lives, and the two
 // venue cards carry the hint the creation flow reads at step 2.
