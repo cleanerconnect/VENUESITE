@@ -70,7 +70,7 @@ import {
 
 /** One sentence per step. Any more and nobody reads either. */
 const HELP: Record<number, string> = {
-  1: "Où arrive une réservation. C'est la seule réponse qui change ce que le reste du produit en fait.",
+  1: "Où arrivent vos réservations. Vous pourrez changer plus tard.",
   2: "Le nom que vos clients verront dans l'application, ce que vous servez et à quel prix.",
   3: "Le quartier et l'adresse. L'application les affiche l'un après l'autre, et la carte vous place.",
   4: "Les photos donnent envie de réserver, la carte évite un appel. Vous pouvez passer cette étape.",
@@ -323,7 +323,17 @@ export function VenueFlow({
         <p className="text-body text-ink-soft mt-2">{HELP[step]}</p>
 
         <div className="mt-4 md:mt-6">
-          <AnimatePresence mode="wait">
+          {/* `initial={false}` — the fields have to be *visible* on the
+              first paint, not merely present in the HTML.
+              `motion.div` writes its `initial` into the server-rendered
+              markup, so `opacity: 0` shipped in the document and the
+              step's content was painted invisible until JavaScript
+              arrived and animated it in. On a fast machine that is a
+              flicker; on 3G it is a card with a title, a sentence and
+              several hundred pixels of nothing, for as long as the
+              bundle takes. The step-to-step transition still animates —
+              this disables the enter animation on mount only. */}
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={step}
               initial={{ opacity: 0, x: 12 }}

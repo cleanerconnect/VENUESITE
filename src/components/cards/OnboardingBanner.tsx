@@ -5,20 +5,31 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { useProfile } from "@/lib/auth/role";
 import { useOnboardingCompleted, readDraft } from "@/lib/auth/onboarding";
 
-// Soft gate at the top of /dashboard for first-time orgs. Renders
-// only when the active profile's onboarding is incomplete. Once the
-// wizard finishes, the banner disappears and the dashboard reads
-// normally for the rest of the session.
+// Soft gate at the top of /dashboard, for an organisation whose
+// configuration is **started and unfinished**.
+//
+// It used to render on « incomplete » alone, which is the state every
+// seeded demo organisation is in — so the first thing a partner saw on
+// the event dashboard was « Continuer la configuration · Configurez
+// votre espace », inviting them to resume something they had never
+// begun. A banner that says *continue* to someone who has not started
+// is a banner that makes the dashboard look broken on arrival.
+//
+// So it needs a draft: `lastStep > 0`, meaning the wizard was walked at
+// least one step and left. Then « Étape 3 / 5 validée · Reprendre »
+// reads as what it is, progress with a way back to it. With no draft
+// there is nothing to continue, and the way in to the wizard is the
+// chooser's « Ajouter » card — which is where adding a space belongs.
 export function OnboardingBanner() {
   const profile = useProfile();
   const completed = useOnboardingCompleted(profile?.id ?? null);
 
   if (!profile || completed === null || completed) return null;
 
-  // Show the user how far they got so the resume call-to-action
-  // reads like progress rather than a chore.
+  // How far they got — and whether they got anywhere at all.
   const draft = readDraft(profile.id);
   const stepDone = draft.lastStep ?? 0;
+  if (stepDone < 1) return null;
 
   return (
     <Link
@@ -38,10 +49,7 @@ export function OnboardingBanner() {
           </div>
           <p className="text-[14px] text-ink mt-1.5 leading-relaxed">
             <span className="font-semibold">
-              {stepDone === 0
-                ? "Configurez votre espace"
-                : `Étape ${stepDone} / 5 validée`}
-              .
+              Étape {stepDone} / 5 validée.
             </span>{" "}
             <span className="text-ink-soft">
               Reprenez la configuration pour pouvoir créer votre premier

@@ -6,16 +6,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as RadixDialog from "@radix-ui/react-dialog";
-import {
-  Check,
-  ChevronRight,
-  LogOut,
-  MoreVertical,
-} from "lucide-react";
+import { LogOut, MoreVertical } from "lucide-react";
 import { Icon } from "@/components/dashboard/primitives";
-import { VenueSwitcher, type SwitchableVenue } from "./VenueSwitcher";
+import { SpaceCard, type SwitchableVenue } from "./SpaceCard";
 import {
-  WORKSPACES,
   type NavItem,
   type Workspace,
   isActive,
@@ -235,6 +229,26 @@ function SidebarBody({
   // Read from context rather than props: the mobile drawer renders
   // this same body without going through <Sidebar>.
   const workspaces = useWorkspaceAccess();
+
+  // What the card names. On the venue side it is the establishment in
+  // hand — the account may hold several, and the card has to say which
+  // one the screens behind it are showing. Everywhere else it is
+  // `workspace.entity`, which is the organisation. An account with no
+  // establishment yet falls through to an empty name, and the card
+  // turns that into « Aucun établissement » rather than printing the
+  // person's initials over a blank line.
+  const activeVenue =
+    venues.find((v) => v.id === activeVenueId) ?? venues[0] ?? null;
+  const cardEntity =
+    workspace.id === "restaurant" && activeVenue
+      ? {
+          initials: activeVenue.initials,
+          shortName: activeVenue.shortName,
+          subline: `${activeVenue.kind === "drinks" ? "Bar" : "Restaurant"} · ${activeVenue.city}`,
+        }
+      : workspace.id === "restaurant"
+        ? { initials: "", shortName: "", subline: "" }
+        : entity;
   // Labels earn their place over ten groups, not over two.
   const labelGroups = groups.length > 2;
 
@@ -268,92 +282,13 @@ function SidebarBody({
         </div>
       ) : null}
 
-      {/* Venue switcher on the venue side, organisation switcher on the
-          event side. Either way, a link to the other workspace appears
-          only when the account holds it. */}
+      {/* One identity card, both sidebars, one destination.
+          It names the space you are in and opens the screen that names
+          all three — see `SpaceCard`. On the venue side the name is the
+          active establishment's; on the event side it is the
+          organisation's; with no establishment yet it says so. */}
       <div className={cn("mb-3", rail ? "px-2 xl:px-4" : "px-4")}>
-        {venues.length > 0 && workspace.id === "restaurant" ? (
-          // The link to the other space used to sit under the card as a
-          // row of its own. On the event side the same switch is an item
-          // inside the card's menu, so it is an item inside this card's
-          // menu too — one identity card per sidebar, and it is the
-          // thing you press to go anywhere else.
-          <VenueSwitcher
-            rail={rail}
-            venues={venues}
-            activeVenueId={activeVenueId}
-            // Lot 1 is the venue dashboard of Prio 02 and nothing else.
-            // The Events dashboard is Prio 01 — Planning V3 row 38 —
-            // and the account an acceptance signs in with holds an
-            // organisation, so this card was one click from a workspace
-            // that is not part of what Prio 02 delivers. The routes
-            // stay; the door out of the venue portal is Lot 2's.
-            eventSpaceHref={
-              workspaces.event && workspaces.lot === 2
-                ? WORKSPACES[0].home
-                : undefined
-            }
-            // Lot 1 is one owner account per establishment — the scope
-            // agreed on 5 October — so there is nothing to switch to
-            // and nothing to switch with.
-            switchable={workspaces.lot === 2}
-          />
-        ) : (
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
-              <button
-                className={cn(
-                  "w-full flex items-center gap-2 bg-surface rounded-[var(--radius-md)] text-left hover:shadow-soft transition-shadow",
-                  rail ? "justify-center p-2 xl:justify-start xl:p-3" : "p-3",
-                )}
-                title={rail ? entity.shortName : undefined}
-              >
-                <div
-                  className="h-9 w-9 rounded-[10px] flex items-center justify-center text-violet-deep font-bold text-nav shrink-0"
-                  style={{ background: "var(--color-violet-soft)" }}
-                >
-                  {entity.initials}
-                </div>
-                <div className={cn("min-w-0 flex-1", rail && "hidden xl:block")}>
-                  <div className="text-nav text-ink truncate">
-                    {entity.shortName}
-                  </div>
-                  <div className="text-meta text-ink-mute truncate">
-                    {entity.subline}
-                  </div>
-                </div>
-                <ChevronRight
-                  size={20}
-                  className={cn("text-ink-mute shrink-0", rail && "hidden xl:block")}
-                />
-              </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content
-                side="bottom"
-                align="start"
-                sideOffset={6}
-                className="min-w-[228px] bg-surface border border-line rounded-[var(--radius-md)] shadow-soft p-1 z-50"
-              >
-                {WORKSPACES.filter((w) =>
-                  w.id === "restaurant" ? workspaces.venue : workspaces.event,
-                ).map((w) => (
-                  <DropdownMenu.Item key={w.id} asChild>
-                    <Link
-                      href={w.home}
-                      className="flex items-center gap-2 px-3 h-10 rounded-[var(--radius-sm)] text-nav font-medium text-ink hover:bg-ink/[0.04] cursor-pointer outline-none"
-                    >
-                      <span className="flex-1">{w.switcherLabel}</span>
-                      {w.id === workspace.id ? (
-                        <Check size={16} strokeWidth={2} className="text-violet-deep" />
-                      ) : null}
-                    </Link>
-                  </DropdownMenu.Item>
-                ))}
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
-        )}
+        <SpaceCard rail={rail} entity={cardEntity} />
       </div>
 
       {/* Groups render with a hairline between them and no spelled-out

@@ -25,6 +25,18 @@ import type { IconKey } from "@/lib/dashboard/icons";
  */
 export type DashboardId = "restaurant" | "bar" | "events";
 
+/**
+ * What `/choisir` says under its question — and what the sidebar card
+ * says while there is no establishment behind it.
+ *
+ * Here rather than in the page because two screens say it: the chooser
+ * itself, and the identity card that opens it. A partner reads the same
+ * sentence before and after pressing, which is how they know the card
+ * and the screen are the same thing.
+ */
+export const CHOOSER_LINE =
+  "Un espace par activité. Vous pourrez en ajouter d'autres plus tard.";
+
 export interface DashboardCard {
   id: DashboardId;
   label: string;
@@ -42,7 +54,7 @@ export interface DashboardCard {
 const COPY: Record<DashboardId, { label: string; line: string; icon: IconKey }> = {
   restaurant: {
     label: "Restaurant",
-    line: "Le carnet de réservations, les arrivées et la fiche de votre table.",
+    line: "Le carnet de réservations, les arrivées et la fiche de votre établissement.",
     icon: "utensils-crossed",
   },
   bar: {
@@ -110,18 +122,24 @@ export function dashboardsFor(account: ResolvedAccount): DashboardCard[] {
 }
 
 /**
- * Whether the chooser is worth showing at all.
+ * The one space this account holds, when it holds exactly one.
  *
- * An account holding exactly one dashboard has nothing to choose, and
- * a screen with one live card and two offers is a screen that makes a
- * partner press twice to reach the only thing they have. So it is
- * skipped — which is the rule the old `destinationFor` was reaching
- * for when it sent an account straight to its venue.
+ * **Read by the sign-in and by nothing else.** It used to be read by
+ * the chooser itself, which redirected on it — and that made the screen
+ * impossible to open on purpose: a partner who held a restaurant and
+ * came looking for the bar card was bounced back to their carnet
+ * before it painted. Arriving somewhere you did not ask for is the
+ * right behaviour for a *destination* and the wrong behaviour for a
+ * *switcher*, and this screen is now the switcher.
  *
- * An account holding none still sees it: that is the case the screen
- * was built for.
+ * So the rule moved to where arriving is decided: `destinationFor`
+ * skips the chooser at sign-in, once, when there is nothing to choose.
+ * Everywhere else `/choisir` renders, every time, with the three cards.
+ *
+ * An account holding none still sees it at sign-in too: that is the
+ * case the screen was built for.
  */
-export function skipsChooser(account: ResolvedAccount): DashboardCard | null {
+export function onlySpace(account: ResolvedAccount): DashboardCard | null {
   const active = dashboardsFor(account).filter((d) => d.active);
   return active.length === 1 ? active[0] : null;
 }

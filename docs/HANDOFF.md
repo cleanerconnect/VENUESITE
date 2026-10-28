@@ -105,7 +105,7 @@ one.
 | # | Screen | Route | Which noun | What Lot 1 buys |
 |---:|---|---|---|---|
 | 0 | Inscription | `/inscription` | Création de Venue | Two steps, and they create an account: themselves, then the confirmation. No venue — the old road asked a partner to describe a room before they had a session to come back to, and asked « restaurant or bar » of an account that can hold both. |
-| 0 bis | Choisir un espace | `/choisir` | Création de Venue | « Que voulez-vous gérer sur LYFE ? ». Three cards, always three — Restaurant, Bar ou lounge, Événements — each marked « Actif · ouvrir » or « Ajouter ». An account holding exactly one skips it. No call: it reads the session. |
+| 0 bis | Choisir un espace | `/choisir` | Création de Venue | « Que voulez-vous gérer sur LYFE ? ». Three cards, always three — Restaurant, Bar ou lounge, Événements — each either « Actif · ouvrir » or a primary « Ajouter » button. **It is also the space switcher**: the identity card in both sidebars opens it, so it renders every time it is opened. Only the sign-in skips it, and only for an account holding exactly one space — the rule lives in `destinationFor`, not in the screen, because a screen that redirects cannot be opened on purpose. No call: it reads the session. |
 | 0 ter | Créer mon établissement | `/restaurant/etablissement/nouveau` | Création de Venue | Six steps, inside the dashboard they build for: the management mode, then the establishment, the address, the photos, the ambience, the weekly hours. The draft is saved on the seam after every step, so a closed tab loses nothing, and step 6 creates the venue. Until it does, Accueil holds the empty-state card and the sidebar is reduced to it. |
 | 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. Its line for non-partners now opens the flow above instead of offering an e-mail address. |
 | 1 bis | Mot de passe oublié | `/mot-de-passe-oublie` | Authentification | One field, and a confirmation that never says whether the address is on file. The link under Connexion used to answer in place — the address was read from the sign-in form and a sentence appeared over a form nobody was filling. `Détail Sprint ` ligne 53 buys the screen. Nothing is claimed that was not sent: a driver with no mail service says so and points at « Nous contacter ». |
@@ -149,8 +149,9 @@ and drops the group names with them: a label earns its place over ten
 groups, not over two, and the event sidebar labels neither of its own.
 Structurally it is now that sidebar entry for entry: the wordmark, the
 workspace caption (`établissement` against `organisateur`), the identity
-card — which opens the switcher in Lot 2 and simply names the
-establishment in Lot 1 — the entries at 13.5 px on 40 px rows with
+card — which names the space you are in and opens `/choisir`, on both
+sidebars and in both lots; with no establishment yet it reads « Aucun
+établissement » and carries the chooser's own sentence — the entries at 13.5 px on 40 px rows with
 an 18 px icon each, and a footer card carrying the signed-in person,
 their role and a kebab holding Se déconnecter.
 
@@ -370,6 +371,14 @@ node tools/verify/decisions.mjs       # LYFE's review, what each state allows, t
 node tools/verify/fiche.mjs           # the fiche's closed lists: category, the photos' ceiling, the carte, the service presets
 node tools/verify/handshake.mjs       # the app and the portal on one database — see §14
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
+```
+
+One more needs neither a browser nor a server — it runs the build's own
+first half against crafted environments and reads its exit code:
+
+```bash
+node tools/verify/deploiement.mjs     # the four outcomes of db/bootstrap.mjs
+DATABASE_URL=postgres://… node tools/verify/deploiement.mjs   # plus the fifth
 ```
 
 Seven more scripts sit beside them with an underscore in front of the
@@ -643,6 +652,7 @@ dialectes. Une seule variable décide : `DATABASE_URL`.
 | `DATABASE_POOL_MAX` | facultatif, 4 par défaut : le plafond de connexions par instance |
 | `NEXT_PUBLIC_VENUE_TZ` | facultatif, `Africa/Casablanca` par défaut : le fuseau de l'établissement |
 | `LYFE_SKIP_DB_BOOTSTRAP` | facultatif : saute l'étape de base au build (voir plus bas) |
+| `VERCEL_ENV` | posé par Vercel (`production`, `preview`, `development`) et **lu** par l'étape de base : sur un aperçu, une base injoignable ne fait plus échouer le build (voir plus bas) |
 
 **Dans Vercel**, une fois par projet :
 
@@ -682,8 +692,89 @@ le journal de build :
 | Ce qu'il trouve | Ce qu'il fait |
 |---|---|
 | pas de `DATABASE_URL` | rien. Le portail retombe sur SQLite ou sur l'instantané, ce qui est le comportement documenté d'un déploiement sans base. |
+| un `DATABASE_URL` sur lequel **personne ne répond** | rien n'a été écrit, puisque rien n'a pu l'être. En production le build s'arrête — le déploiement précédent reste en ligne, ce qui vaut mieux qu'un nouveau par-dessus un schéma non préparé. Sur un **aperçu** Vercel il le dit et continue. Voir « Pourquoi tous les aperçus échouaient » ci-dessous. |
 | une base **vide** | applique le schéma, génère le jeu de démonstration et le copie. Le premier déploiement d'un projet Neon neuf atterrit donc sur Dar Zellij plutôt que sur un portail vide. |
 | une base **avec au moins un établissement** | applique le schéma — c'est idempotent, et c'est ainsi qu'un changement de schéma arrive en production — complète **les pièces de démonstration qui manquent** et rafraîchit **le carnet** (voir ci-dessous). Rien d'autre n'est écrit. |
+
+#### Les aperçus échouent, la production passe — ce qui est établi, et ce qui ne l'est pas
+
+Un fait d'abord, parce qu'il est plus net que n'importe quelle
+hypothèse : sur ce projet, **tous** les déploiements `Production` ont
+réussi et **tous** les déploiements `Preview` ont échoué, sans
+exception, du 12 au 28 octobre. `1c4475c`, `6d1afbe`, `b5a74fd` et
+`9d346dd` verts en production ; les aperçus de `97b608f`, `84313c5`,
+`d556369`, `9b27114`, `13fc7a6`, `f07910c`, `58cd9ce`, `5944b58`,
+`c3d0c00` et `9101bdf` rouges. Du code identique est parti des deux
+côtés — un merge et sa branche ont le même arbre — donc ce n'était
+jamais le code. (`gh api repos/<owner>/<repo>/deployments` puis
+`/statuses` ; les journaux de build, eux, ne sortent que de Vercel.)
+
+Ce que le build fait tient en deux étapes, et une seule lit
+l'environnement. `next build` passe avec un `DATABASE_URL` injoignable —
+vérifié, aucune page prérendue n'ouvre de connexion. `db/bootstrap.mjs`
+ne passait pas : `db/migrate.mjs` sortait en erreur sur
+`getaddrinfo ENOTFOUND`, et son code de sortie arrêtait la commande.
+
+Deux mécanismes pourraient expliquer qu'un aperçu n'atteigne pas la
+base que la production atteint, et l'étape couvre les deux — **sans que
+cela ait suffi** : voir la fin de cette section.
+
+1. **Neon suspend un endpoint inactif** et le réveille à la première
+   connexion. L'aperçu part quelques minutes avant la production sur la
+   même base : c'est lui qui paie le réveil. La sonde réessaie donc —
+   quatre tentatives, 1 s, 2 s, 4 s — et `pg` reçoit enfin un
+   `connectionTimeoutMillis`, sans lequel un build pend sur un TCP
+   connect jusqu'à ce qu'on le tue.
+2. **L'environnement `Preview` peut porter un `DATABASE_URL` qui ne
+   résout pas** — une branche de base par déploiement que rien n'a
+   créée. Dans ce cas la sonde échoue pour de bon, et sur un aperçu
+   seulement l'étape le dit et rend la main : un coup d'œil au
+   front-end n'a pas à dépendre d'une base que son environnement
+   n'atteint pas.
+
+**Ce que cela ne relâche pas.** La sonde distingue *injoignable* de
+*jointe et refusée*, et c'est tout l'intérêt de la faire avant la
+première écriture. Une base qui répond puis refuse une instruction peut
+avoir un schéma à moitié appliqué ; ce cas-là arrête le build partout,
+aperçus compris. `tools/verify/deploiement.mjs` l'affirme, et c'est
+l'assertion de ce fichier qu'il ne faut jamais assouplir pour faire
+verdir un contrôle.
+
+**Et cela n'a pas suffi.** L'aperçu de `8d4159f` — le commit qui porte
+cette sonde — a échoué comme les autres. Il faut donc lire cette section
+pour ce qu'elle est : deux hypothèses éliminées plutôt qu'une cause
+trouvée. Si la sonde avait été le problème, cet aperçu serait vert ; il
+ne l'est pas, donc **la base de l'aperçu répond** et l'échec est
+ailleurs, ou il n'est pas dans le build du tout.
+
+Ce qui reste établi, et qui vaut pour la prochaine tentative :
+
+- le partage est parfait entre les deux environnements, sur des arbres
+  identiques, depuis le 12 octobre : ce n'est pas le code ;
+- `next build` passe avec un `DATABASE_URL` injoignable, et la commande
+  complète de `vercel.json` passe de bout en bout dans la forme d'un
+  aperçu : le build, tel qu'on peut le rejouer ici, n'a pas de raison
+  d'échouer ;
+- le déploiement de `8d4159f` a vécu **29 secondes** (créé à 14:03:33,
+  mis à jour à 14:04:02) : assez pour une installation et une étape de
+  base, trop peu pour un `next build` complet de ce dépôt, qui compile
+  en ~25 s après l'installation. L'échec est donc probablement **avant
+  ou pendant** l'étape de base, pas dans le rendu des pages.
+
+Ce qui manque est une seule chose, et elle n'est accessible qu'au
+propriétaire du projet Vercel :
+
+```bash
+npx vercel inspect dpl_HCDVgd2oiYMPc6iWJRZSyG9FpaC6 --logs
+```
+
+ou, ce qui reviendrait au même, la liste des variables d'environnement
+de l'environnement `Preview` à côté de celle de `Production`. Depuis un
+conteneur d'agent, `vercel.com` et `*.vercel.app` répondent 403 au
+CONNECT et `vercel inspect` demande un jeton : les journaux de build ne
+sortent pas d'ici, et aucune des trois sources utilisables — l'API des
+déploiements de GitHub, la forme de la commande, la reproduction locale
+— ne dit la ligne d'erreur.
 
 **Aucun `TRUNCATE` dans ce chemin.** C'est la différence entre cette
 étape et `db:reset`, et elle est structurelle : `db/push.mjs` a deux

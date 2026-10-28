@@ -202,13 +202,46 @@ cacher ce qu'on n'a pas, c'est un écran incapable de dire à un
 restaurateur que le tableau de bord bar existe, ce qui est la seule
 chose qu'il est en position de faire.
 
-**Un compte qui tient exactement un espace ne voit pas l'écran** et est
-redirigé vers celui-là. C'est la règle que l'ancien `destinationFor`
-cherchait à tâtons — événements si vous teniez une organisation, votre
-salle sinon, et un compte qui tenait les deux n'apprenait jamais qu'il
-tenait les deux. Un compte qui n'en tient aucun, lui, le voit : c'est
-le cas pour lequel l'écran a été fait. La redirection vers `/choisir`
-remplace donc la destination que `/login` calculait (§ 2.1).
+Une carte tenue est un **lien** — toute la carte ouvre le tableau de
+bord, et « Actif · ouvrir » est un mot plutôt qu'un bouton, parce qu'un
+bouton dans un lien fait deux choses à presser pour une destination.
+Une carte à ajouter n'est pas un lien : elle porte un **bouton
+principal « Ajouter »**. Ajouter un espace, c'est six étapes pour une
+salle et quatre pour une organisation, et cela mérite un contrôle qui
+en a l'air.
+
+**C'est aussi le sélecteur d'espace.** La carte d'identité au-dessus de
+la navigation, dans les deux barres latérales, ouvre cet écran — c'est
+le seul endroit du produit qui peut proposer un espace que le compte ne
+tient *pas*, et un menu dans une colonne de 260 px ne pourrait pas
+porter les trois phrases qui rendent le choix répondable.
+
+**Seule la connexion saute l'écran**, et seulement quand le compte ne
+tient qu'un espace : il n'y a alors rien à choisir, et une page avec une
+carte vivante et deux offres ferait presser deux fois pour atteindre la
+seule chose qu'on a. Cette règle vit dans `destinationFor` et nulle part
+ailleurs. Elle vivait dans l'écran, qui se redirigeait lui-même — et un
+écran qui se redirige ne peut pas être ouvert exprès : la carte de la
+barre latérale menait ici, et un partenaire venu chercher la carte bar
+était renvoyé vers son carnet avant que la page ne se peigne.
+
+Deux conséquences, et ce sont les deux cas que la revue de production a
+relevés :
+
+1. **Un compte qui tient une salle *et* une organisation atterrit sur
+   `/choisir` à la connexion**, pas sur l'un des deux. C'est la décision
+   du 27 octobre : l'ancienne règle choisissait pour lui sans le dire.
+2. **Ouvert depuis n'importe où ailleurs, l'écran se rend toujours**,
+   avec les trois cartes, quel que soit ce que le compte tient.
+
+Un compte qui n'en tient aucun le voit à la connexion aussi : c'est le
+cas pour lequel l'écran a été fait.
+
+La seule question que l'écran ne peut pas trancher reste au formulaire
+de connexion : **lequel** des établissements, quand un compte en tient
+plusieurs du même genre. « Restaurant » est une carte que vous teniez
+une table ou quatre, et c'est une question sur les salles plutôt que sur
+les espaces (§ 2.1).
 
 `?type=restaurant` et `?type=bar` sont une **indication, pas une
 décision** : l'étape 2 du parcours de création pose quand même la
