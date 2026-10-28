@@ -38,6 +38,11 @@ import {
 } from "@/lib/types/restaurant";
 import { StaleWriteError } from "@/lib/data/repository";
 import { asSlotMinutes } from "@/lib/types/venue-operations";
+import type { ManagementMode } from "@/lib/types/onboarding";
+import {
+  DEFAULT_MANAGEMENT_MODE,
+  isManagementMode,
+} from "@/lib/types/onboarding";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { VENUE_TIME_ZONE } from "@/lib/time/zone";
 import type { VenueConfiguration } from "@/lib/types/venue-operations";
@@ -92,6 +97,9 @@ export async function venueProfile(venueId: string): Promise<RestaurantProfile |
     contactPhone: String(r.contact_phone),
     website: String(r.website),
     currency: String(r.currency),
+    managementMode: isManagementMode(String(r.management_mode ?? ""))
+      ? (String(r.management_mode) as ManagementMode)
+      : DEFAULT_MANAGEMENT_MODE,
     onboardingCompleted: bool(r.onboarding_completed as number),
     status: isVenueStatus(r.status) ? r.status : "pending_review",
     statusReason: String(r.status_reason ?? ""),

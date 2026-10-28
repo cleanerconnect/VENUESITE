@@ -259,6 +259,8 @@ paths:
       description: |
         Le compte existe à partir d'ici, sans établissement. `409` quand l'adresse est déjà prise : c'est la seule chose que ce endpoint révèle, et le portail l'affiche comme « Cette adresse a déjà un compte. Connectez-vous. »
 
+        **Depuis la décision DigiNegoce du 27 octobre, c'est le seul appel de l'inscription.** L'étape 2 est une confirmation, et l'établissement est un parcours séparé — `POST /api/business/venue-drafts`, puis les mêmes `PUT` et le même `submit`. Le `draft` rendu ici est le brouillon vide du nouveau compte ; le portail ne le lit pas avant ce parcours, et il est dans la réponse parce qu'un service qui crée les deux dans une transaction n'a pas à être rappelé pour le second.
+
         `Détail Sprint ` ligne 39 demande en plus un code de vérification envoyé par e-mail ou WhatsApp, et l'écran qui le saisit. Ni l'un ni l'autre n'existent — voir `docs/AUDIT_LOT1.md`, constat A-04.
 
         Observé en trafic réel pendant la passe de vérification du lot 1.
@@ -324,6 +326,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erreur'
+  /api/business/venue-drafts:
+    post:
+      tags:
+      - Inscription
+      summary: Ouvrir le brouillon d'établissement du compte
+      operationId: startVenueDraft
+      description: |
+        Le seul endpoint nouveau du 27 octobre, et il est **idempotent** : il rend le brouillon non soumis du compte s'il en a un, et en crée un sinon.
+
+        C'est ce qui permet d'ouvrir `/restaurant/etablissement/nouveau` dix fois sans laisser dix brouillons derrière soi, et ce qui fait qu'un onglet fermé à l'étape 4 se rouvre à l'étape 4. Un brouillon déjà soumis (`submittedVenueId` non nul) ne compte pas : un compte qui ajoute un second établissement doit en obtenir un neuf.
+
+        Observé en trafic réel pendant la passe de vérification du lot 1.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - ownerId
+              properties:
+                ownerId:
+                  type: string
+                  description: |
+                    Le compte de la session. Le service est l'autorité — un `ownerId` qui n'est pas celui du jeton se refuse.
+      responses:
+        '200':
+          description: Succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingDraft'
+        '401':
+          description: Jeton manquant ou refusé. Le portail traite ce code comme « le service
+            ne nous connaît pas » et non comme « ce partenaire n'a pas le droit » — voir §Sécurité.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '404':
+          description: La ressource n'existe pas, ou n'existe pas pour ce périmètre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
+        '500':
+          description: Défaillance du service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erreur'
   /api/business/onboarding/{draftId}:
     get:
       tags:
@@ -370,10 +423,12 @@ paths:
     put:
       tags:
       - Inscription
-      summary: Enregistrer une étape — étapes 2 à 5
+      summary: Enregistrer une étape — étapes 1 à 5 de la création d'établissement
       operationId: saveOnboardingDraft
       description: |
         Un patch partiel : seuls les champs présents changent. `step` est l'étape la plus avancée atteinte et ne recule pas.
+
+        Les étapes sont celles de `/restaurant/etablissement/nouveau` depuis le 27 octobre : `managementMode` à la première, puis les anciennes étapes 2 à 5 avec leurs numéros.
 
         Observé en trafic réel pendant la passe de vérification du lot 1.
       parameters:
@@ -392,6 +447,12 @@ paths:
               properties:
                 step:
                   type: integer
+                managementMode:
+                  type: string
+                  enum:
+                  - dashboard
+                  - whatsapp
+                  - api
                 venueName:
                   type: string
                 venueType:
@@ -2524,6 +2585,14 @@ components:
           type: string
         onboardingCompleted:
           type: boolean
+        managementMode:
+          type: string
+          enum:
+          - dashboard
+          - whatsapp
+          - api
+          description: |
+            Le mode de gestion des réservations, répondu à la première étape de la création d'établissement. Rendu en lecture seule : Ma fiche ne l'écrit pas, et rien dans le Lot 1 ne branche sur sa valeur — la colonne existe pour que le routage des réservations soit écrit, le jour où il sera acheté, contre une donnée déjà collectée.
         tags:
           type: array
           items:
@@ -3292,8 +3361,17 @@ components:
         step:
           type: integer
           minimum: 1
-          maximum: 7
-          description: L'étape la plus avancée atteinte. Sept depuis l'ajout de « Ambiance et équipements », entre Photos et Horaires.
+          maximum: 6
+          description: |
+            L'étape la plus avancée atteinte, dans le parcours qui détient le brouillon. Six depuis la décision du 27 octobre : « Mode de gestion des réservations », puis les anciennes étapes 2 à 6 — l'ancienne étape 7, « C'est prêt », est devenue la confirmation du compte, qui n'a pas de brouillon.
+        managementMode:
+          type: string
+          enum:
+          - dashboard
+          - whatsapp
+          - api
+          description: |
+            Étape 1. Où une réservation atterrit : le carnet du portail, WhatsApp, ou le système du partenaire par notre API. `dashboard` par défaut, et choisi à l'écran — un partenaire qui traverse l'étape sans y toucher a répondu « le tableau de bord ». Une valeur hors liste se refuse en `400 { code: "management_mode_unknown" }`.
         venueName:
           type: string
         venueType:

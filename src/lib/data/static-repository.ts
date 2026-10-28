@@ -66,7 +66,7 @@ import type {
 import type { AssetKind, VenueAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
 import type { MenuBoardPatch } from "@/lib/db/venue-write-store";
-import { defaultHours } from "@/lib/types/onboarding";
+import { DEFAULT_MANAGEMENT_MODE, defaultHours } from "@/lib/types/onboarding";
 import type {
   CheckInResult,
   Customer,
@@ -303,12 +303,60 @@ export class StaticRestaurantRepository implements RestaurantRepository {
       ambience: [],
       features: [],
       hours: defaultHours(),
+      managementMode: DEFAULT_MANAGEMENT_MODE,
       submittedVenueId: null,
       updatedAt: new Date().toISOString(),
     };
     draftOverlay.set(draft.id, draft);
     signUps.set(input.email.trim().toLowerCase(), userId);
     return { userId, draft: clone(draft) };
+  }
+
+  /**
+   * A venue draft on the frozen snapshot: the six screens are walkable,
+   * and `submitOnboarding` is still the one that says no. Walking them
+   * is worth having without a database — it is how the capture tool
+   * draws them — and the honest refusal belongs at the write.
+   */
+  async startVenueDraft(ownerId: string) {
+    for (const draft of draftOverlay.values()) {
+      if (draft.ownerId === ownerId && !draft.submittedVenueId) return clone(draft);
+    }
+    const draft: OnboardingDraft = {
+      id: `onb_${Math.random().toString(36).slice(2, 10)}`,
+      ownerId,
+      step: 1,
+      venueName: "",
+      venueType: "restaurant",
+      cuisine: "",
+      specialties: "",
+      priceRange: 2,
+      city: "",
+      district: "",
+      address: "",
+      latitude: null,
+      longitude: null,
+      coverObjectKey: "",
+      coverContentType: "",
+      coverSizeBytes: 0,
+      photo2ObjectKey: "",
+      photo2ContentType: "",
+      photo2SizeBytes: 0,
+      menuObjectKey: "",
+      menuContentType: "",
+      menuSizeBytes: 0,
+      thumbnailObjectKey: "",
+      thumbnailContentType: "",
+      thumbnailSizeBytes: 0,
+      ambience: [],
+      features: [],
+      hours: defaultHours(),
+      managementMode: DEFAULT_MANAGEMENT_MODE,
+      submittedVenueId: null,
+      updatedAt: new Date().toISOString(),
+    };
+    draftOverlay.set(draft.id, draft);
+    return clone(draft);
   }
 
   async getOnboardingDraft(draftId: string) {

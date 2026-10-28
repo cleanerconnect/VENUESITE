@@ -85,6 +85,14 @@ CREATE TABLE IF NOT EXISTS venues (
   capacity             INTEGER NOT NULL DEFAULT 0,
   -- 1-4, rendered in the app as € to €€€€.
   price_range          INTEGER NOT NULL DEFAULT 2,
+  -- Where a booking for this establishment lands, as the partner chose
+  -- on the first screen of the creation flow. Three answers and not
+  -- three skins of one: a partner on 'whatsapp' never opens the
+  -- portal, and one on 'api' has a system of their own. The column is
+  -- what lets the app, the notifier and the contract all agree on
+  -- which of the three a given venue is.
+  management_mode      TEXT NOT NULL DEFAULT 'dashboard'
+                         CHECK (management_mode IN ('dashboard','whatsapp','api')),
   onboarding_completed INTEGER NOT NULL DEFAULT 0,
   -- LYFE reviews a listing before the app shows it to a guest. A venue
   -- created through /inscription starts 'pending_review': its dashboard
@@ -196,6 +204,11 @@ CREATE TABLE IF NOT EXISTS onboarding_drafts (
   features           TEXT NOT NULL DEFAULT '[]',
   -- The weekly grid, as JSON: [{weekday,closed,opensAt,closesAt}].
   hours              TEXT NOT NULL DEFAULT '[]',
+  -- The creation flow's first question: where a booking lands. Carried
+  -- on the draft so the answer survives the tab closing like every
+  -- other one, and copied onto `venues.management_mode` at submit.
+  management_mode    TEXT NOT NULL DEFAULT 'dashboard'
+                       CHECK (management_mode IN ('dashboard','whatsapp','api')),
   submitted_venue_id TEXT,
   created_at         TEXT NOT NULL,
   updated_at         TEXT NOT NULL

@@ -116,7 +116,14 @@ du plan le place dans un autre sprint).
 | État « aucun espace attaché » | aucune | Ajout LYFE | Garder — c'est l'écran de la veille de l'onboarding |
 | « Inscrire mon établissement » | ligne 39 : « Création de Venue » | Contractuel | Garder |
 
-#### Inscription — `/inscription`, six étapes
+#### Inscription et création d'établissement
+
+`/inscription`, `/choisir`, `/restaurant/etablissement/nouveau`. La
+décision DigiNegoce du 27 octobre a coupé la route en deux : le compte
+d'un côté, l'établissement de l'autre, et un écran de choix entre les
+deux. Les numéros d'étape ci-dessous sont ceux du parcours qui pose la
+question — l'étape 1 est le compte pour les cinq premières lignes, et
+le mode de gestion ensuite.
 
 | Élément | Référence justificative | Classement | Recommandation |
 |---|---|---|---|
@@ -133,8 +140,12 @@ du plan le place dans un autre sprint).
 | Étape 3 · Carte, point déplaçable, « Trouver sur la carte » | `Planning V3` 41 place « MAP sur écran principal » en `Prio 03`, mais il s'agit de la carte de l'**application** ; ici ce sont les coordonnées du lieu, donc son dossier | Ajout LYFE | Garder. Le fournisseur de tuiles devient configurable (`E-04`) — les tuiles OSM publiques ne sont pas un fournisseur de production |
 | Étape 4 · Photo de couverture | ligne 39 : « Création de Venue » — l'application montre une photo | Contractuel | Garder |
 | Étape 5 · Grille des horaires | ligne 39 : « Création de Venue » — sans horaires, rien n'est réservable | Contractuel | Garder |
-| Étape 6 · Récapitulatif « C'est prêt » | aucune | Ajout LYFE | Garder |
-| Barre de progression à six segments | aucune | Ajout LYFE | Garder |
+| Confirmation « Votre compte est créé » | aucune | Ajout LYFE | Garder — c'est l'ancien récapitulatif « C'est prêt », déplacé sur le compte, qui est ce qu'il annonce désormais |
+| `/choisir` · trois cartes, « Que voulez-vous gérer sur LYFE ? » | DigiNegoce, 27 octobre | Contractuel | Garder — remplace la destination que la connexion devinait, et c'est le seul écran qui peut dire à un restaurateur que le tableau de bord bar existe |
+| `/choisir` · « Actif · ouvrir » / « Ajouter » | DigiNegoce, 27 octobre | Contractuel | Garder |
+| Accueil à l'état vide, « Créer mon établissement » | DigiNegoce, 27 octobre | Contractuel | Garder — un tableau de bord sans salle était inatteignable avant, et le code le disait en plantant |
+| Création · étape 1 · « Mode de gestion des réservations », trois cartes radio | DigiNegoce, 27 octobre | Contractuel | Garder. **Rien dans le Lot 1 ne branche sur la valeur** : elle est stockée (`venues.management_mode`) et servie, pour que le routage des réservations soit écrit contre une donnée déjà collectée |
+| Barre de progression, deux segments puis six | aucune | Ajout LYFE | Garder |
 
 #### Accueil — `/restaurant`
 

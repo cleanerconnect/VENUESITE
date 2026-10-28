@@ -77,7 +77,7 @@ export function Sidebar({
   // then the role decides which of their items are visible.
   const { configuration, lot, venue } = useWorkspaceAccess();
   const workspace = workspaceFor(pathname, venue);
-  const groups = visibleGroups(workspace, configuration, lot)
+  const groups = visibleGroups(workspace, configuration, lot, venue)
     .map((group) => ({ ...group, items: visibleItems(group.items, role) }))
     .filter((group) => group.items.length > 0);
 

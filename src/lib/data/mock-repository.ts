@@ -309,6 +309,13 @@ export class MockRestaurantRepository implements RestaurantRepository {
     return onboarding.draftById(draftId);
   }
 
+  async startVenueDraft(ownerId: string) {
+    // The one they left, or a new one. Two drafts for one account is
+    // two half-finished establishments and no way to tell which the
+    // partner meant.
+    return (await onboarding.draftForOwner(ownerId)) ?? onboarding.createDraft(ownerId);
+  }
+
   async saveOnboardingDraft(draftId: string, patch: OnboardingDraftPatch) {
     const next = await onboarding.patchDraft(draftId, patch);
     if (!next) {

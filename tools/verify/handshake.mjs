@@ -137,6 +137,23 @@ await page.getByLabel("Mot de passe", { exact: true }).fill("motdepasse1");
 await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(2200);
+// The account exists here, and nothing else does. Since the 27 October
+// split the establishment is a second walk, reached from the chooser —
+// so this tool takes the Restaurant card and then fills the same five
+// steps it always filled, one number further along.
+check("le compte est créé", (await heading()) === "Votre compte est créé", await heading());
+await page.locator('button:has-text("Choisir mon espace")').click();
+await settle(2800);
+await page
+  .locator('a:has([data-dashboard="restaurant"])')
+  .first()
+  .click();
+await settle(2600);
+// Step 1 is the management mode, and its default — « Dashboard LYFE » —
+// is the answer this tool needs: the booking below is accepted in the
+// portal's own carnet.
+await page.locator('button:has-text("Continuer")').first().click();
+await settle(1800);
 await page.getByLabel("Nom de l'établissement").fill(venueName);
 await page.locator('button:has-text("Un restaurant")').click();
 await page.getByLabel("Ville").selectOption("Casablanca");
@@ -162,10 +179,12 @@ await settle(1600);
 // the booking below lands inside them.
 await page.locator('button:has-text("Appliquer lundi à tous les jours")').click();
 await settle(500);
-await page.locator('button:has-text("Continuer")').first().click();
-await settle(1800);
-check("l'inscription atteint le récapitulatif", (await heading()) === "C'est prêt");
-await page.locator('button:has-text("Ouvrir mon tableau de bord")').click();
+check(
+  "la création atteint les horaires",
+  ((await page.locator("h2").first().textContent().catch(() => "")) ?? "").trim() ===
+    "Horaires",
+);
+await page.locator('button:has-text("Créer mon établissement")').first().click();
 await page.waitForTimeout(3600);
 check("le partenaire arrive sur son tableau de bord", page.url().endsWith("/restaurant"), page.url());
 

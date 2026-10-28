@@ -43,6 +43,9 @@ export default async function CustomerPage({ params, searchParams }: Props) {
   const { id } = await params;
   const session = await resolveSession();
   if (!session) redirect("/login");
+  // No establishment yet: every screen here is about one. Accueil is
+  // the one that can say so — see `EmptyDashboard`.
+  if (session.venues.length === 0) redirect("/restaurant");
 
   const query = await searchParams;
   const demo = parseDemoState(

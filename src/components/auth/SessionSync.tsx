@@ -18,6 +18,16 @@
 import { useEffect } from "react";
 import { readSession, writeSession, type Role } from "@/lib/auth/session";
 
+/**
+ * How much a role grants, so a stale mirror can be told from a
+ * deliberate one.
+ *
+ * The demo's sidebar lets a reviewer drop to a narrower role, and that
+ * choice has to survive a navigation. A *wider* role on the server is
+ * the opposite case: the mirror has fallen behind.
+ */
+const GRANTS: Record<Role, number> = { scanner: 0, admin: 1, owner: 2 };
+
 export function SessionSync({
   userId,
   email,
@@ -42,7 +52,18 @@ export function SessionSync({
     // look broken.
     // ... but a mirror written before the name existed is refreshed,
     // or the chrome keeps naming whoever the fixture table defaults to.
-    if (current && current.userId === userId && current.fullName) return;
+    // ... and so is one the server has since widened. That is not
+    // hypothetical: since the 27 October split a partner signs in with
+    // no establishment, where the layout can only publish « scanner » —
+    // and the mirror written then outlived the venue they created a
+    // minute later, so every role-gated control on their own brand-new
+    // dashboard was drawn disabled. A narrower role in the mirror is a
+    // reviewer's choice and stands; a wider one on the server means the
+    // mirror is behind.
+    const behind = current ? GRANTS[current.role] < GRANTS[role] : false;
+    if (current && current.userId === userId && current.fullName && !behind) {
+      return;
+    }
 
     writeSession({
       userId,

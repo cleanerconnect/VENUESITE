@@ -14,6 +14,7 @@
 import type { IconKey } from "@/lib/dashboard/icons";
 import type { Role } from "@/lib/auth/session";
 import {
+  NEW_VENUE_PATH,
   RESTAURANT_BASE,
   restaurantHref,
 } from "@/lib/restaurant/slugs";
@@ -383,6 +384,31 @@ const RESTAURANT_WORKSPACE: Workspace = {
 };
 
 /**
+ * « Créer mon établissement », and where it lives.
+ *
+ * One entry and one route, listed here rather than inside
+ * `RESTAURANT_WORKSPACE` because it is the opposite of a permanent
+ * navigation item: it exists exactly as long as there is no
+ * establishment, and the moment there is one it must be gone. A
+ * conditional item in the big table would have been a thirty-first
+ * entry everybody has to remember is conditional.
+ */
+export const NEW_VENUE_HREF = NEW_VENUE_PATH;
+
+const EMPTY_VENUE_GROUP: NavGroup = {
+  label: "Votre espace",
+  items: [
+    { label: "Accueil", href: restaurantHref(""), icon: "layout" },
+    {
+      label: "Créer mon établissement",
+      href: NEW_VENUE_HREF,
+      icon: "plus-circle",
+      pulse: true,
+    },
+  ],
+};
+
+/**
  * The groups a configuration actually shows.
  *
  * Vie nocturne is the only one that moves, and it moves as a whole: the
@@ -393,7 +419,19 @@ export function visibleGroups(
   workspace: Workspace,
   configuration: VenueConfiguration,
   lot: Lot = 2,
+  /**
+   * Whether the account holds an establishment yet.
+   *
+   * False is a real state since the 27 October split: an account picks
+   * « Restaurant » on the chooser and lands on a dashboard whose venue
+   * does not exist. Thirty entries pointing at screens with no venue
+   * to read is thirty ways to reach an empty state; the navigation is
+   * cut to the two things there are to do — look at Accueil, which
+   * carries the card that says so, and create the establishment.
+   */
+  holdsVenue = true,
 ): NavGroup[] {
+  if (!holdsVenue && workspace.id === "restaurant") return [EMPTY_VENUE_GROUP];
   const groups = workspace.groups
     .filter(
       (group) =>
@@ -498,6 +536,28 @@ export function workspaceFor(
     return RESTAURANT_WORKSPACE;
   }
   return resolveWorkspace(pathname);
+}
+
+/**
+ * The phone's five tabs, or the two an empty dashboard has.
+ *
+ * Same reasoning as `visibleGroups`: on a phone the bottom bar *is*
+ * the navigation, and five tabs into screens with no venue behind them
+ * is worse than two that work. The raised centre button goes with
+ * them — door duty on a book that does not exist yet.
+ */
+export function visibleTabs(
+  workspace: Workspace,
+  lot: Lot = 2,
+  holdsVenue = true,
+): BottomTab[] {
+  if (!holdsVenue && workspace.id === "restaurant") {
+    return [
+      { label: "Accueil", href: restaurantHref(""), icon: "layout" },
+      { label: "Créer", href: NEW_VENUE_HREF, icon: "plus-circle" },
+    ];
+  }
+  return itemsInLot(workspace.tabs, lot);
 }
 
 /** Nav items a given role may see. */

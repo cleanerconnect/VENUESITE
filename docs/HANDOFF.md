@@ -92,15 +92,19 @@ a hairline and names neither, and this is the same sidebar.
 of the route index (`lib/nav/routes.ts`), which is what the styleguide
 table, the navigation and the capture tools all read.
 
-### The seven Lot 1 screens, and the door before them
+### The seven Lot 1 screens, and the doors before them
 
 Three nouns in the sprint row, and the word that decides the rest:
 *uniquement*. Seven screens, plus the onboarding flow — « Création de
 Venue » is one of the three nouns and had no screen at all until now.
+Since DigiNegoce's 27 October decision that flow is two walks with a
+choice between them, so the door is three rows rather than one.
 
 | # | Screen | Route | Which noun | What Lot 1 buys |
 |---:|---|---|---|---|
-| 0 | Inscription | `/inscription` | Création de Venue | Six steps a partner walks on their own: themselves, the establishment, the address, a photo, the weekly hours, a summary. The draft is saved on the seam after every step, so a closed tab loses nothing, and step 6 creates the venue and signs them in on it. |
+| 0 | Inscription | `/inscription` | Création de Venue | Two steps, and they create an account: themselves, then the confirmation. No venue — the old road asked a partner to describe a room before they had a session to come back to, and asked « restaurant or bar » of an account that can hold both. |
+| 0 bis | Choisir un espace | `/choisir` | Création de Venue | « Que voulez-vous gérer sur LYFE ? ». Three cards, always three — Restaurant, Bar ou lounge, Événements — each marked « Actif · ouvrir » or « Ajouter ». An account holding exactly one skips it. No call: it reads the session. |
+| 0 ter | Créer mon établissement | `/restaurant/etablissement/nouveau` | Création de Venue | Six steps, inside the dashboard they build for: the management mode, then the establishment, the address, the photos, the ambience, the weekly hours. The draft is saved on the seam after every step, so a closed tab loses nothing, and step 6 creates the venue. Until it does, Accueil holds the empty-state card and the sidebar is reduced to it. |
 | 1 | Connexion | `/login` | Authentification | The one entry point: resolve the account to its venue. Its line for non-partners now opens the flow above instead of offering an e-mail address. |
 | 2 | Ma fiche | `/restaurant/ma-fiche` | Création de Venue | Identity, address, contact, photos and opening hours. The record itself, nothing curated on top of it. Three closed lists since 12 October: **Catégorie** is ten values and an « Autre » with its own line, **Photos** is one principale and five in a carousel, and **Menu** is the item list plus one optional PDF. |
 | 3 | Disponibilités | `/restaurant/disponibilites` | Création de Venue | Two blocks since 5 October: online booking on or off, and the services — days, hours, last booking taken, capacity, open or closed. The pacing rules, the advanced settings, the closed days and the choice of grid left the lot that day. A service is added by naming which one it is, and its hours come with the name: **Petit-déjeuner 7h30–11h00**, Déjeuner 12h00–15h00, Dîner 19h00–23h30. |
@@ -217,7 +221,7 @@ l'air complète dans les deux cas. `CUISINE_IDS` est la liste,
 a son propre champ : `specialties`, une ligne de 80 caractères, celle
 que l'écran de fiche imprime sous la cuisine. Le sélecteur et la ligne
 sont un seul composant, `CuisineFields`, parce que Ma fiche · Détails et
-l'étape 2 de l'inscription posent la même question.
+l'étape 2 de la création d'établissement posent la même question.
 
 **Le menu est une liste, plus le PDF.** L'onglet Menu d'un déploiement
 basique était un téléversement et rien d'autre : un PDF, ou jusqu'à dix
@@ -240,7 +244,8 @@ chaque lieu dans une tuile carrée ; les seules images que le portail
 savait recevoir étaient les photos du carrousel, en 16:9, donc la tuile
 était un recadrage central d'une photo choisie pour une autre forme, et
 un logo y perdait ses propres bords. `ThumbnailUpload` sur Ma fiche ·
-Identité et une quatrième zone à l'étape 4 de l'inscription recadrent en
+Identité et une quatrième zone à l'étape 4 de la création
+d'établissement recadrent en
 1:1 **dans le navigateur** (`src/lib/assets/square.ts`) : l'objet stocké
 est carré par construction, `thumbnail_url` est une promesse que la
 charge utile peut tenir, et l'aperçu que le partenaire approuve est la
@@ -352,7 +357,7 @@ node tools/verify/events.mjs          # the 19 event + shared routes
 node tools/verify/states.mjs          # ?etat= forceable on every venue route in the lot
 node tools/verify/configuration.mjs   # restaurant vs lounge, and no « couverts » on a bar's screens
 node tools/verify/audience.mjs        # the minimum group of ten, both configurations
-node tools/verify/inscription.mjs     # the seven onboarding steps, the resume, the landing
+node tools/verify/inscription.mjs     # the two account steps, and the chooser behind them
 node tools/verify/journey.mjs         # one partner's whole first day, as a person would do it
 node tools/verify/edges.mjs           # the paths taken by accident — see below
 node tools/verify/decisions.mjs       # LYFE's review, what each state allows, the cancellation, the search, the guest
@@ -512,17 +517,22 @@ Two more rules the pass is held to:
   and still not inside a 900px laptop window, and the content cannot
   shrink further without an eighth step the contract does not have.
 
-  So the button left the card. `/inscription` now pins its action row
-  to the bottom of the window with the same `SAVE_BAR_CARD` Ma fiche
-  and Disponibilités use, under a local shell that differs from
+  So the button left the card. Both onboarding routes pin their action
+  row to the bottom of the window with the same `SAVE_BAR_CARD` Ma
+  fiche and Disponibilités use. `/restaurant/etablissement/nouveau`
+  uses `SAVE_BAR_SHELL` itself, because it sits inside the dashboard
+  and a phone has the tab bar under it; `/inscription` uses
+  `ONBOARDING_BAR_SHELL` from
+  `src/components/onboarding/pieces.tsx`, which differs from
   `SAVE_BAR_SHELL` in one value — `bottom-0` instead of `bottom-20`,
-  because the onboarding flow has no phone tab bar to clear. It had to
+  because `/inscription` is outside the dashboard and has no phone tab
+  bar to clear. It had to
   come out of the `<Card>`, which is `overflow-hidden` and would have
   pinned the bar to the bottom of the card instead of the screen, and
   the error line came with it, since it is the answer to pressing the
   button. Measured after: the action sits at 883 of 900 at 1440, 783 of
-  800 at 1280, 1007 of 1024 at 768 and 827 of 844 at 390, on all seven
-  steps. `tools/verify/inscription.mjs` carries no ceilings any more —
+  800 at 1280, 1007 of 1024 at 768 and 827 of 844 at 390, on every step
+  of both flows. `tools/verify/inscription.mjs` carries no ceilings any more —
   it asserts the rule itself, and it is run at six sizes.
 
 #### La carte d'une réservation
@@ -648,8 +658,8 @@ build le fait, une fois, et jamais deux.
 
 `"data": "static"` sur un déploiement veut dire qu'aucune base n'est
 rattachée : les écrans s'affichent depuis l'instantané, mais l'étape 6
-de l'inscription refuse de créer l'établissement — il n'y a rien où
-l'écrire. `"dataEngine": "sqlite"` en production veut dire que le
+de la création d'établissement refuse de créer la venue — il n'y a rien
+où l'écrire. `"dataEngine": "sqlite"` en production veut dire que le
 portail écrit dans un fichier qu'un redéploiement jettera.
 
 #### Ce que fait l'étape de build
@@ -953,21 +963,46 @@ follow.
 | `06 États` | `loading` / empty / error / denied | four compositions, not four frames per screen |
 | `07 Téléphone` | the seven phone-first screens at 390 | plus two phone surfaces |
 | `08 Exemple complet · Dar Zellij` | every screen of both lots, populated | `docs/phase7-dar-zellij.json` and the 67 PNGs in `docs/phase7-reference/` |
-| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states, and the onboarding's seven steps at both widths, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1`; its five editable sections are replayed from `docs/lot1-figma-frames.json`, written by `tools/figma/capture-frames.mjs`, and the page is laid out by `tools/figma/present-page09.js` |
+| `09 Dashboard basique · Dar Zellij` | the seven Prio 02 screens at 1440 **and** at 390, with their tab, day, service, overlay and « Enregistré » states, plus the account's two steps, the chooser and the establishment's six, and it plays as a prototype from either width, see §5.1 | `docs/lot1-dar-zellij.json` and the PNGs in `docs/lot1-reference/`, both captured at `LYFE_LOT=1`; its five editable sections are replayed from `docs/lot1-figma-frames.json`, written by `tools/figma/capture-frames.mjs`, and the page is laid out by `tools/figma/present-page09.js` |
 
-**The five sections a partner types into are not drawn by hand.**
+**Seven of the nine sections are not drawn by hand.**
 `tools/figma/capture-frames.mjs` walks the running portal — Connexion,
-five tabs of Ma fiche and the saved state of Détails and of Horaires,
-Disponibilités, Notifications, and the onboarding's seven steps, at
-1440 and at 390,
-38 frames in all — and writes the boxes the browser actually painted,
-with their measured geometry, their fills and their type, to
+the book and its day-and-service states, five tabs of Ma fiche and the
+saved state of Détails and of Horaires, Disponibilités, Notifications,
+the account's two steps, the chooser, the empty Accueil and the
+establishment's six steps, at 1440, at 768 and at 390, 76 frames in
+all — and writes the boxes the browser actually painted, with their
+measured geometry, their fills and their type, to
 `docs/lot1-figma-frames.json`. `tools/figma/replay-page09.js` runs
-inside Figma and draws that file back into the page, moving each
-frame's sidebar and topbar instances across so the sidebar keeps the
-item it shows as active. A frame there cannot claim a field the screen
-does not have, and a field added to the screen reaches the frame by
-re-running one command.
+inside Figma and draws that file back into the page, keeping each frame
+it finds and replacing only its content, so the sidebar keeps the item
+it shows as active and every link into the frame still resolves. A
+frame there cannot claim a field the screen does not have, and a field
+added to the screen reaches the frame by re-running one command.
+
+Two things about running it, both learned by losing a run to them.
+Seed *before* starting the portal: `db/seed.mjs --reset` writes a new
+database file under a server that has the old one open, and the next
+write through that server fails with « attempt to write a readonly
+database », which the save bar reports as « La connexion a échoué » and
+which this tool used to photograph as the « Enregistré » state. A
+`next build` under a running `next start` has the same shape: the
+server action ids in the page stop matching the ones the server
+answers to. And since the responsive pass a screen renders its blocks
+in two lanes — a `md:hidden` stack for the phone and the one the width
+in hand shows — so every control the capture presses is matched with
+`:visible`; without it the first match is as often the hidden copy, and
+clicking it waits thirty seconds for a button that is `display: none`.
+
+A third, found by reading a frame rather than by losing a run:
+`display: contents`. Such an element has no box of its own — its
+children are laid out by *its* parent — so its rect is 0×0, and the
+recorder's « nothing of zero size » rule took its whole subtree with
+it. One Tailwind class, `contents md:grid`, and step 2 of the
+establishment came back at 390 as a title, a sentence and 700px of
+nothing: a frame claiming the step asks no questions. It is lifted now,
+not measured, and the other two widths never showed it because above
+`md` the same element is a real grid.
 
 The two halves used to be one half: the capture was in the repository
 and the replay lived in a chat transcript, so the page could be
@@ -1018,13 +1053,60 @@ the page comes from, so there is no loose text left in a shelf. Arrows
 between an onboarding step and the next, and between the book's days
 and services. 160px between two frames, 320px between two sections.
 
-Three of the eight screens — Accueil, Réservations, Check-in — are not
-in the capture, and the file's prototype lives on the buttons inside
-them: a recreated button is a dead link. So those frames are *adopted*:
-moved into the layout the generator computes, never redrawn. The
-generator reports how many reactions it found and how many point at a
-node that no longer exists; the second number is zero, and a run that
-made it anything else would be a bug.
+Two of the eight screens — Accueil and Check-in — are not in the
+capture, and the file's prototype lives on the buttons inside them: a
+recreated button is a dead link. So those frames are *adopted*: moved
+into the layout the generator computes, never redrawn. The generator
+reports how many reactions it found and how many point at a node that
+no longer exists; the second number is zero, and a run that made it
+anything else would be a bug.
+
+**Réservations was the third until the card.** The book's seven frames
+— the landing screen at 1440 and at 390, the lunch service beside it,
+and the two neighbouring days with a service each — are captured and
+replayed like the rest of the page now, which is how the booking card
+reached them. Two facts had to be faced first, and both live in
+`replay-page09.js`.
+
+*A frame is kept, and only what is inside it changes.* These frames are
+destinations as much as sources: every sidebar on the page points at
+the landing one, each day arrow at its neighbour, each service tab at
+the same day's other service. A destination cannot be rewritten any
+more than a reaction can be written, so swapping a frame for a new one
+of the same name would have taken every link *into* it with it — and
+without one dangling reaction to show for it, because those links
+would simply have pointed at a node that was gone. So the replay
+resizes the frame it found, drops the content, keeps the chrome and
+re-pins it. The node's id, which is what an inbound link holds, never
+changes. It is what `accueil-frames.js` already did to the four Accueil
+frames, now the way every captured frame is drawn.
+
+*A link out of the frame is inherited.* Before the old content goes,
+every reaction carrier in it is cloned, and the clone takes the drawn
+button's box, fill, radius, stroke and children: the look of the new,
+the reaction of the old. The pairing is by name — the file's
+« Accepter » against the capture's « bouton · Accepter », with the
+older « Button · Accepter » spelling read as the same label.
+
+One exception, and it belongs to the book rather than to the tool.
+« Accepter » hangs on a booking waiting for an answer, and a service
+with none draws no Accepter at all — Déjeuner on the 15th is five
+tables and every one of them already confirmed. The link falls back to
+the first card of that book, which opens the same sheet in one tap,
+and the run says which: `hérité … Accepter → la carte`. A link with
+nowhere at all to go is the one case where the replay refuses: it
+leaves the frame exactly as it found it and reports `conservé`, because
+a frame redrawn with a link quietly missing passes every other check
+here.
+
+`replay-dry-run.mjs` holds that ground before a tool call is spent. It
+seeds a stub page with the prototype as the file really carries it,
+runs the replay twice over, and asserts that the census of destinations
+is the same before and after, that nothing points at a node the run
+removed, that every content link ended up on a node the capture drew,
+and that the second pass — which inherits from the first pass's clones,
+as every run after the first one does — moves nothing. Then it plants a
+link with no target and checks that the frame came through untouched.
 
 The Accueil is the one adopted screen whose *content* is generated all
 the same, because it is now fourteen numbers and thirty bars and nobody
@@ -1050,10 +1132,11 @@ had been lost: Accepter on the computer Réservations frame — the one the
 prototype lands on from every sidebar and from Ouvrir le carnet — had
 no reaction since that frame was redrawn at the host scale, so the
 confirmation overlay was reachable from the five day-and-service frames
-and not from the landing one. It is now a clone of the Déjeuner frame's
-Accepter, which carries the link, with the host-scale icon and label
-moved into it and the button's own fill rebound to `couleur/ink` —
-the look of the new, the reaction of the old. And a tile's height depends on its width,
+and not from the landing one. It was fixed with a clone of the
+Déjeuner frame's Accepter carrying the host-scale icon and label and
+the button's own fill rebound to `couleur/ink` — the look of the new,
+the reaction of the old — and that one-off is now the rule the replay
+follows for every frame it redraws. And a tile's height depends on its width,
 so the rows are measured after the column has been laid out, not while
 it is being built: measured too early, every tile is the height of a
 three-line label.
@@ -1128,11 +1211,36 @@ position, because every frame but Connexion carries the same sidebar and
 a host moving between screens should not be thrown back to the top.
 Overlays dissolve in over 0.2s.
 
-Eight sections, one per screen, left to right in the order a partner
-meets them, 240px apart. `0 · Inscription` is the leftmost, before
-Connexion, because it is the door a partner with no account comes
-through; it holds the six steps at both widths and nothing else, as the
-flow has no states beside them — every step *is* a state of one card.
+Nine sections, left to right in the order a partner meets them, 240px
+apart. `0 · Inscription` is the leftmost, before Connexion, because it
+is the door a partner with no account comes through; since the
+27 October split it holds two steps — the account, then the
+confirmation — and nothing else, as the flow has no states beside them:
+every step *is* a state of one card.
+
+`0 bis · Choisir et créer` is the section that decision added, and it is
+numbered « bis » rather than « 1 » because every section after it is
+numbered in the contract and in the links that point there. It holds
+eight frames: the chooser, the dashboard's empty Accueil, and the six
+steps of the establishment. The first carries no chrome — picking a
+dashboard is what it is for, so there is none around it — and the other
+seven do: the creation flow lives *inside* the dashboard it builds, and
+a frame of it without the sidebar would be a frame of a screen the
+product does not have.
+
+**The twenty-one frames of the old seven-step road were deleted** when
+this section was drawn, after checking each one for prototype links:
+they carried none — page 09's 219 reactions live on the book's buttons
+and on the chrome components, which is where `replay-page09.js` earns
+its inheritance — so nothing was lost, and the count was the same
+before and after. A frame that no longer draws a screen is a frame a
+reviewer meets and believes.
+
+One thing the replay will not do for a brand-new section: create it.
+`shelfFor` throws « section absente » rather than inventing a section
+from a name that might be a typo, so the outer section and its three
+device shelves are made once — by hand, or by the presentation — before
+the first replay into them.
 This is the one page in the file whose sections are named for screens
 rather than for the nav groups of `src/lib/nav/workspaces.ts` — a
 prototype reads in the order it is played, not in the order the sidebar
@@ -1161,8 +1269,10 @@ out — is stated on `00 Lisez-moi` under « D'où vient la page 09 », not
 on the page itself. `09` keeps only its title and the four form rules.
 
 The phone flow starts on `Téléphone`, the second starting point, and
-plays the same screens at 390 — the six inscription steps included,
-which carry no chrome because the flow runs outside the portal shell: a fixed header, a scrolling column
+plays the same screens at 390 — the account's two steps and the
+chooser included, which carry no chrome because they run outside the
+portal shell, and the establishment's six, which carry the bottom bar
+because they do not: a fixed header, a scrolling column
 and a fixed bottom bar of four tabs. Attente is Liste d'attente, which
 Lot 1 does not buy, so the bar a basique deployment draws has four tabs
 and not five — `Chrome / BottomTabs · Dashboard basique` on `02`, one

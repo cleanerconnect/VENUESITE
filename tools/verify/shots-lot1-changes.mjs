@@ -66,6 +66,16 @@ await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1500);
 
+// The account, then the chooser, then the establishment: the road the
+// 27 October split put between a signup and a venue.
+await page.locator('button:has-text("Choisir mon espace")').click();
+await settle(2600);
+await page.locator('a:has([data-dashboard="restaurant"])').first().click();
+await settle(2400);
+// Step 1 · the management mode, taken at its default.
+await page.locator('button:has-text("Continuer")').first().click();
+await settle(1500);
+
 await page.getByLabel("Nom de l'établissement").fill("Le Comptoir Doré");
 await page.locator('button:has-text("Un restaurant")').click();
 await page.getByLabel("Ville").selectOption("Casablanca");
@@ -93,9 +103,7 @@ if (await copyDays.count()) {
   await copyDays.click();
   await settle(400);
 }
-await page.locator('button:has-text("Continuer")').first().click();
-await settle(1500);
-await page.locator('button:has-text("Ouvrir mon tableau de bord")').click();
+await page.locator('button:has-text("Créer mon établissement")').first().click();
 await settle(3200);
 
 await shot("validation-bandeau");

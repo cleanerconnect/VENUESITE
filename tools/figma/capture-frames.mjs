@@ -1,11 +1,24 @@
 // What page 09 is drawn from.
 //
+//   node db/seed.mjs --reset
+//   npx next start -p 3230                      # in that order
 //   BASE=http://localhost:3230 node tools/figma/capture-frames.mjs
 //
-// Page 09 of the Figma file is the seven Lot 1 screens. The five
-// sections a partner types into — Connexion, Ma fiche, Disponibilités,
-// Notifications and l'inscription — are not drawn by hand: every frame
-// in them is this capture, replayed by `replay-page09.js`. The tree
+// The order is not decoration. `--reset` writes a new database file
+// under a portal that already has the old one open, and the next write
+// through the running server fails with « attempt to write a readonly
+// database » — which the browser reports as « La connexion a échoué.
+// Rien n'a été enregistré. » in the save bar, and this tool used to
+// photograph as the « Enregistré » state. Seed first, then start; and
+// a `next build` under a running `next start` has the same shape of
+// problem, since the server action ids in the page no longer match the
+// ones the server will answer to.
+//
+// Page 09 of the Figma file is the seven Lot 1 screens. The sections a
+// partner types into — Connexion, Ma fiche, Disponibilités,
+// Notifications, the account and the establishment it creates — are not
+// drawn by hand: every frame in them is this capture, replayed by
+// `replay-page09.js`. The tree
 // below is the *rendered* one — the boxes the browser actually painted,
 // with their measured geometry, their fills and their type — so a frame
 // in Figma cannot claim a field the screen does not have, and a field
@@ -14,7 +27,9 @@
 // What it does not capture is the dashboard chrome: the sidebar and the
 // topbar are Figma components on that page, placed as instances, and
 // redrawing them per frame would be forty copies of one thing to keep in
-// step. `chrome: "dashboard"` says « put the two instances here ».
+// step. `chrome: "dashboard"` says « put the two instances here », and
+// `chrome: "none"` is for the screens with no dashboard around them —
+// Connexion, the account's two steps and the chooser.
 //
 // Output: `docs/lot1-figma-frames.json`.
 
@@ -51,25 +66,97 @@ const SHAPE = {
 };
 const WIDTHS = [1440, 768, 390];
 
+// `:visible` is not decoration. Since the responsive pass a screen
+// renders its blocks in two lanes — a `md:hidden` stack for the phone
+// and the one the width in hand actually shows — so the first match for
+// any control is as often the hidden copy as the real one, and clicking
+// it waits thirty seconds for a button that is `display: none`.
+
+/** The day bar's two arrows, which carry an `aria-label` and no text. */
+const DAY = (label) => [`button[aria-label="${label}"]:visible`, "jour="];
+/** A service tab: a pressed-state button whose own text is the label. */
+const SERVICE = (label) => [`button[aria-pressed]:text-is("${label}"):visible`, "service="];
+
 const FRAMES = [
-  // ── The three the page adopts, at tablet width only ──
+  // ── The two the page still adopts, at tablet width only ──
   //
-  // Accueil, Réservations and Check-in are drawn by hand on page 09 at
-  // 1440 and at 390, because the file's prototype lives on the buttons
-  // inside them and a recreated button is a dead link. At 768 there is
-  // no frame to protect: these keys are new, so the replay creates them
-  // and the linked frames are not touched. Which also puts the one
-  // screen the review asks about on tablet — the book, with its
-  // decisions on a single line — on the page rather than in a sentence.
+  // Accueil and Check-in are drawn by hand on page 09 at 1440 and at
+  // 390, because the file's prototype lives on the buttons inside them
+  // and a recreated button is a dead link. At 768 there is no frame to
+  // protect: those keys are new, so the replay creates them and the
+  // linked frames are not touched.
   { key: "accueil", path: "/restaurant", name: "Accueil", session: true, widths: [768] },
+  { key: "check-in", path: "/restaurant/check-in", name: "Check-in", session: true, widths: [768] },
+
+  // ── The book, at every width, with the states page 09 shows beside it ──
+  //
+  // Réservations used to be adopted too. A link turns out to be
+  // *inheritable* — clone the node that carries it, move the new
+  // drawing into the clone — so `replay-page09.js` now redraws a frame
+  // and keeps every reaction it held, and the book is captured where
+  // page 09 draws it instead of being redrawn by hand there. Which is
+  // what the card asked for: the layout reaches all seven frames of
+  // the book by re-running this.
+  //
+  // `clicks` is the day bar walked. The selectors are pressed in order
+  // and each one is a command the book re-renders from, so « jour
+  // précédent · Déjeuner » is that day and then its lunch service
+  // rather than a frame somebody copied and relabelled. The six states
+  // are at 1440 only, which is where page 09 carries them: the phone
+  // shelf has the book and the overlay and no day walk.
   {
     key: "reservations",
     path: "/restaurant/reservations",
     name: "Réservations",
     session: true,
-    widths: [768],
   },
-  { key: "check-in", path: "/restaurant/check-in", name: "Check-in", session: true, widths: [768] },
+  {
+    key: "reservations-dejeuner",
+    path: "/restaurant/reservations",
+    name: "Réservations · Déjeuner",
+    session: true,
+    widths: [1440],
+    clicks: [SERVICE("Déjeuner")],
+  },
+  {
+    key: "reservations-jour-precedent",
+    path: "/restaurant/reservations",
+    name: "Réservations · jour précédent",
+    session: true,
+    widths: [1440],
+    // Dîner, pressed. A day that is not today has no service in
+    // progress, so the book lands it on the first one — Déjeuner —
+    // where today at half past seven lands on Dîner. The day frames
+    // show the same service as the frame they are reached from, which
+    // is what their own links say: « jour précédent » carries a
+    // Déjeuner button pointing at « jour précédent · Déjeuner », so
+    // the frame it sits on is the dinner service.
+    clicks: [DAY("Jour précédent"), SERVICE("Dîner")],
+  },
+  {
+    key: "reservations-jour-precedent-dejeuner",
+    path: "/restaurant/reservations",
+    name: "Réservations · jour précédent · Déjeuner",
+    session: true,
+    widths: [1440],
+    clicks: [DAY("Jour précédent"), SERVICE("Déjeuner")],
+  },
+  {
+    key: "reservations-jour-suivant",
+    path: "/restaurant/reservations",
+    name: "Réservations · jour suivant",
+    session: true,
+    widths: [1440],
+    clicks: [DAY("Jour suivant"), SERVICE("Dîner")],
+  },
+  {
+    key: "reservations-jour-suivant-dejeuner",
+    path: "/restaurant/reservations",
+    name: "Réservations · jour suivant · Déjeuner",
+    session: true,
+    widths: [1440],
+    clicks: [DAY("Jour suivant"), SERVICE("Déjeuner")],
+  },
 
   { key: "ma-fiche-identite", path: "/restaurant/ma-fiche", name: "Ma fiche", session: true },
   { key: "ma-fiche-details", path: "/restaurant/ma-fiche", name: "Ma fiche · Détails", session: true, tab: "Détails" },
@@ -140,15 +227,40 @@ const FRAMES = [
  */
 const CONNEXION = { key: "connexion", path: "/login", name: "Connexion" };
 
-/** The seven onboarding steps, walked once and shot on each. */
-const ONBOARDING = [
-  { key: "inscription-1", name: "Étape 1 · Vous" },
-  { key: "inscription-2", name: "Étape 2 · Votre établissement" },
-  { key: "inscription-3", name: "Étape 3 · Adresse" },
-  { key: "inscription-4", name: "Étape 4 · Photos" },
-  { key: "inscription-5", name: "Étape 5 · Ambiance et équipements" },
-  { key: "inscription-6", name: "Étape 6 · Horaires" },
-  { key: "inscription-7", name: "Étape 7 · C'est prêt" },
+/**
+ * The road a partner walks before there is a dashboard, in frames.
+ *
+ * Three stretches since DigiNegoce's 27 October decision, and they are
+ * three different kinds of screen — which is why one table cannot hold
+ * them: `/inscription` is a page with no chrome, `/choisir` is another,
+ * and the establishment's six steps are inside the dashboard they
+ * build, so their frames carry the sidebar and the topbar like every
+ * other dashboard frame on the page.
+ */
+const ACCOUNT = [
+  { key: "compte-1", name: "Étape 1 · Vous" },
+  { key: "compte-2", name: "Étape 2 · Votre compte est créé" },
+];
+
+const CHOOSER = {
+  key: "choisir",
+  path: "/choisir",
+  name: "Que voulez-vous gérer sur LYFE ?",
+};
+
+const EMPTY_HOME = {
+  key: "accueil-vide",
+  path: "/restaurant",
+  name: "Accueil · sans établissement",
+};
+
+const VENUE_STEPS_FRAMES = [
+  { key: "etablissement-1", name: "Étape 1 · Mode de gestion des réservations" },
+  { key: "etablissement-2", name: "Étape 2 · Votre établissement" },
+  { key: "etablissement-3", name: "Étape 3 · Adresse" },
+  { key: "etablissement-4", name: "Étape 4 · Photos" },
+  { key: "etablissement-5", name: "Étape 5 · Ambiance et équipements" },
+  { key: "etablissement-6", name: "Étape 6 · Horaires" },
 ];
 
 // ── The recorder ─────────────────────────────────────────────
@@ -274,6 +386,21 @@ const RECORD = String(function record(rootSelector, excludeSelectors) {
     if (el.getAttribute("aria-hidden") === "true") return null;
     const cs = getComputedStyle(el);
     if (cs.display === "none" || cs.visibility === "hidden" || cs.opacity === "0") return null;
+    // `display: contents` has no box of its own: its children are laid
+    // out by *its* parent. So it is lifted rather than measured — and a
+    // 0×0 rect must not take the subtree with it, which is how step 2
+    // of the establishment flow came back at 390 as a title, a sentence
+    // and 700px of nothing. One Tailwind class, `contents md:grid`, and
+    // the frame claimed the step asks no questions.
+    if (cs.display === "contents") {
+      const lifted = [];
+      for (const node of el.childNodes) {
+        if (node.nodeType !== Node.ELEMENT_NODE) continue;
+        const child = walk(node);
+        if (child) lifted.push(child);
+      }
+      return lifted.length ? { t: "lift", kids: lifted } : null;
+    }
     const r = el.getBoundingClientRect();
     if (r.width < 1 || r.height < 1) return null;
     // sr-only: a 1px clipped box carries text nobody sees.
@@ -319,7 +446,10 @@ const RECORD = String(function record(rootSelector, excludeSelectors) {
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         if (el.tagName === "SELECT") continue;
         const child = walk(node);
-        if (child) kids.push(child);
+        if (!child) continue;
+        // A lifted `display: contents` wrapper hands its children up.
+        if (child.t === "lift") kids.push(...child.kids);
+        else kids.push(child);
       }
     }
 
@@ -466,6 +596,97 @@ const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
 });
 
+/**
+ * Enregistrer, pressed and then waited out.
+ *
+ * Two things this is here for. A disabled bar means the draft is not
+ * dirty, which means the edit before it did not take — and thirty
+ * seconds of Playwright waiting for a button that will never enable
+ * reads like a hung browser rather than the click that missed.
+ *
+ * And « Enregistré » is a state the frame is supposed to show, so the
+ * wait is for the save to be *finished* rather than for a second to
+ * pass. Horaires held « Enregistrement… » well past a second and a
+ * half: on a fixed wait the frame was a frame of the save in flight,
+ * and the step that undoes the edit afterwards flipped the switch back
+ * while the write was still going — which left the draft equal to a
+ * baseline that had not moved, Enregistrer disabled, and the week half
+ * shut behind a run that had already died.
+ *
+ * The saved state is held 2.4 s and then fades, so the shot follows
+ * this immediately.
+ */
+const saveNow = async (page) => {
+  const bar = page.locator('button:has-text("Enregistrer"):visible').first();
+  try {
+    // The click auto-waits for the bar to enable.
+    await bar.click({ timeout: 10000 });
+  } catch (error) {
+    throw new Error("Enregistrer ne s'active pas : le brouillon n'a pas bougé");
+  }
+  // Exact, because « Enregistrer » contains « Enregistr » too.
+  try {
+    await page
+      .getByText("Enregistré", { exact: true })
+      .first()
+      .waitFor({ timeout: 20000 });
+  } catch (error) {
+    // What the bar says instead, because « it never said Enregistré »
+    // is the symptom and not the diagnosis: a refused write says so in
+    // that same line, and a stale `next start` serving a rebuilt
+    // `.next` says « La connexion a échoué » there — which is a server
+    // to restart and not a tool to fix.
+    const said = await page
+      .locator('[role="status"]')
+      .allInnerTexts()
+      .catch(() => []);
+    throw new Error(
+      `la barre n'est jamais passée à « Enregistré » · elle dit : ${
+        said.map((t) => t.trim().replace(/\s+/g, " ")).join(" | ") || "rien"
+      }`,
+    );
+  }
+};
+
+/**
+ * A control pressed until the book has actually moved.
+ *
+ * The day and the service live in the query string, so « it worked »
+ * is a thing the browser can be asked about rather than waited out.
+ * Which it has to be: a click a second and a half after
+ * `domcontentloaded` sometimes lands before React has attached its
+ * handler, and a swallowed click leaves the frame showing the day
+ * before — silently, and differently from one run to the next. Three
+ * of six day frames came out of one run as copies of the landing
+ * screen that way.
+ *
+ * The guard is the URL, not the click: an attempt is only repeated
+ * when the query string has not changed, so a click that lands late is
+ * never pressed twice into a two-day jump.
+ */
+const press = async (page, selector, until) => {
+  const want = new RegExp(until);
+  for (let attempt = 1; ; attempt++) {
+    if (want.test(new URL(page.url()).search)) break;
+    await page.locator(selector).first().click();
+    try {
+      await page.waitForFunction(
+        (w) => new RegExp(w).test(window.location.search),
+        until,
+        { timeout: 6000 },
+      );
+      break;
+    } catch (error) {
+      if (attempt >= 4) {
+        throw new Error(`${selector} : rien n'a bougé après ${attempt} essais`);
+      }
+    }
+  }
+  // The push is client-side; the list under it re-renders from the
+  // answer to a fresh read.
+  await page.waitForTimeout(900);
+};
+
 const capture = async (page, selector, exclude = []) => {
   // To the bottom first. A sticky Enregistrer bar is measured where it
   // currently sits, and at the top of a long form that is on top of the
@@ -492,6 +713,9 @@ for (const width of WIDTHS) {
     reducedMotion: "reduce",
   });
   const page = await context.newPage();
+  // Which service `saveHours` closed, so the step after the shot can
+  // reopen that one and not another.
+  let closed = null;
 
   // ── Ma fiche, tab by tab ──
   const landed = await signIn(page, BASE, { venue: "Dar Zellij" });
@@ -508,23 +732,38 @@ for (const width of WIDTHS) {
       await page.locator(`button:text-is("${frame.tab}")`).first().click();
       await page.waitForTimeout(1200);
     }
+    // The day bar, pressed in order.
+    for (const [selector, until] of frame.clicks ?? []) {
+      await press(page, selector, until);
+    }
     if (frame.saveSpec) {
       // A spec screen stages its edits in a draft store and the bar
       // counts them, so one switch is one « modification non
       // enregistrée » — which is the state this frame is for.
-      await page.locator('button[role="switch"]').first().click();
+      await page.locator('button[role="switch"]:visible').first().click();
       await page.waitForTimeout(400);
-      await page.locator('button:has-text("Enregistrer")').first().click();
-      await page.waitForTimeout(800);
+      await saveNow(page);
     }
     if (frame.saveHours) {
       // A switch, like the spec screens — but this one writes a row the
       // booking rules read, so the frame is only honest if the response
       // the form re-renders from is the set that was written.
-      await page.locator('button[role="switch"][aria-label$="· ouvert"]').first().click();
+      //
+      // Which switch, by name, because the reopen after the shot has to
+      // press the same one and « the first one open » is not a name: the
+      // aria-label on these switches is the window they govern —
+      // « Lundi 12:00 · ouvert » — whichever way the switch is thrown,
+      // so it reads the same before and after and `$=` matches every
+      // row. Holding the exact label makes the undo the same control
+      // rather than the next row down.
+      closed = await page
+        .locator('button[role="switch"][aria-label$="· ouvert"]:visible')
+        .first()
+        .getAttribute("aria-label");
+      if (!closed) throw new Error("aucun créneau à fermer sur Horaires");
+      await page.locator(`button[role="switch"][aria-label="${closed}"]:visible`).first().click();
       await page.waitForTimeout(400);
-      await page.locator('button:has-text("Enregistrer")').first().click();
-      await page.waitForTimeout(1000);
+      await saveNow(page);
     }
     if (frame.save) {
       // A chip, not a text field: toggling one is dirty the instant it
@@ -532,15 +771,15 @@ for (const width of WIDTHS) {
       // sent — where a trailing space in a text field is trimmed by the
       // action, so the form lands back on « À jour » with nothing saved.
       await page
-        .locator('fieldset:has(> legend:text-is("Ambiance")) button[role="switch"]')
+        .locator('fieldset:has(> legend:text-is("Ambiance")) button[role="switch"]:visible')
         .nth(4)
         .click();
       await page.waitForTimeout(300);
-      await page.locator('button:has-text("Enregistrer")').first().click();
       // « Enregistré » is held for 2.4 s and then fades — `SaveBar` and
-      // `useOptimisticForm` both say so. The frame has to be taken while
-      // it is up.
-      await page.waitForTimeout(800);
+      // `useOptimisticForm` both say so. The frame has to be taken
+      // while it is up, which is why `saveNow` returns on the word
+      // rather than after a fixed wait.
+      await saveNow(page);
     }
     const shot = await capture(page, "main", ["aside"]);
     frames.push({
@@ -558,11 +797,12 @@ for (const width of WIDTHS) {
     });
     console.log(`  ${frame.key.padEnd(22)} ${width}px · ${Math.round(shot.h)}px de contenu`);
     if (frame.saveHours) {
-      // Reopen it. The shot is taken; the week goes back to the seed.
-      await page.locator('button[role="switch"][aria-label$="· ouvert"]').first().click();
+      // Reopen it — the same switch, by the name it was closed under.
+      // The shot is taken; the week goes back to the seed.
+      await page.locator(`button[role="switch"][aria-label="${closed}"]:visible`).first().click();
       await page.waitForTimeout(400);
-      await page.locator('button:has-text("Enregistrer")').first().click();
-      await page.waitForTimeout(1000);
+      await saveNow(page);
+      closed = null;
     }
   }
 
@@ -603,33 +843,63 @@ for (const width of WIDTHS) {
 }
 
 /**
- * One pass through the seven steps, shot on each.
+ * One pass down the whole road, shot where it turns.
  *
  * A fresh account per width, because a draft is spent once it has made
  * its venue and a second width would reopen somebody else's answers.
+ *
+ * The page signs itself in halfway: `/inscription` belongs to somebody
+ * with no account, and from « Choisir mon espace » onwards the same tab
+ * is a partner's. So the first three frames are captured without chrome
+ * and the rest with it — the establishment's six steps live inside the
+ * dashboard, which is the whole of what the 27 October decision moved.
  */
 async function walkOnboarding(page, width, shape) {
   const stamp = `${Date.now().toString(36)}${width}`;
-  const shot = async (step) => {
-    // The density wrapper, which is the flow's own column: `body > div`
-    // also matches the toast viewport, which is a zero-height div.
-    const taken = await capture(page, '[data-density="host"]', []);
+
+  /**
+   * A page with no dashboard around it.
+   *
+   * `/inscription` is captured off its density wrapper — the flow's own
+   * column, where `body > div` would also match the toast viewport,
+   * which is a zero-height div. `/choisir` has no such wrapper, because
+   * it is not a flow: its own `main` is the screen.
+   */
+  const bare = async (key, name, label, selector = '[data-density="host"]') => {
+    const taken = await capture(page, selector, []);
     frames.push({
-      key: `${ONBOARDING[step - 1].key}@${width}`,
-      name: `/inscription · ${ONBOARDING[step - 1].name}${shape.suffix}`,
+      key: `${key}@${width}`,
+      name: `${name}${shape.suffix}`,
       width,
       chrome: "none",
       at: { x: Math.round(taken.x), y: Math.round(taken.y) },
       root: taken.tree,
       height: Math.max(shape.height, Math.round(taken.y + taken.h) + 48),
     });
-    console.log(`  inscription ${step}/7${" ".repeat(11)} ${width}px · ${Math.round(taken.h)}px`);
+    console.log(`  ${label.padEnd(22)} ${width}px · ${Math.round(taken.h)}px`);
   };
-  const next = async (label = "Continuer") => {
+
+  /** A screen inside the dashboard: `main`, and the two instances. */
+  const inside = async (key, name, label) => {
+    const taken = await capture(page, "main", ["aside"]);
+    frames.push({
+      key: `${key}@${width}`,
+      name: `${name}${shape.suffix}`,
+      width,
+      chrome: "dashboard",
+      at: { x: Math.round(taken.x), y: Math.round(taken.y) },
+      root: taken.tree,
+      height: Math.max(shape.height, Math.round(taken.h) + shape.chrome),
+    });
+    console.log(`  ${label.padEnd(22)} ${width}px · ${Math.round(taken.h)}px`);
+  };
+
+  const press = async (label) => {
     await page.locator(`button:has-text("${label}")`).first().click();
     await page.waitForTimeout(1600);
   };
 
+  // ── The account ──
   await page.goto(`${BASE}/inscription`, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForTimeout(1200);
   await page.getByLabel("Votre nom").fill("Yassine Alami");
@@ -637,8 +907,43 @@ async function walkOnboarding(page, width, shape) {
   await page.getByLabel("Téléphone", { exact: true }).fill("+212 6 61 22 33 44");
   await page.getByLabel("Mot de passe", { exact: true }).fill("motdepasse1");
   await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
-  await shot(1);
-  await next();
+  await bare(ACCOUNT[0].key, `/inscription · ${ACCOUNT[0].name}`, "compte 1/2");
+  await press("Continuer");
+  await bare(ACCOUNT[1].key, `/inscription · ${ACCOUNT[1].name}`, "compte 2/2");
+
+  // ── The chooser ──
+  //
+  // Pressed rather than navigated: the button is what writes the
+  // session, and a `goto` here would be a frame of /login.
+  await press("Choisir mon espace");
+  await page.waitForTimeout(1200);
+  await bare(CHOOSER.key, `${CHOOSER.path} · ${CHOOSER.name}`, "choisir", "main");
+
+  // ── The dashboard, before it has an establishment ──
+  await page.goto(`${BASE}${EMPTY_HOME.path}`, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForTimeout(1600);
+  await inside(EMPTY_HOME.key, `${EMPTY_HOME.path} · ${EMPTY_HOME.name}`, "accueil vide");
+
+  // ── The establishment, step by step ──
+  const route = "/restaurant/etablissement/nouveau";
+  const step = async (n) =>
+    inside(
+      VENUE_STEPS_FRAMES[n - 1].key,
+      `${route} · ${VENUE_STEPS_FRAMES[n - 1].name}`,
+      `établissement ${n}/6`,
+    );
+
+  await page.goto(`${BASE}${route}?type=restaurant`, {
+    waitUntil: "domcontentloaded",
+    timeout: 30000,
+  });
+  await page.waitForTimeout(1600);
+  // Step 1 is shot on its default — « Dashboard LYFE » — because that is
+  // the answer a partner who presses Continuer has given, and the frame
+  // should show the choice as it is offered rather than as a tool left
+  // it.
+  await step(1);
+  await press("Continuer");
 
   await page.getByLabel("Nom de l'établissement").fill("Le Petit Riad");
   await page.getByLabel("Type de cuisine").selectOption("marocaine");
@@ -649,8 +954,8 @@ async function walkOnboarding(page, width, shape) {
     .click();
   await page.getByLabel("Ville").selectOption("Marrakech");
   await page.waitForTimeout(400);
-  await shot(2);
-  await next();
+  await step(2);
+  await press("Continuer");
 
   await page.getByLabel("Quartier").fill("Médina");
   await page.getByLabel("Adresse", { exact: true }).fill("45 rue de la Kasbah, Médina");
@@ -659,11 +964,11 @@ async function walkOnboarding(page, width, shape) {
     await map.click({ position: { x: 140, y: 110 } });
     await page.waitForTimeout(600);
   }
-  await shot(3);
-  await next();
+  await step(3);
+  await press("Continuer");
 
-  await shot(4);
-  await next();
+  await step(4);
+  await press("Continuer");
 
   const chips = page.locator('fieldset:has(> legend:text-is("Ambiance")) button[role="switch"]');
   for (const i of [0, 2, 3]) {
@@ -675,15 +980,17 @@ async function walkOnboarding(page, width, shape) {
     await rows.nth(i).locator('[role="switch"]').click();
     await page.waitForTimeout(150);
   }
-  await shot(5);
-  await next();
+  await step(5);
+  await press("Continuer");
 
   await page.locator('button:has-text("Appliquer lundi à tous les jours")').click();
   await page.waitForTimeout(500);
-  await shot(6);
-  await next();
-
-  await shot(7);
+  await step(6);
+  // Not pressed. « Créer mon établissement » is the last button of the
+  // road and there is no screen after it that this section draws — the
+  // Accueil it opens is section 2, captured from the seeded venue. One
+  // more press would leave a half-built establishment in the database
+  // behind every capture, at three widths.
 }
 
 await browser.close();

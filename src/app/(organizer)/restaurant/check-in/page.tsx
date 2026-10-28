@@ -33,6 +33,9 @@ interface Props {
 export default async function CheckInPage({ searchParams }: Props) {
   const session = await resolveSession();
   if (!session) redirect("/login");
+  // No establishment yet: every screen here is about one. Accueil is
+  // the one that can say so — see `EmptyDashboard`.
+  if (session.venues.length === 0) redirect("/restaurant");
   const lot = activeLot();
 
   const query = await searchParams;

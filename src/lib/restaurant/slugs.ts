@@ -164,6 +164,17 @@ export function restaurantHref(slug: RestaurantSlug): string {
 export const RESTAURANT_SETTINGS_PATH = `${RESTAURANT_BASE}/ma-fiche`;
 
 /**
+ * « Créer mon établissement » — the six steps, inside the dashboard.
+ *
+ * A route of its own rather than a slug for the same reason Ma fiche
+ * is: it is a flow with uploads and a map, not a screen made of
+ * blocks. It is also the one venue route that works *without* a venue,
+ * which is why nothing about it is derived from `RestaurantSlug` — the
+ * slug list is the list of screens that read an establishment.
+ */
+export const NEW_VENUE_PATH = `${RESTAURANT_BASE}/etablissement/nouveau`;
+
+/**
  * Fiche client. A detail route under Clients rather than a slug of its
  * own, because it is always opened for one guest — the spec counts it
  * among the thirty screens, and this is where it lives.

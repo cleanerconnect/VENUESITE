@@ -243,6 +243,12 @@ export class HttpRestaurantRepository implements RestaurantRepository {
     );
   }
 
+  startVenueDraft(ownerId: string) {
+    return this.request<OnboardingDraft>("POST", "/api/business/venue-drafts", {
+      ownerId,
+    });
+  }
+
   getOnboardingDraft(draftId: string) {
     return this.request<OnboardingDraft | null>(
       "GET",

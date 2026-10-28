@@ -26,6 +26,7 @@ import type { AnalyticsPeriod } from "@/lib/types/business";
 import { ANALYTICS_PERIOD } from "@/lib/types/business";
 import type { RestaurantOverview } from "@/lib/types/restaurant";
 import { RestaurantScreen } from "@/components/restaurant/RestaurantScreen";
+import { EmptyDashboard } from "@/components/restaurant/EmptyDashboard";
 
 // One route file for the whole restaurant workspace.
 //
@@ -72,6 +73,20 @@ export default async function RestaurantSectionPage({
   // reads a venue id from the URL, and no venue constant is imported.
   const session = await resolveSession();
   if (!session) redirect("/login");
+
+  // A dashboard with no establishment yet — the state the 27 October
+  // split made reachable. Accueil answers it with one card and one
+  // button; every other screen of the product is about an
+  // establishment, so there is nothing for them to draw and the
+  // partner is sent to the one screen that can say so.
+  //
+  // In front of the repository rather than inside it: with no venue
+  // there is no venue id, and `getVenueSettings("")` is a query with
+  // no answer. It used to be unreachable, and it used to throw.
+  if (session.venues.length === 0) {
+    if (slug !== "") redirect(restaurantHref(""));
+    return <EmptyDashboard firstName={session.firstName} />;
+  }
 
   const query = await searchParams;
   const period = readPeriod(query.p);

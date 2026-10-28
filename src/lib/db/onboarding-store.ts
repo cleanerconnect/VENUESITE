@@ -16,11 +16,16 @@ import "server-only";
 import { randomUUID, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { all, one, run, transaction } from "./store";
 import type {
+  ManagementMode,
   OnboardingDay,
   OnboardingDraft,
   OnboardingVenueType,
 } from "@/lib/types/onboarding";
-import { defaultHours } from "@/lib/types/onboarding";
+import {
+  DEFAULT_MANAGEMENT_MODE,
+  defaultHours,
+  isManagementMode,
+} from "@/lib/types/onboarding";
 
 // ── Accounts ─────────────────────────────────────────────────
 
@@ -172,18 +177,30 @@ function rowToDraft(r: Record<string, unknown>): OnboardingDraft {
     ambience: list(r.ambience),
     features: list(r.features),
     hours: hours.length ? hours : defaultHours(),
+    managementMode: isManagementMode(String(r.management_mode ?? ""))
+      ? (String(r.management_mode) as ManagementMode)
+      : DEFAULT_MANAGEMENT_MODE,
     submittedVenueId: r.submitted_venue_id ? String(r.submitted_venue_id) : null,
     updatedAt: String(r.updated_at),
   };
 }
 
+/**
+ * A blank venue draft for an account that already exists.
+ *
+ * `step` starts at 1 rather than 2: the step numbers are the venue
+ * flow's own now, and its first screen is « Mode de gestion des
+ * réservations ». It used to start at 2 because the account was step 1
+ * of the same road, and the row was written by the call that had just
+ * finished it.
+ */
 export async function createDraft(ownerId: string): Promise<OnboardingDraft> {
   const at = new Date().toISOString();
   const id = `onb_${randomUUID().slice(0, 12)}`;
   await run(
     `INSERT INTO onboarding_drafts
        (id, owner_id, step, hours, created_at, updated_at)
-     VALUES (?, ?, 2, ?, ?, ?)`,
+     VALUES (?, ?, 1, ?, ?, ?)`,
     id,
     ownerId,
     JSON.stringify(defaultHours()),
@@ -226,6 +243,7 @@ const FIELD: Record<string, string> = {
   photo2ObjectKey: "photo2_object_key",
   photo2ContentType: "photo2_content_type",
   photo2SizeBytes: "photo2_size_bytes",
+  managementMode: "management_mode",
   menuObjectKey: "menu_object_key",
   menuContentType: "menu_content_type",
   menuSizeBytes: "menu_size_bytes",
@@ -332,8 +350,9 @@ export async function createVenueFromDraft(
          (id, kind, name, short_name, initials, tagline, description,
           cuisine, specialties, category, address, district, city,
           latitude, longitude, contact_email, contact_phone, website, currency,
-          capacity, price_range, onboarding_completed, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, '', '', ?, ?, '', ?, ?, ?, ?, ?, ?, ?, '', 'MAD', ?, ?, 1,
+          capacity, price_range, management_mode, onboarding_completed, status,
+          created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, '', '', ?, ?, '', ?, ?, ?, ?, ?, ?, ?, '', 'MAD', ?, ?, ?, 1,
                'pending_review', ?, ?)`,
       venueId,
       kind,
@@ -351,6 +370,7 @@ export async function createVenueFromDraft(
       account?.phone ?? "",
       capacity,
       draft.priceRange,
+      draft.managementMode,
       at,
       at,
     );
