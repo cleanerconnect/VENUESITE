@@ -9,6 +9,10 @@
 //   · no `DATABASE_URL`  — nothing to do. The portal falls back to
 //     SQLite or to the frozen snapshot, which is the documented
 //     behaviour of a deployment with no database attached.
+//   · a `DATABASE_URL` nothing answers on — the schema received nothing,
+//     which is why this one is not always fatal: on a Vercel **preview**
+//     it is said and the build continues, and everywhere else it stops
+//     the build as it always did. See the probe below.
 //   · an empty database — the schema is applied and the demo dataset is
 //     copied in, so the first deploy on a fresh Neon project lands on
 //     Dar Zellij rather than on an empty portal.
@@ -99,7 +103,7 @@
 import { execFileSync } from "node:child_process";
 import { rmSync } from "node:fs";
 import { resolve } from "node:path";
-import { connect } from "./pg.mjs";
+import { connect, reachable } from "./pg.mjs";
 import {
   DEMO_ACCOUNTS,
   PLATFORM_ADMIN,
@@ -177,7 +181,55 @@ if (!process.env.DATABASE_URL) {
   process.exit(0);
 }
 
-console.log("db:bootstrap — DATABASE_URL présent, application du schéma");
+// ── Est-ce que ce build atteint seulement la base ? ──────────────────
+//
+// `DATABASE_URL` posé et la base qui répond sont deux faits distincts,
+// et ils ne méritent pas la même issue. Une base qu'on atteint et qui
+// refuse une instruction peut avoir un schéma à moitié appliqué : le
+// build doit échouer, un déploiement par-dessus lirait une forme qui
+// n'existe pas. Une base qu'on n'atteint pas n'a rien reçu du tout.
+//
+// Le sonde le demande avant la moindre écriture — et réessaie, parce
+// que Neon suspend un endpoint inactif et le réveille à la première
+// connexion : le premier build après une heure calme est celui qui
+// paie. C'est aussi ce qui explique que sur ce projet **tous** les
+// déploiements Preview échouaient et tous les Production passaient,
+// l'un suivant l'autre de quelques minutes sur la même base : le
+// Preview réveillait l'endpoint, la Production le trouvait chaud.
+const reach = await reachable();
+if (!reach.ok) {
+  // `VERCEL_ENV` vaut `production`, `preview` ou `development`. Un
+  // aperçu est un coup d'œil au front-end, et le faire dépendre d'une
+  // base que son environnement n'atteint pas, c'est rendre chaque PR
+  // rouge pour une raison qui n'est pas dans la PR. En production le
+  // comportement ne bouge pas : une base injoignable arrête le build,
+  // et le déploiement précédent reste en ligne.
+  if (process.env.VERCEL_ENV === "preview") {
+    console.log(
+      `db:bootstrap — base injoignable après ${reach.attempts} tentatives ` +
+        `(${reach.why}).\n` +
+        "  Aperçu (VERCEL_ENV=preview) : le schéma n'a reçu aucune " +
+        "écriture et le build continue.\n" +
+        "  Vérifiez /api/health sur l'aperçu : « data » dira si " +
+        "l'exécution, elle, atteint la base.",
+    );
+    process.exit(0);
+  }
+  console.error(
+    `db:bootstrap — base injoignable après ${reach.attempts} tentatives ` +
+      `(${reach.why}).\n` +
+      "  Le schéma n'a reçu aucune écriture. Relancez le déploiement, " +
+      "ou posez LYFE_SKIP_DB_BOOTSTRAP=1 pour livrer le front-end sans " +
+      "toucher à la base.",
+  );
+  process.exit(1);
+}
+
+console.log(
+  "db:bootstrap — DATABASE_URL présent, base joignable" +
+    (reach.attempts > 1 ? ` (après ${reach.attempts} tentatives)` : "") +
+    ", application du schéma",
+);
 run("db/migrate.mjs");
 
 // A cheap look before the expensive part. The authoritative check is the

@@ -372,6 +372,14 @@ node tools/verify/handshake.mjs       # the app and the portal on one database �
 node tools/verify/extract.mjs         # records what every route renders (asserts nothing)
 ```
 
+One more needs neither a browser nor a server — it runs the build's own
+first half against crafted environments and reads its exit code:
+
+```bash
+node tools/verify/deploiement.mjs     # the four outcomes of db/bootstrap.mjs
+DATABASE_URL=postgres://… node tools/verify/deploiement.mjs   # plus the fifth
+```
+
 Seven more scripts sit beside them with an underscore in front of the
 name — `_stress.mjs`, `_stress2.mjs`, `_store-stress.mts`, `_perf.mjs`,
 `_loadseed.mjs`, `_bundle.mjs`, `_pg-cases.sh`. They belong to the Lot 1
@@ -643,6 +651,7 @@ dialectes. Une seule variable décide : `DATABASE_URL`.
 | `DATABASE_POOL_MAX` | facultatif, 4 par défaut : le plafond de connexions par instance |
 | `NEXT_PUBLIC_VENUE_TZ` | facultatif, `Africa/Casablanca` par défaut : le fuseau de l'établissement |
 | `LYFE_SKIP_DB_BOOTSTRAP` | facultatif : saute l'étape de base au build (voir plus bas) |
+| `VERCEL_ENV` | posé par Vercel (`production`, `preview`, `development`) et **lu** par l'étape de base : sur un aperçu, une base injoignable ne fait plus échouer le build (voir plus bas) |
 
 **Dans Vercel**, une fois par projet :
 
@@ -682,8 +691,52 @@ le journal de build :
 | Ce qu'il trouve | Ce qu'il fait |
 |---|---|
 | pas de `DATABASE_URL` | rien. Le portail retombe sur SQLite ou sur l'instantané, ce qui est le comportement documenté d'un déploiement sans base. |
+| un `DATABASE_URL` sur lequel **personne ne répond** | rien n'a été écrit, puisque rien n'a pu l'être. En production le build s'arrête — le déploiement précédent reste en ligne, ce qui vaut mieux qu'un nouveau par-dessus un schéma non préparé. Sur un **aperçu** Vercel il le dit et continue. Voir « Pourquoi tous les aperçus échouaient » ci-dessous. |
 | une base **vide** | applique le schéma, génère le jeu de démonstration et le copie. Le premier déploiement d'un projet Neon neuf atterrit donc sur Dar Zellij plutôt que sur un portail vide. |
 | une base **avec au moins un établissement** | applique le schéma — c'est idempotent, et c'est ainsi qu'un changement de schéma arrive en production — complète **les pièces de démonstration qui manquent** et rafraîchit **le carnet** (voir ci-dessous). Rien d'autre n'est écrit. |
+
+#### Pourquoi tous les aperçus échouaient, et pas la production
+
+Un fait d'abord, parce qu'il est plus net que n'importe quelle
+hypothèse : sur ce projet, **tous** les déploiements `Production` ont
+réussi et **tous** les déploiements `Preview` ont échoué, sans
+exception, du 12 au 28 octobre. `1c4475c`, `6d1afbe`, `b5a74fd` et
+`9d346dd` verts en production ; les aperçus de `97b608f`, `84313c5`,
+`d556369`, `9b27114`, `13fc7a6`, `f07910c`, `58cd9ce`, `5944b58`,
+`c3d0c00` et `9101bdf` rouges. Du code identique est parti des deux
+côtés — un merge et sa branche ont le même arbre — donc ce n'était
+jamais le code. (`gh api repos/<owner>/<repo>/deployments` puis
+`/statuses` ; les journaux de build, eux, ne sortent que de Vercel.)
+
+Ce que le build fait tient en deux étapes, et une seule lit
+l'environnement. `next build` passe avec un `DATABASE_URL` injoignable —
+vérifié, aucune page prérendue n'ouvre de connexion. `db/bootstrap.mjs`
+ne passait pas : `db/migrate.mjs` sortait en erreur sur
+`getaddrinfo ENOTFOUND`, et son code de sortie arrêtait la commande.
+
+Deux mécanismes expliquent qu'un aperçu n'atteigne pas la base que la
+production atteint, et l'étape couvre les deux :
+
+1. **Neon suspend un endpoint inactif** et le réveille à la première
+   connexion. L'aperçu part quelques minutes avant la production sur la
+   même base : c'est lui qui paie le réveil. La sonde réessaie donc —
+   quatre tentatives, 1 s, 2 s, 4 s — et `pg` reçoit enfin un
+   `connectionTimeoutMillis`, sans lequel un build pend sur un TCP
+   connect jusqu'à ce qu'on le tue.
+2. **L'environnement `Preview` peut porter un `DATABASE_URL` qui ne
+   résout pas** — une branche de base par déploiement que rien n'a
+   créée. Dans ce cas la sonde échoue pour de bon, et sur un aperçu
+   seulement l'étape le dit et rend la main : un coup d'œil au
+   front-end n'a pas à dépendre d'une base que son environnement
+   n'atteint pas.
+
+**Ce que cela ne relâche pas.** La sonde distingue *injoignable* de
+*jointe et refusée*, et c'est tout l'intérêt de la faire avant la
+première écriture. Une base qui répond puis refuse une instruction peut
+avoir un schéma à moitié appliqué ; ce cas-là arrête le build partout,
+aperçus compris. `tools/verify/deploiement.mjs` l'affirme, et c'est
+l'assertion de ce fichier qu'il ne faut jamais assouplir pour faire
+verdir un contrôle.
 
 **Aucun `TRUNCATE` dans ce chemin.** C'est la différence entre cette
 étape et `db:reset`, et elle est structurelle : `db/push.mjs` a deux

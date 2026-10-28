@@ -28,14 +28,70 @@ export function requireUrl() {
   return url;
 }
 
-export async function connect() {
-  const url = requireUrl();
-  const client = new pg.Client({
+/** One place for the SSL rule, now that two callers need a client. */
+function clientFor(url, extra) {
+  return new pg.Client({
     connectionString: url,
     ssl: /@(localhost|127\.0\.0\.1)[:/]/.test(url) ? undefined : { rejectUnauthorized: true },
+    ...extra,
   });
+}
+
+export async function connect() {
+  const client = clientFor(requireUrl());
   await client.connect();
   return client;
+}
+
+/**
+ * Whether this process can reach the database at all, writing nothing.
+ *
+ * `DATABASE_URL` being set and the database answering are two different
+ * facts, and a build has different business with each: a URL nobody can
+ * connect to means the schema was **not** touched, while a database that
+ * answers and then refuses a statement means it may have been.
+ * `db/bootstrap.mjs` asks this before it applies anything, so it can
+ * tell those two apart structurally instead of reading them off one exit
+ * code.
+ *
+ * **It retries, and that is the point.** Neon suspends an idle endpoint
+ * and wakes it on the first connection, so the first build after a quiet
+ * hour is the one that pays — and `pg` has no connect timeout of its
+ * own, so a build either hangs on it or dies on whatever the wake
+ * returns. Each attempt is bounded and the gaps double, which is what
+ * turns a cold start into four seconds of waiting rather than a red
+ * deployment.
+ *
+ * Only connection failures are retried. A database that answers is
+ * reachable even when it then says no — that answer belongs to the
+ * caller, not to this probe.
+ */
+export async function reachable({ attempts = 4, timeoutMs = 8_000 } = {}) {
+  const url = requireUrl();
+  let why = "";
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const client = clientFor(url, { connectionTimeoutMillis: timeoutMs });
+    try {
+      await client.connect();
+      await client.query("SELECT 1");
+      return { ok: true, attempts: attempt };
+    } catch (error) {
+      why = error?.message ?? String(error);
+      if (attempt < attempts) {
+        const waitMs = 1_000 * 2 ** (attempt - 1);
+        console.log(
+          `  base injoignable (${why}) — nouvelle tentative dans ${waitMs / 1000} s ` +
+            `(${attempt}/${attempts - 1})`,
+        );
+        await new Promise((done) => setTimeout(done, waitMs));
+      }
+    } finally {
+      // `end()` on a client that never connected rejects; nothing here
+      // depends on the close, so it is allowed to fail quietly.
+      await client.end().catch(() => {});
+    }
+  }
+  return { ok: false, why, attempts };
 }
 
 /** The tables of `db/schema.sql`, in the order it declares them. */
