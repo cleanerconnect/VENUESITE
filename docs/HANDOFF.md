@@ -695,7 +695,7 @@ le journal de build :
 | une base **vide** | applique le schéma, génère le jeu de démonstration et le copie. Le premier déploiement d'un projet Neon neuf atterrit donc sur Dar Zellij plutôt que sur un portail vide. |
 | une base **avec au moins un établissement** | applique le schéma — c'est idempotent, et c'est ainsi qu'un changement de schéma arrive en production — complète **les pièces de démonstration qui manquent** et rafraîchit **le carnet** (voir ci-dessous). Rien d'autre n'est écrit. |
 
-#### Pourquoi tous les aperçus échouaient, et pas la production
+#### Les aperçus échouent, la production passe — ce qui est établi, et ce qui ne l'est pas
 
 Un fait d'abord, parce qu'il est plus net que n'importe quelle
 hypothèse : sur ce projet, **tous** les déploiements `Production` ont
@@ -714,8 +714,9 @@ vérifié, aucune page prérendue n'ouvre de connexion. `db/bootstrap.mjs`
 ne passait pas : `db/migrate.mjs` sortait en erreur sur
 `getaddrinfo ENOTFOUND`, et son code de sortie arrêtait la commande.
 
-Deux mécanismes expliquent qu'un aperçu n'atteigne pas la base que la
-production atteint, et l'étape couvre les deux :
+Deux mécanismes pourraient expliquer qu'un aperçu n'atteigne pas la
+base que la production atteint, et l'étape couvre les deux — **sans que
+cela ait suffi** : voir la fin de cette section.
 
 1. **Neon suspend un endpoint inactif** et le réveille à la première
    connexion. L'aperçu part quelques minutes avant la production sur la
@@ -737,6 +738,42 @@ avoir un schéma à moitié appliqué ; ce cas-là arrête le build partout,
 aperçus compris. `tools/verify/deploiement.mjs` l'affirme, et c'est
 l'assertion de ce fichier qu'il ne faut jamais assouplir pour faire
 verdir un contrôle.
+
+**Et cela n'a pas suffi.** L'aperçu de `8d4159f` — le commit qui porte
+cette sonde — a échoué comme les autres. Il faut donc lire cette section
+pour ce qu'elle est : deux hypothèses éliminées plutôt qu'une cause
+trouvée. Si la sonde avait été le problème, cet aperçu serait vert ; il
+ne l'est pas, donc **la base de l'aperçu répond** et l'échec est
+ailleurs, ou il n'est pas dans le build du tout.
+
+Ce qui reste établi, et qui vaut pour la prochaine tentative :
+
+- le partage est parfait entre les deux environnements, sur des arbres
+  identiques, depuis le 12 octobre : ce n'est pas le code ;
+- `next build` passe avec un `DATABASE_URL` injoignable, et la commande
+  complète de `vercel.json` passe de bout en bout dans la forme d'un
+  aperçu : le build, tel qu'on peut le rejouer ici, n'a pas de raison
+  d'échouer ;
+- le déploiement de `8d4159f` a vécu **29 secondes** (créé à 14:03:33,
+  mis à jour à 14:04:02) : assez pour une installation et une étape de
+  base, trop peu pour un `next build` complet de ce dépôt, qui compile
+  en ~25 s après l'installation. L'échec est donc probablement **avant
+  ou pendant** l'étape de base, pas dans le rendu des pages.
+
+Ce qui manque est une seule chose, et elle n'est accessible qu'au
+propriétaire du projet Vercel :
+
+```bash
+npx vercel inspect dpl_HCDVgd2oiYMPc6iWJRZSyG9FpaC6 --logs
+```
+
+ou, ce qui reviendrait au même, la liste des variables d'environnement
+de l'environnement `Preview` à côté de celle de `Production`. Depuis un
+conteneur d'agent, `vercel.com` et `*.vercel.app` répondent 403 au
+CONNECT et `vercel inspect` demande un jeton : les journaux de build ne
+sortent pas d'ici, et aucune des trois sources utilisables — l'API des
+déploiements de GitHub, la forme de la commande, la reproduction locale
+— ne dit la ligne d'erreur.
 
 **Aucun `TRUNCATE` dans ce chemin.** C'est la différence entre cette
 étape et `db:reset`, et elle est structurelle : `db/push.mjs` a deux
