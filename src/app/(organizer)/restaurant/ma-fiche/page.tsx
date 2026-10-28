@@ -30,6 +30,9 @@ interface Props {
 export default async function MaFichePage({ searchParams }: Props) {
   const session = await resolveSession();
   if (!session) redirect("/login");
+  // No establishment yet: every screen here is about one. Accueil is
+  // the one that can say so — see `EmptyDashboard`.
+  if (session.venues.length === 0) redirect("/restaurant");
   const lot = activeLot();
 
   // `?etat=` forces the three states here too, so every one of the

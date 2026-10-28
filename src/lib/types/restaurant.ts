@@ -5,6 +5,8 @@
 // component. Nothing here is UI — the screen specs are derived from these
 // types, never the other way round.
 
+import type { ManagementMode } from "./onboarding";
+
 export type RestaurantKind =
   | "bistro"
   | "gastronomique"
@@ -112,6 +114,14 @@ export interface RestaurantProfile {
   contactPhone: string;
   website: string;
   currency: string;
+  /**
+   * Where a booking for this establishment lands: in this dashboard, on
+   * WhatsApp, or in the partner's own system through the API. Chosen on
+   * the first screen of the creation flow, and a fact about the venue
+   * rather than a portal setting — which is why it travels on the
+   * profile and reaches the app's payload.
+   */
+  managementMode: ManagementMode;
   onboardingCompleted: boolean;
   /** LYFE's review. The app lists only a `validated` venue. */
   status: VenueStatus;

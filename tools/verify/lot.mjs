@@ -70,6 +70,20 @@ export function venuePaths() {
   return venueScreens().map(([path]) => path);
 }
 
+/**
+ * The venue routes where `?etat=` means something.
+ *
+ * Every screen that reads an establishment through the repository, which
+ * is all of them but the creation flow: that one reads a draft, so there
+ * is no read to fail and no role to refuse. The registry carries the
+ * exception (`demoStates: false`) rather than this file keeping a list.
+ */
+export function demoStatePaths() {
+  return ROUTES.filter(
+    (r) => r.workspace === "venue" && inLot(r) && r.demoStates !== false,
+  ).map((r) => r.path.replace(/^\/restaurant/, ""));
+}
+
 // ── Who the tools sign in as ─────────────────────────────────
 //
 // One account per establishment in Lot 1 — the scope agreed on

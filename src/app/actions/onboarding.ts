@@ -2,16 +2,22 @@
 
 // Onboarding — « Création de Venue », Planning V3 sprint Prio 02.
 //
-// Seven steps, and the only state the browser holds is which draft it
-// is filling. Everything else lives on the seam: the account from step
-// 1, the answers after every step. Closing the tab loses nothing, and
-// signing back in later reopens the flow where it stopped.
+// Two flows since DigiNegoce's 27 October decision, and the only state
+// the browser holds is which draft it is filling. Everything else lives
+// on the seam: the account from step 1, the answers after every step.
+// Closing the tab loses nothing, and signing back in later reopens the
+// flow where it stopped.
 //
-// The draft id is in an httpOnly cookie because it is a capability —
-// whoever holds it can edit that signup — unlike the session's presence
-// cookie, which carries nothing.
+// Who may write a draft is answered differently in each flow, and
+// `draftFor` below is where the two meet. On `/inscription` there is no
+// session yet, so the draft id is a capability in an httpOnly cookie —
+// whoever holds it can edit that signup, unlike the session's presence
+// cookie, which carries nothing. In the venue flow the partner is
+// signed in, so the id travels from the client and the session is the
+// authority: a draft that belongs to somebody else is refused.
 
 import { identityCookie, presenceCookie, sign } from "@/lib/auth/cookie";
+import { resolveSession } from "@/lib/auth/server-session";
 import { cookies } from "next/headers";
 import { getRestaurantRepository } from "@/lib/data";
 import {
@@ -22,7 +28,11 @@ import {
 import { storageDriver } from "@/lib/assets";
 import { describeAssetError, validateAsset } from "@/lib/assets/types";
 import type { OnboardingDraft } from "@/lib/types/onboarding";
-import { ONBOARDING_LAST_STEP, isOnboardingCity } from "@/lib/types/onboarding";
+import {
+  VENUE_LAST_STEP,
+  isManagementMode,
+  isOnboardingCity,
+} from "@/lib/types/onboarding";
 import {
   isCuisineId,
   SPECIALTIES_MAX,
@@ -137,15 +147,49 @@ export async function signUpPartner(input: {
   }
 }
 
+// ── The draft a write is for ─────────────────────────────────
+
+/**
+ * Resolves the draft id, and says who vouches for it.
+ *
+ * With a `draftId` — the venue flow — the session is the authority: the
+ * draft has to belong to whoever is signed in, and nothing is taken on
+ * the client's word but the id itself. Without one — `/inscription`,
+ * where there is no session yet — the cookie is.
+ *
+ * The venue flow does not write the cookie at all, and it cannot: its
+ * draft is opened by a *page*, and a server component may not set one
+ * (« Cookies can only be modified in a Server Action or Route
+ * Handler »). Passing the id is not a weakening — a signed-in caller
+ * checked against the session is a stronger door than a capability that
+ * has been sitting in a browser for thirty days.
+ */
+async function draftFor(
+  draftId?: string,
+): Promise<{ ok: true; id: string } | { ok: false; message: string }> {
+  if (draftId) {
+    const session = await resolveSession();
+    if (!session) return { ok: false, message: "Reconnectez-vous." };
+    const draft = await getRestaurantRepository().getOnboardingDraft(draftId);
+    if (!draft || draft.ownerId !== session.userId) {
+      return { ok: false, message: "Reprenez la création depuis le début." };
+    }
+    return { ok: true, id: draft.id };
+  }
+  const id = (await cookies()).get(DRAFT_COOKIE)?.value;
+  if (!id) return { ok: false, message: "Reprenez l'inscription depuis le début." };
+  return { ok: true, id };
+}
+
 // ── Steps 2 to 6 ─────────────────────────────────────────────
 
 export async function saveOnboardingStep(
   patch: OnboardingDraftPatch,
+  draftId?: string,
 ): Promise<OnboardingResult> {
-  const id = (await cookies()).get(DRAFT_COOKIE)?.value;
-  if (!id) {
-    return { ok: false, message: "Reprenez l'inscription depuis le début." };
-  }
+  const held = await draftFor(draftId);
+  if (!held.ok) return { ok: false, message: held.message };
+  const id = held.id;
   // The city is a closed list on the screen, so it is a closed list
   // here too: a select is a suggestion to anything that is not the
   // browser, and this value is what the app groups venues by.
@@ -215,17 +259,21 @@ export async function saveOnboardingStep(
  */
 export type DraftUploadSlot = "cover" | "photo2" | "menu" | "thumbnail";
 
-export async function requestDraftUpload(input: {
-  slot: DraftUploadSlot;
-  filename: string;
-  contentType: string;
-  sizeBytes: number;
-}): Promise<
+export async function requestDraftUpload(
+  input: {
+    slot: DraftUploadSlot;
+    filename: string;
+    contentType: string;
+    sizeBytes: number;
+  },
+  draftId?: string,
+): Promise<
   | { ok: true; url: string; method: string; headers: Record<string, string>; objectKey: string }
   | { ok: false; message: string }
 > {
-  const id = (await cookies()).get(DRAFT_COOKIE)?.value;
-  if (!id) return { ok: false, message: "Reprenez l'inscription depuis le début." };
+  const held = await draftFor(draftId);
+  if (!held.ok) return { ok: false, message: held.message };
+  const id = held.id;
 
   const kind =
     input.slot === "menu" ? "menu_file" : input.slot === "thumbnail" ? "logo" : "photo";
@@ -248,29 +296,101 @@ export async function requestDraftUpload(input: {
   };
 }
 
-// ── Step 7 · C'est prêt ──────────────────────────────────────
+// ── The account's confirmation ───────────────────────────────
 
 /**
- * Makes the venue, then signs the partner in on it.
+ * Signs the partner in on the account step 1 created, and sends them
+ * to the chooser.
  *
- * The session is written here and nowhere earlier: an account with no
- * venue signed into the portal would land on a shell with an empty
- * sidebar, which is a worse answer than the flow it was still in.
+ * The session used to be written at the *end* of a seven-step road, on
+ * the reasoning that an account with no venue would land on a shell
+ * with an empty sidebar. The 27 October split answers that differently:
+ * an account with no venue is a normal state now — it lands on
+ * `/choisir`, and the dashboard it picks has an empty-state card of its
+ * own. So the session is written as soon as there is an account to
+ * write it for, which is also the only way the venue flow behind
+ * `/restaurant/etablissement/nouveau` can be reached at all.
  */
-export async function finishOnboarding(): Promise<
+export async function finishAccountCreation(): Promise<
   { ok: true; href: string } | { ok: false; message: string }
 > {
   const jar = await cookies();
   const id = jar.get(DRAFT_COOKIE)?.value;
   if (!id) return { ok: false, message: "Reprenez l'inscription depuis le début." };
 
+  const draft = await getRestaurantRepository().getOnboardingDraft(id);
+  if (!draft) return { ok: false, message: "Reprenez l'inscription depuis le début." };
+
+  jar.set(PRESENCE_COOKIE, "1", presenceCookie(true));
+  jar.set(USER_COOKIE, sign(draft.ownerId), identityCookie(true));
+  // No venue cookie: there is no venue. `resolveSession` resolves an
+  // empty `venues` list to an empty `venueId`, which is what the
+  // chooser and the empty dashboard both read.
+  return { ok: true, href: "/choisir" };
+}
+
+// ── The venue flow, inside the dashboard ─────────────────────
+
+/**
+ * The draft the creation flow fills, for whoever is signed in.
+ *
+ * Resolved from the session rather than from a cookie the browser
+ * carries: by this point the partner *is* somebody, and asking the
+ * session who is cheaper and safer than trusting a capability cookie
+ * that has been sitting in their browser for thirty days. The cookie
+ * is still written, because `saveOnboardingStep` and
+ * `requestDraftUpload` below are shared with the account flow and both
+ * read it.
+ *
+ * A partner who stopped halfway gets the draft they left. Two drafts
+ * for one account is two half-built establishments and no way to tell
+ * which one they meant.
+ */
+export async function openVenueDraft(): Promise<
+  { ok: true; draft: OnboardingDraft } | { ok: false; message: string }
+> {
+  const session = await resolveSession();
+  if (!session) return { ok: false, message: "Reconnectez-vous." };
+  try {
+    const draft = await getRestaurantRepository().startVenueDraft(session.userId);
+    // No cookie. This runs in a page's render, where setting one throws
+    // — and the flow does not need it: it hands the id back to each
+    // write, which checks it against the session (`draftFor`).
+    return { ok: true, draft };
+  } catch (error) {
+    if (error instanceof RepositoryError) {
+      return { ok: false, message: error.message };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Creates the establishment from the draft, and opens it.
+ *
+ * The same write the seven-step road used to do at its last step, minus
+ * the sign-in: whoever presses this is already signed in — that is what
+ * changed on 27 October — so all that is left is the venue cookie,
+ * which says which of the account's establishments the dashboard is
+ * acting on.
+ */
+export async function createVenueFromFlow(
+  draftId: string,
+): Promise<{ ok: true; href: string } | { ok: false; message: string }> {
+  const session = await resolveSession();
+  if (!session) return { ok: false, message: "Reconnectez-vous." };
+  // The session is the authority on whose draft this is, which is what
+  // `draftFor` checks — the client sends an id, not a claim.
+  const held = await draftFor(draftId);
+  if (!held.ok) return { ok: false, message: held.message };
+
   const repo = getRestaurantRepository();
   try {
-    const draft = await repo.getOnboardingDraft(id);
-    if (!draft) return { ok: false, message: "Reprenez l'inscription depuis le début." };
+    const draft = await repo.getOnboardingDraft(held.id);
+    if (!draft) return { ok: false, message: "Reprenez la création depuis le début." };
     // The three answers the app cannot list a venue without. Everything
-    // else on the seven steps is optional, and this is where that
-    // promise is kept or broken.
+    // else on the six steps is optional, and this is where that promise
+    // is kept or broken.
     if (!draft.venueName.trim() || !draft.city.trim() || !draft.address.trim()) {
       return {
         ok: false,
@@ -278,16 +398,20 @@ export async function finishOnboarding(): Promise<
       };
     }
 
-    const { venueId } = await repo.submitOnboarding(id);
-    await repo.saveOnboardingDraft(id, { step: ONBOARDING_LAST_STEP });
+    const { venueId } = await repo.submitOnboarding(held.id);
+    await repo.saveOnboardingDraft(held.id, { step: VENUE_LAST_STEP });
 
-    const options = { path: "/", maxAge: THIRTY_DAYS, sameSite: "lax" as const };
     // Same rules as the sign-in action: signed, httpOnly, secure in
-    // production. A partner who has just finished the flow is signed in
-    // exactly the way one who typed a password is.
+    // production. The venue cookie is the new fact — it is this
+    // establishment the dashboard now acts on — and the other two are
+    // written again rather than assumed, which costs nothing and keeps
+    // one code path for the partner whose session is a few minutes old.
+    const jar = await cookies();
     jar.set(PRESENCE_COOKIE, "1", presenceCookie(true));
     jar.set(USER_COOKIE, sign(draft.ownerId), identityCookie(true));
     jar.set(VENUE_COOKIE, sign(venueId), identityCookie(true));
+    // The account flow's cookie, if this partner still carries one: the
+    // draft behind it is the one just spent.
     jar.delete(DRAFT_COOKIE);
 
     return { ok: true, href: "/restaurant" };

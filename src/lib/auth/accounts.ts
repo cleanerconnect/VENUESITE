@@ -234,51 +234,42 @@ export async function resolveAccount(
 /**
  * Where a resolved account lands, and whether it has to choose first.
  *
- * The rule, in one place: an account holding any organisation goes to
- * the event dashboard and switches workspace from inside the portal; a
- * venue-only account goes to the venue portal, choosing between venues
- * first if it holds more than one; an account holding neither has
- * nowhere to go and gets told so.
+ * Since DigiNegoce's 27 October decision this is one rule rather than
+ * three: a signed-in account goes to `/choisir`, and that screen
+ * decides. It redirects itself when the account holds exactly one
+ * dashboard, which is the case the old rule spent most of its lines on
+ * — events if you held an organisation, your venue otherwise, and an
+ * account holding both silently got the first of the two.
+ *
+ * What is left here is the one thing the chooser cannot do: pick
+ * *which* establishment, when an account holds several of the same
+ * kind. That question is about venues, not about dashboards, and the
+ * login form's own chooser still answers it.
+ *
+ * An account holding nothing now goes to `/choisir` as well, where it
+ * can add something. It used to be told it had nowhere to go, which
+ * was true of a portal where the only way to get a dashboard was to
+ * walk /inscription from the start.
  */
 export function destinationFor(account: ResolvedAccount): {
   workspace: Workspace | null;
   href: string | null;
   needsVenueChoice: boolean;
 } {
-  const hasEvents = account.organizations.length > 0;
-  const hasVenues = account.venues.length > 0;
-
-  if (!hasEvents && !hasVenues) {
-    return { workspace: null, href: null, needsVenueChoice: false };
+  // Several establishments of the same kind is the one choice the
+  // dashboard chooser cannot make for a partner: « Restaurant » is one
+  // card whether you hold one table or four. Under Lot 1 this is
+  // always false — `directory()` narrows an account to the
+  // establishment it owns, because the lot ships no switcher to change
+  // your mind with afterwards.
+  if (account.venues.length > 1) {
+    return { workspace: "venue", href: "/choisir", needsVenueChoice: true };
   }
 
-  // Events is the older, denser product, so it is the better default for
-  // an account holding both. The switcher makes that reversible in one
-  // click, which is why this does not need to be an extra screen.
-  //
-  // Except in Lot 1, where the deployment *is* the venue portal:
-  // `Planning V3` row 39 buys the Restau & Drinks dashboard, and the
-  // Events dashboard belongs to Prio 01 (row 38). The account a recette
-  // signs in with — `yassine@darzellij.ma`, Dar Zellij's owner — also
-  // holds `org_rooftop_mansour`, so typing the credentials from
-  // HANDOFF.md landed the reviewer on `/dashboard`: a screen that is
-  // not the delivery, in a lot that does not sell it. A partner who
-  // holds a venue goes to their venue.
-  if (hasEvents && !(activeLot() === 1 && hasVenues)) {
-    return { workspace: "event", href: "/dashboard", needsVenueChoice: false };
-  }
-
-  return {
-    workspace: "venue",
-    href: "/restaurant",
-    // One venue, nothing to choose: the chooser is for picking between
-    // establishments, and there is no such thing as picking between
-    // one. Under Lot 1 this is always false — `directory()` narrows an
-    // account to the establishment it owns, because the lot ships no
-    // switcher to change your mind with afterwards — and the venue is
-    // written to the cookie below rather than left to a default.
-    needsVenueChoice: account.venues.length > 1,
-  };
+  // Everything else: the chooser. It names what the account holds and
+  // what it does not, and it redirects itself when there is only one
+  // answer — see `skipsChooser`.
+  return { workspace: "venue", href: "/choisir", needsVenueChoice: false };
 }
 
 export type SignInFailure = "unknown_account" | "bad_password";

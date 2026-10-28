@@ -6,11 +6,18 @@
 //   SHOTS=/tmp/j node tools/verify/journey.mjs    # a PNG per station
 //
 // The other tools read screens; this one uses them. It creates an
-// account nobody has used before, walks the six onboarding steps filling
-// every field — accents, a Moroccan phone number, a real photo, a pin
-// dragged on the map — and then works the venue it just made: every
+// account nobody has used before, picks a dashboard on the chooser, and
+// walks the six steps of the establishment flow filling every field —
+// the management mode, accents, a Moroccan phone number, a real photo, a
+// pin dragged on the map — and then works the venue it just made: every
 // form saved and re-read, every day arrow, every row action, on the
 // empty venue it created and on the seeded one that has a full book.
+//
+// Since DigiNegoce's 27 October decision the road is two walks. The
+// account half belongs to `tools/verify/inscription.mjs`, which also
+// owns the chooser and the empty Accueil on their own; here they are
+// stations on the way to an establishment, because this tool's subject
+// is what one partner does in a day.
 //
 // It writes: each run creates an account, an establishment and a handful
 // of bookings in whatever database the portal points at. Reseed
@@ -80,6 +87,11 @@ const shot = async (name) => {
 };
 const heading = async () =>
   ((await page.locator("h1").first().textContent().catch(() => "")) ?? "").trim();
+// The venue flow's `h1` is the route — « Créer mon établissement » — and
+// the step's own name is the `h2` inside the card, because the route is
+// one screen a partner walks six times rather than six pages.
+const stepName = async () =>
+  ((await page.locator("h2").first().textContent().catch(() => "")) ?? "").trim();
 // `innerText`, not `textContent`: the latter includes the RSC payload
 // inside <script> tags, which carries Next's own « This page could not
 // be found » string on every page and made every screen look broken.
@@ -174,15 +186,116 @@ await page.getByLabel("Adresse e-mail").fill(email);
 await page.getByLabel("Téléphone", { exact: true }).fill("+212 6 61 22 33 44");
 await page.getByLabel("Mot de passe", { exact: true }).fill("motdepasse1");
 await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
-await shot("etape1");
+await shot("compte-etape1");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(2000);
-check("étape 2 · Votre établissement", (await heading()) === "Votre établissement");
+check("étape 2 · Votre compte est créé", (await heading()) === "Votre compte est créé");
+await shot("compte-etape2");
+
+// ── 2. The screen between an account and a dashboard ────────
+await page.locator('button:has-text("Choisir mon espace")').click();
+await settle(2800);
+check("mène à l'écran de choix", new URL(page.url()).pathname === "/choisir", page.url());
+await rendersFine("Choisir un espace");
+const offers = await page.locator("[data-dashboard]").allTextContents();
+check("trois cartes", offers.length === 3, offers.join(" · "));
+check(
+  "un compte neuf n'en tient aucune",
+  offers.every((a) => a.trim() === "Ajouter"),
+  offers.join(" · "),
+);
+await shot("choisir");
+
+// ── 3. The dashboard, before it has an establishment ────────
+// Reached by its own card, and then by the button that card's Accueil
+// puts in front of a partner: both have to lead to the same flow.
+await go("/restaurant");
+// Not `rendersFine`: that one asks for 200 characters of page text, and
+// this screen is deliberately a heading, a sentence and a button — on a
+// phone, where there is no sidebar either, the whole of it is shorter
+// than the floor a dashboard is held to. What it owes is the card.
+const emptyCard = page.locator("[data-empty-dashboard]");
+check("l'Accueil porte la carte d'état vide", (await emptyCard.count()) > 0, await heading());
+check(
+  "et la phrase de la décision du 27 octobre",
+  /Votre espace est prêt\. Créez votre établissement/.test(await body()),
+);
+await shot("accueil-vide");
+
+// The card's own button, not the sidebar's entry: at 390 the sidebar is
+// rendered and hidden, and an unscoped match found that copy first.
+await emptyCard.locator("a").first().click();
+await settle(2400);
+check(
+  "le bouton ouvre la création",
+  new URL(page.url()).pathname === "/restaurant/etablissement/nouveau",
+  page.url(),
+);
+check("étape 1 · Mode de gestion des réservations", (await stepName()) === "Mode de gestion des réservations", await stepName());
+check(
+  "la barre de progression a six segments",
+  (await page.locator("[data-progress]").first().getAttribute("data-progress")) === "6",
+);
+
+// ── 4. The establishment, step by step ──────────────────────
+// Alternating the type across passes is how the bar vocabulary gets
+// exercised without a second script. The chooser's card carries it as
+// `?type=`, which is a hint the flow applies to a draft nobody has
+// answered yet — so coming in that way has to pre-select it, and step 2
+// has to let it be changed anyway.
+const wantsBar = pass === "2";
+await go(`/choisir`);
+await page
+  .locator(`a:has([data-dashboard="${wantsBar ? "bar" : "restaurant"}"])`)
+  .first()
+  .click();
+await settle(2400);
+check(
+  "la carte ouvre la même création",
+  new URL(page.url()).pathname === "/restaurant/etablissement/nouveau",
+  page.url(),
+);
+check("et reprend le brouillon à l'étape 1", (await stepName()) === "Mode de gestion des réservations", await stepName());
+
+// Three answers, and they are three different places a booking lands.
+const modes = page.locator('[role="radiogroup"][aria-label="Mode de gestion des réservations"] [role="radio"]');
+check("trois modes de gestion", (await modes.count()) === 3, `${await modes.count()}`);
+check(
+  "« Dashboard LYFE » est coché par défaut",
+  (await modes.first().getAttribute("aria-checked")) === "true",
+);
+const modeText = await body();
+for (const line of [
+  "Une réservation arrive dans votre carnet",
+  "Une réservation vous arrive par WhatsApp",
+  "Une réservation part dans votre système par notre API",
+]) {
+  check(`chaque mode dit ce qui arrive à une réservation · « ${line.slice(0, 28)}… »`, modeText.includes(line));
+}
+// The second pass answers WhatsApp, so the column is written with
+// something other than its default at least once per run pair.
+const mode = wantsBar ? 1 : 0;
+await modes.nth(mode).click();
+await settle(300);
+check(
+  "le mode choisi est coché",
+  (await modes.nth(mode).getAttribute("aria-checked")) === "true",
+);
+await shot("creation-etape1");
+await page.locator('button:has-text("Continuer")').first().click();
+await settle(1800);
+check("étape 2 · Votre établissement", (await stepName()) === "Votre établissement", await stepName());
+
+// The hint from the card, read back: a partner who pressed « Bar ou
+// lounge » must not have to answer the same question again.
+const types = page.locator('[role="radiogroup"][aria-label="C\'est plutôt"] [role="radio"]');
+check(
+  "l'indication de la carte est reprise",
+  (await types.nth(wantsBar ? 1 : 0).getAttribute("aria-checked")) === "true",
+  `${wantsBar ? "bar" : "restaurant"}`,
+);
 
 await page.getByLabel("Nom de l'établissement").fill(venueName);
-// Alternating the type across passes is how the bar vocabulary gets
-// exercised without a second script.
-const wantsBar = pass === "2";
 await page
   .locator(`button:has-text("${wantsBar ? "Un bar ou lounge" : "Un restaurant"}")`)
   .click();
@@ -199,10 +312,10 @@ await page
   .click();
 await page.getByLabel("Ville").selectOption("Marrakech");
 await settle(400);
-await shot("etape2");
+await shot("creation-etape2");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1600);
-check("étape 3 · Adresse", (await heading()) === "Adresse");
+check("étape 3 · Adresse", (await stepName()) === "Adresse", await stepName());
 
 // The quarter comes before the address: the app's header reads
 // « quartier, ville », in that order.
@@ -228,10 +341,10 @@ if (await carte.count()) {
     }
   }
 }
-await shot("etape3");
+await shot("creation-etape3");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1600);
-check("étape 4 · Photos", (await heading()) === "Photos");
+check("étape 4 · Photos", (await stepName()) === "Photos", await stepName());
 
 // A real upload, through the same ticket the portal mints in production.
 const png = Buffer.from(
@@ -240,8 +353,8 @@ const png = Buffer.from(
 );
 const file = `/tmp/couverture-${stamp}.png`;
 writeFileSync(file, png);
-// Three files on this step now — cover, second photo, carte — and the
-// cover is the first of them.
+// Four files on this step — cover, second photo, vignette, carte — and
+// the cover is the first of them.
 const chooser = page.locator('input[type="file"]').first();
 if ((await chooser.count()) > 0) {
   await chooser.setInputFiles(file);
@@ -250,10 +363,10 @@ if ((await chooser.count()) > 0) {
 } else {
   check("un sélecteur de photo existe", false);
 }
-await shot("etape4");
+await shot("creation-etape4");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1600);
-check("étape 5 · Ambiance et équipements", (await heading()) === "Ambiance et équipements");
+check("étape 5 · Ambiance et équipements", (await stepName()) === "Ambiance et équipements", await stepName());
 
 // Two of the app's ambience chips, and one equipment row. The step can
 // be passed; this pass answers it, so the venue it creates carries both
@@ -269,50 +382,33 @@ const equipment = page.locator('label:has([role="switch"])');
 check("huit équipements", (await equipment.count()) === 8, `${await equipment.count()} lignes`);
 await equipment.first().locator('[role="switch"]').click();
 await settle(300);
-await shot("etape5");
+await shot("creation-etape5");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1600);
-check("étape 6 · Horaires", (await heading()) === "Horaires");
+check("étape 6 · Horaires", (await stepName()) === "Horaires", await stepName());
 
 const switches = page.locator('[role="switch"]:visible');
 check("sept jours", (await switches.count()) === 7, `${await switches.count()} interrupteurs`);
 await page.locator('button:has-text("Appliquer lundi à tous les jours")').click();
 await settle(400);
-// Sunday closed: a venue that shuts one day a week is the normal case,
-// and it is what makes the summary say six days rather than seven.
+// Sunday closed: a venue that shuts one day a week is the normal case.
 await switches.nth(6).click();
 await settle(400);
 check("dimanche fermé", /Fermé/.test(await body()));
-await shot("etape6");
-await page.locator('button:has-text("Continuer")').first().click();
-await settle(1800);
-check("étape 7 · C'est prêt", (await heading()) === "C'est prêt");
+await shot("creation-etape6");
 
-const summary = await body();
-check("le récapitulatif porte le nom", summary.includes(venueName));
-check("le récapitulatif porte la ville", summary.includes("Marrakech"));
-check("le récapitulatif porte le type", summary.includes(wantsBar ? "Bar ou lounge" : "Restaurant"));
-check("le récapitulatif compte six jours", /6 jours par semaine/.test(summary));
-check("la photo est au récapitulatif", /1 photo/.test(summary));
-check(
-  "le récapitulatif porte la cuisine",
-  summary.includes(wantsBar ? "Fusion" : "Marocaine"),
-  summary.split("\n").find((l) => /Fusion|Marocaine/.test(l)) ?? "",
-);
-check("et les spécialités", /Cocktails d'auteur|Tajines de saison/.test(summary));
-check("le récapitulatif porte le quartier", summary.includes("Guéliz"));
-check("le récapitulatif porte l'ambiance", /Ambiance/.test(summary));
-await shot("etape7");
+// Reopening mid-flow must not lose anything — and this is the reason
+// the steps moved into the dashboard at all: a partner who stops here
+// has a session to come back with.
+await go("/restaurant/etablissement/nouveau");
+check("le brouillon survit à un rechargement", (await stepName()) === "Horaires", await stepName());
 
-// Reopening mid-flow must not lose anything.
-await go("/inscription");
-check("le brouillon survit à un rechargement", (await heading()) === "C'est prêt");
-
-await page.locator('button:has-text("Ouvrir mon tableau de bord")').click();
+// ── 5. The establishment exists ─────────────────────────────
+await page.locator('button:has-text("Créer mon établissement")').first().click();
 await page.waitForTimeout(3600);
 check("atterrit sur l'Accueil", page.url().endsWith("/restaurant"), page.url());
 
-// ── 2. The venue they just made, which has nothing in it ────
+// ── 6. The venue they just made, which has nothing in it ────
 await rendersFine("Accueil du nouvel établissement");
 const landing = await body();
 // Lot 2's phone lane opens on the floor, not on a greeting: a manager
@@ -324,10 +420,27 @@ if (LOT === 1 || !phone) {
 } else {
   console.log("  —    salue le partenaire par son prénom · absent de la voie téléphone du lot 2");
 }
-check(
-  "la barre latérale nomme l'établissement",
-  ((await page.textContent(phone ? "body" : "aside").catch(() => "")) ?? "").includes(venueName),
-);
+// Polled, with a reload, for the HTTP driver's sake: that branch memoises
+// the account for five seconds (`HttpDirectory.TTL_MS`), and the chrome
+// is read within three of the venue being created — so the first render
+// after a submit can still be the account as it was a moment before,
+// with no establishment in it. Deliberate behaviour, so the tool waits
+// for it rather than reporting a sidebar that is a second behind.
+const named = await (async () => {
+  const deadline = Date.now() + 12000;
+  let reloaded = false;
+  while (Date.now() < deadline) {
+    const chrome = (await page.textContent(phone ? "body" : "aside").catch(() => "")) ?? "";
+    if (chrome.includes(venueName)) return true;
+    if (!reloaded && Date.now() > deadline - 6000) {
+      await page.reload({ waitUntil: "domcontentloaded" });
+      reloaded = true;
+    }
+    await page.waitForTimeout(400);
+  }
+  return false;
+})();
+check("la barre latérale nomme l'établissement", named);
 await shot("accueil-neuf");
 
 const SCREENS = [
@@ -450,7 +563,7 @@ if (await notifSwitch.count()) {
 }
 await shot("notifications");
 
-// ── 3. The seeded venue, which has a book to work ───────────
+// ── 7. The seeded venue, which has a book to work ───────────
 // Signing out for real, through the control a host would use.
 const kebab = page.locator('button[aria-label*="compte" i]:visible, button[aria-haspopup="menu"]:visible').last();
 if (await kebab.count()) {
@@ -640,7 +753,19 @@ if (await search.count()) {
   // Whatever name is on the first row: the seed's pending booking may
   // have been decided by an earlier pass, so the query is taken from the
   // screen rather than hardcoded.
-  const firstName = ((await body()).match(/\n([A-ZÀ-Ý][a-zà-ÿ]+ [A-ZÀ-Ý][a-zà-ÿ]+)\n/) ?? [])[1];
+  //
+  // Off a book row, not off the page's text. The page carries other
+  // people's names — the waiting list is on the same screen at 390 —
+  // and a query taken from one of those is a name the book's own search
+  // correctly cannot find, which this tool then reported as a search
+  // that does not filter.
+  const firstName = (
+    (await page
+      .locator("main [data-book-row]:visible h4")
+      .first()
+      .textContent()
+      .catch(() => "")) ?? ""
+  ).trim();
   await search.fill(firstName ? firstName.split(" ")[0] : "a");
   await settle(1400);
   const filtered = await body();

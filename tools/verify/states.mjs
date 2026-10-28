@@ -13,7 +13,7 @@
 //   node tools/verify/states.mjs
 
 import { chromiumOrExplain } from "./browser.mjs";
-import { LOT, LOT_LABEL, OWNER_EMAIL, venuePaths } from "./lot.mjs";
+import { LOT, LOT_LABEL, OWNER_EMAIL, demoStatePaths, venuePaths } from "./lot.mjs";
 
 const chromium = await chromiumOrExplain();
 
@@ -21,7 +21,12 @@ const BASE = process.env.BASE ?? "http://localhost:3210";
 const ERROR_MARKER = "Cette page n'a pas pu charger";
 const DENIED_MARKER = "Accès non autorisé";
 
-const PATHS = venuePaths();
+// Not every venue route is a screen over an establishment. The creation
+// flow is a form over a draft — no read to fail, no role to refuse — so
+// the registry says it has no demo states and this tool says so out loud
+// rather than counting two states nobody designed.
+const PATHS = demoStatePaths();
+const SKIPPED = venuePaths().filter((p) => !PATHS.includes(p));
 
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium",
@@ -63,6 +68,10 @@ for (const path of PATHS) {
     if (!ok) fails += 1;
   }
   console.log(`  ${(path || "/").padEnd(18)} ${row.join("  ")}`);
+}
+
+for (const path of SKIPPED) {
+  console.log(`  ${(path || "/").padEnd(18)} —  formulaire sur un brouillon, sans état forçable`);
 }
 
 console.log(

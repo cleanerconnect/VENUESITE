@@ -4,7 +4,8 @@
 //
 // One tool for six claims only a browser can settle:
 //
-//   1  a venue created by /inscription is pending, its dashboard works,
+//   1  a venue created by the establishment flow is pending, its
+//      dashboard works,
 //      and it says so — and /admin/validations is LYFE's alone;
 //   2  the decisions a state poses are on the line and the rest are in
 //      the sheet — Refuser only ever answers a request, a phone line
@@ -197,6 +198,19 @@ await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
 await page.locator('button:has-text("Continuer")').first().click();
 await settle(1400);
 
+// The account is all `/inscription` makes since the 27 October split.
+// The establishment is a second walk, taken from the chooser's own card.
+await page.locator('button:has-text("Choisir mon espace")').click();
+await settle(2600);
+await page.locator('a:has([data-dashboard="restaurant"])').first().click();
+await settle(2400);
+
+// Step 1 · the management mode. Its default — « Dashboard LYFE » — is
+// the one this tool depends on: every decision below is taken in the
+// portal's own carnet.
+await page.locator('button:has-text("Continuer")').first().click();
+await settle(1500);
+
 // Step 2 · the establishment.
 await page.getByLabel("Nom de l'établissement").fill(`Café ${stamp}`);
 await page.locator('button:has-text("Un restaurant")').click();
@@ -227,19 +241,15 @@ await settle(1500);
 await page.locator('button:has-text("Passer cette étape")').click();
 await settle(1500);
 
-// Step 6 · the weekly grid, copied across.
+// Step 6 · the weekly grid, copied across, and the step that submits.
 const copyDays = page.locator('button:has-text("Appliquer lundi à tous les jours")');
 if (await copyDays.count()) {
   await copyDays.click();
   await settle(400);
 }
-await page.locator('button:has-text("Continuer")').first().click();
-await settle(1500);
+check("la création atteint les horaires", /Horaires/i.test(await text()));
 
-const summary = await text();
-check("l'inscription atteint le récapitulatif", /C'est prêt/i.test(summary));
-
-await page.locator('button:has-text("Ouvrir mon tableau de bord")').click();
+await page.locator('button:has-text("Créer mon établissement")').first().click();
 await settle(3200);
 
 const dashboard = await text();

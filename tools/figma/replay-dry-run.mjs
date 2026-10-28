@@ -324,15 +324,16 @@ const caption = (inner, text) => {
   return label;
 };
 
-// The eight sections, built before anything is placed.
+// The nine sections, built before anything is placed.
 //
-// `ADOPT` only names the frames the capture adopted, so the three
-// screens the page draws by hand — Accueil, Réservations, Check-in —
-// used to have no section in this stub at all. They have captured
-// frames at 768 since the responsive pass, and a section that is not
-// there is the one thing `shelfFor` still refuses.
+// `ADOPT` only names the frames the capture adopted, so a section whose
+// frames were all created rather than adopted — the three the page
+// draws by hand, and « 0 bis » since the 27 October split — would have
+// no section in this stub at all. A section that is not there is the
+// one thing `shelfFor` still refuses.
 for (const name of [
   "0 · Inscription",
+  "0 bis · Choisir et créer",
   "1 · Connexion",
   "2 · Accueil",
   "3 · Réservations",

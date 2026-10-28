@@ -122,45 +122,138 @@ seulement lue dans les types.
 Les chemins sont donnés tels que le pilote les construit. `{id}` est un
 segment de chemin, `venue_id` un paramètre de requête.
 
-Sept écrans, plus le parcours d'inscription : « Création de Venue » est
-l'un des trois mots de la ligne Prio 02, et il n'avait pas d'écran. Il
-en a six, en un seul parcours, et ils viennent avant tout le reste —
-c'est la porte par laquelle un partenaire entre de lui-même.
+Sept écrans, plus les deux parcours d'entrée : « Création de Venue »
+est l'un des trois mots de la ligne Prio 02, et il n'avait pas d'écran.
+Il en a huit, répartis en deux parcours que sépare un écran de choix —
+le compte d'abord, l'établissement ensuite — et ils viennent avant tout
+le reste, parce que c'est la porte par laquelle un partenaire entre de
+lui-même.
 
 ### 2.0 Inscription — `/inscription`
 
-Sept étapes : **Vous**, **Votre établissement**, **Adresse**,
-**Photos**, **Ambiance et équipements**, **Horaires**, **C'est prêt**.
-Une seule route, un brouillon côté service, et quatre appels.
+**Deux étapes : Vous, puis la confirmation.** Un compte, et rien
+d'autre.
 
-L'étape 5 est nouvelle, et elle est facultative. Elle existe parce que
-l'écran de fiche de l'application dessine un bloc « Equipements » de six
-lignes et une ligne « Ambiance », et que rien ne les demandait : un
-partenaire finissait le parcours et sa fiche s'ouvrait sur six lignes
-vides. Passer l'étape n'écrit rien — une liste d'ambiances vide est le
-compte-rendu honnête d'une question sans réponse, là où une valeur par
-défaut serait une affirmation sur sa salle qu'il n'a pas faite.
+C'est la décision DigiNegoce du 27 octobre, et elle défait le parcours
+de sept étapes que ce paragraphe décrivait. Celui-ci demandait de
+décrire une salle — son type, son adresse, ses photos, ses horaires — à
+quelqu'un qui n'avait pas encore de session, donc nulle part où
+revenir : un onglet fermé à l'étape 4 ne laissait qu'un brouillon que
+personne ne pouvait rouvrir. Et il posait d'emblée, en une seule
+réponse possible, la question « un restaurant ou un bar » à un compte
+qui peut tenir les deux.
+
+L'inscription crée donc une personne. L'établissement est un parcours
+séparé (§ 2.0 ter), derrière un écran de choix (§ 2.0 bis), et dans une
+session.
 
 | # | Méthode | Chemin | Requête | Réponse |
 |---|---|---|---|---|
 | 1 | `POST` | `/api/business/onboarding` | `{ fullName, email, phone, password }` | `{ userId, draft }` |
+
+Un seul appel, et c'est tout ce que le compte coûte.
+`409 { code: "email_taken" }` si l'adresse a déjà un compte : c'est la
+seule erreur de champ du parcours. Le `draft` rendu est le brouillon
+d'établissement vide du nouveau compte — `step: 1`, pas de nom de
+salle — et le portail ne le lit pas à cette étape ; il est dans la
+réponse parce qu'un service qui crée le compte et le brouillon dans la
+même transaction n'a pas à être rappelé pour le second.
+
+**Le compte existe dès l'étape 1**, et c'est une décision, pas un
+raccourci : l'alternative est de garder un mot de passe quelque part
+pendant que le reste se remplit, et un mot de passe dans un brouillon
+est un mot de passe dans une sauvegarde.
+
+**L'étape 2 n'appelle rien.** Elle dit que le compte est créé, et son
+bouton — « Choisir mon espace » — ouvre la session et mène à
+`/choisir`. C'est l'ancienne étape 7, « C'est prêt », déplacée là où
+elle est vraie : elle ne récapitule plus un établissement, elle
+annonce un compte.
+
+**Ce qui est obligatoire** : un nom, une adresse e-mail et un mot de
+passe de huit caractères. Le téléphone a une réponse par défaut, qui
+est vide.
+
+*Tables écrites (pilote SQLite)* : `partner_accounts`,
+`onboarding_drafts`.
+
+### 2.0 bis Choisir un espace — `/choisir`
+
+« Que voulez-vous gérer sur LYFE ? ». **Trois cartes, toujours les
+trois** — **Restaurant**, **Bar ou lounge**, **Événements** — chacune
+avec une ligne qui dit à quoi sert son tableau de bord.
+
+**Aucun appel.** L'écran se dessine avec ce que la session rend déjà
+(§ 2.1) : `venues` pour les deux cartes de salle, `organizations` pour
+celle des événements. Il n'y a donc rien à implémenter côté service
+pour cet écran — ce qui est la raison pour laquelle il peut être un
+écran plutôt qu'un champ dans un formulaire.
+
+| Carte | Tenu par | Active → | Proposée → |
+|---|---|---|---|
+| Restaurant | une `venue` de type `restaurant` | `/restaurant?etablissement={id}` | `/restaurant/etablissement/nouveau?type=restaurant` |
+| Bar ou lounge | une `venue` de type `drinks` | `/restaurant?etablissement={id}` | `/restaurant/etablissement/nouveau?type=bar` |
+| Événements | une `organization` | `/dashboard` | `/onboarding` |
+
+Une carte que le compte tient porte **« Actif · ouvrir »** et ouvre le
+tableau de bord ; une carte qu'il ne tient pas porte **« Ajouter »** et
+ouvre le parcours qui le crée. Les trois sont toujours affichées :
+cacher ce qu'on n'a pas, c'est un écran incapable de dire à un
+restaurateur que le tableau de bord bar existe, ce qui est la seule
+chose qu'il est en position de faire.
+
+**Un compte qui tient exactement un espace ne voit pas l'écran** et est
+redirigé vers celui-là. C'est la règle que l'ancien `destinationFor`
+cherchait à tâtons — événements si vous teniez une organisation, votre
+salle sinon, et un compte qui tenait les deux n'apprenait jamais qu'il
+tenait les deux. Un compte qui n'en tient aucun, lui, le voit : c'est
+le cas pour lequel l'écran a été fait. La redirection vers `/choisir`
+remplace donc la destination que `/login` calculait (§ 2.1).
+
+`?type=restaurant` et `?type=bar` sont une **indication, pas une
+décision** : l'étape 2 du parcours de création pose quand même la
+question, et le portail n'applique l'indication que si le brouillon
+n'est pas déjà allé plus loin (`step <= 1`). Un partenaire qui a
+appuyé sur la mauvaise carte change à l'étape 2, pas en revenant en
+arrière.
+
+### 2.0 ter Créer mon établissement — `/restaurant/etablissement/nouveau`
+
+**Six étapes : Mode de gestion des réservations**, puis **Votre
+établissement**, **Adresse**, **Photos**, **Ambiance et équipements**,
+**Horaires**. Les cinq dernières sont les étapes 2 à 6 de l'ancien
+parcours, inchangées, dans leur ordre et avec leurs numéros ; la
+première est nouvelle.
+
+La route est sous le groupe `(organizer)`, donc la barre latérale et
+l'en-tête du tableau de bord sont autour d'elle. C'est délibéré : un
+parcours de création derrière la navigation de la chose qu'il crée est
+un parcours qu'on peut quitter et reprendre, ce qu'une page pleine ne
+permet pas.
+
+| # | Méthode | Chemin | Requête | Réponse |
+|---|---|---|---|---|
+| 1 | `POST` | `/api/business/venue-drafts` | `{ ownerId }` | `OnboardingDraft` |
 | 2 | `GET` | `/api/business/onboarding/{draftId}` | — | `OnboardingDraft \| null` |
 | 3 | `PUT` | `/api/business/onboarding/{draftId}` | un fragment de `OnboardingDraft` | `OnboardingDraft` |
 | 4 | `POST` | `/api/business/onboarding/{draftId}/submit` | — | `{ venueId }` |
 
-**Le compte existe dès l'étape 1**, et c'est une décision, pas un
-raccourci : l'alternative est de garder un mot de passe quelque part
-pendant que les cinq autres étapes se remplissent, et un mot de passe
-dans un brouillon est un mot de passe dans une sauvegarde. L'appel 1
-crée donc la personne et rend le brouillon de son établissement.
-`409 { code: "email_taken" }` si l'adresse a déjà un compte : c'est la
-seule erreur de champ du parcours.
+**L'appel 1 est le seul endpoint nouveau du 27 octobre**, et il est
+idempotent : il rend le brouillon non soumis du compte s'il en a un,
+et en crée un sinon. C'est ce qui permet à un partenaire d'ouvrir
+`/restaurant/etablissement/nouveau` dix fois sans laisser dix
+brouillons derrière lui, et c'est ce qui fait qu'un onglet fermé à
+l'étape 4 se rouvre à l'étape 4. Le `ownerId` est celui de la session ;
+un brouillon soumis (`submittedVenueId` non nul) ne compte pas, parce
+qu'un compte qui ajoute un second établissement doit en obtenir un
+neuf. `401` si la session ne répond de personne.
 
 ```json
 {
   "id": "onb_a1b2c3d4",
   "ownerId": "usr_e5f6a7b8",
   "step": 3,
+  "managementMode": "dashboard",
   "venueName": "Le Petit Riad",
   "venueType": "bar",
   "cuisine": "libanaise",
@@ -192,6 +285,32 @@ seule erreur de champ du parcours.
 }
 ```
 
+**`managementMode` est l'étape 1**, et c'est une **liste fermée de
+trois valeurs** — `dashboard`, `whatsapp`, `api` — que le service doit
+valider comme il valide la ville : une valeur hors liste se refuse en
+`400 { code: "management_mode_unknown" }`. Le défaut est `dashboard`,
+et il est choisi à l'écran, pas seulement en base : un partenaire qui
+traverse l'étape sans y toucher a répondu « le tableau de bord », ce
+qui est la réponse que les six écrans du Lot 1 savent honorer.
+
+| Valeur | Ce que l'écran dit qu'il arrive à une réservation |
+|---|---|
+| `dashboard` | « Une réservation arrive dans votre carnet, et vous l'acceptez ici. » |
+| `whatsapp` | « Une réservation vous arrive par WhatsApp, et vous répondez au client. » |
+| `api` | « Une réservation part dans votre système par notre API, et il répond. » |
+
+Trois réponses, et ce ne sont pas trois habillages d'un même produit :
+ce sont trois endroits différents où une réservation atterrit. Un
+partenaire sur WhatsApp n'ouvre jamais le portail, et un partenaire sur
+l'API a un système à lui qu'il ne faut pas sommer d'utiliser le nôtre.
+Poser la question en premier est ce qui évite de faire remplir cinq
+écrans pour un tableau de bord que personne ne lira. **Le Lot 1 ne
+change rien au comportement du portail selon la valeur** — les trois
+mènent aux mêmes six écrans — et c'est honnête : la valeur est stockée
+sur l'établissement et exposée dans la charge utile (§ 3.1, § 5.4),
+pour que le routage des réservations qui la lira soit écrit contre une
+donnée qui existe déjà.
+
 `venueType` est le mot du partenaire — `restaurant` ou `bar` — et il est
 traduit en vocabulaire de l'application (`restaurant` / `drinks`) au
 moment où l'établissement est créé, pas avant. Le libellé à l'écran est
@@ -202,6 +321,14 @@ sien. **La valeur stockée reste `bar`** — c'est le libellé qui change,
 pas l'énumération. `step` est l'étape la plus avancée atteinte : c'est
 ce qui fait qu'un onglet fermé ne perd rien, et le portail rouvre le
 parcours là où il s'est arrêté plutôt qu'au début.
+
+L'étape 5 est facultative, comme l'étape 4. Elle existe parce que
+l'écran de fiche de l'application dessine un bloc « Equipements » de six
+lignes et une ligne « Ambiance », et que rien ne les demandait : un
+partenaire finissait le parcours et sa fiche s'ouvrait sur six lignes
+vides. Passer l'étape n'écrit rien — une liste d'ambiances vide est le
+compte-rendu honnête d'une question sans réponse, là où une valeur par
+défaut serait une affirmation sur sa salle qu'il n'a pas faite.
 
 **`cuisine`, `specialties` et `priceRange` viennent de l'étape 2**,
 `district` de l'étape 3, `photo2*`, `menu*` et `thumbnail*` de l'étape 4,
@@ -223,14 +350,16 @@ liste se refuse en `400 { code: "city_unknown" }` ; c'est ce que fait
 `tools/mock-api.mjs`. Ouvrir une sixième ville est une ligne de
 constante (`ONBOARDING_CITIES`) et un déploiement.
 
-**L'appel 4 est « Création de Venue » elle-même**, et il doit être
-idempotent : un brouillon déjà soumis rend l'établissement qu'il a déjà
-créé, jamais un second. Ce que le portail attend qu'il crée, parce que
-c'est ce que le pilote SQLite crée et ce dont les sept écrans ont
-besoin pour s'afficher :
+**L'appel 4 est « Création de Venue » elle-même**, et il part de la
+dernière étape : le bouton des horaires se lit « Créer mon
+établissement ». Il doit être idempotent : un brouillon déjà soumis
+rend l'établissement qu'il a déjà créé, jamais un second. Ce que le
+portail attend qu'il crée, parce que c'est ce que le pilote SQLite crée
+et ce dont les sept écrans ont besoin pour s'afficher :
 
 1. l'établissement (`venues`), avec son nom, son type, sa cuisine, sa
-   fourchette de prix, son quartier, sa ville et son adresse ;
+   fourchette de prix, son quartier, sa ville, son adresse et **son
+   mode de gestion** ;
 2. ses réglages (`venue_settings`) — la configuration `restaurant` ou
    `lounge`, que **tous** les écrans lisent pour leur vocabulaire ;
 3. l'appartenance du propriétaire (`staff`, rôle `owner`) ;
@@ -251,20 +380,31 @@ dernière étape pointent sur les mêmes clés, sans déplacer d'octets. La
 est la couverture — celle que portent les cartes de liste et l'en-tête
 de la fiche.
 
-**Ce qui est obligatoire**, et c'est tout : un nom, une adresse e-mail
-et un mot de passe de huit caractères pour le compte ; le nom, le type,
-la ville et l'adresse pour l'établissement. Le téléphone, le point sur
-la carte, la cuisine, le quartier, les photos, la carte, l'ambiance,
-les équipements et les horaires ont tous une réponse par défaut — les
-horaires arrivent pré-remplis en semaine type, 12h00–23h00, ce qui est
-déjà valide, et la fourchette de prix part à 2. Les étapes 4 et 5
-disent à voix haute qu'elles peuvent être passées.
+**Ce qui est obligatoire**, et c'est tout : le nom, le type, la ville et
+l'adresse. Le point sur la carte, la cuisine, le quartier, les photos,
+la carte, l'ambiance, les équipements et les horaires ont tous une
+réponse par défaut — les horaires arrivent pré-remplis en semaine type,
+12h00–23h00, ce qui est déjà valide, la fourchette de prix part à 2 et
+le mode de gestion à `dashboard`. Les étapes 4 et 5 disent à voix haute
+qu'elles peuvent être passées.
 
-*Tables écrites (pilote SQLite)* : `partner_accounts`,
-`onboarding_drafts`, puis à l'étape 6 `venues`, `venue_settings`,
-`staff`, `business_accounts`, `notification_preferences`,
-`availability_slots`, `service_definitions`, `services`, et
-`venue_assets` si une photo a été ajoutée.
+**Avant qu'un établissement existe**, le tableau de bord n'est pas
+vide : son Accueil porte une carte d'état — « Votre espace est prêt.
+Créez votre établissement pour recevoir vos premières réservations » —
+et un seul bouton, « Créer mon établissement », qui mène ici. La barre
+latérale est réduite à ces deux entrées tant qu'il n'y a pas de salle,
+et les cinq autres écrans redirigent vers l'Accueil : un onglet
+Réservations qui s'ouvre sur un carnet qui n'existe pas est une panne,
+pas un état. C'est un état que le portail n'avait pas avant le
+27 octobre — l'ancienne route créait le compte et la salle d'un même
+pas, donc un tableau de bord sans salle était inatteignable, et le code
+le disait en plantant sur `getVenueSettings("")` plutôt qu'en dessinant
+quoi que ce soit.
+
+*Tables écrites (pilote SQLite)* : `onboarding_drafts`, puis à
+l'étape 6 `venues`, `venue_settings`, `staff`, `business_accounts`,
+`notification_preferences`, `availability_slots`, `service_definitions`,
+`services`, et `venue_assets` si une photo a été ajoutée.
 
 ### 2.1 Connexion — `/login`
 
@@ -274,10 +414,15 @@ disent à voix haute qu'elles peuvent être passées.
 | 2 | `GET` | `/api/business/auth/session?user_id={id}` | — | le même compte, à chaque requête suivante |
 
 L'écran n'a pas d'autre appel : il prend une adresse et un mot de passe,
-et ce que le service répond décide de tout le reste — où le partenaire
-atterrit, quels établissements il peut ouvrir, et avec quel rôle. La
-forme de la réponse et les quatre règles que le service doit respecter
-sont au §5.1.
+et ce que le service répond décide de tout le reste — quels
+établissements le partenaire peut ouvrir, et avec quel rôle. La forme de
+la réponse et les quatre règles que le service doit respecter sont au
+§5.1.
+
+**Où il atterrit n'est plus calculé ici.** Depuis le 27 octobre, une
+connexion réussie mène à `/choisir` (§ 2.0 bis), qui décide à partir du
+même tableau `venues` — et saute de lui-même si le compte ne tient
+qu'un espace.
 
 `GET /api/business/account` existe aussi dans le pilote et rend le
 `BusinessAccount` de la colonne K de la ligne 39 :
@@ -658,9 +803,9 @@ que l'écran de fiche de l'application dessine.
 
 `RestaurantProfile` : `{ id, kind, name, shortName, initials, tagline,
 city, district, subline, cuisine, category, capacity, contactEmail,
-contactPhone, website, currency, onboardingCompleted, description,
-address, latitude?, longitude?, priceRange, tags[], features[],
-ambience[] }`.
+contactPhone, website, currency, onboardingCompleted, managementMode,
+description, address, latitude?, longitude?, priceRange, tags[],
+features[], ambience[] }`.
 
 Cinq champs sont nouveaux, et chacun répond à une ligne de l'écran de
 fiche de l'application (`yEBXM5UoNTQI7MKc9sMB9y`, cadres `827:237` et
@@ -700,7 +845,8 @@ ligne d'origine dans `specialties` dans tous les cas.
 **La vignette** n'est pas un champ de `VenueProfile` : c'est un
 `venue_assets` de `kind='logo'`, un par établissement, carré. Le
 portail le recadre en 1:1 **dans le navigateur avant l'envoi**, sur
-Ma fiche · Identité comme à l'étape 4 de l'inscription, donc l'objet
+Ma fiche · Identité comme à l'étape 4 de la création d'établissement,
+donc l'objet
 stocké est carré par construction et rien en aval n'a à deviner quel
 tiers d'une photo 16:9 garder.
 
@@ -1018,17 +1164,18 @@ pas forcément celui qui doit sonner à 23h.
 
 ## 3. Le contrat minimal du Lot 1
 
-Ce que votre service doit servir pour que l'inscription et les sept
-écrans fonctionnent.
+Ce que votre service doit servir pour que les deux parcours d'entrée et
+les sept écrans fonctionnent.
 **Tous ces appels sont émis aujourd'hui** par un portail en mode `http` —
 c'est la liste qu'un parcours complet produit, pas une intention.
 
 | Méthode | Chemin | Écrans |
 |---|---|---|
-| `POST` | `/api/business/onboarding` | Inscription · étape 1 |
-| `GET` | `/api/business/onboarding/{id}` | Inscription · reprise |
-| `PUT` | `/api/business/onboarding/{id}` | Inscription · étapes 2 à 5 |
-| `POST` | `/api/business/onboarding/{id}/submit` | Inscription · étape 6 |
+| `POST` | `/api/business/onboarding` | Inscription · étape 1 (le compte) |
+| `POST` | `/api/business/venue-drafts` | Création d'établissement · ouverture |
+| `GET` | `/api/business/onboarding/{id}` | Création d'établissement · reprise |
+| `PUT` | `/api/business/onboarding/{id}` | Création d'établissement · étapes 1 à 5 |
+| `POST` | `/api/business/onboarding/{id}/submit` | Création d'établissement · étape 6 |
 | `POST` | `/api/business/auth/session` | Connexion |
 | `POST` | `/api/business/auth/password-reset` | Connexion · « Mot de passe oublié ? » |
 | `GET` | `/api/business/auth/session?user_id=` | toutes les requêtes — identité, périmètre, rôle |
@@ -1077,15 +1224,15 @@ second appel et de vivre avec une fenêtre où les deux divergent.
 
 ### 3.1 Ce que la gestion des réservations et la création de venue ajoutent
 
-Quatre changements, et ce qu'ils demandent à un backend. Tout le reste de
-ce document reste vrai.
+Les changements qui suivent, et ce qu'ils demandent à un backend. Tout le
+reste de ce document reste vrai.
 
 **Un établissement est validé par LYFE avant d'exister dans
 l'application.** `venues` porte trois colonnes de plus :
 
 | Colonne | Valeurs | Sens |
 |---|---|---|
-| `status` | `pending_review` · `validated` · `rejected` | `/inscription` crée un `pending_review`. **Seul un `validated` est listé par l'application.** Le tableau de bord du partenaire fonctionne dans les trois cas. |
+| `status` | `pending_review` · `validated` · `rejected` | La création d'établissement crée un `pending_review`. **Seul un `validated` est listé par l'application.** Le tableau de bord du partenaire fonctionne dans les trois cas. |
 | `status_reason` | texte | Le motif du refus, et **la seule chose que le partenaire voit** à son sujet. Vide sauf si `status = 'rejected'`. |
 | `status_changed_at` | ISO 8601 | Quand LYFE a décidé. |
 
@@ -1160,6 +1307,31 @@ qu'elles portaient — tous deux **facultatifs**, parce que l'application
 les demande dans un profil que personne n'est obligé de remplir. Le
 portail ne dessine pas la ligne quand la valeur manque : un « — » dans un
 champ Âge se lit comme un fait sur le client.
+
+**Où une réservation atterrit est choisi par l'établissement.**
+`venues` porte une colonne de plus, et c'est la décision DigiNegoce du
+27 octobre :
+
+| Colonne | Valeurs | Sens |
+|---|---|---|
+| `management_mode` | `dashboard` · `whatsapp` · `api` | Le mode de gestion des réservations, répondu à la première étape de la création d'établissement (§ 2.0 ter). `dashboard` par défaut. |
+
+Elle est `NOT NULL DEFAULT 'dashboard'`, et c'est ce qui fait qu'une
+base existante n'a rien à rattraper : un établissement créé avant le
+27 octobre répond au portail, donc `dashboard` est la valeur vraie, pas
+un remplissage. La même colonne existe sur `onboarding_drafts`, parce
+qu'une réponse donnée à l'étape 1 doit survivre à un onglet fermé à
+l'étape 4.
+
+**Rien dans le Lot 1 ne branche sur sa valeur** — les trois modes
+ouvrent les mêmes sept écrans — et il faut le dire plutôt que de
+laisser croire le contraire : la colonne est là pour que le routage des
+réservations, le jour où il sera acheté, soit écrit contre une donnée
+déjà collectée et déjà exposée, plutôt que contre une question qu'il
+faudra reposer à tous les partenaires. Elle est rendue par
+`GET /api/business/venues/{id}` — donc par `RestaurantProfile`, dans
+`managementMode` — et portée par le brouillon tant que l'établissement
+n'existe pas.
 
 ### 3.2 Les données personnelles, et qui en répond
 
@@ -1313,16 +1485,22 @@ connecté, **quels établissements** il détient, et **avec quel rôle**. Le
 portail ne demande rien de plus : le périmètre par établissement est ce
 tableau `venues`, et le rôle décide de ce que chaque écran laisse faire.
 
-**En Lot 1, ce tableau porte exactement un établissement et son `role`
-est `owner`.** Le périmètre arrêté le 5 octobre est l'authentification,
-la création de venue et la gestion des réservations ; les rôles n'en
-sont pas, et un compte qui détient deux établissements oblige à choisir
-avant de voir quoi que ce soit. Un compte, un établissement, son
-propriétaire : `rachid@darzellij.ma` ouvre Dar Zellij et
-`sofia@nomadrooftop.ma` ouvre Nomad, directement. Le portail n'affiche
-donc ni sélecteur d'établissement ni libellé de rôle — le champ reste
-dans la réponse, et le sélecteur revient avec le lot 2, qui vend
-« Équipe et rôles ».
+**En Lot 1, ce tableau porte au plus un établissement par espace et son
+`role` est `owner`.** Le périmètre arrêté le 5 octobre est
+l'authentification, la création de venue et la gestion des réservations ;
+les rôles n'en sont pas. Un compte, un établissement, son propriétaire :
+`rachid@darzellij.ma` ouvre Dar Zellij et `sofia@nomadrooftop.ma` ouvre
+Nomad, directement — c'est la règle du saut de `/choisir` (§ 2.0 bis),
+pas une destination calculée par la connexion. Le portail n'affiche donc
+ni sélecteur d'établissement ni libellé de rôle — le champ reste dans la
+réponse, et le sélecteur revient avec le lot 2, qui vend « Équipe et
+rôles ».
+
+**Le tableau peut maintenant être vide**, et c'est le changement du
+27 octobre : un compte qui vient de s'inscrire n'a pas d'établissement,
+et la connexion doit le rendre tel quel plutôt qu'en `404`. Ce qu'il
+voit alors est l'écran de choix, puis un Accueil à l'état vide
+(§ 2.0 ter) — pas une erreur.
 
 Quatre règles que le service doit respecter :
 
@@ -1427,24 +1605,32 @@ du Lot 2 et non Ma fiche, écrivent toujours SQLite en direct : ce sont
 les deux dernières surfaces qui ne traversent pas la couture, et elles
 sont hors Lot 1.
 
-### 5.4 L'inscription passe par les quatre endpoints
+### 5.4 Les deux parcours passent par les cinq endpoints
 
-Le parcours de `/inscription` n'a pas de chemin court : chaque étape
-écrit par le pilote, comme le reste du Lot 1. En mode `http`, contre le
-service factice de `tools/mock-api.mjs`, un parcours complet se lit dans
-son journal — c'est la trace du test, pas une intention :
+Ni `/inscription` ni la création d'établissement n'a de chemin court :
+chaque étape écrit par le pilote, comme le reste du Lot 1. En mode
+`http`, contre le service factice de `tools/mock-api.mjs`, un parcours
+complet se lit dans son journal — c'est la trace du test, pas une
+intention :
 
 | Étape | Appel | Vérifié |
 |---|---|---|
-| 1 · le compte | `POST /api/business/onboarding` | ✅ `→ 200`, rend `{ userId, draft }` |
+| compte · 1 | `POST /api/business/onboarding` | ✅ `→ 200`, rend `{ userId, draft }` |
+| compte · 2 | — | ✅ la confirmation n'appelle rien ; son bouton ouvre la session |
+| `/choisir` | — | ✅ aucun appel : les trois cartes se lisent dans la session |
+| venue · ouverture | `POST /api/business/venue-drafts` | ✅ `→ 200`, rend le brouillon du compte — le même à chaque ouverture |
 | reprise | `GET /api/business/onboarding/{id}` | ✅ `→ 200`, l'étape atteinte et les réponses |
-| 2 à 5 | `PUT /api/business/onboarding/{id}` | ✅ quatre `→ 200`, un par étape enregistrée |
-| 6 · la venue | `POST /api/business/onboarding/{id}/submit` | ✅ `→ 200`, rend `{ venueId }` ; l'Accueil de la nouvelle venue s'affiche derrière |
+| venue · 1 à 5 | `PUT /api/business/onboarding/{id}` | ✅ cinq `→ 200`, un par étape enregistrée, `managementMode` sur le premier |
+| venue · 6 | `POST /api/business/onboarding/{id}/submit` | ✅ `→ 200`, rend `{ venueId }` ; l'Accueil de la nouvelle venue s'affiche derrière |
 
-`tools/verify/inscription.mjs` est ce qui produit cette trace : il
-marche les six étapes, ferme et rouvre le parcours, puis vérifie que
-l'atterrissage salue le nouveau partenaire sur son établissement. Il
-passe en lot 1 et en lot 2, en 1440 et en 390, en `db` et en `http`.
+`tools/verify/inscription.mjs` est ce qui produit la première moitié de
+cette trace : il marche les deux étapes du compte et vérifie que
+l'atterrissage est l'écran de choix, avec ses trois cartes et son
+« Ajouter » sur chacune. `tools/verify/journey.mjs` marche la seconde :
+le choix, l'Accueil à l'état vide, les six étapes de la création avec
+le mode de gestion, puis le premier service du nouvel établissement.
+Les deux passent en lot 1 et en lot 2, en 1440 et en 390, en `db` et en
+`http`.
 
 ### 5.5 L'application grand public lit les mêmes tables
 
@@ -1505,6 +1691,7 @@ Les clés, telles quelles :
 | `menu_files[]` | `venue_assets` `kind='menu_file'`, par `position` | la carte en PDF, facultative — `{ url, content_type }`. **Un seul fichier** depuis le 12 octobre, et un `application/pdf` : les images de pages sont parties avec la revue. Reste une liste pour les fiches plus anciennes |
 | `ambience[]` | `venue_tags` `kind='ambience'` | « Ambiance : Élégant, minimaliste, moderne » — `{ id, label }` |
 | `features[]` | `venue_tags` `kind='feature'` | le bloc « Equipements » — `{ id, label }` |
+| `management_mode` | `venues.management_mode` | **rien, pour l'instant** : `dashboard`, `whatsapp` ou `api`, servi pour que le routage d'une réservation soit écrit contre une donnée déjà collectée (§ 3.1) |
 
 `ambience` et `features` portent **l'id et le libellé**. L'id est ce
 qu'un filtre compare et ce par quoi une icône est choisie ; le libellé
@@ -1691,18 +1878,18 @@ liste que l'estimation DB de 2 jours doit couvrir.
 ## 7. Les tables du Lot 1
 
 Sur les 69 tables de `db/schema.sql`, voici celles que les sept écrans
-touchent. Le pilote SQLite est la spécification exécutable de ce que
+touchent. `/choisir` n'en touche aucune : il lit la session. Le pilote SQLite est la spécification exécutable de ce que
 votre backend doit pouvoir répondre.
 
 | Table | Lue par | Écrite par |
 |---|---|---|
-| `venues` | Accueil, Ma fiche, Connexion, Validations | Ma fiche (identité), Inscription (étape 6), Validations (`status`) |
+| `venues` | Accueil, Ma fiche, Connexion, Validations | Ma fiche (identité), Création d'établissement (étape 6, `management_mode` compris), Validations (`status`) |
 | `venue_tags` | Accueil, Ma fiche | Ma fiche (fiche, Lot 2) |
 | `venue_settings` | les six écrans | Notifications, Paramètres |
-| `business_accounts` | Connexion (compte métier) | Inscription (étape 6) |
+| `business_accounts` | Connexion (compte métier) | Création d'établissement (étape 6) |
 | `partner_accounts` | Connexion (mot de passe d'un partenaire inscrit) | Inscription (étape 1) |
-| `onboarding_drafts` | Inscription (reprise) | Inscription (chaque étape) |
-| `staff` | Connexion (annuaire, périmètre — une ligne par établissement en lot 1, rôle `owner`) | Équipe (Lot 2), Inscription (étape 6) |
+| `onboarding_drafts` | Création d'établissement (reprise) | Inscription (étape 1), Création d'établissement (chaque étape, `management_mode` comprise) |
+| `staff` | Connexion (annuaire, périmètre — une ligne par établissement en lot 1, rôle `owner`) | Équipe (Lot 2), Création d'établissement (étape 6) |
 | `reservations` | Accueil, Réservations, Check-in, recherche | Check-in, cycle de vie (`at` ne bouge plus : Décaler est lot 2) |
 | `platform_admins` | la porte de `/admin/validations` | — (l'équipe LYFE, hors portail) |
 | `reservation_status_history` | — | Check-in, cycle de vie |

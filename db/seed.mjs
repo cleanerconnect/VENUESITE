@@ -206,6 +206,9 @@ insert("venues", {
   currency: "MAD",
   capacity: 120,
   price_range: 3,
+  // Where a booking lands. Dar Zellij answers them in the portal,
+  // which is what the demo book is a demonstration of.
+  management_mode: "dashboard",
   onboarding_completed: 1,
   created_at: daysAgo(400),
   updated_at: iso(now),
@@ -1489,6 +1492,11 @@ insert("venues", {
   currency: "MAD",
   capacity: 70,
   price_range: 3,
+  // WhatsApp, deliberately: with both venues on 'dashboard' the
+  // column would be a constant, and nothing — not the payload, not
+  // the contract check, not a screen — would ever be read against a
+  // second value.
+  management_mode: "whatsapp",
   onboarding_completed: 1,
   created_at: daysAgo(180),
   updated_at: iso(now),

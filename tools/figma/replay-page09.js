@@ -101,13 +101,19 @@ const HOME = {
   "disponibilites-enregistre": ["6 · Disponibilités", 1],
   "notifications": ["7 · Notifications", 0],
   "notifications-enregistre": ["7 · Notifications", 1],
-  "inscription-1": ["0 · Inscription", 0],
-  "inscription-2": ["0 · Inscription", 1],
-  "inscription-3": ["0 · Inscription", 2],
-  "inscription-4": ["0 · Inscription", 3],
-  "inscription-5": ["0 · Inscription", 4],
-  "inscription-6": ["0 · Inscription", 5],
-  "inscription-7": ["0 · Inscription", 6],
+  // The 27 October split, section by section: the account keeps « 0 »,
+  // and the chooser, the empty dashboard and the six steps of the
+  // establishment are « 0 bis ». Same order a partner meets them in.
+  "compte-1": ["0 · Inscription", 0],
+  "compte-2": ["0 · Inscription", 1],
+  "choisir": ["0 bis · Choisir et créer", 0],
+  "accueil-vide": ["0 bis · Choisir et créer", 1],
+  "etablissement-1": ["0 bis · Choisir et créer", 2],
+  "etablissement-2": ["0 bis · Choisir et créer", 3],
+  "etablissement-3": ["0 bis · Choisir et créer", 4],
+  "etablissement-4": ["0 bis · Choisir et créer", 5],
+  "etablissement-5": ["0 bis · Choisir et créer", 6],
+  "etablissement-6": ["0 bis · Choisir et créer", 7],
 };
 
 /**
@@ -141,13 +147,6 @@ const ADOPT = {
   "disponibilites-enregistre@1440": "204:711",
   "notifications@1440": "128:13838",
   "notifications-enregistre@1440": "204:983",
-  "inscription-1@1440": "317:1887",
-  "inscription-2@1440": "318:1887",
-  "inscription-3@1440": "318:2000",
-  "inscription-4@1440": "317:1983",
-  "inscription-5@1440": "319:1887",
-  "inscription-6@1440": "320:1887",
-  "inscription-7@1440": "319:2031",
   "connexion@390": "216:1072",
   "ma-fiche-identite@390": "322:1467",
   "ma-fiche-details@390": "322:1705",
@@ -158,14 +157,26 @@ const ADOPT = {
   "disponibilites-enregistre@390": "221:1456",
   "notifications@390": "219:1545",
   "notifications-enregistre@390": "221:1677",
-  "inscription-1@390": "323:2095",
-  "inscription-2@390": "323:2178",
-  "inscription-3@390": "323:2278",
-  "inscription-4@390": "324:2095",
-  "inscription-5@390": "324:2178",
-  "inscription-6@390": "325:2095",
-  "inscription-7@390": "325:2239",
 };
+
+/*
+ * Why the 27 October split needed no link work.
+ *
+ * The screens it moved — the seven steps of the old `/inscription` —
+ * carry no prototype reaction in this file, and never did: page 09's
+ * prototype lives on the book's buttons and on the chrome components,
+ * which is where `inheritance` below earns its keep. Checked rather
+ * than assumed, on the file, frame by frame: 21 frames, 0 reactions,
+ * against 219 on the page as a whole.
+ *
+ * So the new keys are drawn as new frames and the old twenty-one were
+ * deleted once, by hand, in the run that drew them — see
+ * `docs/HANDOFF.md`. Nothing was inherited because there was nothing to
+ * inherit, and nothing is in `ADOPT` for them because the ids a first
+ * generation of this page had are the ids of frames it has since
+ * replaced.
+ */
+
 
 // Urbanist, because the file's UI type is Urbanist. Fraunces is the
 // display face, set on the page by hand; nothing here writes it.

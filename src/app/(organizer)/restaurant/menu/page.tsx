@@ -27,6 +27,9 @@ interface Props {
 export default async function MenuPage({ searchParams }: Props) {
   const session = await resolveSession();
   if (!session) redirect("/login");
+  // No establishment yet: every screen here is about one. Accueil is
+  // the one that can say so — see `EmptyDashboard`.
+  if (session.venues.length === 0) redirect("/restaurant");
 
   // `?etat=` forces the three states here too, so every one of the
   // thirty screens can be shown failing or empty on demand rather than

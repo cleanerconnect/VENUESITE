@@ -1,19 +1,24 @@
-// Walks the onboarding flow end to end and reports what broke.
+// Walks the account creation and reports what broke.
 //
 //   node tools/verify/inscription.mjs
 //   W=390 H=844 node tools/verify/inscription.mjs
 //   SHOTS=docs/lot1-reference node tools/verify/inscription.mjs
 //
 // « Création de Venue » is one of the three nouns in Planning V3's
-// Prio 02 row, and it is the only Lot 1 surface with more than one
-// screen: six steps, a draft that has to survive the tab closing, and
-// an establishment that has to exist at the end. None of that is
-// visible to `walk.mjs`, which reads one route at a time — so it has a
-// tool of its own.
+// Prio 02 row, and since DigiNegoce's 27 October decision it is two
+// walks rather than one: an account, and then — from inside the
+// dashboard it belongs to — the establishment. This tool owns the
+// first, plus the screen between them. `journey.mjs` owns the second.
 //
-// It writes: every run creates an account and an establishment in
-// whatever database the portal is pointed at. Reseed afterwards if the
-// dataset is going anywhere (`npm run db:reset`).
+// What the split moved out of here: five steps, the draft that had to
+// survive a closed tab, and the establishment at the end. All of that
+// is still verified, in `journey.mjs`, where the partner is signed in
+// and the flow can actually be resumed — which is the whole reason the
+// steps moved.
+//
+// It writes: every run creates an account in whatever database the
+// portal is pointed at. Reseed afterwards if the dataset is going
+// anywhere (`npm run db:reset`).
 
 import { chromiumOrExplain } from "./browser.mjs";
 import { mkdirSync } from "node:fs";
@@ -43,19 +48,14 @@ const page = await browser.newPage({ viewport: { width, height } });
 const problems = [];
 const noise = [];
 page.on("pageerror", (e) => noise.push(`pageerror: ${String(e).slice(0, 140)}`));
-// The map draws OpenStreetMap tiles and geocodes through Nominatim.
-// Neither is reachable from a sandboxed runner, and a tile that fails to
-// load is not this portal's defect — the component renders and stays
-// usable without them. Anything else on the console still fails the run.
-const EXTERNAL_MAP = /tile\.openstreetmap\.org|nominatim\.openstreetmap\.org|\/api\/geocode/;
 page.on("console", (m) => {
   if (m.type() !== "error") return;
   const text = m.text();
-  // A failed resource logs its message here and its URL in `location()`;
-  // a tile server refused by the runner's proxy says only
-  // « ERR_TUNNEL_CONNECTION_FAILED » in the text, so both are checked.
   const from = m.location()?.url ?? "";
-  if (EXTERNAL_MAP.test(text) || EXTERNAL_MAP.test(from)) return;
+  // Chromium probes `/favicon.ico` whatever a `<link rel="icon">`
+  // points at, and logs a bare « Failed to load resource » for it.
+  if (/favicon|preload|Download the React/i.test(text)) return;
+  if (/favicon/i.test(from)) return;
   noise.push(`console: ${text.slice(0, 140)}`);
 });
 
@@ -71,41 +71,39 @@ async function shot(name) {
 
 // ── Le pli ──
 //
-// Sept étapes, et chacune doit tenir dans un écran : la passe
-// responsive de la revue demande l'action principale et le contenu
-// principal dans le premier écran, sans défilement. Vérifié à la
-// largeur où le tool tourne, donc `W=390 H=844` le vérifie sur un
-// téléphone et `W=1024 H=768` sur une tablette couchée — les deux
-// écrans les plus courts de la liste.
+// Chaque écran doit tenir dans une fenêtre : la passe responsive de la
+// revue demande l'action principale et le contenu principal dans le
+// premier écran, sans défilement. Vérifié à la largeur où le tool
+// tourne, donc `W=390 H=844` le vérifie sur un téléphone et
+// `W=1024 H=768` sur une tablette couchée — les deux écrans les plus
+// courts de la liste.
 //
-// Il n'y a plus d'exception, et il y en avait deux. Les étapes 2 et 4
-// posent plus de questions qu'un écran de 844 n'en contient — six
-// champs, quatre zones de dépôt — et tant que « Continuer » était la
-// dernière ligne de la carte, les faire tenir aurait demandé une
-// huitième étape que le périmètre interdit (contrat § 2.0, et les sept
-// trames de la page 09). Le contrôle les nommait donc, avec leur
-// chiffre mesuré, en garde-fou contre l'aggravation.
-//
-// Le bouton a quitté la carte : il est épinglé au bas de la fenêtre,
-// comme la barre d'enregistrement de Ma fiche et de Disponibilités. La
-// règle vaut maintenant pour les sept étapes à toutes les largeurs,
-// donc elle est vérifiée telle quelle, sans liste de dispenses.
+// Il n'y a pas d'exception, et il y en avait deux : les deux étapes les
+// plus chargées de l'ancienne route. Le bouton a quitté la carte — il
+// est épinglé au bas de la fenêtre, comme la barre d'enregistrement de
+// Ma fiche — donc la règle vaut telle quelle, sans liste de dispenses.
 const folds = [];
-const fold = async (name) => {
-  const m = await page.evaluate(() => {
+// `selector` names the action when it is not a button: `/choisir` has
+// no « Continuer » — its action is the last of the three cards, and the
+// rule the fold is about is that a partner sees all three without
+// scrolling.
+const fold = async (name, selector = null) => {
+  const m = await page.evaluate((sel) => {
     const visible = (el) => {
       const r = el.getBoundingClientRect();
       return r.height > 1 && r.width > 1 ? r : null;
     };
-    const cta = [...document.querySelectorAll("button")]
-      .filter((b) =>
-        /^(Continuer|Ouvrir mon tableau de bord|Terminer|Envoyer)/.test(
-          (b.textContent ?? "").trim(),
-        ),
-      )
+    const candidates = sel
+      ? [...document.querySelectorAll(sel)]
+      : [...document.querySelectorAll("button")].filter((b) =>
+          /^(Continuer|Choisir mon espace|Terminer|Envoyer)/.test(
+            (b.textContent ?? "").trim(),
+          ),
+        );
+    const cta = candidates
       .map(visible)
       .filter(Boolean)
-      .sort((a, b) => a.top - b.top)[0];
+      .sort((a, b) => b.bottom - a.bottom)[0];
     const doc = document.documentElement;
     return {
       action: cta ? Math.round(cta.bottom) : null,
@@ -113,7 +111,7 @@ const fold = async (name) => {
       page: Math.round(doc.scrollHeight),
       overflow: Math.round(doc.scrollWidth - doc.clientWidth),
     };
-  });
+  }, selector);
   folds.push(`${name} ${m.action ?? "—"}/${m.fold} · page ${m.page}`);
   check(
     `${name} · l'action principale est dans l'écran`,
@@ -139,6 +137,20 @@ check("étape 1 · Vous", (await heading()) === "Vous", page.url());
 await fold("étape 1");
 await shot("1-vous");
 
+// The step asks who you are, and nothing about a room. That is the
+// 27 October decision, and it is an assertion rather than a comment:
+// a venue field back on this step would mean the split was undone.
+const stepOne = await page.innerText("body");
+check(
+  "l'étape ne demande rien sur l'établissement",
+  !/Nom de l'établissement|Un bar ou lounge|Type de cuisine/.test(stepOne),
+);
+check(
+  "la barre de progression a deux segments",
+  (await page.locator("[data-progress]").first().getAttribute("data-progress")) === "2",
+  (await page.locator("[data-progress]").first().getAttribute("data-progress")) ?? "aucune",
+);
+
 // ── Step 1 · the account ──
 await page.getByLabel("Votre nom").fill("Partenaire Vérification");
 await page.getByLabel("Adresse e-mail").fill(email);
@@ -161,196 +173,139 @@ check("confirmation différente refusée", (await heading()) === "Vous");
 await page.getByLabel("Confirmation du mot de passe").fill("motdepasse1");
 await page.locator('button:has-text("Continuer")').first().click();
 await page.waitForTimeout(1800);
-check("étape 2 · Votre établissement", (await heading()) === "Votre établissement");
+
+// ── Step 2 · the confirmation, and it confirms one thing ──
+check("étape 2 · Votre compte est créé", (await heading()) === "Votre compte est créé");
 await fold("étape 2");
-await shot("2-etablissement");
-
-// ── Step 2 · the establishment ──
-await page.getByLabel("Nom de l'établissement").fill("Le Petit Riad");
-await page.locator('button:has-text("Un bar ou lounge")').click();
-// « Type de cuisine » and the price band: the two the app's detail
-// screen draws under the venue's name and nothing used to ask for.
-//
-// The cuisine is a select of exactly the ten the app's filter row
-// offers. It was a text field, so a partner could write a sentence no
-// filter would ever match and never be told; the sentence has its own
-// line now, under the select.
-const cuisines = await page.getByLabel("Type de cuisine").locator("option").allTextContents();
-check("dix types de cuisine, plus l'invite", cuisines.length === 11, `${cuisines.length}`);
-check("et la liste est celle de l'application", cuisines.includes("Marocaine") && cuisines.includes("Méditerranéenne"));
-await page.getByLabel("Type de cuisine").selectOption("fusion");
-await page.getByLabel("Spécialités").fill("Cocktails d'auteur et mezzés");
-const bands = page.locator('[role="radiogroup"][aria-label="Fourchette de prix"] [role="radio"]');
-check("quatre niveaux de prix", (await bands.count()) === 4, `${await bands.count()}`);
-await bands.nth(2).click();
-await page.waitForTimeout(200);
-check("le niveau choisi est coché", (await bands.nth(2).getAttribute("aria-checked")) === "true");
-// The city is a list of five, not a field: a typed city is five
-// spellings of Marrakech in the database by the end of the month.
-const cities = await page.getByLabel("Ville").locator("option").allTextContents();
+await shot("2-compte-cree");
+const confirmation = await page.innerText("body");
+check("elle dit que le compte existe", /Votre compte est créé/.test(confirmation));
 check(
-  "la ville se choisit dans une liste",
-  ["Casablanca", "Marrakech", "Rabat", "Tanger", "Agadir"].every((c) => cities.includes(c)),
-  cities.join(" · "),
+  "elle ne récapitule aucun établissement",
+  !/Le Petit Riad|6 jours par semaine|1 photo/.test(confirmation),
 );
-await page.getByLabel("Ville").selectOption("Marrakech");
-await page.waitForTimeout(300);
-await page.locator('button:has-text("Continuer")').first().click();
-await page.waitForTimeout(1500);
-check("étape 3 · Adresse", (await heading()) === "Adresse");
-await fold("étape 3");
-await shot("3-adresse");
 
-// ── Step 3 · the quarter, the address and its pin ──
-// The quarter comes first, because that is the order the app prints
-// them in: its header reads « quartier, ville ».
-await page.getByLabel("Quartier").fill("Médina");
-await page.getByLabel("Adresse", { exact: true }).fill("45 rue de la Kasbah, Médina");
-// The map is real Leaflet now. « Trouver sur la carte » geocodes through
-// Nominatim, which a sandboxed runner cannot reach, so the pin is placed
-// the other way the screen allows — a click on the map — which is also
-// the assertion that the map is interactive rather than a picture.
-const carte = page.locator(".leaflet-container");
-check("la carte s'affiche", (await carte.count()) > 0);
-await carte.click({ position: { x: 140, y: 110 } });
-await page.waitForTimeout(500);
-check("point posé", (await page.locator('text="Point placé"').count()) > 0);
-await page.locator('button:has-text("Continuer")').first().click();
-await page.waitForTimeout(1500);
-check("étape 4 · Photos", (await heading()) === "Photos");
-await fold("étape 4");
-await shot("4-photos");
-
-// ── Step 4 · four files, all skippable, and it says so ──
-// The vignette joined them: the app draws every venue as a square tile
-// in its lists, and a carousel photo is 16:9, so without one the tile
-// was a centre crop of a picture chosen for a different shape.
-const drops = await page.locator('input[type="file"]').count();
-check("couverture, deuxième photo, vignette et carte", drops === 4, `${drops} sélecteurs`);
-const vignette = await page
-  .locator('input[type="file"]')
-  .nth(2)
-  .getAttribute("accept");
-check(
-  "la vignette n'accepte que des images",
-  (vignette ?? "").includes("image/png") && !(vignette ?? "").includes("pdf"),
-  vignette ?? "",
-);
-check(
-  "et l'étape dit qu'elle recadre en carré",
-  /recadrée au centre, en carré/.test(await page.innerText("body")),
-);
-const pdf = await page
-  .locator('input[type="file"]')
-  .nth(3)
-  .getAttribute("accept");
-check("la carte accepte un PDF", (pdf ?? "").includes("application/pdf"), pdf ?? "");
-const skip = page.locator('button:has-text("Passer cette étape")');
-check("l'étape photo peut être passée", (await skip.count()) > 0);
-await skip.click();
-await page.waitForTimeout(1500);
-check("étape 5 · Ambiance et équipements", (await heading()) === "Ambiance et équipements");
-await fold("étape 5");
-await shot("5-ambiance");
-
-// ── Step 5 · the two lists the app draws, and it too can be passed ──
-// Scoped to the ambience fieldset: the equipment rows are Radix
-// switches, which are also `button[role="switch"]`, and an unscoped
-// count is the two lists added together.
-const chips = page.locator('fieldset:has(> legend:text-is("Ambiance")) button[role="switch"]');
-check("les ambiances sont une liste fermée", (await chips.count()) === 12, `${await chips.count()} puces`);
-await chips.first().click();
-await page.waitForTimeout(200);
-check("une ambiance se coche", (await chips.first().getAttribute("aria-checked")) === "true");
-const equipment = page.locator('label:has([role="switch"])');
-check("huit équipements", (await equipment.count()) === 8, `${await equipment.count()} lignes`);
-for (const label of [
-  "Wi-Fi",
-  "Réservation recommandée",
-  "Cartes de crédit acceptées",
-  "Terrasse / extérieur",
-  "Déjeuner & dîner servis",
-  "Ambiance musique & mixologie",
-  "Parking",
-  "Accès PMR",
-]) {
-  check(
-    `équipement « ${label} »`,
-    (await page.locator(`label:has-text("${label}")`).count()) > 0,
-  );
-}
-const skip5 = page.locator('button:has-text("Passer cette étape")');
-check("l'étape ambiance peut être passée", (await skip5.count()) > 0);
-await page.locator('button:has-text("Continuer")').first().click();
-await page.waitForTimeout(1500);
-check("étape 6 · Horaires", (await heading()) === "Horaires");
-await fold("étape 6");
-
-// ── Step 6 · the weekly grid ──
-const rows = await page.locator('[role="switch"]').count();
-check("sept jours", rows === 7, `${rows} interrupteurs`);
-const copy = page.locator('button:has-text("Appliquer lundi à tous les jours")');
-check("raccourci de copie", (await copy.count()) > 0);
-await copy.click();
-await page.waitForTimeout(400);
-await shot("6-horaires");
-await page.locator('button:has-text("Continuer")').first().click();
-await page.waitForTimeout(1500);
-check("étape 7 · C'est prêt", (await heading()) === "C'est prêt");
-await fold("étape 7");
-await shot("7-cest-pret");
-
-// ── The draft outlives the tab ──
+// The draft the account carries outlives the tab, as it always did —
+// reopening `/inscription` must not send a partner back to step 1.
 await page.goto(`${BASE}/inscription`, { waitUntil: "domcontentloaded" });
 await page.waitForTimeout(1300);
 check(
   "rouvre là où le parcours s'est arrêté",
-  (await heading()) === "C'est prêt",
+  (await heading()) === "Votre compte est créé",
   await heading(),
 );
-const summary = (await page.textContent("body")) ?? "";
-check("le récapitulatif porte les réponses", summary.includes("Le Petit Riad"));
-check(
-  "le type est nommé comme sur la question",
-  summary.includes("Bar ou lounge"),
-);
-// Every new answer has to survive the round trip to the draft and back,
-// or the step that collected it was theatre.
-check("le récapitulatif porte la cuisine", summary.includes("Fusion"));
-check(
-  "et les spécialités telles qu'écrites",
-  summary.includes("Cocktails d'auteur et mezzés"),
-);
-check("le récapitulatif porte le quartier", summary.includes("Médina"));
-// The band names itself in dirhams now, not in euro glyphs: « €€€ »
-// asked the partner to guess what three of them meant, and priced a
-// Marrakech riad in a currency nobody at the table uses.
-check(
-  "le récapitulatif porte la fourchette de prix",
-  /300 à 500 MAD/.test(summary),
-  summary.split("\n").find((l) => /MAD/.test(l)) ?? "",
-);
-check("et plus aucun glyphe d'euro", !summary.includes("€"), summary.match(/€+/g)?.join(" ") ?? "aucun");
-check("le récapitulatif porte l'ambiance", summary.includes("Élégant"));
 
-// ── Step 7 · the establishment exists, and it is theirs ──
-await page.locator('button:has-text("Ouvrir mon tableau de bord")').click();
-await page.waitForTimeout(3200);
-check("atterrit sur l'Accueil", page.url().endsWith("/restaurant"), page.url());
-const landing = await heading();
-check("salue le nouveau partenaire", landing.includes("Partenaire"), landing);
-const aside = (await page.textContent("aside").catch(() => "")) ?? "";
-check("la barre latérale nomme l'établissement", aside.includes("Le Petit Riad"));
-await shot("8-accueil");
-
-// A new venue has no bookings; the dashboard has to say so rather than
-// break. This is the assertion that would have caught a missing service
-// row, which is the one way this endpoint fails silently.
-const body = (await page.textContent("body")) ?? "";
+// ── The chooser ──
+await page.locator('button:has-text("Choisir mon espace")').click();
+await page.waitForTimeout(2600);
+check("mène à l'écran de choix", new URL(page.url()).pathname === "/choisir", page.url());
 check(
-  "l'Accueil d'un établissement vide s'affiche",
-  !/Cette page n'a pas pu charger/.test(body),
+  "« Que voulez-vous gérer sur LYFE ? »",
+  /Que voulez-vous gérer sur LYFE/.test(await heading()),
+  await heading(),
 );
+await fold("choisir", "[data-dashboard]");
+await shot("3-choisir");
+
+const cards = page.locator("[data-dashboard]");
+check("trois cartes", (await cards.count()) === 3, `${await cards.count()}`);
+const chooser = await page.innerText("body");
+for (const label of ["Restaurant", "Bar ou lounge", "Événements"]) {
+  check(`carte « ${label} »`, chooser.includes(label));
+}
+// A brand new account holds nothing, so all three are offers. « Actif ·
+// ouvrir » here would mean the screen is reading something other than
+// the session.
+const actions = await cards.allTextContents();
+check(
+  "les trois sont proposées, aucune active",
+  actions.every((a) => a.trim() === "Ajouter"),
+  actions.join(" · "),
+);
+const actives = await page.locator('[data-active="1"]').count();
+check("et aucune n'est marquée active", actives === 0, `${actives}`);
+
+// Each card goes where the flow that creates it lives, and the two
+// venue cards carry the hint the creation flow reads at step 2.
+const hrefs = {};
+for (const id of ["restaurant", "bar", "events"]) {
+  hrefs[id] =
+    (await page
+      .locator(`a:has([data-dashboard="${id}"])`)
+      .first()
+      .getAttribute("href")
+      .catch(() => "")) ?? "";
+}
+check(
+  "la carte Restaurant ouvre la création avec son indication",
+  hrefs.restaurant === "/restaurant/etablissement/nouveau?type=restaurant",
+  hrefs.restaurant,
+);
+check(
+  "la carte Bar ouvre la même création, autre indication",
+  hrefs.bar === "/restaurant/etablissement/nouveau?type=bar",
+  hrefs.bar,
+);
+check(
+  "la carte Événements garde son propre parcours",
+  hrefs.events === "/onboarding",
+  hrefs.events,
+);
+
+// ── The dashboard behind the card, before there is a venue ──
+await page.goto(`${BASE}/restaurant`, { waitUntil: "domcontentloaded" });
+await page.waitForTimeout(1600);
+check(
+  "l'Accueil sans établissement s'affiche",
+  (await page.locator("[data-empty-dashboard]").count()) > 0,
+  page.url(),
+);
+// Scoped to the card: « Créer mon établissement » is also the sidebar's
+// one entry, so an unscoped match would pass on a card that is not
+// there — which is how the first run of this tool reported the state as
+// drawn while the card itself was throwing.
+const card = page.locator("[data-empty-dashboard]");
+const empty = (await card.innerText().catch(() => "")) ?? "";
+check(
+  "il porte la phrase de la décision",
+  /Votre espace est prêt\. Créez votre établissement pour recevoir vos premières réservations/.test(
+    empty,
+  ),
+  empty.replace(/\s+/g, " ").slice(0, 60),
+);
+const inside = await card.locator("a, button").count();
+check("et un seul bouton", inside === 1, `${inside} dans la carte`);
+// The sidebar is reduced to what there is to do. A Réservations entry
+// here is a link to a book that does not exist.
+if (width > 1024) {
+  const aside = (await page.textContent("aside").catch(() => "")) ?? "";
+  check(
+    "la barre latérale ne propose que l'Accueil et la création",
+    /Créer mon établissement/.test(aside) && !/Réservations|Check-in|Ma fiche/.test(aside),
+    aside.replace(/\s+/g, " ").slice(0, 80),
+  );
+}
+await shot("4-accueil-vide");
+
+// The other screens cannot be opened: each one redirects rather than
+// rendering a dashboard for a venue that is not there. The last two are
+// Lot 2 routes, so they are only asked for there — a `404` from the lot
+// gate is a different answer, and a correct one.
+const siblings = [
+  "/restaurant/reservations",
+  "/restaurant/check-in",
+  "/restaurant/ma-fiche",
+  ...(LOT === 2 ? ["/restaurant/menu", "/restaurant/equipe"] : []),
+];
+for (const path of siblings) {
+  await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1100);
+  check(
+    `${path} ramène à l'Accueil`,
+    new URL(page.url()).pathname === "/restaurant",
+    page.url(),
+  );
+}
 
 await browser.close();
 
@@ -359,12 +314,12 @@ if (noise.length) {
   for (const line of [...new Set(noise)].slice(0, 5)) console.log(`  ${line}`);
 }
 
-console.log(`\nL'action principale et le pli, étape par étape :`);
+console.log(`\nL'action principale et le pli, écran par écran :`);
 for (const line of folds) console.log(`  ${line}`);
 
 console.log(
   problems.length === 0
-    ? `\nLes sept étapes de l'inscription passent · ${LOT_LABEL} · ${width}×${height}.`
+    ? `\nLe compte, l'écran de choix et l'Accueil vide passent · ${LOT_LABEL} · ${width}×${height}.`
     : `\n${problems.length} failures`,
 );
 process.exit(problems.length === 0 ? 0 : 1);

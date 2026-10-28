@@ -285,9 +285,11 @@ const ROUTES = [
     return null;
   }],
 
-  // Onboarding — « Création de Venue ». The draft lives here for the
-  // life of the process, and the submit makes a venue the rest of the
-  // routes then serve like any other.
+  // Onboarding — the account, then « Création de Venue ». Since the
+  // 27 October split the two are separate walks: this route creates the
+  // person and an empty draft, `POST /venue-drafts` hands that draft
+  // back when the establishment flow opens, and the submit makes a venue
+  // the rest of the routes then serve like any other.
   ["POST", /^\/api\/business\/onboarding$/, (_m, _q, body) => {
     const email = String(body?.email ?? "").trim().toLowerCase();
     if (db.users.some((u) => u.email.toLowerCase() === email)) {
@@ -306,47 +308,26 @@ const ROUTES = [
       phone: String(body?.phone ?? "").trim(),
       venues: [],
     });
-    const draft = {
-      id: `onb_${randomUUID().slice(0, 10)}`,
-      ownerId: userId,
-      step: 2,
-      venueName: "",
-      venueType: "restaurant",
-      cuisine: "",
-      specialties: "",
-      priceRange: 2,
-      city: "",
-      district: "",
-      address: "",
-      latitude: null,
-      longitude: null,
-      coverObjectKey: "",
-      coverContentType: "",
-      coverSizeBytes: 0,
-      photo2ObjectKey: "",
-      photo2ContentType: "",
-      photo2SizeBytes: 0,
-      menuObjectKey: "",
-      menuContentType: "",
-      menuSizeBytes: 0,
-      thumbnailObjectKey: "",
-      thumbnailContentType: "",
-      thumbnailSizeBytes: 0,
-      ambience: [],
-      features: [],
-      hours: WEEK.map((weekday) => ({
-        weekday,
-        closed: false,
-        opensAt: "12:00",
-        closesAt: "23:00",
-      })),
-      submittedVenueId: null,
-      updatedAt: isoNow(),
-    };
+    const draft = emptyVenueDraft(userId);
     drafts.set(draft.id, draft);
     return { userId, draft };
   }],
   ["GET", /^\/api\/business\/onboarding\/([^/]+)$/, (m) => drafts.get(m[1]) ?? null],
+
+  // The establishment flow opening. Idempotent on purpose: the account's
+  // unsubmitted draft if it has one, a new one otherwise. Ten openings
+  // of /restaurant/etablissement/nouveau must not leave ten drafts, and
+  // a tab closed at step 4 must reopen at step 4.
+  ["POST", /^\/api\/business\/venue-drafts$/, (_m, _q, body) => {
+    const ownerId = String(body?.ownerId ?? "").trim();
+    if (!ownerId) throw new Refused(401, "no_session", "Session absente.");
+    for (const draft of drafts.values()) {
+      if (draft.ownerId === ownerId && !draft.submittedVenueId) return draft;
+    }
+    const draft = emptyVenueDraft(ownerId);
+    drafts.set(draft.id, draft);
+    return draft;
+  }],
   ["PUT", /^\/api\/business\/onboarding\/([^/]+)$/, (m, _q, body) => {
     const draft = drafts.get(m[1]);
     if (!draft) throw new Refused(404, "draft_not_found", "Inscription introuvable.");
@@ -356,6 +337,12 @@ const ROUTES = [
     const city = body?.city;
     if (city !== undefined && city !== "" && !CITIES.includes(city)) {
       throw new Refused(400, "city_unknown", "Ville hors de la liste.");
+    }
+    // Same reasoning for the management mode: three answers, and a
+    // fourth one in the column is a routing rule nobody wrote.
+    const mode = body?.managementMode;
+    if (mode !== undefined && !MANAGEMENT_MODES.includes(mode)) {
+      throw new Refused(400, "management_mode_unknown", "Mode de gestion inconnu.");
     }
     Object.assign(draft, body ?? {}, { updatedAt: isoNow() });
     return draft;
@@ -641,9 +628,59 @@ const ROUTES = [
 ];
 
 const CITIES = ["Casablanca", "Marrakech", "Rabat", "Tanger", "Agadir"];
+const MANAGEMENT_MODES = ["dashboard", "whatsapp", "api"];
 
 const WEEK = [1, 2, 3, 4, 5, 6, 7];
 const drafts = new Map();
+
+/**
+ * A venue draft with nothing answered.
+ *
+ * `step: 1` is the management mode — the first question of the
+ * establishment flow since 27 October, and the one whose default is a
+ * real answer rather than a placeholder: a partner who walks past it
+ * has said « the dashboard », which is what the seven screens honour.
+ */
+function emptyVenueDraft(ownerId) {
+  return {
+    id: `onb_${randomUUID().slice(0, 10)}`,
+    ownerId,
+    step: 1,
+    managementMode: "dashboard",
+    venueName: "",
+    venueType: "restaurant",
+    cuisine: "",
+    specialties: "",
+    priceRange: 2,
+    city: "",
+    district: "",
+    address: "",
+    latitude: null,
+    longitude: null,
+    coverObjectKey: "",
+    coverContentType: "",
+    coverSizeBytes: 0,
+    photo2ObjectKey: "",
+    photo2ContentType: "",
+    photo2SizeBytes: 0,
+    menuObjectKey: "",
+    menuContentType: "",
+    menuSizeBytes: 0,
+    thumbnailObjectKey: "",
+    thumbnailContentType: "",
+    thumbnailSizeBytes: 0,
+    ambience: [],
+    features: [],
+    hours: WEEK.map((weekday) => ({
+      weekday,
+      closed: false,
+      opensAt: "12:00",
+      closesAt: "23:00",
+    })),
+    submittedVenueId: null,
+    updatedAt: isoNow(),
+  };
+}
 
 /**
  * Turns a finished draft into a venue the rest of the routes can serve.
@@ -705,6 +742,7 @@ function makeVenueFromDraft(draft) {
     website: "",
     currency: "MAD",
     onboardingCompleted: true,
+    managementMode: draft.managementMode ?? "dashboard",
     // Like the real driver: a listing waits for LYFE. The double has to
     // agree, or a portal in `http` mode would show no banner where a
     // portal on the database shows one.

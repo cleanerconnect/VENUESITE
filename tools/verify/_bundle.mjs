@@ -20,6 +20,8 @@ const browser = await chromium.launch({
 const ROUTES = [
   ["Connexion", "/login", false],
   ["Inscription", "/inscription", false],
+  ["Choisir", "/choisir", true],
+  ["Nouvel étab.", "/restaurant/etablissement/nouveau", true],
   ["Accueil", "/restaurant", true],
   ["Réservations", "/restaurant/reservations", true],
   ["Check-in", "/restaurant/check-in", true],

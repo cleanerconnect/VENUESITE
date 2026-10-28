@@ -100,19 +100,37 @@ const SCREENS = [
     title: "Inscription",
     route: "/inscription",
     purpose:
-      "Sept étapes pour qu'un établissement existe : qui vous êtes, ce que vous tenez, où, à quoi ça ressemble, ce qu'on y trouve, quand c'est ouvert, et le récapitulatif avant l'envoi à LYFE.",
+      "Deux étapes, et elles créent un compte : qui vous êtes, puis le compte existe. Plus d'établissement ici — la décision DigiNegoce du 27 octobre l'a sorti de l'inscription, parce qu'on y décrivait une salle avant d'avoir une session où revenir.",
     audience: "Le ou la propriétaire, une fois, seul·e, souvent sur un téléphone.",
     spec: "docs/LOT1_API_CONTRACT.md",
     specLabel: "Contrat Lot 1 § 2.0 · Inscription",
     flow: "steps",
+    rows: [{ base: { key: "compte-1" } }, { base: { key: "compte-2" } }],
+  },
+  {
+    // The 27 October decision, as the page meets it: a choice, a
+    // dashboard that is empty on purpose, and the six steps that fill
+    // it. « 0 bis » rather than « 1 » because the sections after it are
+    // numbered in the contract and in every link that points at them.
+    section: "0 bis · Choisir et créer",
+    title: "Choisir un espace, puis créer l'établissement",
+    route: "/choisir → /restaurant/etablissement/nouveau",
+    purpose:
+      "« Que voulez-vous gérer sur LYFE ? » — trois cartes, chacune active ou à ajouter. Le tableau de bord choisi s'ouvre sur une carte d'état tant qu'il n'a pas de salle, et son bouton mène aux six étapes de l'établissement : le mode de gestion des réservations d'abord, puis les cinq écrans que l'inscription portait.",
+    audience:
+      "Le même propriétaire, juste après son compte — et toute personne qui ajoute un second espace plus tard.",
+    spec: "docs/LOT1_API_CONTRACT.md",
+    specLabel: "Contrat Lot 1 § 2.0 bis et § 2.0 ter",
+    flow: "steps",
     rows: [
-      { base: { key: "inscription-1" } },
-      { base: { key: "inscription-2" } },
-      { base: { key: "inscription-3" } },
-      { base: { key: "inscription-4" } },
-      { base: { key: "inscription-5" } },
-      { base: { key: "inscription-6" } },
-      { base: { key: "inscription-7" } },
+      { base: { key: "choisir" } },
+      { base: { key: "accueil-vide" } },
+      { base: { key: "etablissement-1" } },
+      { base: { key: "etablissement-2" } },
+      { base: { key: "etablissement-3" } },
+      { base: { key: "etablissement-4" } },
+      { base: { key: "etablissement-5" } },
+      { base: { key: "etablissement-6" } },
     ],
   },
   {
@@ -859,7 +877,7 @@ function coverBoard(figma, doc, version) {
   board.appendChild(titre);
   const sous = label(
     figma,
-    "Les huit écrans du Lot 1 : l'inscription d'un établissement, puis le service au jour le jour — accueil, carnet, arrivées — et la fiche que l'application LYFE affiche.",
+    "Les écrans du Lot 1 : la création du compte, le choix de l'espace et les six étapes de l'établissement, puis le service au jour le jour — accueil, carnet, arrivées — et la fiche que l'application LYFE affiche.",
     28,
     400,
     { r: 0.82, g: 0.84, b: 0.88 },
@@ -878,7 +896,9 @@ function coverBoard(figma, doc, version) {
     ["Établissement", "Dar Zellij · Marrakech"],
     ["Capture", doc.capturedAt ? String(doc.capturedAt).slice(0, 10) : "—"],
     ["Version", version],
-    ["Largeurs", "1440 · 390"],
+    // Three since the responsive pass, and the cover is the one place a
+    // reader learns which ones the page carries.
+    ["Largeurs", "1440 · 768 · 390"],
   ];
   facts.forEach(([head, body], i) => {
     const x = pad + i * ((col - 0) / 4);

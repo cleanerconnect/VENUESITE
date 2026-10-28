@@ -192,6 +192,7 @@ export type OnboardingDraftPatch = Partial<
     | "thumbnailObjectKey"
     | "thumbnailContentType"
     | "thumbnailSizeBytes"
+    | "managementMode"
     | "ambience"
     | "features"
     | "hours"
@@ -299,6 +300,17 @@ export interface RestaurantRepository extends VenueOperationsRepository {
   startOnboarding(
     input: OnboardingSignUpInput,
   ): Promise<{ userId: string; draft: OnboardingDraft }>;
+  /**
+   * A blank venue draft for an account that already exists.
+   *
+   * The other half of the 27 October split. `startOnboarding` makes an
+   * account *and* a draft, because it used to be one road; this makes a
+   * draft for a partner who already signed in and has now pressed
+   * « Créer mon établissement ». A partner who stopped halfway gets the
+   * draft they left rather than a second one, which is why the answer is
+   * the draft and not an id to remember.
+   */
+  startVenueDraft(ownerId: string): Promise<OnboardingDraft>;
   getOnboardingDraft(draftId: string): Promise<OnboardingDraft | null>;
   saveOnboardingDraft(
     draftId: string,

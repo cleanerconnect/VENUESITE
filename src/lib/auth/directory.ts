@@ -130,12 +130,29 @@ class DatabaseDirectory implements Directory {
       "SELECT user_id, full_name, email FROM staff WHERE user_id = ? LIMIT 1",
       userId,
     );
-    if (!row) return null;
+    if (row) {
+      return {
+        userId,
+        fullName: String(row.full_name),
+        email: String(row.email),
+        venues: await this.store().venuesForUser(userId),
+      };
+    }
+    // `staff` is a membership table, so it cannot answer for an account
+    // that holds no establishment — and since the 27 October split that
+    // is the normal state of a partner who has just signed up. Their row
+    // is in `partner_accounts`, and reading it here is what makes
+    // `/choisir` and the empty dashboard reachable at all: before this,
+    // `resolveSession` found nothing, the driver returned no user, and a
+    // brand-new account was sent back to /login by the screen that was
+    // built for it.
+    const partner = await this.onboarding().partnerAccount(userId);
+    if (!partner) return null;
     return {
-      userId,
-      fullName: String(row.full_name),
-      email: String(row.email),
-      venues: await this.store().venuesForUser(userId),
+      userId: partner.userId,
+      fullName: partner.fullName,
+      email: partner.email,
+      venues: [],
     };
   }
 

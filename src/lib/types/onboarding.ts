@@ -5,7 +5,11 @@
 // an account someone else had created; this is the door a partner comes
 // through on their own.
 //
-// Six steps, one question group each. The shape below is what the flow
+// Since DigiNegoce's 27 October decision it is two doors rather than
+// one: the account, then — separately, from inside the dashboard it
+// belongs to — the establishment. See the two step tables below.
+//
+// One question group per step. The shape below is what the flow
 // collects, and it is deliberately small: nothing is asked that the app
 // does not need to list the establishment, because every extra field is
 // a partner who stops halfway.
@@ -31,7 +35,7 @@ export interface OnboardingDay {
 export interface OnboardingDraft {
   id: string;
   ownerId: string;
-  /** 1–7, the furthest step reached. */
+  /** The furthest step reached, in the flow that owns the draft. */
   step: number;
   venueName: string;
   venueType: OnboardingVenueType;
@@ -70,39 +74,122 @@ export interface OnboardingDraft {
   ambience: string[];
   features: string[];
   hours: OnboardingDay[];
+  /**
+   * Where a booking for this establishment lands. Asked first, and it
+   * is the one answer with a default — see `MANAGEMENT_MODE_CHOICE`.
+   */
+  managementMode: ManagementMode;
   /** Set once the venue exists. A spent draft cannot make a second one. */
   submittedVenueId: string | null;
   updatedAt: string;
 }
 
 /**
- * The seven steps, and two names each.
+ * Two flows, not one — DigiNegoce, 27 October.
  *
- * `name` is the question, and it heads the card. `short` is the label
- * under its segment of the progress bar, where seven names share the
- * width and « Votre établissement » becomes « Votre établiss… ».
+ * The seven steps used to be one road: a partner typed their name and
+ * six screens later an establishment existed. That shape answers one
+ * question badly and another not at all. Badly: a partner who wants to
+ * look before building had to invent a venue to get through the door.
+ * Not at all: an account holds *dashboards* — a restaurant, a bar, the
+ * events product — and a single road arrives at exactly one of them.
  *
- * Step 5 was added between Photos and Horaires because the app's detail
- * screen draws an « Equipements » list and an ambience line, and until
- * now nothing asked for either — a partner finished the flow and their
- * listing showed six blank rows. It is `optional`, and the flow says so
- * out loud: a place that has not decided whether it is « intimiste » is
- * not a place that should be stopped from opening its dashboard.
+ * So the road is cut in two. `ACCOUNT_STEPS` is the door: who you are,
+ * and then the account exists. Picking what to manage is a screen of
+ * its own, `/choisir`. `VENUE_STEPS` is the building, and it lives
+ * inside the dashboard it builds for — `/restaurant/etablissement/nouveau`
+ * — because by then the partner is signed in and has somewhere to come
+ * back to if they stop.
+ *
+ * `name` heads the card; `short` labels its segment of the progress
+ * bar, where the names share the width and « Votre établissement »
+ * becomes « Votre établiss… ».
  */
-export const ONBOARDING_STEPS = [
+export const ACCOUNT_STEPS = [
   { n: 1, name: "Vous", short: "Vous" },
+  { n: 2, name: "Votre compte est créé", short: "C'est prêt" },
+] as const;
+
+export const ACCOUNT_LAST_STEP = 2;
+
+/**
+ * The venue's own steps.
+ *
+ * Steps 2 to 6 of the old flow, unchanged and in their order, behind a
+ * new first question. The ambience step is still `optional`, and the
+ * flow still says so out loud: a place that has not decided whether it
+ * is « intimiste » is not a place that should be stopped from opening
+ * its dashboard.
+ *
+ * There is no recap step at the end any more. The old step 7 was a
+ * « C'est prêt » page that re-read six answers back to the partner
+ * before creating anything; it is now the account flow's confirmation,
+ * where it has something to confirm. Here the last step's own button
+ * creates the establishment, which is one screen less between a
+ * decision and its effect.
+ */
+export const VENUE_STEPS = [
+  { n: 1, name: "Mode de gestion des réservations", short: "Gestion" },
   { n: 2, name: "Votre établissement", short: "Établissement" },
   { n: 3, name: "Adresse", short: "Adresse" },
   { n: 4, name: "Photos", short: "Photos" },
   { n: 5, name: "Ambiance et équipements", short: "Ambiance" },
   { n: 6, name: "Horaires", short: "Horaires" },
-  { n: 7, name: "C'est prêt", short: "C'est prêt" },
 ] as const;
 
-export const ONBOARDING_LAST_STEP = 7;
+export const VENUE_LAST_STEP = 6;
 
-/** The steps the partner may walk past without answering. */
-export const ONBOARDING_OPTIONAL_STEPS: number[] = [4, 5];
+/** The venue steps the partner may walk past without answering. */
+export const VENUE_OPTIONAL_STEPS: number[] = [4, 5];
+
+/**
+ * Where a booking goes — the first thing the creation flow asks.
+ *
+ * Three answers, and they are not three skins of one product: they are
+ * three different places a reservation lands. A partner on WhatsApp
+ * never opens the portal, and a partner on the API has a system of
+ * their own that must not be told to use ours. Asking first is what
+ * stops the other five screens from being filled in for a dashboard
+ * nobody will read.
+ *
+ * `dashboard` is the default because it is the one that works with
+ * nothing else set up, and a default that needs a second integration
+ * before a booking can be answered is not a default.
+ */
+export type ManagementMode = "dashboard" | "whatsapp" | "api";
+
+export const MANAGEMENT_MODES = ["dashboard", "whatsapp", "api"] as const;
+
+export const DEFAULT_MANAGEMENT_MODE: ManagementMode = "dashboard";
+
+export function isManagementMode(value: string): value is ManagementMode {
+  return (MANAGEMENT_MODES as readonly string[]).includes(value);
+}
+
+/**
+ * The three cards, and the one line each owes the partner.
+ *
+ * The line says what happens to a booking, not what the mode is
+ * called: « API » tells a partner nothing, and « une réservation part
+ * dans votre système » tells them everything they need to choose.
+ */
+export const MANAGEMENT_MODE_CHOICE: Record<
+  ManagementMode,
+  { label: string; line: string }
+> = {
+  dashboard: {
+    label: "Dashboard LYFE",
+    line: "Une réservation arrive dans votre carnet, et vous l'acceptez ici.",
+  },
+  whatsapp: {
+    label: "WhatsApp",
+    line: "Une réservation vous arrive par WhatsApp, et vous répondez au client.",
+  },
+  api: {
+    label: "API",
+    line: "Une réservation part dans votre système par notre API, et il répond.",
+  },
+};
 
 /**
  * The cities LYFE opens in, and a closed list on purpose.

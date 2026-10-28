@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { Icon } from "@/components/dashboard/primitives";
-import { isActive, itemsInLot, workspaceFor } from "@/lib/nav/workspaces";
+import { isActive, visibleTabs, workspaceFor } from "@/lib/nav/workspaces";
 import { useWorkspaceAccess } from "@/lib/auth/workspace-access";
 import { useChromeCommand } from "@/lib/nav/chrome-commands";
 import { cn } from "@/lib/utils/cn";
@@ -34,7 +34,7 @@ export function BottomTabs() {
   // to neither product and the account decides, or a partner's bottom
   // bar turned into the organizer's on the fourth tab.
   const workspace = workspaceFor(pathname, venue);
-  const tabs = itemsInLot(workspace.tabs, lot);
+  const tabs = visibleTabs(workspace, lot, venue);
   const runTabCommand = useChromeCommand();
 
   // Hide on fullscreen takeover routes.

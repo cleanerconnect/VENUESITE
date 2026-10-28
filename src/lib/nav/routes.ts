@@ -47,6 +47,16 @@ export interface RouteEntry {
   /** Which service is not connected, when status is `service`. */
   dependsOn?: string;
   /**
+   * Whether `?etat=` can force the four demo states here.
+   *
+   * True of every screen that reads an establishment through the
+   * repository, which is all of them but one: the creation flow reads a
+   * *draft* and has no venue yet, so there is no read to fail and no
+   * role that is refused it. `tools/verify/states.mjs` skips the routes
+   * that say so rather than reporting a state nobody designed.
+   */
+  demoStates?: false;
+  /**
    * Which lot registers this route.
    *
    * 1 is what a Lot 1 deployment ships — the contracted venue dashboard,
@@ -81,7 +91,16 @@ export const ROUTES: RouteEntry[] = [
     lot: 1,
     label: "Inscription",
     purpose:
-      "« Création de Venue » : six étapes pour inscrire un établissement — vous, l'établissement, l'adresse, une photo, les horaires, un récapitulatif. Le brouillon est enregistré à chaque étape, donc fermer l'onglet ne perd rien.",
+      "La création de compte, et rien d'autre depuis le 27 octobre : vos coordonnées, puis le compte existe. L'établissement se crée depuis son propre tableau de bord — voir /restaurant/etablissement/nouveau.",
+    workspace: "entry",
+    status: "built",
+  },
+  {
+    path: "/choisir",
+    lot: 1,
+    label: "Choisir un espace",
+    purpose:
+      "« Que voulez-vous gérer sur LYFE ? ». Trois cartes — Restaurant, Bar ou lounge, Événements — chacune active et ouvrable, ou à ajouter. Sautée quand le compte n'en tient qu'une.",
     workspace: "entry",
     status: "built",
   },
@@ -351,6 +370,18 @@ export const ROUTES: RouteEntry[] = [
   },
 
   // 4. Ma présence
+  {
+    path: "/restaurant/etablissement/nouveau",
+    lot: 1,
+    label: "Créer mon établissement",
+    purpose:
+      "Les six étapes de l'établissement, dans le tableau de bord qu'elles remplissent : le mode de gestion des réservations, l'établissement, l'adresse, les photos, l'ambiance, les horaires. Le brouillon est enregistré à chaque étape.",
+    workspace: "venue",
+    status: "built",
+    // A form over a draft, not a screen over a venue: `?etat=erreur` has
+    // no read to fail and `?etat=refus` no role to refuse.
+    demoStates: false,
+  },
   {
     path: "/restaurant/ma-fiche",
     lot: 1,
